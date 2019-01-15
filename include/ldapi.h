@@ -63,6 +63,10 @@ struct LDNode *LDNodeNewNull();
 struct LDNode *LDNodeNewBool(const bool boolean);
 struct LDNode *LDNodeNewNumber(const double number);
 struct LDNode *LDNodeNewText(const char *const text);
+struct LDNode *LDNodeNewObject();
+struct LDNode *LDNodeNewArray();
+
+void LDNodeFree(struct LDNode *const node);
 
 bool LDNodeGetBool(const struct LDNode *const node);
 double LDNodeGetNumber(const struct LDNode *const node);

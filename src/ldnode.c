@@ -97,6 +97,34 @@ LDNodeGetText(const struct LDNode *const node)
     return node->value.text;
 }
 
+struct LDNode *
+LDNodeNewObject()
+{
+    struct LDNode *const node = newnode(LDNodeObject);
+
+    if (node) {
+        node->value.object = NULL;
+
+        return node;
+    } else {
+        return NULL;
+    }
+}
+
+struct LDNode *
+LDNodeNewArray()
+{
+    struct LDNode *const node = newnode(LDNodeArray);
+
+    if (node) {
+        node->value.array = NULL;
+
+        return node;
+    } else {
+        return NULL;
+    }
+}
+
 bool
 LDNodeObjectSetItem(struct LDNode *const object, const char *const key, struct LDNode *const item)
 {
@@ -163,4 +191,49 @@ LDNodeAdvanceIterator(struct LDNode *const iter)
     LD_ASSERT(iter);
 
     return iter->hh.next;
+}
+
+static void freeiter(struct LDNode *iter, const bool freekey);
+
+static void
+freenode(struct LDNode *const node)
+{
+    switch (node->type) {
+        case LDNodeText:
+            free(node->value.text);
+            break;
+        case LDNodeObject:
+            freeiter(node->value.object, true);
+            break;
+        case LDNodeArray:
+            freeiter(node->value.array, false);
+            break;
+        default: break;
+    }
+
+    free(node);
+}
+
+static void
+freeiter(struct LDNode *iter, const bool freekey)
+{
+    struct LDNode *node, *tmp;
+
+    HASH_ITER(hh, iter, node, tmp) {
+        HASH_DEL(iter, node);
+
+        if (freekey) {
+            free(node->location.key);
+        }
+
+        freenode(node);
+    }
+}
+
+void
+LDNodeFree(struct LDNode *const node)
+{
+    LD_ASSERT(node);
+
+    freenode(node);
 }
