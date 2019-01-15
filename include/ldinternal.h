@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "uthash.h"
+
 #include "ldapi.h"
 
 /* **** LDConfig **** */
@@ -42,6 +44,30 @@ struct LDUser {
     char *avatar;
     /* LDNode *custom; */
     /* LDNode *privateAttributeNames; */
+};
+
+/* **** LDClient **** */
+
+struct LDClient {
+    struct LDConfig *config;
+};
+
+/* **** LDNode **** */
+
+struct LDNode {
+    LDNodeType type;
+    union {
+      char *key;
+      unsigned int index;
+    } location;
+    union {
+      bool boolean;
+      char *text;
+      double number;
+      struct LDNode* object;
+      struct LDNode* array;
+    } value;
+    UT_hash_handle hh;
 };
 
 /* **** LDUtility **** */

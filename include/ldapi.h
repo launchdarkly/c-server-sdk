@@ -41,6 +41,44 @@ bool LDUserSetName(struct LDUser *const user, const char *const name);
 bool LDUserSetAvatar(struct LDUser *const user, const char *const avatar);
 bool LDUserSetSecondary(struct LDUser *const user, const char *const secondary);
 
+/* **** LDClient **** */
+
+struct LDClient *LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli);
+void LDClientClose(struct LDClient *const client);
+
+/* **** LDNode **** */
+
+struct LDNode;
+
+typedef enum {
+    LDNodeNull = 0,
+    LDNodeText,
+    LDNodeNumber,
+    LDNodeBool,
+    LDNodeObject,
+    LDNodeArray
+} LDNodeType;
+
+struct LDNode *LDNodeNewNull();
+struct LDNode *LDNodeNewBool(const bool boolean);
+struct LDNode *LDNodeNewNumber(const double number);
+struct LDNode *LDNodeNewText(const char *const text);
+
+bool LDNodeGetBool(const struct LDNode *const node);
+double LDNodeGetNumber(const struct LDNode *const node);
+const char *LDNodeGetText(const struct LDNode *const node);
+
+bool LDNodeObjectSetItem(struct LDNode *const object, const char *const key, struct LDNode *const item);
+bool LDNodeArrayAppendItem(struct LDNode *const array, struct LDNode *const item);
+
+struct LDNode *LDNodeArrayGetIterator(struct LDNode *const array);
+struct LDNode *LDNodeObjectGetIterator(struct LDNode *const object);
+
+unsigned int LDNodeArrayIterGetIndex(struct LDNode *const iter);
+const char *LDNodeObjectIterGetKey(struct LDNode *const iter);
+
+struct LDNode *LDNodeAdvanceIterator(struct LDNode *const iter);
+
 /* **** LDUtility **** */
 
 bool LDSetString(char **const target, const char *const value);
