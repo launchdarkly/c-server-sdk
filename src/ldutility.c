@@ -58,3 +58,15 @@ LDHashSetFree(struct LDHashSet *set)
         free(item->key);
     }
 }
+
+struct LDHashSet *
+LDHashSetLookup(const struct LDHashSet *const set, const char *const key)
+{
+    struct LDHashSet *result = NULL;
+
+    if (set) {
+        HASH_FIND_STR(set, key, result);
+    }
+
+    return result;
+}

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "uthash.h"
+#include "cJSON.h"
 
 #include "ldapi.h"
 
@@ -74,6 +75,8 @@ struct LDNode {
     UT_hash_handle hh;
 };
 
+cJSON *LDNodeToJSON(const struct LDNode *const node);
+
 /* **** LDUtility **** */
 
 #define LD_ASSERT(condition) \
@@ -84,6 +87,7 @@ struct LDNode {
 
 bool LDHashSetAddKey(struct LDHashSet **const set, const char *const key);
 void LDHashSetFree(struct LDHashSet *const set);
+struct LDHashSet *LDHashSetLookup(const struct LDHashSet *const set, const char *const key);
 
 struct LDHashSet {
     char *key;
