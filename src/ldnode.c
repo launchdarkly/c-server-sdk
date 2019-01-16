@@ -298,3 +298,70 @@ LDNodeToJSON(const struct LDNode *const node)
 
     return result;
 }
+
+struct LDNode *
+LDNodeFromJSON(const cJSON *const json)
+{
+    struct LDNode *result = NULL; cJSON *iter = NULL;
+
+    LD_ASSERT(json);
+
+    switch (json->type) {
+        case cJSON_False:
+            result = LDNodeNewBool(false);
+            break;
+        case cJSON_True:
+            result = LDNodeNewBool(true);
+            break;
+        case cJSON_NULL:
+            result = LDNodeNewNull();
+            break;
+        case cJSON_Number:
+            result = LDNodeNewNumber(json->valuedouble);
+            break;
+        case cJSON_String:
+            result = LDNodeNewText(json->valuestring);
+            break;
+        case cJSON_Array:
+            result = LDNodeNewArray();
+
+            if (!result) {
+                return NULL;
+            }
+
+            cJSON_ArrayForEach(iter, json) {
+                struct LDNode *const child = LDNodeFromJSON(iter);
+
+                if (!child) {
+                    LDNodeFree(result);
+
+                    return NULL;
+                }
+
+                LDNodeArrayAppendItem(result, child);
+            }
+            break;
+        case cJSON_Object:
+            result = LDNodeNewObject();
+
+            if (!result) {
+                return NULL;
+            }
+
+            cJSON_ArrayForEach(iter, json) {
+                struct LDNode *const child = LDNodeFromJSON(iter);
+
+                if (!child) {
+                    LDNodeFree(result);
+
+                    return NULL;
+                }
+
+                LDNodeObjectSetItem(result, iter->string, child);
+            }
+            break;
+        default: break;
+    }
+
+    return result;
+}
