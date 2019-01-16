@@ -1,6 +1,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "cJSON.h"
+
 #include "ldinternal.h"
 
 static struct LDNode *
@@ -236,4 +238,63 @@ LDNodeFree(struct LDNode *const node)
     LD_ASSERT(node);
 
     freenode(node);
+}
+
+cJSON *
+LDNodeToJSON(const struct LDNode *const node)
+{
+    cJSON *result = NULL; const struct LDNode *iter = NULL;
+
+    LD_ASSERT(node);
+
+    switch (node->type) {
+        case LDNodeNull:
+            result = cJSON_CreateNull();
+            break;
+        case LDNodeBool:
+            result = cJSON_CreateBool(node->value.boolean);
+            break;
+        case LDNodeNumber:
+            result = cJSON_CreateNumber(node->value.number);
+            break;
+        case LDNodeText:
+            result = cJSON_CreateString(node->value.text);
+            break;
+        case LDNodeObject:
+            result = cJSON_CreateObject();
+
+            if (!result) {
+                return NULL;
+            }
+
+            for (iter = node->value.object; iter; iter=iter->hh.next) {
+                cJSON *const child = LDNodeToJSON(iter);
+
+                if (!child) {
+                    cJSON_Delete(result);
+                } else {
+                    cJSON_AddItemToObject(result, iter->location.key, child);
+                }
+            }
+            break;
+        case LDNodeArray:
+            result = cJSON_CreateArray();
+
+            if (!result) {
+                return NULL;
+            }
+
+            for (iter = node->value.array; iter; iter=iter->hh.next) {
+                cJSON *const child = LDNodeToJSON(iter);
+
+                if (!child) {
+                    cJSON_Delete(result);
+                } else {
+                    cJSON_AddItemToArray(result, child);
+                }
+            }
+            break;
+    }
+
+    return result;
 }
