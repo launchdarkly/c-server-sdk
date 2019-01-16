@@ -26,6 +26,7 @@ void LDConfigSetUseLDD(struct LDConfig *const config, const bool useLDD);
 void LDConfigSetAllAttributesPrivate(struct LDConfig *const config, const bool allAttributesPrivate);
 void LDConfigSetUserKeysCapacity(struct LDConfig *const config, const unsigned int userKeysCapacity);
 void LDConfigSetUserKeysFlushInterval(struct LDConfig *const config, const unsigned int userKeysFlushInterval);
+void LDConfigAddPrivateAttribute(struct LDConfig *const config, const char *const attribute);
 
 /* **** LDUser **** */
 
@@ -41,6 +42,7 @@ bool LDUserSetName(struct LDUser *const user, const char *const name);
 bool LDUserSetAvatar(struct LDUser *const user, const char *const avatar);
 bool LDUserSetSecondary(struct LDUser *const user, const char *const secondary);
 void LDUserSetCustom(struct LDUser *const user, struct LDNode *const custom);
+void LDUserAddPrivateAttribute(struct LDUser *const user, const char *const attribute);
 
 /* **** LDClient **** */
 
@@ -69,17 +71,14 @@ void LDNodeFree(struct LDNode *const node);
 
 bool LDNodeGetBool(const struct LDNode *const node);
 double LDNodeGetNumber(const struct LDNode *const node);
+struct LDNode *LDNodeArrayGetIterator(const struct LDNode *const array);
+struct LDNode *LDNodeObjectGetIterator(const struct LDNode *const object);
 const char *LDNodeGetText(const struct LDNode *const node);
 
 bool LDNodeObjectSetItem(struct LDNode *const object, const char *const key, struct LDNode *const item);
 bool LDNodeArrayAppendItem(struct LDNode *const array, struct LDNode *const item);
-
-struct LDNode *LDNodeArrayGetIterator(const struct LDNode *const array);
-struct LDNode *LDNodeObjectGetIterator(const struct LDNode *const object);
-
 unsigned int LDNodeArrayIterGetIndex(struct LDNode *const iter);
 const char *LDNodeObjectIterGetKey(struct LDNode *const iter);
-
 struct LDNode *LDNodeAdvanceIterator(const struct LDNode *const iter);
 
 char *LDNodeToJSONString(const struct LDNode *const node);

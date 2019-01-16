@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "uthash.h"
+#include "utarray.h"
 
 #include "ldapi.h"
 
@@ -24,7 +25,7 @@ struct LDConfig {
     bool offline;
     bool useLDD;
     bool allAttributesPrivate;
-    /* privateAttributeNames */
+    UT_array *privateAttributeNames;
     unsigned int userKeysCapacity;
     unsigned int userKeysFlushInterval;
     /* featurestore */
@@ -42,8 +43,8 @@ struct LDUser {
     char *email;
     char *name;
     char *avatar;
+    UT_array *privateAttributeNames;
     struct LDNode *custom;
-    /* LDNode *privateAttributeNames; */
 };
 
 /* **** LDClient **** */

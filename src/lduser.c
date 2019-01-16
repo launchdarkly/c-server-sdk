@@ -20,6 +20,8 @@ LDUserNew(const char *const key)
         return NULL;
     }
 
+    utarray_new(user->privateAttributeNames, &ut_str_icd);
+
     user->secondary = NULL;
     user->ip        = NULL;
     user->firstName = NULL;
@@ -36,6 +38,10 @@ void
 LDUserFree(struct LDUser *const user)
 {
     if (user) {
+        if (user->privateAttributeNames) {
+            utarray_free(user->privateAttributeNames);
+        }
+
         free(       user->key       );
         free(       user->secondary );
         free(       user->firstName );
@@ -118,4 +124,12 @@ LDUserSetCustom(struct LDUser *const user, struct LDNode *const custom)
     LD_ASSERT(custom);
 
     user->custom = custom;
+}
+
+void
+LDUserAddPrivateAttribute(struct LDUser *const user, const char *const attribute)
+{
+    LD_ASSERT(user); LD_ASSERT(attribute);
+
+    utarray_push_back(user->privateAttributeNames, &attribute);
 }
