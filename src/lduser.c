@@ -146,10 +146,19 @@ isPrivateAttr(struct LDClient *const client, struct LDUser *const user, const ch
     return global || (LDHashSetLookup(user->privateAttributeNames, key) != NULL);
 }
 
-static void
+static bool
 addHidden(cJSON **ref, const char *const value){
-    if (!(*ref)) { *ref = cJSON_CreateArray(); }
+    if (!(*ref)) {
+        *ref = cJSON_CreateArray();
+
+        if (!(*ref)) {
+            return false;
+        }
+    }
+
     cJSON_AddItemToArray(*ref, cJSON_CreateString(value));
+
+    return true;
 }
 
 cJSON *
@@ -170,7 +179,11 @@ LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const b
     #define addstring(field)                                                   \
         if (lduser->field) {                                                   \
             if (redact && isPrivateAttr(client, lduser, #field)) {             \
-                addHidden(&hidden, #field);                                    \
+                if (!addHidden(&hidden, #field)) {                             \
+                    cJSON_Delete(json);                                        \
+                                                                               \
+                    return NULL;                                               \
+                }                                                              \
             }                                                                  \
             else {                                                             \
                 cJSON_AddStringToObject(json, #field, lduser->field);          \
@@ -187,18 +200,36 @@ LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const b
 
     if (lduser->custom) {
         cJSON *const custom = LDNodeToJSON(lduser->custom);
+
+        if (!custom) {
+            cJSON_Delete(json);
+
+            return NULL;
+        }
+
         if (redact && cJSON_IsObject(custom)) {
             cJSON *item = NULL;
             for (item = custom->child; item;) {
                 cJSON *const next = item->next; /* must record next to make delete safe */
+
                 if (isPrivateAttr(client, lduser, item->string)) {
                     cJSON *const current = cJSON_DetachItemFromObjectCaseSensitive(custom, item->string);
-                    addHidden(&hidden, item->string);
+
+                    if (!addHidden(&hidden, item->string)) {
+                        cJSON_Delete(current);
+
+                        cJSON_Delete(json);
+
+                        return NULL;
+                    }
+
                     cJSON_Delete(current);
                 }
+
                 item = next;
             }
         }
+
         cJSON_AddItemToObject(json, "custom", custom);
     }
 
