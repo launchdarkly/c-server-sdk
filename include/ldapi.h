@@ -3,9 +3,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-/* **** LDConfig **** */
+/* **** Forward Declarations **** */
 
-struct LDConfig;
+struct LDConfig; struct LDUser; struct LDNode;
+
+/* **** LDConfig **** */
 
 struct LDConfig *LDConfigNew();
 void LDConfigFree(struct LDConfig *const config);
@@ -27,8 +29,6 @@ void LDConfigSetUserKeysFlushInterval(struct LDConfig *const config, const unsig
 
 /* **** LDUser **** */
 
-struct LDUser;
-
 struct LDUser *LDUserNew(const char *const userkey);
 void LDUserFree(struct LDUser *const user);
 
@@ -40,6 +40,7 @@ bool LDUserSetEmail(struct LDUser *const user, const char *const email);
 bool LDUserSetName(struct LDUser *const user, const char *const name);
 bool LDUserSetAvatar(struct LDUser *const user, const char *const avatar);
 bool LDUserSetSecondary(struct LDUser *const user, const char *const secondary);
+void LDUserSetCustom(struct LDUser *const user, struct LDNode *const custom);
 
 /* **** LDClient **** */
 
@@ -47,8 +48,6 @@ struct LDClient *LDClientInit(struct LDConfig *const config, const unsigned int 
 void LDClientClose(struct LDClient *const client);
 
 /* **** LDNode **** */
-
-struct LDNode;
 
 typedef enum {
     LDNodeNull = 0,

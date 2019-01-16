@@ -42,7 +42,7 @@ struct LDUser {
     char *email;
     char *name;
     char *avatar;
-    /* LDNode *custom; */
+    struct LDNode *custom;
     /* LDNode *privateAttributeNames; */
 };
 

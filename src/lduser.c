@@ -27,6 +27,7 @@ LDUserNew(const char *const key)
     user->email     = NULL;
     user->name      = NULL;
     user->avatar    = NULL;
+    user->custom    = NULL;
 
     return user;
 }
@@ -35,14 +36,15 @@ void
 LDUserFree(struct LDUser *const user)
 {
     if (user) {
-        free( user->key       );
-        free( user->secondary );
-        free( user->firstName );
-        free( user->lastName  );
-        free( user->email     );
-        free( user->name      );
-        free( user->avatar    );
-        free( user            );
+        free(       user->key       );
+        free(       user->secondary );
+        free(       user->firstName );
+        free(       user->lastName  );
+        free(       user->email     );
+        free(       user->name      );
+        free(       user->avatar    );
+        LDNodeFree( user->custom    );
+        free(       user            );
     }
 }
 
@@ -108,4 +110,12 @@ LDUserSetSecondary(struct LDUser *const user, const char *const secondary)
     LD_ASSERT(user);
 
     return LDSetString(&user->secondary, secondary);
+}
+
+void
+LDUserSetCustom(struct LDUser *const user, struct LDNode *const custom)
+{
+    LD_ASSERT(custom);
+
+    user->custom = custom;
 }

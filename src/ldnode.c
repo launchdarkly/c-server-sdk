@@ -235,9 +235,9 @@ freeiter(struct LDNode *iter, const bool freekey)
 void
 LDNodeFree(struct LDNode *const node)
 {
-    LD_ASSERT(node);
-
-    freenode(node);
+    if (node) {
+        freenode(node);
+    }
 }
 
 cJSON *
