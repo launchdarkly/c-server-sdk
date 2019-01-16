@@ -369,3 +369,43 @@ LDNodeFromJSON(const cJSON *const json)
 
     return result;
 }
+
+char *
+LDNodeToJSONString(const struct LDNode *const node)
+{
+    char *serialized = NULL; cJSON *json = NULL;
+
+    LD_ASSERT(node);
+
+    json = LDNodeToJSON(node);
+
+    if (!json) {
+        return NULL;
+    }
+
+    serialized = cJSON_PrintUnformatted(json);
+
+    cJSON_Delete(json);
+
+    return serialized;
+}
+
+struct LDNode *
+LDNodeFromJSONString(const char *const serialized)
+{
+    struct LDNode *node = NULL; cJSON *json = NULL;
+
+    LD_ASSERT(serialized);
+
+    json = cJSON_Parse(serialized);
+
+    if (!json) {
+        return NULL;
+    }
+
+    node = LDNodeFromJSON(json);
+
+    cJSON_Delete(json);
+
+    return node;
+}

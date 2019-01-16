@@ -83,6 +83,9 @@ const char *LDNodeObjectIterGetKey(struct LDNode *const iter);
 
 struct LDNode *LDNodeAdvanceIterator(struct LDNode *const iter);
 
+char *LDNodeToJSONString(const struct LDNode *const node);
+struct LDNode *LDNodeFromJSONString(const char *const serialized);
+
 /* **** LDUtility **** */
 
 bool LDSetString(char **const target, const char *const value);
