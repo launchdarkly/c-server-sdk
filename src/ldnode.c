@@ -144,7 +144,7 @@ LDNodeObjectSetItem(struct LDNode *const object, const char *const key, struct L
 }
 
 struct LDNode *
-LDNodeObjectGetIterator(struct LDNode *const object)
+LDNodeObjectGetIterator(const struct LDNode *const object)
 {
     LD_ASSERT(object); LD_ASSERT(object->type == LDNodeObject);
 
@@ -180,7 +180,7 @@ LDNodeArrayIterGetIndex(struct LDNode *const iter)
 }
 
 struct LDNode *
-LDNodeArrayGetIterator(struct LDNode *const array)
+LDNodeArrayGetIterator(const struct LDNode *const array)
 {
     LD_ASSERT(array); LD_ASSERT(array->type == LDNodeArray);
 
@@ -188,7 +188,7 @@ LDNodeArrayGetIterator(struct LDNode *const array)
 }
 
 struct LDNode *
-LDNodeAdvanceIterator(struct LDNode *const iter)
+LDNodeAdvanceIterator(const struct LDNode *const iter)
 {
     LD_ASSERT(iter);
 
@@ -267,7 +267,7 @@ LDNodeToJSON(const struct LDNode *const node)
                 return NULL;
             }
 
-            for (iter = node->value.object; iter; iter=iter->hh.next) {
+            for (iter = LDNodeObjectGetIterator(node); iter; iter=LDNodeAdvanceIterator(iter)) {
                 cJSON *const child = LDNodeToJSON(iter);
 
                 if (!child) {
@@ -286,7 +286,7 @@ LDNodeToJSON(const struct LDNode *const node)
                 return NULL;
             }
 
-            for (iter = node->value.array; iter; iter=iter->hh.next) {
+            for (iter = LDNodeArrayGetIterator(node); iter; iter=LDNodeAdvanceIterator(iter)) {
                 cJSON *const child = LDNodeToJSON(iter);
 
                 if (!child) {
