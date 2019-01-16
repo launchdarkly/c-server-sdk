@@ -24,6 +24,7 @@ void LDClientClose(struct LDClient *const client)
 {
     if (client) {
         LDConfigFree(client->config);
+
         free(client);
     }
 }

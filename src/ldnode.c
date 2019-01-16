@@ -409,3 +409,35 @@ LDNodeFromJSONString(const char *const serialized)
 
     return node;
 }
+
+LDNodeType
+LDNodeGetType(const struct LDNode *const node)
+{
+    LD_ASSERT(node);
+
+    return node->type;
+}
+
+struct LDNode *
+LDNodeArrayLookupIndex(const struct LDNode *const array, const unsigned int index)
+{
+    struct LDNode *result = NULL;
+
+    LD_ASSERT(array); LD_ASSERT(array->type == LDNodeArray);
+
+    HASH_FIND_INT(array->value.array, &index, result);
+
+    return result;
+}
+
+struct LDNode *
+LDNodeObjectLookupKey(const struct LDNode *const object, const char *const key)
+{
+    struct LDNode *result = NULL;
+
+    LD_ASSERT(object); LD_ASSERT(object->type == LDNodeObject); LD_ASSERT(key);
+
+    HASH_FIND_STR(object->value.object, key, result);
+
+    return result;
+}
