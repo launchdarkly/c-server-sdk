@@ -272,6 +272,8 @@ LDNodeToJSON(const struct LDNode *const node)
 
                 if (!child) {
                     cJSON_Delete(result);
+
+                    return NULL;
                 } else {
                     cJSON_AddItemToObject(result, iter->location.key, child);
                 }
@@ -289,6 +291,8 @@ LDNodeToJSON(const struct LDNode *const node)
 
                 if (!child) {
                     cJSON_Delete(result);
+
+                    return NULL;
                 } else {
                     cJSON_AddItemToArray(result, child);
                 }
