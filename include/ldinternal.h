@@ -6,9 +6,12 @@
 #include <stdlib.h>
 
 #include "uthash.h"
-#include "utarray.h"
 
 #include "ldapi.h"
+
+/* **** Forward Declarations **** */
+
+struct LDHashSet;
 
 /* **** LDConfig **** */
 
@@ -25,7 +28,7 @@ struct LDConfig {
     bool offline;
     bool useLDD;
     bool allAttributesPrivate;
-    UT_array *privateAttributeNames;
+    struct LDHashSet *privateAttributeNames;
     unsigned int userKeysCapacity;
     unsigned int userKeysFlushInterval;
     /* featurestore */
@@ -43,7 +46,7 @@ struct LDUser {
     char *email;
     char *name;
     char *avatar;
-    UT_array *privateAttributeNames;
+    struct LDHashSet *privateAttributeNames;
     struct LDNode *custom;
 };
 
@@ -78,3 +81,11 @@ struct LDNode {
         printf(0, "LD_ASSERT failed: expected condition '%s' in function '%s' aborting\n", #condition, __func__); \
         abort(); \
     } \
+
+bool LDHashSetAddKey(struct LDHashSet **const set, const char *const key);
+void LDHashSetFree(struct LDHashSet *const set);
+
+struct LDHashSet {
+    char *key;
+    UT_hash_handle hh;
+};

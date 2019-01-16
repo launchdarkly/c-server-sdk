@@ -219,7 +219,7 @@ freenode(struct LDNode *const node)
 static void
 freeiter(struct LDNode *iter, const bool freekey)
 {
-    struct LDNode *node, *tmp;
+    struct LDNode *node = NULL, *tmp = NULL;
 
     HASH_ITER(hh, iter, node, tmp) {
         HASH_DEL(iter, node);

@@ -26,7 +26,7 @@ void LDConfigSetUseLDD(struct LDConfig *const config, const bool useLDD);
 void LDConfigSetAllAttributesPrivate(struct LDConfig *const config, const bool allAttributesPrivate);
 void LDConfigSetUserKeysCapacity(struct LDConfig *const config, const unsigned int userKeysCapacity);
 void LDConfigSetUserKeysFlushInterval(struct LDConfig *const config, const unsigned int userKeysFlushInterval);
-void LDConfigAddPrivateAttribute(struct LDConfig *const config, const char *const attribute);
+bool LDConfigAddPrivateAttribute(struct LDConfig *const config, const char *const attribute);
 
 /* **** LDUser **** */
 
@@ -42,7 +42,7 @@ bool LDUserSetName(struct LDUser *const user, const char *const name);
 bool LDUserSetAvatar(struct LDUser *const user, const char *const avatar);
 bool LDUserSetSecondary(struct LDUser *const user, const char *const secondary);
 void LDUserSetCustom(struct LDUser *const user, struct LDNode *const custom);
-void LDUserAddPrivateAttribute(struct LDUser *const user, const char *const attribute);
+bool LDUserAddPrivateAttribute(struct LDUser *const user, const char *const attribute);
 
 /* **** LDClient **** */
 

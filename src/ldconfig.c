@@ -38,8 +38,7 @@ LDConfigNew(const char *const key)
         return NULL;
     }
 
-    utarray_new(config->privateAttributeNames, &ut_str_icd);
-
+    config->privateAttributeNames = NULL;
     config->stream                = true;
     config->sendEvents            = true;
     config->timeout               = 5;
@@ -58,9 +57,7 @@ void
 LDConfigFree(struct LDConfig *const config)
 {
     if (config) {
-        if (config->privateAttributeNames) {
-            utarray_free(config->privateAttributeNames);
-        }
+        LDHashSetFree(config->privateAttributeNames);
 
         free( config->key       );
         free( config->baseURI   );
@@ -174,10 +171,10 @@ LDConfigSetUserKeysFlushInterval(struct LDConfig *const config, const unsigned i
     config->userKeysFlushInterval = userKeysFlushInterval;
 }
 
-void
+bool
 LDConfigAddPrivateAttribute(struct LDConfig *const config, const char *const attribute)
 {
     LD_ASSERT(config); LD_ASSERT(attribute);
 
-    utarray_push_back(config->privateAttributeNames, &attribute);
+    return LDHashSetAddKey(&config->privateAttributeNames, attribute);
 }
