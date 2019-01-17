@@ -441,3 +441,66 @@ LDNodeObjectLookupKey(const struct LDNode *const object, const char *const key)
 
     return result;
 }
+
+struct LDNode *LDNodeDeepCopy(const struct LDNode *const node)
+{
+    struct LDNode *result = NULL, *iter = NULL;
+
+    LD_ASSERT(node);
+
+    switch (LDNodeGetType(node)) {
+        case LDNodeNull:
+            result = LDNodeNewNull();
+            break;
+        case LDNodeText:
+            result = LDNodeNewText(LDNodeGetText(node));
+            break;
+        case LDNodeNumber:
+            result = LDNodeNewNumber(LDNodeGetNumber(node));
+            break;
+        case LDNodeBool:
+            result = LDNodeNewBool(LDNodeGetBool(node));
+            break;
+        case LDNodeObject:
+            result = LDNodeNewObject();
+
+            if (!result) {
+                return NULL;
+            }
+
+            for (iter = LDNodeObjectGetIterator(node); iter; iter=LDNodeAdvanceIterator(iter)) {
+                struct LDNode *const child = LDNodeDeepCopy(iter);
+
+                if (!child) {
+                    LDNodeFree(result);
+
+                    return NULL;
+                } else {
+                    LDNodeObjectSetItem(result, iter->location.key, child);
+                }
+            }
+            break;
+        case LDNodeArray:
+            result = LDNodeNewArray();
+
+            if (!result) {
+                return NULL;
+            }
+
+            for (iter = LDNodeArrayGetIterator(node); iter; iter=LDNodeAdvanceIterator(iter)) {
+                struct LDNode *const child = LDNodeDeepCopy(iter);
+
+                if (!child) {
+                    LDNodeFree(result);
+
+                    return NULL;
+                } else {
+                    LDNodeArrayAppendItem(result, child);
+                }
+            }
+
+            break;
+    }
+
+    return result;
+}

@@ -46,8 +46,25 @@ bool LDUserAddPrivateAttribute(struct LDUser *const user, const char *const attr
 
 /* **** LDClient **** */
 
+struct LDVariationDetails { int placeholder; };
+
 struct LDClient *LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli);
 void LDClientClose(struct LDClient *const client);
+
+bool LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
+    const char *const key, const bool fallback, struct LDVariationDetails *const details);
+
+int LDIntVariation(struct LDClient *const client, struct LDUser *const user,
+    const char *const key, const int fallback, struct LDVariationDetails *const details);
+
+double LDDoubleVariation(struct LDClient *const client, struct LDUser *const user,
+    const char *const key, const double fallback, struct LDVariationDetails *const details);
+
+char *LDStringVariation(struct LDClient *const client, struct LDUser *const user,
+    const char *const key, const char* const fallback, struct LDVariationDetails *const details);
+
+struct LDNode *LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
+    const char *const key, const struct LDNode *const fallback, struct LDVariationDetails *const details);
 
 /* **** LDNode **** */
 
@@ -86,6 +103,8 @@ struct LDNode *LDNodeObjectLookupKey(const struct LDNode *const object, const ch
 
 char *LDNodeToJSONString(const struct LDNode *const node);
 struct LDNode *LDNodeFromJSONString(const char *const serialized);
+
+struct LDNode *LDNodeDeepCopy(const struct LDNode *const node);
 
 /* **** LDUtility **** */
 
