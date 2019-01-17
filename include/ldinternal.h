@@ -8,6 +8,12 @@
 #include "uthash.h"
 #include "cJSON.h"
 
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <pthread.h>
+#endif
+
 #include "ldapi.h"
 
 /* **** Forward Declarations **** */
@@ -76,6 +82,23 @@ struct LDNode {
 };
 
 cJSON *LDNodeToJSON(const struct LDNode *const node);
+
+/* **** LDPlatformSpecific **** */
+
+#ifdef _WIN32
+    #define THREAD_RETURN DWORD WINAPI
+    #define THREAD_RETURN_DEFAULT 0
+
+    #define ld_thread_t HANDLE
+    void LDi_createthread(HANDLE *thread, LPTHREAD_START_ROUTINE fn, void *arg);
+#else
+    #define THREAD_RETURN void *
+    #define THREAD_RETURN_DEFAULT NULL
+
+    #define ld_thread_t pthread_t
+#endif
+
+bool LDi_createthread(ld_thread_t *const thread, THREAD_RETURN (*const routine)(void *), void *const argument);
 
 /* **** LDUtility **** */
 
