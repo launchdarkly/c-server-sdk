@@ -20,6 +20,34 @@
 
 struct LDHashSet;
 
+/* **** LDPlatformSpecific **** */
+
+#ifdef _WIN32
+    #define THREAD_RETURN DWORD WINAPI
+    #define THREAD_RETURN_DEFAULT 0
+
+    #define ld_thread_t HANDLE
+
+    #define ld_rwlock_t SRWLOCK
+#else
+    #define THREAD_RETURN void *
+    #define THREAD_RETURN_DEFAULT NULL
+
+    #define ld_thread_t pthread_t
+
+    #define ld_rwlock_t pthread_rwlock_t
+#endif
+
+bool LDi_jointhread(ld_thread_t thread);
+bool LDi_createthread(ld_thread_t *const thread, THREAD_RETURN (*const routine)(void *), void *const argument);
+
+bool LDi_rwlockinit(ld_rwlock_t *const lock);
+bool LDi_rwlockdestroy(ld_rwlock_t *const lock);
+bool LDi_rdlock(ld_rwlock_t *const lock);
+bool LDi_wrlock(ld_rwlock_t *const lock);
+bool LDi_rdunlock(ld_rwlock_t *const lock);
+bool LDi_wrunlock(ld_rwlock_t *const lock);
+
 /* **** LDConfig **** */
 
 struct LDConfig {
@@ -60,7 +88,9 @@ struct LDUser {
 /* **** LDClient **** */
 
 struct LDClient {
+    bool shuttingdown;
     struct LDConfig *config;
+    ld_thread_t thread;
 };
 
 /* **** LDNode **** */
@@ -83,22 +113,9 @@ struct LDNode {
 
 cJSON *LDNodeToJSON(const struct LDNode *const node);
 
-/* **** LDPlatformSpecific **** */
+/* **** LDNetwork **** */
 
-#ifdef _WIN32
-    #define THREAD_RETURN DWORD WINAPI
-    #define THREAD_RETURN_DEFAULT 0
-
-    #define ld_thread_t HANDLE
-    void LDi_createthread(HANDLE *thread, LPTHREAD_START_ROUTINE fn, void *arg);
-#else
-    #define THREAD_RETURN void *
-    #define THREAD_RETURN_DEFAULT NULL
-
-    #define ld_thread_t pthread_t
-#endif
-
-bool LDi_createthread(ld_thread_t *const thread, THREAD_RETURN (*const routine)(void *), void *const argument);
+THREAD_RETURN LDi_networkthread(void *const clientref);
 
 /* **** LDUtility **** */
 
