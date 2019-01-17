@@ -91,6 +91,7 @@ struct LDClient {
     bool shuttingdown;
     struct LDConfig *config;
     ld_thread_t thread;
+    ld_rwlock_t lock;
 };
 
 /* **** LDNode **** */
