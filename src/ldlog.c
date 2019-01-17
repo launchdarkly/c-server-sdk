@@ -52,6 +52,14 @@ LDi_log(const LDLogLevel level, const char *const format, ...)
         abort();
     }
 
+    if (!sdklogger) {
+        if (!LDi_rdunlock(&sdkloggerlock)) {
+            abort();
+        }
+
+        return;
+    }
+
     if (level > sdkloggerlevel) {
         if (!LDi_rdunlock(&sdkloggerlock)) {
             abort();
@@ -64,9 +72,7 @@ LDi_log(const LDLogLevel level, const char *const format, ...)
     vsnprintf(buffer, sizeof(buffer), format, va);
     va_end(va);
 
-    if (sdklogger) {
-        sdklogger(level, buffer);
-    }
+    sdklogger(level, buffer);
 
     if (!LDi_rdunlock(&sdkloggerlock)) {
         abort();
