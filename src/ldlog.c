@@ -52,15 +52,7 @@ LDi_log(const LDLogLevel level, const char *const format, ...)
         abort();
     }
 
-    if (!sdklogger) {
-        if (!LDi_rdunlock(&sdkloggerlock)) {
-            abort();
-        }
-
-        return;
-    }
-
-    if (level > sdkloggerlevel) {
+    if (!sdklogger || level > sdkloggerlevel) {
         if (!LDi_rdunlock(&sdkloggerlock)) {
             abort();
         }
