@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include <curl/curl.h>
+
 #include "uthash.h"
 #include "cJSON.h"
 
@@ -88,10 +90,13 @@ struct LDUser {
 /* **** LDClient **** */
 
 struct LDClient {
+    /* LDClientInit */
     bool shuttingdown;
     struct LDConfig *config;
     ld_thread_t thread;
     ld_rwlock_t lock;
+    /* LDNetInit */
+    CURLM *multihandle;
 };
 
 /* **** LDNode **** */
@@ -115,6 +120,8 @@ struct LDNode {
 cJSON *LDNodeToJSON(const struct LDNode *const node);
 
 /* **** LDNetwork **** */
+
+bool LDi_networkinit(struct LDClient *const client);
 
 THREAD_RETURN LDi_networkthread(void *const clientref);
 

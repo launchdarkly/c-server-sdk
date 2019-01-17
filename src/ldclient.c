@@ -17,6 +17,12 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     client->shuttingdown = false;
     client->config       = config;
 
+    if (!LDi_networkinit(client)) {
+        free(client);
+
+        return NULL;
+    }
+
     if (!LDi_rwlockinit(&client->lock)) {
         free(client);
 

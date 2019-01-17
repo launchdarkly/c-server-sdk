@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "ldapi.h"
 
@@ -9,7 +10,13 @@ main()
 
     struct LDClient *const client = LDClientInit(config, 0);
 
-    printf("ld\n");
+    if (client) {
+        printf("LDClientInit Success\n");
 
-    LDClientClose(client);
+        LDClientClose(client);
+    } else {
+        printf("LDClientInit Failed\n");
+    }
+
+    return 0;
 }
