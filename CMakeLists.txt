@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 find_package(CURL REQUIRED)
 
-set(CMAKE_C_FLAGS "-std=c89 -pedantic -Wall -Wextra -Werror")
+set(CMAKE_C_FLAGS "-std=c89 -pedantic -Wall -Wextra -Werror -g3 -fsanitize=address -fno-omit-frame-pointer")
 
 include_directories("include" "third-party/include" ${CURL_INCLUDE_DIR})
 
