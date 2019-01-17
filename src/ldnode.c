@@ -442,7 +442,8 @@ LDNodeObjectLookupKey(const struct LDNode *const object, const char *const key)
     return result;
 }
 
-struct LDNode *LDNodeDeepCopy(const struct LDNode *const node)
+struct LDNode *
+LDNodeDeepCopy(const struct LDNode *const node)
 {
     struct LDNode *result = NULL, *iter = NULL;
 

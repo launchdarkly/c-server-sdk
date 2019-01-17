@@ -3,7 +3,8 @@
 
 #include "ldinternal.h"
 
-struct LDClient *LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
+struct LDClient *
+LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 {
     struct LDClient *const client = malloc(sizeof(struct LDClient));
 
@@ -33,7 +34,8 @@ struct LDClient *LDClientInit(struct LDConfig *const config, const unsigned int 
     return client;
 }
 
-void LDClientClose(struct LDClient *const client)
+void
+LDClientClose(struct LDClient *const client)
 {
     if (client) {
         /* signal shutdown to background */
