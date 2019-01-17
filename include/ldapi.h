@@ -106,6 +106,24 @@ struct LDNode *LDNodeFromJSONString(const char *const serialized);
 
 struct LDNode *LDNodeDeepCopy(const struct LDNode *const node);
 
+/* **** LDLogging **** */
+
+typedef enum {
+    LD_LOG_FATAL = 0,
+    LD_LOG_CRITICAL,
+    LD_LOG_ERROR,
+    LD_LOG_WARNING,
+    LD_LOG_INFO,
+    LD_LOG_DEBUG,
+    LD_LOG_TRACE
+} LDLogLevel;
+
+const char *LDLogLevelToString(const LDLogLevel level);
+
+void LDBasicLogger(const LDLogLevel level, const char *const text);
+
+void LDConfigureGlobalLogger(const LDLogLevel level, void (*logger)(const LDLogLevel level, const char *const text));
+
 /* **** LDUtility **** */
 
 bool LDSetString(char **const target, const char *const value);

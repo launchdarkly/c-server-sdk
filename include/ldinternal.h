@@ -27,16 +27,16 @@ struct LDHashSet;
 #ifdef _WIN32
     #define THREAD_RETURN DWORD WINAPI
     #define THREAD_RETURN_DEFAULT 0
-
     #define ld_thread_t HANDLE
 
+    #define LD_RWLOCK_INIT SRWLOCK_INIT
     #define ld_rwlock_t SRWLOCK
 #else
     #define THREAD_RETURN void *
     #define THREAD_RETURN_DEFAULT NULL
-
     #define ld_thread_t pthread_t
 
+    #define LD_RWLOCK_INIT PTHREAD_RWLOCK_INITIALIZER
     #define ld_rwlock_t pthread_rwlock_t
 #endif
 
@@ -104,15 +104,15 @@ struct LDClient {
 struct LDNode {
     LDNodeType type;
     union {
-      char *key;
-      unsigned int index;
+        char *key;
+        unsigned int index;
     } location;
     union {
-      bool boolean;
-      char *text;
-      double number;
-      struct LDNode* object;
-      struct LDNode* array;
+        bool boolean;
+        char *text;
+        double number;
+        struct LDNode* object;
+        struct LDNode* array;
     } value;
     UT_hash_handle hh;
 };
@@ -125,11 +125,15 @@ bool LDi_networkinit(struct LDClient *const client);
 
 THREAD_RETURN LDi_networkthread(void *const clientref);
 
+/* **** LDLogging **** */
+
+void LDi_log(const LDLogLevel level, const char *const format, ...);
+
 /* **** LDUtility **** */
 
 #define LD_ASSERT(condition) \
     if (!(condition)) { \
-        printf(0, "LD_ASSERT failed: expected condition '%s' in function '%s' aborting\n", #condition, __func__); \
+        LDi_log(0, "LD_ASSERT failed: expected condition '%s' in function '%s' aborting\n", #condition, __func__); \
         abort(); \
     } \
 

@@ -1,21 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ldapi.h"
+#include "ldinternal.h"
 
 int
 main()
 {
-    struct LDConfig *const config = LDConfigNew("SDK_KEY");
+    struct LDConfig *config; struct LDClient *client;
 
-    struct LDClient *const client = LDClientInit(config, 0);
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+
+    config = LDConfigNew("SDK_KEY");
+
+    client = LDClientInit(config, 0);
 
     if (client) {
-        printf("LDClientInit Success\n");
+        LDi_log(LD_LOG_INFO, "LDClientInit Success");
 
         LDClientClose(client);
     } else {
-        printf("LDClientInit Failed\n");
+        LDi_log(LD_LOG_INFO, "LDClientInit Failed\n");
     }
 
     return 0;
