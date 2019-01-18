@@ -108,6 +108,14 @@ LDConfigSetSendEvents(struct LDConfig *const config, const bool sendEvents)
 }
 
 void
+LDConfigSetEventsCapacity(struct LDConfig *const config, const unsigned int eventsCapacity)
+{
+    LD_ASSERT(config);
+
+    config->eventsCapacity = eventsCapacity;
+}
+
+void
 LDConfigSetTimeout(struct LDConfig *const config, const unsigned int milliseconds)
 {
     LD_ASSERT(config);

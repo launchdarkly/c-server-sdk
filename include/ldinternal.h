@@ -59,6 +59,7 @@ struct LDConfig {
     char *eventsURI;
     bool stream;
     bool sendEvents;
+    unsigned int eventsCapacity;
     unsigned int timeout;
     unsigned int flushInterval;
     unsigned int pollInterval;

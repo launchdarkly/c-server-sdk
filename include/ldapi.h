@@ -18,6 +18,7 @@ bool LDConfigSetEventsURI(struct LDConfig *const config, const char *const event
 
 void LDConfigSetStream(struct LDConfig *const config, const bool stream);
 void LDConfigSetSendEvents(struct LDConfig *const config, const bool sendEvents);
+void LDConfigSetEventsCapacity(struct LDConfig *const config, const unsigned int eventsCapacity);
 void LDConfigSetTimeout(struct LDConfig *const config, const unsigned int milliseconds);
 void LDConfigSetFlushInterval(struct LDConfig *const config, const unsigned int milliseconds);
 void LDConfigSetPollInterval(struct LDConfig *const config, const unsigned int milliseconds);
