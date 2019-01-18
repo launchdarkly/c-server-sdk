@@ -57,11 +57,11 @@ checkKey(const cJSON *const json, const char *const key, const bool required,
 /* **** Prerequisite **** */
 
 struct Prerequisite *
-prerequisiteFromJSON(const char *const key, const cJSON *const json)
+prerequisiteFromJSON(const cJSON *const json)
 {
     struct Prerequisite *result = NULL; const cJSON *item = NULL;
 
-    LD_ASSERT(key); LD_ASSERT(json);
+    LD_ASSERT(json);
 
     if (!(result = malloc(sizeof(struct Prerequisite)))) {
         goto error;
@@ -122,7 +122,7 @@ prerequisiteFreeCollection(struct Prerequisite *prerequisites)
 struct FeatureFlag *
 featureFlagFromJSON(const char *const key, const cJSON *const json)
 {
-    struct FeatureFlag *result = NULL; const cJSON *item = NULL;
+    struct FeatureFlag *result = NULL; const cJSON *item = NULL, *iter = NULL;
 
     LD_ASSERT(key); LD_ASSERT(json);
 
@@ -160,6 +160,22 @@ featureFlagFromJSON(const char *const key, const cJSON *const json)
         goto error;
     }
 
+    if (checkKey(json, "prerequisites", true, cJSON_IsArray, &item)) {
+        cJSON_ArrayForEach(iter, item) {
+            struct Prerequisite *const prerequisite = prerequisiteFromJSON(iter);
+
+            if (!prerequisite) {
+                goto error;
+            }
+
+            prerequisite->hhindex = HASH_COUNT(result->prerequisites);
+
+            HASH_ADD_INT(result->prerequisites, hhindex, prerequisite);
+        }
+    } else {
+        goto error;
+    }
+
     if (checkKey(json, "salt", true, cJSON_IsString, &item)) {
         if (!(result->salt = strdup(item->valuestring))) {
             LDi_log(LD_LOG_ERROR, "'strdup' for key 'salt' failed");
@@ -175,6 +191,22 @@ featureFlagFromJSON(const char *const key, const cJSON *const json)
             LDi_log(LD_LOG_ERROR, "'strdup' for key 'sel' failed");
 
             goto error;
+        }
+    } else {
+        goto error;
+    }
+
+    if (checkKey(json, "targets", true, cJSON_IsArray, &item)) {
+        cJSON_ArrayForEach(iter, item) {
+            struct Target *const target = targetFromJSON(iter);
+
+            if (!target) {
+                goto error;
+            }
+
+            target->hhindex = HASH_COUNT(result->targets);
+
+            HASH_ADD_INT(result->targets, hhindex, target);
         }
     } else {
         goto error;

@@ -26,7 +26,7 @@ struct Prerequisite {
 };
 
 cJSON *prerequisiteToJSON(const struct FeatureFlag *const featureFlag);
-struct Prerequisite *prerequisiteFromJSON(const char *const key, const cJSON *const json);
+struct Prerequisite *prerequisiteFromJSON(const cJSON *const json);
 void prerequisiteFree(struct Prerequisite *const prerequisite);
 void prerequisiteFreeCollection(struct Prerequisite *prerequisites);
 
