@@ -41,6 +41,7 @@ LDConfigNew(const char *const key)
     config->privateAttributeNames = NULL;
     config->stream                = true;
     config->sendEvents            = true;
+    config->eventsCapacity        = 1000;
     config->timeout               = 5;
     config->flushInterval         = 5;
     config->pollInterval          = 30;
