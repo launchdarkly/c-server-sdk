@@ -348,3 +348,56 @@ targetFreeCollection(struct Target *targets)
         targetFree(target);
     }
 }
+
+/* **** WeightedVariation **** */
+
+struct WeightedVariation *
+weightedVariationFromJSON(const cJSON *const json)
+{
+    struct WeightedVariation *result = NULL; const cJSON *item = NULL;
+
+    LD_ASSERT(json);
+
+    if (!(result = malloc(sizeof(struct WeightedVariation)))) {
+        goto error;
+    }
+
+    memset(result, 0, sizeof(struct WeightedVariation));
+
+    if (checkKey(json, "variation", true, cJSON_IsNumber, &item)) {
+        result->variation = item->valueint;
+    } else {
+        goto error;
+    }
+
+    if (checkKey(json, "weight", true, cJSON_IsNumber, &item)) {
+        result->weight = item->valueint;
+    } else {
+        goto error;
+    }
+
+    return result;
+
+  error:
+    weightedVariationFree(result);
+
+    return NULL;
+}
+
+void
+weightedVariationFree(struct WeightedVariation *const weightedVariation)
+{
+    free(weightedVariation);
+}
+
+void
+weightedVariationFreeCollection(struct WeightedVariation *weightedVariations)
+{
+    struct WeightedVariation *weightedVariation = NULL, *tmp = NULL;
+
+    HASH_ITER(hh, weightedVariations, weightedVariation, tmp) {
+        HASH_DEL(weightedVariations, weightedVariation);
+
+        weightedVariationFree(weightedVariation);
+    }
+}

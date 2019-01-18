@@ -14,7 +14,7 @@
 
 /* **** Forward Declarations **** */
 
-struct FeatureFlag; struct Prerequisite; struct Target;
+struct FeatureFlag; struct Prerequisite; struct Target; struct WeightedVariation;
 
 /* **** Prerequisite **** */
 
@@ -71,3 +71,17 @@ cJSON *targetToJSON(const struct Target *const target);
 struct Target *targetFromJSON(const cJSON *const json);
 void targetFree(struct Target *const target);
 void targetFreeCollection(struct Target *targets);
+
+/* **** WeightedVariation **** */
+
+struct WeightedVariation {
+    unsigned int hhindex;
+    int variation;
+    int weight;
+    UT_hash_handle hh;
+};
+
+cJSON *weightedVariationToJSON(const struct WeightedVariation *const weightedVariation);
+struct WeightedVariation *weightedVariationFromJSON(const cJSON *const json);
+void weightedVariationFree(struct WeightedVariation *const weightedVariation);
+void weightedVariationFreeCollection(struct WeightedVariation *weightedVariations);
