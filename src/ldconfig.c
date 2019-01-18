@@ -6,9 +6,11 @@
 struct LDConfig *
 LDConfigNew(const char *const key)
 {
-    struct LDConfig *const config = malloc(sizeof(struct LDConfig));
+    struct LDConfig *config = NULL;
 
-    if (!config) {
+    LD_ASSERT(key);
+
+    if (!(config = malloc(sizeof(struct LDConfig)))) {
         return NULL;
     }
 

@@ -74,9 +74,11 @@ LDNodeGetNumber(const struct LDNode *const node)
 struct LDNode *
 LDNodeNewText(const char *const text)
 {
-    struct LDNode *const node = newnode(LDNodeBool);
+    struct LDNode *node = NULL;
 
-    if (node) {
+    LD_ASSERT(text);
+
+    if ((node = newnode(LDNodeBool))) {
         node->value.text = strdup(text);
 
         if (text && !node->value.text) {

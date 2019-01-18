@@ -164,9 +164,11 @@ addHidden(cJSON **ref, const char *const value){
 cJSON *
 LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const bool redact)
 {
-    cJSON *hidden = NULL; cJSON *const json = cJSON_CreateObject();
+    cJSON *hidden = NULL; cJSON *json = NULL;;
 
-    if (!json) {
+    LD_ASSERT(lduser);
+
+    if (!(json = cJSON_CreateObject())) {
         return NULL;
     }
 

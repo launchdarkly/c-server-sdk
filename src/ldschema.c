@@ -4,6 +4,8 @@
 static const char *
 typeToStringJSON(const cJSON *const json)
 {
+    LD_ASSERT(json);
+
     if (cJSON_IsInvalid(json)) {
         return "Invalid";;
     } else if(cJSON_IsBool(json)) {

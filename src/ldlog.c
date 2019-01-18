@@ -45,8 +45,9 @@ LDConfigureGlobalLogger(const LDLogLevel level, void (*logger)(const LDLogLevel 
 void
 LDi_log(const LDLogLevel level, const char *const format, ...)
 {
-    char buffer[4096];
-    va_list va;
+    char buffer[4096]; va_list va;
+
+    LD_ASSERT(format);
 
     if (!LDi_rdlock(&sdkloggerlock)) {
         abort();

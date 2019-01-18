@@ -6,9 +6,11 @@
 struct LDClient *
 LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 {
-    struct LDClient *const client = malloc(sizeof(struct LDClient));
+    struct LDClient *client = NULL;
 
-    if (!client) {
+    LD_ASSERT(config);
+
+    if (!(client = malloc(sizeof(struct LDClient)))) {
         return NULL;
     }
 
