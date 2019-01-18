@@ -24,7 +24,7 @@ LDHashSetAddKey(struct LDHashSet **const set, const char *const key)
 {
     struct LDHashSet *node = NULL;
 
-    LD_ASSERT(key);
+    LD_ASSERT(set); LD_ASSERT(key);
 
     node = malloc(sizeof(struct LDHashSet));
 
@@ -63,6 +63,8 @@ struct LDHashSet *
 LDHashSetLookup(const struct LDHashSet *const set, const char *const key)
 {
     struct LDHashSet *result = NULL;
+
+    LD_ASSERT(key);
 
     if (set) {
         HASH_FIND_STR(set, key, result);

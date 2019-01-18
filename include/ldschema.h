@@ -10,6 +10,21 @@
 #include "uthash.h"
 #include "cJSON.h"
 
+/* **** Forward Declarations **** */
+
+struct FeatureFlag; struct Prerequisite;
+
+/* **** Prerequisite **** */
+
+struct Prerequisite {
+    char *key;
+    int variation;
+};
+
+cJSON *prerequisiteToJSON(const struct FeatureFlag *const featureFlag);
+struct Prerequisite *prerequisiteFromJSON(const char *const key, const cJSON *const json);
+void prerequisiteFree(struct Prerequisite *const prerequisite);
+
 /* **** FeatureFlag **** */
 
 struct FeatureFlag {
@@ -34,5 +49,5 @@ struct FeatureFlag {
 };
 
 cJSON *featureFlagToJSON(const struct FeatureFlag *const featureFlag);
-struct FeatureFlag* featureFlagFromJSON(const char *const key, const cJSON *const json);
+struct FeatureFlag *featureFlagFromJSON(const char *const key, const cJSON *const json);
 void featureFlagFree(struct FeatureFlag *const featureFlag);

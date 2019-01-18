@@ -1,6 +1,8 @@
 #include "ldinternal.h"
 #include "ldschema.h"
 
+/* **** Utilities *** */
+
 static const char *
 typeToStringJSON(const cJSON *const json)
 {
@@ -52,7 +54,60 @@ checkKey(const cJSON *const json, const char *const key, const bool required,
     }
 }
 
-struct FeatureFlag*
+/* **** Prerequisite **** */
+
+struct Prerequisite *
+prerequisiteFromJSON(const char *const key, const cJSON *const json)
+{
+    struct Prerequisite *result = NULL; const cJSON *item = NULL;
+
+    LD_ASSERT(key); LD_ASSERT(json);
+
+    if (!(result = malloc(sizeof(struct Prerequisite)))) {
+        goto error;
+    }
+
+    memset(result, 0, sizeof(struct Prerequisite));
+
+    if (checkKey(json, "variation", true, cJSON_IsNumber, &item)) {
+        result->variation = item->valueint;
+    } else {
+        goto error;
+    }
+
+    if (checkKey(json, "key", true, cJSON_IsString, &item)) {
+        if (!(result->key = strdup(item->valuestring))) {
+            LDi_log(LD_LOG_ERROR, "'strdup' for key 'key' failed");
+
+            goto error;
+        }
+    } else {
+        goto error;
+    }
+
+    return result;
+
+  error:
+    prerequisiteFree(result);
+
+    return NULL;
+}
+
+void
+prerequisiteFree(struct Prerequisite *const prerequisite)
+{
+    if (prerequisite) {
+        if (prerequisite->key) {
+            free(prerequisite->key);
+        }
+
+        free(prerequisite);
+    }
+}
+
+/* **** FeatureFlag **** */
+
+struct FeatureFlag *
 featureFlagFromJSON(const char *const key, const cJSON *const json)
 {
     struct FeatureFlag *result = NULL; const cJSON *item = NULL;
