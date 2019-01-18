@@ -234,6 +234,8 @@ featureFlagFree(struct FeatureFlag *const featureFlag)
 
         prerequisiteFreeCollection(featureFlag->prerequisites);
 
+        targetFreeCollection(featureFlag->targets);
+
         free(featureFlag);
     }
 }
@@ -247,5 +249,70 @@ featureFlagFreeCollection(struct FeatureFlag *featureFlags)
         HASH_DEL(featureFlags, featureFlag);
 
         featureFlagFree(featureFlag);
+    }
+}
+
+/* **** Target **** */
+
+struct Target *
+targetFromJSON(const cJSON *const json)
+{
+    struct Target *result = NULL; const cJSON *item = NULL, *iter = NULL;
+
+    LD_ASSERT(json);
+
+    if (!(result = malloc(sizeof(struct Target)))) {
+        goto error;
+    }
+
+    memset(result, 0, sizeof(struct Target));
+
+    if (checkKey(json, "variation", true, cJSON_IsNumber, &item)) {
+        result->variation = item->valueint;
+    } else {
+        goto error;
+    }
+
+    if (checkKey(json, "values", true, cJSON_IsArray, &item)) {
+        cJSON_ArrayForEach(iter, json) {
+            if (cJSON_IsString(iter)) {
+                if (!LDHashSetAddKey(&result->values, iter->valuestring)) {
+                    goto error;
+                }
+            } else {
+                goto error;
+            }
+        }
+    } else {
+        goto error;
+    }
+
+    return result;
+
+  error:
+    targetFree(result);
+
+    return NULL;
+}
+
+void
+targetFree(struct Target *const target)
+{
+    if (target) {
+        LDHashSetFree(target->values);
+
+        free(target);
+    }
+}
+
+void
+targetFreeCollection(struct Target *targets)
+{
+    struct Target *target = NULL, *tmp = NULL;
+
+    HASH_ITER(hh, targets, target, tmp) {
+        HASH_DEL(targets, target);
+
+        targetFree(target);
     }
 }
