@@ -19,11 +19,13 @@ struct FeatureFlag; struct Prerequisite;
 struct Prerequisite {
     char *key;
     int variation;
+    UT_hash_handle hh;
 };
 
 cJSON *prerequisiteToJSON(const struct FeatureFlag *const featureFlag);
 struct Prerequisite *prerequisiteFromJSON(const char *const key, const cJSON *const json);
 void prerequisiteFree(struct Prerequisite *const prerequisite);
+void prerequisiteFreeCollection(struct Prerequisite *prerequisites);
 
 /* **** FeatureFlag **** */
 
@@ -33,7 +35,7 @@ struct FeatureFlag {
     bool on;
     bool trackEvents;
     bool deleted;
-    /* struct Prerequisite Prerequisites [] */
+    struct Prerequisite *prerequisites;
     char *salt;
     char *sel;
     /* struct Target targets [] */
@@ -51,3 +53,4 @@ struct FeatureFlag {
 cJSON *featureFlagToJSON(const struct FeatureFlag *const featureFlag);
 struct FeatureFlag *featureFlagFromJSON(const char *const key, const cJSON *const json);
 void featureFlagFree(struct FeatureFlag *const featureFlag);
+void featureFlagFreeCollection(struct FeatureFlag *featureFlags);

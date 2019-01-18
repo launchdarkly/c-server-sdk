@@ -105,6 +105,18 @@ prerequisiteFree(struct Prerequisite *const prerequisite)
     }
 }
 
+void
+prerequisiteFreeCollection(struct Prerequisite *prerequisites)
+{
+    struct Prerequisite *prerequisite = NULL, *tmp = NULL;
+
+    HASH_ITER(hh, prerequisites, prerequisite, tmp) {
+        HASH_DEL(prerequisites, prerequisite);
+
+        prerequisiteFree(prerequisite);
+    }
+}
+
 /* **** FeatureFlag **** */
 
 struct FeatureFlag *
@@ -220,6 +232,20 @@ featureFlagFree(struct FeatureFlag *const featureFlag)
             free(featureFlag->sel);
         }
 
+        prerequisiteFreeCollection(featureFlag->prerequisites);
+
         free(featureFlag);
+    }
+}
+
+void
+featureFlagFreeCollection(struct FeatureFlag *featureFlags)
+{
+    struct FeatureFlag *featureFlag = NULL, *tmp = NULL;
+
+    HASH_ITER(hh, featureFlags, featureFlag, tmp) {
+        HASH_DEL(featureFlags, featureFlag);
+
+        featureFlagFree(featureFlag);
     }
 }
