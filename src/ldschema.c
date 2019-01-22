@@ -854,3 +854,132 @@ segmentRuleFreeCollection(struct SegmentRule *segmentRules)
         segmentRuleFree(segmentRule);
     }
 }
+
+/* **** Segment **** */
+
+struct Segment *
+segmentFromJSON(const cJSON *const json)
+{
+      struct Segment *result = NULL; const cJSON *item = NULL, *iter = NULL;
+
+      LD_ASSERT(json);
+
+      if (!(result = malloc(sizeof(struct Segment)))) {
+          goto error;
+      }
+
+      memset(result, 0, sizeof(struct Segment));
+
+      if (checkKey(json, "key", true, cJSON_IsString, &item)) {
+          if (!(result->key = strdup(item->valuestring))) {
+              LDi_log(LD_LOG_ERROR, "'strdup' for key 'key' failed");
+
+              goto error;
+          }
+      } else {
+          goto error;
+      }
+
+      if (checkKey(json, "included", true, cJSON_IsArray, &item)) {
+          cJSON_ArrayForEach(iter, json) {
+              if (cJSON_IsString(iter)) {
+                  if (!LDHashSetAddKey(&result->included, iter->valuestring)) {
+                      goto error;
+                  }
+              } else {
+                  goto error;
+              }
+          }
+      } else {
+          goto error;
+      }
+
+      if (checkKey(json, "excluded", true, cJSON_IsArray, &item)) {
+          cJSON_ArrayForEach(iter, json) {
+              if (cJSON_IsString(iter)) {
+                  if (!LDHashSetAddKey(&result->excluded, iter->valuestring)) {
+                      goto error;
+                  }
+              } else {
+                  goto error;
+              }
+          }
+      } else {
+          goto error;
+      }
+
+      if (checkKey(json, "salt", true, cJSON_IsString, &item)) {
+          if (!(result->key = strdup(item->valuestring))) {
+              LDi_log(LD_LOG_ERROR, "'strdup' for key 'salt' failed");
+
+              goto error;
+          }
+      } else {
+          goto error;
+      }
+
+      if (checkKey(json, "rules", true, cJSON_IsArray, &item)) {
+          cJSON_ArrayForEach(iter, item) {
+              struct SegmentRule *const target = segmentRuleFromJSON(iter);
+
+              if (!target) {
+                  goto error;
+              }
+
+              target->hhindex = HASH_COUNT(result->rules);
+
+              HASH_ADD_INT(result->rules, hhindex, target);
+          }
+      } else {
+          goto error;
+      }
+
+      if (checkKey(json, "version", true, cJSON_IsNumber, &item)) {
+          result->version = item->valueint;
+      } else {
+          goto error;
+      }
+
+      if (checkKey(json, "deleted", true, cJSON_IsBool, &item)) {
+          result->deleted = cJSON_IsTrue(item);
+      } else {
+          goto error;
+      }
+
+      return result;
+
+    error:
+      segmentFree(result);
+
+      return NULL;
+}
+
+void
+segmentFree(struct Segment *const segment)
+{
+    if (segment) {
+        free(segment->key);
+
+        LDHashSetFree(segment->included);
+
+        LDHashSetFree(segment->excluded);
+
+        free(segment->salt);
+
+        segmentRuleFreeCollection(segment->rules);
+
+        free(segment);
+    }
+}
+
+void
+segmentFreeCollection(struct Segment *segments)
+{
+    struct Segment *segment = NULL, *tmp = NULL;
+
+    HASH_ITER(hh, segments, segment, tmp) {
+        HASH_DEL(segments, segment);
+
+        segmentFree(segment);
+    }
+}

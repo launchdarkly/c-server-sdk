@@ -14,6 +14,8 @@
 
 /* **** Forward Declarations **** */
 
+/* Segment describes a group of users */
+struct Segment;
 /* FeatureFlag describes an individual feature flag */
 struct FeatureFlag;
 /* Prerequisite describes a requirement that another feature flag return a specific variation */
@@ -195,3 +197,22 @@ cJSON *segmentRuleToJSON(const struct SegmentRule *const segmentRule);
 struct SegmentRule *segmentRuleFromJSON(const cJSON *const json);
 void segmentRuleFree(struct SegmentRule *const segmentRule);
 void segmentRuleFreeCollection(struct SegmentRule *segmentRules);
+
+/* **** Segment **** */
+
+struct Segment {
+    unsigned int hhindex;
+    char *key;
+    struct LDHashSet *included;
+    struct LDHashSet *excluded;
+    char *salt;
+    struct SegmentRule *rules;
+    int version;
+    bool deleted;
+    UT_hash_handle hh;
+};
+
+cJSON *segmentToJSON(const struct Segment *const segment);
+struct Segment *segmentFromJSON(const cJSON *const json);
+void segmentFree(struct Segment *const segment);
+void segmentFreeCollection(struct Segment *segments);
