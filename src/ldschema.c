@@ -551,3 +551,60 @@ operatorFromString(const char *const text, enum Operator *const operator)
 
     return true;
 }
+
+/* **** Clause **** */
+
+struct Clause *
+clauseFromJSON(const cJSON *const json)
+{
+    struct Clause *result = NULL; const cJSON *item = NULL;
+
+    LD_ASSERT(json);
+
+    if (!(result = malloc(sizeof(struct Clause)))) {
+        goto error;
+    }
+
+    memset(result, 0, sizeof(struct Clause));
+
+    if (checkKey(json, "negate", true, cJSON_IsNumber, &item)) {
+        result->negate = cJSON_IsTrue(item);
+    } else {
+        goto error;
+    }
+
+    if (checkKey(json, "attribute", true, cJSON_IsString, &item)) {
+        if (!(result->attribute = strdup(item->valuestring))) {
+            LDi_log(LD_LOG_ERROR, "'strdup' for key 'attribute' failed");
+
+            goto error;
+        }
+    } else {
+        goto error;
+    }
+
+    if (checkKey(json, "op", true, cJSON_IsString, &item)) {
+        if (!operatorFromString(item->valuestring, &result->op)) {
+            goto error;
+        }
+    } else {
+        goto error;
+    }
+
+    return result;
+
+  error:
+    clauseFree(result);
+
+    return NULL;
+}
+
+void
+clauseFree(struct Clause *const clause)
+{
+    if (clause) {
+        free(clause->attribute);
+
+        free(clause);
+    }
+}

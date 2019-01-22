@@ -26,6 +26,8 @@ struct WeightedVariation;
 struct Rollout;
 /* VariationOrRollout contains either the fixed variation or percent rollout to serve */
 struct VariationOrRollout;
+/* Clause describes an individual cluuse within a targeting rule */
+struct Clause;
 
 /* **** Prerequisite **** */
 
@@ -141,3 +143,16 @@ enum Operator {
 };
 
 bool operatorFromString(const char *const text, enum Operator *const operator);
+
+/* **** Clause **** */
+
+struct Clause {
+    char *attribute;
+    enum Operator op;
+    /* values */
+    bool negate;
+};
+
+cJSON *clauseToJSON(const struct Clause *const clause);
+struct Clause *clauseFromJSON(const cJSON *const json);
+void clauseFree(struct Clause *const clause);
