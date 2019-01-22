@@ -57,8 +57,8 @@ struct FeatureFlag {
     char *salt;
     char *sel;
     struct Target *targets;
-    /* struct Rule rules [] */
-    /* struct VariationOrRollout fallthrough */
+    struct Rule *rules;
+    struct VariationOrRollout *fallthrough;
     int offVariation; /* optional */
     bool hasOffVariation; /* indicates offVariation */
     /* variations */

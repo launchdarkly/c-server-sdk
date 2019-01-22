@@ -212,6 +212,30 @@ featureFlagFromJSON(const char *const key, const cJSON *const json)
         goto error;
     }
 
+    if (checkKey(json, "rules", true, cJSON_IsArray, &item)) {
+        cJSON_ArrayForEach(iter, item) {
+            struct Rule *const target = ruleFromJSON(iter);
+
+            if (!target) {
+                goto error;
+            }
+
+            target->hhindex = HASH_COUNT(result->rules);
+
+            HASH_ADD_INT(result->rules, hhindex, target);
+        }
+    } else {
+        goto error;
+    }
+
+    if (checkKey(json, "fallthrough", true, cJSON_IsObject, &item)) {
+        if (!(result->fallthrough = variationOrRolloutFromJSON(item))) {
+            goto error;
+        }
+    } else {
+        goto error;
+    }
+
     if (checkKey(json, "offVariation", false, cJSON_IsNumber, &item)) {
         if (item) {
             result->hasOffVariation = true;
@@ -252,17 +276,15 @@ void
 featureFlagFree(struct FeatureFlag *const featureFlag)
 {
     if (featureFlag) {
-        if (featureFlag->key) {
-            free(featureFlag->key);
-        }
+        free(featureFlag->key);
 
-        if (featureFlag->salt) {
-            free(featureFlag->salt);
-        }
+        free(featureFlag->salt);
 
-        if (featureFlag->sel) {
-            free(featureFlag->sel);
-        }
+        free(featureFlag->sel);
+
+        variationOrRolloutFree(featureFlag->fallthrough);
+
+        ruleFreeCollection(featureFlag->rules);
 
         prerequisiteFreeCollection(featureFlag->prerequisites);
 
