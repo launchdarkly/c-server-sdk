@@ -730,6 +730,8 @@ ruleFromJSON(const cJSON *const json)
         goto error;
     }
 
+    return result;
+
   error:
     ruleFree(result);
 
@@ -759,5 +761,96 @@ ruleFreeCollection(struct Rule *rules)
         HASH_DEL(rules, rule);
 
         ruleFree(rule);
+    }
+}
+
+/* **** SegmentRule **** */
+
+struct SegmentRule *
+segmentRuleFromJSON(const cJSON *const json)
+{
+    struct SegmentRule *result = NULL; const cJSON *item = NULL, *iter = NULL;
+
+    LD_ASSERT(json);
+
+    if (!(result = malloc(sizeof(struct SegmentRule)))) {
+        goto error;
+    }
+
+    memset(result, 0, sizeof(struct SegmentRule));
+
+    if (checkKey(json, "id", true, cJSON_IsString, &item)) {
+        if (!(result->id = strdup(item->valuestring))) {
+            LDi_log(LD_LOG_ERROR, "'strdup' for key 'id' failed");
+
+            goto error;
+        }
+    } else {
+        goto error;
+    }
+
+    if (checkKey(json, "clauses", true, cJSON_IsArray, &item)) {
+        cJSON_ArrayForEach(iter, item) {
+            struct Clause *const target = clauseFromJSON(iter);
+
+            if (!target) {
+                goto error;
+            }
+
+            target->hhindex = HASH_COUNT(result->clauses);
+
+            HASH_ADD_INT(result->clauses, hhindex, target);
+        }
+    } else {
+        goto error;
+    }
+
+    if (checkKey(json, "weight", false, cJSON_IsNumber, &item)) {
+        result->hasWeight = true;
+
+        result->weight = item->valueint;
+    } else {
+        result->hasWeight = false;
+    }
+
+    if (checkKey(json, "bucketBy", false, cJSON_IsString, &item)) {
+        if (!(result->bucketBy = strdup(item->valuestring))) {
+            LDi_log(LD_LOG_ERROR, "'strdup' for key 'bucketBy' failed");
+
+            goto error;
+        }
+    }
+
+    return result;
+
+  error:
+    segmentRuleFree(result);
+
+    return NULL;
+}
+
+void
+segmentRuleFree(struct SegmentRule *const segmentRule)
+{
+    if (segmentRule) {
+        free(segmentRule->id);
+
+        clauseFreeCollection(segmentRule->clauses);
+
+        free(segmentRule->bucketBy);
+
+        free(segmentRule);
+    }
+}
+
+void
+segmentRuleFreeCollection(struct SegmentRule *segmentRules)
+{
+    struct SegmentRule *segmentRule = NULL, *tmp = NULL;
+
+    HASH_ITER(hh, segmentRules, segmentRule, tmp) {
+        HASH_DEL(segmentRules, segmentRule);
+
+        segmentRuleFree(segmentRule);
     }
 }

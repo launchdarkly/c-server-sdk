@@ -30,6 +30,8 @@ struct VariationOrRollout;
 struct Clause;
 /* Rule expresses a set of AND-ed matching conditions for a user, along with either a fixed variation or a set of rollout percentages */
 struct Rule;
+/* SegmentRule describes a set of clauses */
+struct SegmentRule;
 
 /* **** Prerequisite **** */
 
@@ -176,3 +178,20 @@ cJSON *ruleToJSON(const struct Rule *const rule);
 struct Rule *ruleFromJSON(const cJSON *const json);
 void ruleFree(struct Rule *const rule);
 void ruleFreeCollection(struct Rule *rules);
+
+/* **** SegmentRule **** */
+
+struct SegmentRule {
+    unsigned int hhindex;
+    char *id;
+    struct Clause *clauses;
+    int weight; /* optional */
+    bool hasWeight; /* indicates weight */
+    char *bucketBy; /* optional */
+    UT_hash_handle hh;
+};
+
+cJSON *segmentRuleToJSON(const struct SegmentRule *const segmentRule);
+struct SegmentRule *segmentRuleFromJSON(const cJSON *const json);
+void segmentRuleFree(struct SegmentRule *const segmentRule);
+void segmentRuleFreeCollection(struct SegmentRule *segmentRules);
