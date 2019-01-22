@@ -63,6 +63,12 @@ prerequisiteFromJSON(const cJSON *const json)
 
     LD_ASSERT(json);
 
+    if (!cJSON_IsObject(json)) {
+        LDi_log(LD_LOG_ERROR, "prerequisite not object");
+
+        return NULL;
+    }
+
     if (!(result = malloc(sizeof(struct Prerequisite)))) {
         goto error;
     }
@@ -125,6 +131,12 @@ featureFlagFromJSON(const char *const key, const cJSON *const json)
     struct FeatureFlag *result = NULL; const cJSON *item = NULL, *iter = NULL;
 
     LD_ASSERT(key); LD_ASSERT(json);
+
+    if (!cJSON_IsObject(json)) {
+        LDi_log(LD_LOG_ERROR, "featureFlag not object");
+
+        return NULL;
+    }
 
     if (!(result = malloc(sizeof(struct FeatureFlag)))) {
         goto error;
@@ -335,6 +347,12 @@ targetFromJSON(const cJSON *const json)
 
     LD_ASSERT(json);
 
+    if (!cJSON_IsObject(json)) {
+        LDi_log(LD_LOG_ERROR, "target not object");
+
+        return NULL;
+    }
+
     if (!(result = malloc(sizeof(struct Target)))) {
         goto error;
     }
@@ -400,6 +418,12 @@ weightedVariationFromJSON(const cJSON *const json)
 
     LD_ASSERT(json);
 
+    if (!cJSON_IsObject(json)) {
+        LDi_log(LD_LOG_ERROR, "weightedVariation not object");
+
+        return NULL;
+    }
+
     if (!(result = malloc(sizeof(struct WeightedVariation)))) {
         goto error;
     }
@@ -452,6 +476,12 @@ rolloutFromJSON(const cJSON *const json)
     struct Rollout *result = NULL; const cJSON *item = NULL, *iter = NULL;
 
     LD_ASSERT(json);
+
+    if (!cJSON_IsObject(json)) {
+        LDi_log(LD_LOG_ERROR, "rollout not object");
+
+        return NULL;
+    }
 
     if (!(result = malloc(sizeof(struct Rollout)))) {
         goto error;
@@ -509,6 +539,12 @@ variationOrRolloutFromJSON(const cJSON *const json)
     struct VariationOrRollout*result = NULL; const cJSON *item = NULL;
 
     LD_ASSERT(json);
+
+    if (!cJSON_IsObject(json)) {
+        LDi_log(LD_LOG_ERROR, "variationOrRollout not object");
+
+        return NULL;
+    }
 
     if (!(result = malloc(sizeof(struct VariationOrRollout)))) {
         goto error;
@@ -603,6 +639,12 @@ clauseFromJSON(const cJSON *const json)
 
     LD_ASSERT(json);
 
+    if (!cJSON_IsObject(json)) {
+        LDi_log(LD_LOG_ERROR, "clause not object");
+
+        return NULL;
+    }
+
     if (!(result = malloc(sizeof(struct Clause)))) {
         goto error;
     }
@@ -692,6 +734,12 @@ ruleFromJSON(const cJSON *const json)
 
     LD_ASSERT(json);
 
+    if (!cJSON_IsObject(json)) {
+        LDi_log(LD_LOG_ERROR, "rule not object");
+
+        return NULL;
+    }
+
     if (!(result = malloc(sizeof(struct Rule)))) {
         goto error;
     }
@@ -772,6 +820,12 @@ segmentRuleFromJSON(const cJSON *const json)
     struct SegmentRule *result = NULL; const cJSON *item = NULL, *iter = NULL;
 
     LD_ASSERT(json);
+
+    if (!cJSON_IsObject(json)) {
+        LDi_log(LD_LOG_ERROR, "segmentRule not object");
+
+        return NULL;
+    }
 
     if (!(result = malloc(sizeof(struct SegmentRule)))) {
         goto error;
@@ -863,6 +917,12 @@ segmentFromJSON(const cJSON *const json)
       struct Segment *result = NULL; const cJSON *item = NULL, *iter = NULL;
 
       LD_ASSERT(json);
+
+      if (!cJSON_IsObject(json)) {
+          LDi_log(LD_LOG_ERROR, "segment not object");
+
+          return NULL;
+      }
 
       if (!(result = malloc(sizeof(struct Segment)))) {
           goto error;
