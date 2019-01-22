@@ -14,7 +14,16 @@
 
 /* **** Forward Declarations **** */
 
-struct FeatureFlag; struct Prerequisite; struct Target; struct WeightedVariation;
+/* FeatureFlag describes an individual feature flag */
+struct FeatureFlag;
+/* Prerequisite describes a requirement that another feature flag return a specific variation */
+struct Prerequisite;
+/* Target describes a set of users who will receive a specific variation */
+struct Target;
+/* WeightedVariation describes a fraction of users who will receive a specific variation */
+struct WeightedVariation;
+/* Rollout describes how users will be bucketed into variations during a percentage rollout */
+struct Rollout;
 
 /* **** Prerequisite **** */
 
@@ -85,3 +94,14 @@ cJSON *weightedVariationToJSON(const struct WeightedVariation *const weightedVar
 struct WeightedVariation *weightedVariationFromJSON(const cJSON *const json);
 void weightedVariationFree(struct WeightedVariation *const weightedVariation);
 void weightedVariationFreeCollection(struct WeightedVariation *weightedVariations);
+
+/* **** Rollout **** */
+
+struct Rollout {
+    char *bucketBy; /* bucketBy may == NULL */
+    struct WeightedVariation *variations;
+};
+
+cJSON *rolloutToJSON(const struct Rollout *const rollout);
+struct Rollout *rolloutFromJSON(const cJSON *const json);
+void rolloutFree(struct Rollout *const rollout);

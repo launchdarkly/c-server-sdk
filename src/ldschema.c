@@ -401,3 +401,60 @@ weightedVariationFreeCollection(struct WeightedVariation *weightedVariations)
         weightedVariationFree(weightedVariation);
     }
 }
+
+/* **** Rollout **** */
+
+struct Rollout *
+rolloutFromJSON(const cJSON *const json)
+{
+    struct Rollout *result = NULL; const cJSON *item = NULL, *iter = NULL;
+
+    LD_ASSERT(json);
+
+    if (!(result = malloc(sizeof(struct Rollout)))) {
+        goto error;
+    }
+
+    memset(result, 0, sizeof(struct Rollout));
+
+    if (checkKey(json, "bucketBy", false, cJSON_IsString, &item)) {
+        if (!(result->bucketBy = strdup(item->valuestring))) {
+            LDi_log(LD_LOG_ERROR, "'strdup' for key 'bucketBy' failed");
+
+            goto error;
+        }
+    }
+
+    if (checkKey(json, "variations", true, cJSON_IsArray, &item)) {
+        cJSON_ArrayForEach(iter, item) {
+            struct WeightedVariation *const target = weightedVariationFromJSON(iter);
+
+            if (!target) {
+                goto error;
+            }
+
+            target->hhindex = HASH_COUNT(result->variations);
+
+            HASH_ADD_INT(result->variations, hhindex, target);
+        }
+    } else {
+        goto error;
+    }
+
+    return result;
+
+  error:
+    rolloutFree(result);
+
+    return NULL;
+}
+
+void
+rolloutFree(struct Rollout *const rollout)
+{
+    if (rollout) {
+        free(rollout->bucketBy);
+
+        free(rollout);
+    }
+}
