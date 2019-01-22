@@ -119,6 +119,7 @@ struct LDNode {
 };
 
 cJSON *LDNodeToJSON(const struct LDNode *const node);
+struct LDNode *LDNodeFromJSON(const cJSON *const json);
 
 /* **** LDNetwork **** */
 

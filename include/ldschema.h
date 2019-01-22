@@ -61,7 +61,7 @@ struct FeatureFlag {
     struct VariationOrRollout *fallthrough;
     int offVariation; /* optional */
     bool hasOffVariation; /* indicates offVariation */
-    /* variations */
+    struct LDNode *variations; /* LDNodeGetType(values) == LDNodeArray */
     uint64_t debugEventsUntilDate; /* optional */
     bool hasDebugEventsUntilDate; /* indicates debugEventsUntilDate */
     bool clientSide;
@@ -152,7 +152,7 @@ struct Clause {
     unsigned int hhindex;
     char *attribute;
     enum Operator op;
-    /* values */
+    struct LDNode *values; /* LDNodeGetType(values) == LDNodeArray */
     bool negate;
     UT_hash_handle hh;
 };

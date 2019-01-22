@@ -132,6 +132,10 @@ featureFlagFromJSON(const char *const key, const cJSON *const json)
 
     memset(result, 0, sizeof(struct FeatureFlag));
 
+    if (!(result->variations = LDNodeNewArray())) {
+        goto error;
+    }
+
     if (!(result->key = strdup(key))) {
         goto error;
     }
@@ -247,6 +251,20 @@ featureFlagFromJSON(const char *const key, const cJSON *const json)
         goto error;
     }
 
+    if (checkKey(json, "variations", true, cJSON_IsArray, &item)) {
+        cJSON_ArrayForEach(iter, item) {
+            struct LDNode *const target = LDNodeFromJSON(iter);
+
+            if (!target) {
+                goto error;
+            }
+
+            LDNodeArrayAppendItem(result->variations, target);
+        }
+    } else {
+        goto error;
+    }
+
     if (checkKey(json, "debugEventsUntilDate", false, cJSON_IsNumber, &item)) {
         if (item) {
             result->hasDebugEventsUntilDate = true;
@@ -289,6 +307,8 @@ featureFlagFree(struct FeatureFlag *const featureFlag)
         prerequisiteFreeCollection(featureFlag->prerequisites);
 
         targetFreeCollection(featureFlag->targets);
+
+        LDNodeFree(featureFlag->variations);
 
         free(featureFlag);
     }
@@ -579,7 +599,7 @@ operatorFromString(const char *const text, enum Operator *const operator)
 struct Clause *
 clauseFromJSON(const cJSON *const json)
 {
-    struct Clause *result = NULL; const cJSON *item = NULL;
+    struct Clause *result = NULL; const cJSON *item = NULL, *iter = NULL;
 
     LD_ASSERT(json);
 
@@ -588,6 +608,10 @@ clauseFromJSON(const cJSON *const json)
     }
 
     memset(result, 0, sizeof(struct Clause));
+
+    if (!(result->values = LDNodeNewArray())) {
+        goto error;
+    }
 
     if (checkKey(json, "negate", true, cJSON_IsNumber, &item)) {
         result->negate = cJSON_IsTrue(item);
@@ -613,6 +637,20 @@ clauseFromJSON(const cJSON *const json)
         goto error;
     }
 
+    if (checkKey(json, "values", true, cJSON_IsArray, &item)) {
+        cJSON_ArrayForEach(iter, item) {
+            struct LDNode *const target = LDNodeFromJSON(iter);
+
+            if (!target) {
+                goto error;
+            }
+
+            LDNodeArrayAppendItem(result->values, target);
+        }
+    } else {
+        goto error;
+    }
+
     return result;
 
   error:
@@ -626,6 +664,8 @@ clauseFree(struct Clause *const clause)
 {
     if (clause) {
         free(clause->attribute);
+
+        LDNodeFree(clause->values);
 
         free(clause);
     }
