@@ -458,3 +458,54 @@ rolloutFree(struct Rollout *const rollout)
         free(rollout);
     }
 }
+
+/* **** VariationOrRollout **** */
+
+struct VariationOrRollout *
+variationOrRolloutFromJSON(const cJSON *const json)
+{
+    struct VariationOrRollout*result = NULL; const cJSON *item = NULL;
+
+    LD_ASSERT(json);
+
+    if (!(result = malloc(sizeof(struct VariationOrRollout)))) {
+        goto error;
+    }
+
+    memset(result, 0, sizeof(struct VariationOrRollout));
+
+    if (checkKey(json, "variation", false, cJSON_IsNumber, &item)) {
+        result->isVariation = true;
+
+        result->value.variation = item->valueint;
+    } else {
+        if (checkKey(json, "rollout", true, cJSON_IsObject, &item)) {
+            result->isVariation = false;
+
+            if (!(result->value.rollout = rolloutFromJSON(item))) {
+                goto error;
+            }
+        } else {
+            goto error;
+        }
+    }
+
+    return result;
+
+  error:
+    variationOrRolloutFree(result);
+
+    return NULL;
+}
+
+void
+variationOrRolloutFree(struct VariationOrRollout *const variationOrRollout)
+{
+    if (variationOrRollout) {
+        if (!variationOrRollout->isVariation) {
+            rolloutFree(variationOrRollout->value.rollout);
+        }
+
+        free(variationOrRollout);
+    }
+}

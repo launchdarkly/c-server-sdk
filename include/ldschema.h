@@ -24,6 +24,8 @@ struct Target;
 struct WeightedVariation;
 /* Rollout describes how users will be bucketed into variations during a percentage rollout */
 struct Rollout;
+/* VariationOrRollout contains either the fixed variation or percent rollout to serve */
+struct VariationOrRollout;
 
 /* **** Prerequisite **** */
 
@@ -105,3 +107,17 @@ struct Rollout {
 cJSON *rolloutToJSON(const struct Rollout *const rollout);
 struct Rollout *rolloutFromJSON(const cJSON *const json);
 void rolloutFree(struct Rollout *const rollout);
+
+/* **** VariationOrRollout **** */
+
+struct VariationOrRollout {
+    bool isVariation; /* true == varation, false == rollout */
+    union {
+        int variation;
+        struct Rollout *rollout;
+    } value;
+};
+
+cJSON *variationOrRolloutToJSON(const struct VariationOrRollout *const variationOrRollout);
+struct VariationOrRollout *variationOrRolloutFromJSON(const cJSON *const json);
+void variationOrRolloutFree(struct VariationOrRollout *const variationOrRollout);
