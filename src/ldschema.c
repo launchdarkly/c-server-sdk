@@ -509,3 +509,45 @@ variationOrRolloutFree(struct VariationOrRollout *const variationOrRollout)
         free(variationOrRollout);
     }
 }
+
+/* **** Operator **** */
+
+bool
+operatorFromString(const char *const text, enum Operator *const operator)
+{
+    LD_ASSERT(text); LD_ASSERT(operator);
+
+    if (strcmp(text, "in") == 0) {
+        *operator = OperatorIn;
+    } else if (strcmp(text, "endsWith") == 0) {
+        *operator = OperatorEndsWith;
+    } else if (strcmp(text, "startsWith") == 0) {
+        *operator = OperatorStartsWith;
+    } else if (strcmp(text, "matches") == 0) {
+        *operator = OperatorMatches;
+    } else if (strcmp(text, "contains") == 0) {
+        *operator = OperatorContains;
+    } else if (strcmp(text, "lessThan") == 0) {
+        *operator = OperatorLessThan;
+    } else if (strcmp(text, "lessThanOrEqual") == 0) {
+        *operator = OperatorLessThanOrEqual;
+    } else if (strcmp(text, "before") == 0) {
+        *operator = OperatorBefore;
+    } else if (strcmp(text, "after") == 0) {
+        *operator = OperatorAfter;
+    } else if (strcmp(text, "segmentMatch") == 0) {
+        *operator = OperatorSegmentMatch;
+    } else if (strcmp(text, "semVerEqual") == 0) {
+        *operator = OperatorSemVerEqual;
+    } else if (strcmp(text, "semVerLessThan") == 0) {
+        *operator = OperatorSemVerLessThan;
+    } else if (strcmp(text, "semVerGreaterThan") == 0) {
+        *operator = OperatorSemVerGreaterThan;
+    } else {
+        LDi_log(LD_LOG_ERROR, "Unexpected value in operatorFromString '%s'", text);
+
+        return false;
+    }
+
+    return true;
+}

@@ -121,3 +121,23 @@ struct VariationOrRollout {
 cJSON *variationOrRolloutToJSON(const struct VariationOrRollout *const variationOrRollout);
 struct VariationOrRollout *variationOrRolloutFromJSON(const cJSON *const json);
 void variationOrRolloutFree(struct VariationOrRollout *const variationOrRollout);
+
+/* **** Operator **** */
+
+enum Operator {
+    OperatorIn,
+    OperatorEndsWith,
+    OperatorStartsWith,
+    OperatorMatches,
+    OperatorContains,
+    OperatorLessThan,
+    OperatorLessThanOrEqual,
+    OperatorBefore,
+    OperatorAfter,
+    OperatorSegmentMatch,
+    OperatorSemVerEqual,
+    OperatorSemVerLessThan,
+    OperatorSemVerGreaterThan
+};
+
+bool operatorFromString(const char *const text, enum Operator *const operator);
