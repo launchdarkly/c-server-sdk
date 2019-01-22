@@ -28,6 +28,8 @@ struct Rollout;
 struct VariationOrRollout;
 /* Clause describes an individual cluuse within a targeting rule */
 struct Clause;
+/* Rule expresses a set of AND-ed matching conditions for a user, along with either a fixed variation or a set of rollout percentages */
+struct Rule;
 
 /* **** Prerequisite **** */
 
@@ -147,12 +149,30 @@ bool operatorFromString(const char *const text, enum Operator *const operator);
 /* **** Clause **** */
 
 struct Clause {
+    unsigned int hhindex;
     char *attribute;
     enum Operator op;
     /* values */
     bool negate;
+    UT_hash_handle hh;
 };
 
 cJSON *clauseToJSON(const struct Clause *const clause);
 struct Clause *clauseFromJSON(const cJSON *const json);
 void clauseFree(struct Clause *const clause);
+void clauseFreeCollection(struct Clause *clauses);
+
+/* **** Rule **** */
+
+struct Rule {
+    unsigned int hhindex;
+    char *id;
+    struct VariationOrRollout *plan; /* supposed to be inline */
+    struct Clause *clauses;
+    UT_hash_handle hh;
+};
+
+cJSON *ruleToJSON(const struct Rule *const rule);
+struct Rule *ruleFromJSON(const cJSON *const json);
+void ruleFree(struct Rule *const rule);
+void ruleFreeCollection(struct Rule *rules);

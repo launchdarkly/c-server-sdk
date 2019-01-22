@@ -608,3 +608,94 @@ clauseFree(struct Clause *const clause)
         free(clause);
     }
 }
+
+void
+clauseFreeCollection(struct Clause *clauses)
+{
+    struct Clause *clause = NULL, *tmp = NULL;
+
+    HASH_ITER(hh, clauses, clause, tmp) {
+        HASH_DEL(clauses, clause);
+
+        clauseFree(clause);
+    }
+}
+
+/* **** Rule **** */
+
+struct Rule *
+ruleFromJSON(const cJSON *const json)
+{
+    struct Rule *result = NULL; const cJSON *item = NULL, *iter = NULL;
+
+    LD_ASSERT(json);
+
+    if (!(result = malloc(sizeof(struct Rule)))) {
+        goto error;
+    }
+
+    memset(result, 0, sizeof(struct Rule));
+
+    if (checkKey(json, "id", true, cJSON_IsString, &item)) {
+        if (!(result->id = strdup(item->valuestring))) {
+            LDi_log(LD_LOG_ERROR, "'strdup' for key 'id' failed");
+
+            goto error;
+        }
+    } else {
+        goto error;
+    }
+
+    if (checkKey(json, "clauses", true, cJSON_IsArray, &item)) {
+        cJSON_ArrayForEach(iter, item) {
+            struct Clause *const target = clauseFromJSON(iter);
+
+            if (!target) {
+                goto error;
+            }
+
+            target->hhindex = HASH_COUNT(result->clauses);
+
+            HASH_ADD_INT(result->clauses, hhindex, target);
+        }
+    } else {
+        goto error;
+    }
+
+    result->plan = variationOrRolloutFromJSON(json);
+
+    if (!result->plan) {
+        goto error;
+    }
+
+  error:
+    ruleFree(result);
+
+    return NULL;
+}
+
+void
+ruleFree(struct Rule *const rule)
+{
+    if (rule) {
+        free(rule->id);
+
+        variationOrRolloutFree(rule->plan);
+
+        clauseFreeCollection(rule->clauses);
+
+        free(rule);
+    }
+}
+
+void
+ruleFreeCollection(struct Rule *rules)
+{
+    struct Rule *rule = NULL, *tmp = NULL;
+
+    HASH_ITER(hh, rules, rule, tmp) {
+        HASH_DEL(rules, rule);
+
+        ruleFree(rule);
+    }
+}
