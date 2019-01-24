@@ -1,3 +1,6 @@
+#include "sha1.h"
+#include "hexify.h"
+
 #include "ldinternal.h"
 #include "ldschema.h"
 
@@ -11,9 +14,13 @@ static bool clauseMatchesUser(const struct Clause *const clause, const struct LD
 
 static bool segmentMatchesUser(const struct Segment *const segment, const struct LDUser *const user);
 
-static bool segmentRuleMatchUser(const struct SegmentRule *const segmentRule, const struct LDUser *const user, const char *const salt);
+static bool segmentRuleMatchUser(const struct SegmentRule *const segmentRule, const char *const segmentKey, const struct LDUser *const user, const char *const salt);
 
 static bool clauseMatchesUserNoSegments(const struct Clause *const clause, const struct LDUser *const user);
+
+float bucketUser(const struct LDUser *const user, const char *const segmentKey, const char *const attribute, const char *const salt);
+
+static char *bucketableStringValue(const struct LDNode *const node);
 
 /* **** Implementations **** */
 
@@ -105,7 +112,7 @@ segmentMatchesUser(const struct Segment *const segment, const struct LDUser *con
         const struct SegmentRule *segmentRule = NULL;
 
         for (segmentRule = segment->rules; segmentRule; segmentRule = segmentRule->hh.next) {
-            if (segmentRuleMatchUser(segmentRule, user, segment->salt)) {
+            if (segmentRuleMatchUser(segmentRule, segment->key, user, segment->salt)) {
                 return true;
             }
         }
@@ -115,11 +122,11 @@ segmentMatchesUser(const struct Segment *const segment, const struct LDUser *con
 }
 
 static bool
-segmentRuleMatchUser(const struct SegmentRule *const segmentRule, const struct LDUser *const user, const char *const salt)
+segmentRuleMatchUser(const struct SegmentRule *const segmentRule, const char *const segmentKey, const struct LDUser *const user, const char *const salt)
 {
-    const struct Clause *clause = NULL;
+    const struct Clause *clause = NULL; const char *attribute = NULL;
 
-    LD_ASSERT(segmentRule); LD_ASSERT(user); LD_ASSERT(salt);
+    LD_ASSERT(segmentRule); LD_ASSERT(segmentKey); LD_ASSERT(user); LD_ASSERT(salt);
 
     for (clause = segmentRule->clauses; clause; clause = clause->hh.next) {
         if (!clauseMatchesUserNoSegments(clause, user)) {
@@ -131,9 +138,9 @@ segmentRuleMatchUser(const struct SegmentRule *const segmentRule, const struct L
         return true;
     }
 
-    /* TODO: add bucketing */
+    attribute = segmentRule->bucketBy == NULL ? "key" : segmentRule->bucketBy;
 
-    return true;
+    return bucketUser(user, segmentKey, attribute, salt) < segmentRule->weight / 100000;
 }
 
 static bool
@@ -144,4 +151,61 @@ clauseMatchesUserNoSegments(const struct Clause *const clause, const struct LDUs
     /* TODO: body */
 
     return false;
+}
+
+float
+bucketUser(const struct LDUser *const user, const char *const segmentKey, const char *const attribute, const char *const salt)
+{
+    struct LDNode *attributeValue = NULL;
+
+    LD_ASSERT(user); LD_ASSERT(attribute); LD_ASSERT(salt);
+
+    if ((attributeValue = valueOfAttribute(user, attribute))) {
+        const char *const bucketable = bucketableStringValue(attributeValue);
+
+        LDNodeFree(attributeValue);
+
+        if (bucketable) {
+            char raw[256];
+
+            if (snprintf(raw, sizeof(raw), "%s.%s.%s", segmentKey, salt, bucketable) < 0) {
+                return 0;
+            } else {
+                char digest[20], encoded[17]; float longScale = 0xFFFFFFFFFFFFFFF;
+
+                SHA1(digest, raw, strlen(raw));
+
+                /* encodes to hex, and shortens, 16 characters in hex == 8 bytes */
+                LD_ASSERT(hexify((unsigned char *)digest, sizeof(digest), encoded, sizeof(encoded)) == 16);
+
+                /* TODO: check for size error (4 bytes only) */
+
+                return (float)strtol(encoded, NULL, 16) / longScale;
+            }
+        } else {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
+}
+
+static char *
+bucketableStringValue(const struct LDNode *const node)
+{
+    LD_ASSERT(node);
+
+    if (LDNodeGetType(node) == LDNodeText) {
+        return strdup(LDNodeGetText(node));
+    } else if (LDNodeGetType(node) == LDNodeNumber) {
+        char buffer[256];
+
+        if (snprintf(buffer, sizeof(buffer), "%d", (int)LDNodeGetNumber(node)) < 0) {
+            return NULL;
+        } else {
+            return strdup(buffer);
+        }
+    } else {
+        return NULL;
+    }
 }
