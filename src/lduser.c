@@ -243,3 +243,51 @@ LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const b
 
     #undef addstring
 }
+
+struct LDNode *
+valueOfAttribute(const struct LDUser *const user, const char *const attribute)
+{
+    LD_ASSERT(user); LD_ASSERT(attribute);
+
+    if (strcmp(attribute, "key") == 0) {
+        if (user->key) {
+            return LDNodeNewText(user->key);
+        }
+    } else if (strcmp(attribute, "ip") == 0) {
+        if (user->ip) {
+            return LDNodeNewText(user->ip);
+        }
+    } else if (strcmp(attribute, "email") == 0) {
+        if (user->email) {
+            return LDNodeNewText(user->email);
+        }
+    } else if (strcmp(attribute, "firstName") == 0) {
+        if (user->firstName) {
+            return LDNodeNewText(user->firstName);
+        }
+    } else if (strcmp(attribute, "lastName") == 0) {
+        if (user->lastName) {
+            return LDNodeNewText(user->lastName);
+        }
+    } else if (strcmp(attribute, "avatar") == 0) {
+        if (user->avatar) {
+            return LDNodeNewText(user->avatar);
+        }
+    } else if (strcmp(attribute, "name") == 0) {
+        if (user->name) {
+            return LDNodeNewText(user->name);
+        }
+    } else if (strcmp(attribute, "anonymous") == 0) {
+        return LDNodeNewBool(user->anonymous);
+    } else if (user->custom) {
+        const struct LDNode *node = NULL;
+
+        LD_ASSERT(LDNodeGetType(user->custom) == LDNodeObject);
+
+        if ((node = LDNodeObjectLookupKey(user->custom, attribute))) {
+            return LDNodeDeepCopy(node);
+        }
+    }
+
+    return NULL;
+}

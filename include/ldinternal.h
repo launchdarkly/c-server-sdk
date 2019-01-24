@@ -88,6 +88,8 @@ struct LDUser {
     struct LDNode *custom;
 };
 
+struct LDNode *valueOfAttribute(const struct LDUser *const user, const char *const attribute);
+
 /* **** LDClient **** */
 
 struct LDClient {
