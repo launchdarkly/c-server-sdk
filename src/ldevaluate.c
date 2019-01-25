@@ -18,7 +18,7 @@ static bool segmentRuleMatchUser(const struct SegmentRule *const segmentRule, co
 
 static bool clauseMatchesUserNoSegments(const struct Clause *const clause, const struct LDUser *const user);
 
-float bucketUser(const struct LDUser *const user, const char *const segmentKey, const char *const attribute, const char *const salt);
+static float bucketUser(const struct LDUser *const user, const char *const segmentKey, const char *const attribute, const char *const salt);
 
 static char *bucketableStringValue(const struct LDNode *const node);
 
@@ -146,19 +146,49 @@ segmentRuleMatchUser(const struct SegmentRule *const segmentRule, const char *co
 static bool
 clauseMatchesUserNoSegments(const struct Clause *const clause, const struct LDUser *const user)
 {
+    struct LDNode *attributeValue = NULL;
+
     LD_ASSERT(clause); LD_ASSERT(user);
 
-    /* TODO: body */
+    if ((attributeValue = valueOfAttribute(user, clause->attribute))) {
+        LDNodeType type = LDNodeGetType(attributeValue);
 
-    return false;
+        if (type == LDNodeArray) {
+            const struct LDNode *iter = NULL;
+
+            for (iter = LDNodeArrayGetIterator(attributeValue); iter; iter = LDNodeAdvanceIterator(iter)) {
+                type = LDNodeGetType(iter);
+
+                if (type == LDNodeObject || type == LDNodeArray) {
+                    LDNodeFree(attributeValue);
+
+                    return false;
+                }
+            }
+
+            LDNodeFree(attributeValue);
+
+            return clause->negate ? false : true;
+        } else if (type != LDNodeObject && type != LDNodeArray) {
+            LDNodeFree(attributeValue);
+
+            return true;
+        } else {
+            LDNodeFree(attributeValue);
+
+            return false;
+        }
+    } else {
+        return false;
+    }
 }
 
-float
+static float
 bucketUser(const struct LDUser *const user, const char *const segmentKey, const char *const attribute, const char *const salt)
 {
     struct LDNode *attributeValue = NULL;
 
-    LD_ASSERT(user); LD_ASSERT(attribute); LD_ASSERT(salt);
+    LD_ASSERT(user); LD_ASSERT(segmentKey); LD_ASSERT(attribute); LD_ASSERT(salt);
 
     if ((attributeValue = valueOfAttribute(user, attribute))) {
         const char *const bucketable = bucketableStringValue(attributeValue);
