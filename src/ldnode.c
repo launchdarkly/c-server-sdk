@@ -78,7 +78,7 @@ LDNodeNewText(const char *const text)
 
     LD_ASSERT(text);
 
-    if ((node = newnode(LDNodeBool))) {
+    if ((node = newnode(LDNodeText))) {
         node->value.text = strdup(text);
 
         if (text && !node->value.text) {
