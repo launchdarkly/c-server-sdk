@@ -77,6 +77,8 @@ struct FeatureFlag *featureFlagFromJSON(const char *const key, const cJSON *cons
 void featureFlagFree(struct FeatureFlag *const featureFlag);
 void featureFlagFreeCollection(struct FeatureFlag *featureFlags);
 
+struct FeatureFlag *featureFlagMakeDeleted(const char *const key, const unsigned int version);
+
 /* **** Target **** */
 
 struct Target {
@@ -216,3 +218,5 @@ cJSON *segmentToJSON(const struct Segment *const segment);
 struct Segment *segmentFromJSON(const cJSON *const json);
 void segmentFree(struct Segment *const segment);
 void segmentFreeCollection(struct Segment *segments);
+
+struct Segment *segmentMakeDeleted(const char *const key, const unsigned int version);

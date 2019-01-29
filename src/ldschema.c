@@ -4,7 +4,7 @@
 /* **** Utilities *** */
 
 static const char *
-typeToStringJSON(const cJSON *const json)
+typeToStringJSON (const cJSON *const json)
 {
     LD_ASSERT(json);
 
@@ -336,6 +336,31 @@ featureFlagFreeCollection(struct FeatureFlag *featureFlags)
 
         featureFlagFree(featureFlag);
     }
+}
+
+struct FeatureFlag *
+featureFlagMakeDeleted(const char *const key, const unsigned int version)
+{
+    struct FeatureFlag *result = NULL;
+
+    LD_ASSERT(key);
+
+    if (!(result = malloc(sizeof(struct FeatureFlag)))) {
+        return NULL;
+    }
+
+    memset(result, 0, sizeof(struct FeatureFlag));
+
+    if (!(result->key = strdup(key))) {
+        free(result);
+
+        return NULL;
+    }
+
+    result->deleted = true;
+    result->version = version;
+
+    return result;
 }
 
 /* **** Target **** */
@@ -1042,4 +1067,29 @@ segmentFreeCollection(struct Segment *segments)
 
         segmentFree(segment);
     }
+}
+
+struct Segment *
+segmentMakeDeleted(const char *const key, const unsigned int version)
+{
+    struct Segment *result = NULL;
+
+    LD_ASSERT(key);
+
+    if (!(result = malloc(sizeof(struct Segment)))) {
+        return NULL;
+    }
+
+    memset(result, 0, sizeof(struct Segment));
+
+    if (!(result->key = strdup(key))) {
+        free(result);
+
+        return NULL;
+    }
+
+    result->deleted = true;
+    result->version = version;
+
+    return result;
 }
