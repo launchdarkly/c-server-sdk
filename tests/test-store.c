@@ -33,6 +33,35 @@ prepareEmptyStore()
     return store;
 }
 
+static struct Segment *
+constructSegment(const char *const key, const unsigned int version)
+{
+    struct Segment *segment = NULL;
+
+    LD_ASSERT(key);
+
+    if (!(segment = malloc(sizeof(struct Segment)))) {
+        return NULL;
+    }
+
+    memset(segment, 0, sizeof(struct Segment));
+
+    if (!(segment->key = strdup(key))) {
+        free(segment);
+
+        return NULL;
+    }
+
+    segment->included = NULL;
+    segment->excluded = NULL;
+    segment->salt     = NULL;
+    segment->rules    = NULL;
+    segment->version  = version;
+    segment->deleted  = false;
+
+    return segment;
+}
+
 static void
 allocateAndFree()
 {
@@ -46,8 +75,7 @@ deletedOnlySegment()
 {
     struct LDFeatureStore *store = NULL;
     struct Segment *segment = NULL;
-    struct LDVersionedData *versioned = NULL;
-    struct LDVersionedData *lookup = NULL;
+    struct LDVersionedData *versioned = NULL, *lookup = NULL;
     struct LDVersionedDataKind kind = getSegmentKind();
 
     LD_ASSERT(store = prepareEmptyStore());
@@ -70,15 +98,12 @@ basicExistsSegment()
 {
     struct LDFeatureStore *store = NULL;
     struct Segment *segment = NULL;
-    struct LDVersionedData *versioned = NULL;
-    struct LDVersionedData *lookup = NULL;
+    struct LDVersionedData *versioned = NULL, *lookup = NULL;
     struct LDVersionedDataKind kind = getSegmentKind();
 
     LD_ASSERT(store = prepareEmptyStore());
 
-    LD_ASSERT(segment = malloc(sizeof(struct Segment)));
-    memset(segment, 0, sizeof(struct Segment));
-    LD_ASSERT(segment->key = strdup("my-heap-key"));
+    LD_ASSERT(segment = constructSegment("my-heap-key", 3))
 
     LD_ASSERT(versioned = segmentToVersioned(segment));
 
@@ -86,6 +111,83 @@ basicExistsSegment()
 
     LD_ASSERT((lookup = store->get(store->context, "my-heap-key", kind)));
     LD_ASSERT(lookup->data == segment);
+
+    store->finalizeGet(store->context, lookup);
+
+    freeStore(store);
+}
+
+static void
+upsertNewer()
+{
+    struct LDFeatureStore *store = NULL;
+    struct Segment *segment;
+    struct LDVersionedData *versioned = NULL, *lookup = NULL;
+    struct LDVersionedDataKind kind = getSegmentKind();
+
+    LD_ASSERT(store = prepareEmptyStore());
+
+    LD_ASSERT(segment = constructSegment("my-heap-key", 3))
+    LD_ASSERT(versioned = segmentToVersioned(segment));
+    LD_ASSERT(store->upsert(store->context, kind, versioned));
+
+    LD_ASSERT(segment = constructSegment("my-heap-key", 5))
+    LD_ASSERT(versioned = segmentToVersioned(segment));
+    LD_ASSERT(store->upsert(store->context, kind, versioned));
+
+    LD_ASSERT((lookup = store->get(store->context, "my-heap-key", kind)));
+    LD_ASSERT(lookup->data == segment);
+
+    store->finalizeGet(store->context, lookup);
+
+    freeStore(store);
+}
+
+static void
+upsertOlder()
+{
+    struct LDFeatureStore *store = NULL;
+    struct Segment *segment1 = NULL, *segment2 = NULL;
+    struct LDVersionedData *versioned = NULL, *lookup = NULL;
+    struct LDVersionedDataKind kind = getSegmentKind();
+
+    LD_ASSERT(store = prepareEmptyStore());
+
+    LD_ASSERT(segment1 = constructSegment("my-heap-key", 5))
+    LD_ASSERT(versioned = segmentToVersioned(segment1));
+    LD_ASSERT(store->upsert(store->context, kind, versioned));
+
+    LD_ASSERT(segment2 = constructSegment("my-heap-key", 3))
+    LD_ASSERT(versioned = segmentToVersioned(segment2));
+    LD_ASSERT(store->upsert(store->context, kind, versioned));
+
+    LD_ASSERT((lookup = store->get(store->context, "my-heap-key", kind)));
+    LD_ASSERT(lookup->data == segment1);
+
+    store->finalizeGet(store->context, lookup);
+
+    freeStore(store);
+}
+
+static void
+upsertDelete()
+{
+    struct LDFeatureStore *store = NULL;
+    struct Segment *segment1 = NULL, *segment2 = NULL;
+    struct LDVersionedData *versioned = NULL, *lookup = NULL;
+    struct LDVersionedDataKind kind = getSegmentKind();
+
+    LD_ASSERT(store = prepareEmptyStore());
+
+    LD_ASSERT(segment1 = constructSegment("my-heap-key", 8))
+    LD_ASSERT(versioned = segmentToVersioned(segment1));
+    LD_ASSERT(store->upsert(store->context, kind, versioned));
+
+    LD_ASSERT(segment2 = segmentMakeDeleted("my-heap-key", 10))
+    LD_ASSERT(versioned = segmentToVersioned(segment2));
+    LD_ASSERT(store->upsert(store->context, kind, versioned));
+
+    LD_ASSERT(!(lookup = store->get(store->context, "my-heap-key", kind)));
 
     store->finalizeGet(store->context, lookup);
 
@@ -100,6 +202,9 @@ main()
     allocateAndFree();
     deletedOnlySegment();
     basicExistsSegment();
+    upsertNewer();
+    upsertOlder();
+    upsertDelete();
 
     return 0;
 }
