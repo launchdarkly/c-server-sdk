@@ -218,5 +218,4 @@ cJSON *segmentToJSON(const struct Segment *const segment);
 struct Segment *segmentFromJSON(const cJSON *const json);
 void segmentFree(struct Segment *const segment);
 void segmentFreeCollection(struct Segment *segments);
-
 struct Segment *segmentMakeDeleted(const char *const key, const unsigned int version);

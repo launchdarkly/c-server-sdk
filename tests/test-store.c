@@ -2,7 +2,7 @@
 #include "ldstore.h"
 #include "ldschema.h"
 
-struct LDFeatureStore *
+static struct LDFeatureStore *
 prepareEmptyStore()
 {
     struct LDVersionedSet *sets = NULL;
@@ -33,7 +33,7 @@ prepareEmptyStore()
     return store;
 }
 
-void
+static void
 allocateAndFree()
 {
     struct LDFeatureStore *const store = prepareEmptyStore();
@@ -41,8 +41,8 @@ allocateAndFree()
     freeStore(store);
 }
 
-void
-deletedSegment()
+static void
+deletedOnlySegment()
 {
     struct LDFeatureStore *store = NULL;
     struct Segment *segment = NULL;
@@ -65,13 +65,41 @@ deletedSegment()
     freeStore(store);
 }
 
+static void
+basicExistsSegment()
+{
+    struct LDFeatureStore *store = NULL;
+    struct Segment *segment = NULL;
+    struct LDVersionedData *versioned = NULL;
+    struct LDVersionedData *lookup = NULL;
+    struct LDVersionedDataKind kind = getSegmentKind();
+
+    LD_ASSERT(store = prepareEmptyStore());
+
+    LD_ASSERT(segment = malloc(sizeof(struct Segment)));
+    memset(segment, 0, sizeof(struct Segment));
+    LD_ASSERT(segment->key = strdup("my-heap-key"));
+
+    LD_ASSERT(versioned = segmentToVersioned(segment));
+
+    LD_ASSERT(store->upsert(store->context, kind, versioned));
+
+    LD_ASSERT((lookup = store->get(store->context, "my-heap-key", kind)));
+    LD_ASSERT(lookup->data == segment);
+
+    store->finalizeGet(store->context, lookup);
+
+    freeStore(store);
+}
+
 int
 main()
 {
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
     allocateAndFree();
-    deletedSegment();
+    deletedOnlySegment();
+    basicExistsSegment();
 
     return 0;
 }
