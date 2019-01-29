@@ -5,23 +5,204 @@
 
 static bool memoryInit(void *const rawcontext, struct LDVersionedSet *const sets);
 
-static struct LDVersionedData *memoryGet(void *const rawcontext, const char *const key, const struct LDVersionedDataKind *const kind);
+static struct LDVersionedData *memoryGet(void *const rawcontext, const char *const key, const struct LDVersionedDataKind kind);
 
-static struct LDVersionedData *memoryAll(void *const rawcontext, const struct LDVersionedDataKind *const kind);
+static struct LDVersionedData *memoryAll(void *const rawcontext, const struct LDVersionedDataKind kind);
 
-static bool memoryDelete(void *const rawcontext, const struct LDVersionedDataKind *const kind, const char *const key, const unsigned int version);
+static bool memoryDelete(void *const rawcontext, const struct LDVersionedDataKind kind, const char *const key, const unsigned int version);
 
-static bool memoryUpsert(void *const rawcontext, const struct LDVersionedDataKind *const kind, struct LDVersionedData *replacement);
+static bool memoryUpsert(void *const rawcontext, const struct LDVersionedDataKind kind, struct LDVersionedData *replacement);
 
 static bool memoryInitialized(void *const rawcontext);
 
 static void memoryDestructor(void *const rawcontext);
+
+static void memoryFinalizeAll(void *const context, struct LDVersionedData *const all);
+
+static void memoryFinalizeGet(void *const context, struct LDVersionedData *const value);
+
+/* **** Kind Interfaces **** */
+
+static const char *
+flagKindNamespace() {
+    return "features";
+}
+
+struct LDVersionedDataKind
+getFlagKind()
+{
+    struct LDVersionedDataKind interface;
+    interface.getNamespace = flagKindNamespace;
+
+    return interface;
+}
+
+static bool
+flagIsDeleted(const void *const flagraw)
+{
+    const struct FeatureFlag *const flag = flagraw;
+
+    LD_ASSERT(flag);
+
+    return flag->deleted;
+}
+
+static unsigned int
+flagGetVersion(const void *const flagraw)
+{
+    const struct FeatureFlag *const flag = flagraw;
+
+    LD_ASSERT(flag);
+
+    return flag->version;
+}
+
+const char *
+flagGetKey(const void *const flagraw)
+{
+    const struct FeatureFlag *const flag = flagraw;
+
+    LD_ASSERT(flag);
+
+    return flag->key;
+}
+
+static char *
+flagSerialize(const void *const flagraw)
+{
+    const struct FeatureFlag *const flag = flagraw;
+
+    LD_ASSERT(flag);
+
+    return NULL;
+}
+
+static void
+flagDestructor(void *const flagraw)
+{
+    struct FeatureFlag *const flag = flagraw;
+
+    LD_ASSERT(flag);
+
+    featureFlagFree(flag);
+}
+
+struct LDVersionedData *
+flagToVersioned(struct FeatureFlag *const flag)
+{
+    struct LDVersionedData *interface = NULL;
+
+    LD_ASSERT(flag);
+
+    if (!(interface = malloc(sizeof(struct LDVersionedData)))) {
+        return NULL;
+    }
+
+    memset(interface, 0, sizeof(struct LDVersionedData));
+
+    interface->data       = flag;
+    interface->isDeleted  = flagIsDeleted;
+    interface->getVersion = flagGetVersion;
+    interface->getKey     = flagGetKey;
+    interface->serialize  = flagSerialize;
+    interface->destructor = flagDestructor;
+
+    return interface;
+}
+
+static const char *
+segmentKindNamespace() {
+    return "segments";
+}
+
+struct LDVersionedDataKind
+getSegmentKind()
+{
+    struct LDVersionedDataKind interface;
+    interface.getNamespace = segmentKindNamespace;
+
+    return interface;
+}
+
+static bool
+segmentIsDeleted(const void *const segmentraw)
+{
+    const struct Segment *const segment = segmentraw;
+
+    LD_ASSERT(segment);
+
+    return segment->deleted;
+}
+
+static unsigned int
+segmentGetVersion(const void *const segmentraw)
+{
+    const struct Segment *const segment = segmentraw;
+
+    LD_ASSERT(segment);
+
+    return segment->version;
+}
+
+const char *
+segmentGetKey(const void *const segmentraw)
+{
+    const struct Segment *const segment = segmentraw;
+
+    LD_ASSERT(segment);
+
+    return segment->key;
+}
+
+static char *
+segmentSerialize(const void *const segmentraw)
+{
+    const struct Segment *const segment = segmentraw;
+
+    LD_ASSERT(segment);
+
+    return NULL;
+}
+
+static void
+segmentDestructor(void *const segmentraw)
+{
+    struct Segment *const segment = segmentraw;
+
+    LD_ASSERT(segment);
+
+    segmentFree(segment);
+}
+
+struct LDVersionedData *
+segmentToVersioned(struct Segment *const segment)
+{
+    struct LDVersionedData *interface = NULL;
+
+    LD_ASSERT(segment);
+
+    if (!(interface = malloc(sizeof(struct LDVersionedData)))) {
+        return NULL;
+    }
+
+    memset(interface, 0, sizeof(struct LDVersionedData));
+
+    interface->data       = segment;
+    interface->isDeleted  = segmentIsDeleted;
+    interface->getVersion = segmentGetVersion;
+    interface->getKey     = segmentGetKey;
+    interface->serialize  = segmentSerialize;
+    interface->destructor = segmentDestructor;
+
+    return interface;
+}
 
 /* **** Memory Implementation **** */
 
 struct MemoryContext {
     bool initialized;
     struct LDVersionedSet *store;
+    ld_rwlock_t lock;
 };
 
 static bool
@@ -38,16 +219,18 @@ memoryInit(void *const rawcontext, struct LDVersionedSet *const sets)
 }
 
 static struct LDVersionedData *
-memoryGet(void *const rawcontext, const char *const key, const struct LDVersionedDataKind *const kind)
+memoryGet(void *const rawcontext, const char *const key, const struct LDVersionedDataKind kind)
 {
     struct MemoryContext *const context = rawcontext;
 
     struct LDVersionedSet *set = NULL;
     struct LDVersionedData *current = NULL;
 
-    LD_ASSERT(context); LD_ASSERT(key); LD_ASSERT(kind);
+    LD_ASSERT(context); LD_ASSERT(key);
 
-    HASH_FIND_STR(context->store, kind->getNamespace(), set);
+    LD_ASSERT(LDi_rdlock(&context->lock));
+
+    HASH_FIND_STR(context->store, kind.getNamespace(), set);
 
     if (!set) {
         return NULL;
@@ -58,31 +241,48 @@ memoryGet(void *const rawcontext, const char *const key, const struct LDVersione
     if (!current || (current && current->isDeleted(current->data))) {
         return NULL;
     } else {
-        return current->deepCopy(current->data);
+        return current;
     }
 }
 
+static void
+memoryFinalizeGet(void *const rawcontext, __attribute__((unused)) struct LDVersionedData *const value)
+{
+    struct MemoryContext *const context = rawcontext;
+
+    LD_ASSERT(context);
+
+    LD_ASSERT(LDi_rdunlock(&context->lock));
+
+    /* no need to free all in memory context */
+}
+
 static struct LDVersionedData *
-memoryAll(void *const rawcontext, const struct LDVersionedDataKind *const kind)
+memoryAll(void *const rawcontext, const struct LDVersionedDataKind kind)
 {
     struct MemoryContext *const context = rawcontext;
 
     struct LDVersionedSet *set = NULL;
     struct LDVersionedData *result = NULL, *iter = NULL, *tmp = NULL;
 
-    LD_ASSERT(context); LD_ASSERT(kind);
+    LD_ASSERT(context);
 
-    HASH_FIND_STR(context->store, kind->getNamespace(), set);
+    LD_ASSERT(LDi_rdlock(&context->lock));
+
+    HASH_FIND_STR(context->store, kind.getNamespace(), set);
 
     if (!set) {
+        LD_ASSERT(LDi_rdunlock(&context->lock));
+
         return false;
     }
 
     HASH_ITER(hh, set->elements, iter, tmp) {
-        struct LDVersionedData *const duplicate = iter->deepCopy(iter->data);
+        struct LDVersionedData *const duplicate = NULL;
         const char *const key = duplicate->getKey(duplicate->data);
 
         if (!duplicate) {
+            LD_ASSERT(LDi_rdunlock(&context->lock));
             /* TODO free already duplicated elements */
             return NULL;
         }
@@ -90,19 +290,33 @@ memoryAll(void *const rawcontext, const struct LDVersionedDataKind *const kind)
         HASH_ADD_KEYPTR(hh, result, key, key, duplicate);
     }
 
+    LD_ASSERT(LDi_rdunlock(&context->lock));
+
     return result;
 }
 
+static void
+memoryFinalizeAll(void *const rawcontext, __attribute__((unused)) struct LDVersionedData *const all)
+{
+    struct MemoryContext *const context = rawcontext;
+
+    LD_ASSERT(context);
+
+    LD_ASSERT(LDi_rdunlock(&context->lock));
+
+    /* no need to free all in memory context */
+}
+
 static bool
-memoryDelete(void *const rawcontext, const struct LDVersionedDataKind *const kind, const char *const key, const unsigned int version)
+memoryDelete(void *const rawcontext, const struct LDVersionedDataKind kind, const char *const key, const unsigned int version)
 {
     struct MemoryContext *const context = rawcontext;
 
     struct LDVersionedData *placeholder = NULL;
 
-    LD_ASSERT(context); LD_ASSERT(kind); LD_ASSERT(key);
+    LD_ASSERT(context); LD_ASSERT(key);
 
-    placeholder = kind->makeDeletedItem(key, version);
+    placeholder = kind.makeDeletedItem(key, version);
 
     if (!placeholder) {
         return false;
@@ -112,18 +326,22 @@ memoryDelete(void *const rawcontext, const struct LDVersionedDataKind *const kin
 }
 
 static bool
-memoryUpsert(void *const rawcontext, const struct LDVersionedDataKind *const kind, struct LDVersionedData *replacement)
+memoryUpsert(void *const rawcontext, const struct LDVersionedDataKind kind, struct LDVersionedData *replacement)
 {
     struct MemoryContext *const context = rawcontext;
 
     struct LDVersionedSet *set = NULL;
     struct LDVersionedData *current = NULL;
 
-    LD_ASSERT(context); LD_ASSERT(kind); LD_ASSERT(replacement);
+    LD_ASSERT(context); LD_ASSERT(replacement);
 
-    HASH_FIND_STR(context->store, kind->getNamespace(), set);
+    LD_ASSERT(LDi_wrlock(&context->lock));
+
+    HASH_FIND_STR(context->store, kind.getNamespace(), set);
 
     if (!set) {
+        LD_ASSERT(LDi_wrunlock(&context->lock));
+
         return false;
     }
 
@@ -141,6 +359,8 @@ memoryUpsert(void *const rawcontext, const struct LDVersionedDataKind *const kin
     } else {
         replacement->destructor(replacement->data);
     }
+
+    LD_ASSERT(LDi_wrunlock(&context->lock));
 
     return true;
 }
@@ -162,13 +382,11 @@ memoryDestructor(void *const rawcontext)
 
     struct LDVersionedSet *set = NULL, *tmp = NULL;
 
-    LD_ASSERT(context);
-
     HASH_ITER(hh, context->store, set, tmp) {
         HASH_DEL(context->store, set);
     }
 
-    free(context);
+    LDi_rwlockdestroy(&context->lock);
 }
 
 struct LDFeatureStore *
@@ -187,13 +405,23 @@ makeInMemoryStore()
         return NULL;
     }
 
+    if (!LDi_rwlockinit(&context->lock)) {
+        free(store);
+
+        free(context);
+
+        return NULL;
+    }
+
     context->initialized = false;
     context->store       = NULL;
 
     store->context       = context;
     store->init          = memoryInit;
     store->get           = memoryGet;
+    store->finalizeGet   = memoryFinalizeGet;
     store->all           = memoryAll;
+    store->finalizeAll   = memoryFinalizeAll;
     store->delete        = memoryDelete;
     store->upsert        = memoryUpsert;
     store->initialized   = memoryInitialized;
@@ -203,7 +431,7 @@ makeInMemoryStore()
 }
 
 void
-freeInMemoryStore(struct LDFeatureStore *const store)
+freeStore(struct LDFeatureStore *const store)
 {
     if (store) {
         if (store->destructor) {
