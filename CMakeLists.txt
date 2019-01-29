@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 find_package(CURL REQUIRED)
-enable_testing()
+
+enable_testing() # CTEST_OUTPUT_ON_FAILURE=1 make test
 
 set(CMAKE_C_FLAGS "-std=c89 -pedantic -Wall -Wextra -Werror -g3 -fsanitize=address -fno-omit-frame-pointer")
 
