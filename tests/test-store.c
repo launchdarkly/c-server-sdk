@@ -118,6 +118,22 @@ basicExistsSegment()
 }
 
 static void
+basicDoesNotExist()
+{
+    struct LDFeatureStore *store = NULL;
+    struct LDVersionedData *lookup = NULL;
+    struct LDVersionedDataKind kind = getSegmentKind();
+
+    LD_ASSERT(store = prepareEmptyStore());
+
+    LD_ASSERT(!(lookup = store->get(store->context, "abc", kind)));
+
+    store->finalizeGet(store->context, lookup);
+
+    freeStore(store);
+}
+
+static void
 upsertNewer()
 {
     struct LDFeatureStore *store = NULL;
@@ -202,6 +218,7 @@ main()
     allocateAndFree();
     deletedOnlySegment();
     basicExistsSegment();
+    basicDoesNotExist();
     upsertNewer();
     upsertOlder();
     upsertDelete();
