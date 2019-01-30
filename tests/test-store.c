@@ -62,6 +62,45 @@ constructSegment(const char *const key, const unsigned int version)
     return segment;
 }
 
+static struct FeatureFlag *
+constructFlag(const char *const key, const unsigned int version)
+{
+    struct FeatureFlag *flag = NULL;
+
+    LD_ASSERT(key);
+
+    if (!(flag = malloc(sizeof(struct FeatureFlag)))) {
+        return NULL;
+    }
+
+    memset(flag, 0, sizeof(struct FeatureFlag));
+
+    if (!(flag->key = strdup(key))) {
+        free(flag);
+
+        return NULL;
+    }
+
+    flag->version                 = version;
+    flag->on                      = true;
+    flag->trackEvents             = true;
+    flag->deleted                 = false;
+    flag->prerequisites           = NULL;
+    flag->salt                    = NULL;
+    flag->sel                     = NULL;
+    flag->targets                 = NULL;
+    flag->rules                   = NULL;
+    flag->fallthrough             = NULL;
+    flag->offVariation            = 0;
+    flag->hasOffVariation         = false;
+    flag->variations              = NULL;
+    flag->debugEventsUntilDate    = 0;
+    flag->hasDebugEventsUntilDate = false;
+    flag->clientSide              = false;
+
+    return flag;
+}
+
 static void
 allocateAndFree()
 {
@@ -210,6 +249,36 @@ upsertDelete()
     freeStore(store);
 }
 
+static void
+conflictDifferentNamespace()
+{
+    struct LDFeatureStore *store = NULL;
+    struct Segment *segment = NULL;
+    struct FeatureFlag *flag = NULL;
+    struct LDVersionedData *versioned = NULL, *lookup = NULL;
+    struct LDVersionedDataKind segmentKind = getSegmentKind(), flagKind = getFlagKind();
+
+    LD_ASSERT(store = prepareEmptyStore());
+
+    LD_ASSERT(segment = constructSegment("my-heap-key", 3));
+    LD_ASSERT(versioned = segmentToVersioned(segment));
+    LD_ASSERT(store->upsert(store->context, segmentKind, versioned));
+
+    LD_ASSERT(flag = constructFlag("my-heap-key", 3));
+    LD_ASSERT(versioned = flagToVersioned(flag));
+    LD_ASSERT(store->upsert(store->context, flagKind, versioned));
+
+    LD_ASSERT((lookup = store->get(store->context, "my-heap-key", segmentKind)));
+    LD_ASSERT(lookup->data == segment);
+
+    LD_ASSERT((lookup = store->get(store->context, "my-heap-key", flagKind)));
+    LD_ASSERT(lookup->data == flag);
+
+    store->finalizeGet(store->context, lookup);
+
+    freeStore(store);
+}
+
 int
 main()
 {
@@ -222,6 +291,7 @@ main()
     upsertNewer();
     upsertOlder();
     upsertDelete();
+    conflictDifferentNamespace();
 
     return 0;
 }
