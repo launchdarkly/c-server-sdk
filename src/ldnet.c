@@ -135,7 +135,6 @@ updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
         return false;
     }
 
-    /*
     {
         cJSON *flags = NULL; cJSON *iter = NULL;
 
@@ -157,7 +156,6 @@ updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
             featureFlagFree(flag);
         }
     }
-    */
 
     {
         cJSON *segments = NULL; cJSON *iter = NULL;

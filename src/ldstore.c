@@ -352,12 +352,17 @@ memoryUpsert(void *const rawcontext, const struct LDVersionedDataKind kind, stru
 
         if (current) {
             HASH_DEL(set->elements, current);
+
             current->destructor(current->data);
+
+            free(current);
         }
 
         HASH_ADD_KEYPTR(hh, set->elements, key, strlen(key), replacement);
     } else {
         replacement->destructor(replacement->data);
+
+        free(replacement);
     }
 
     LD_ASSERT(LDi_wrunlock(&context->lock));
@@ -388,10 +393,13 @@ memoryDestructor(void *const rawcontext)
 
         HASH_ITER(hh, set->elements, data, tmpdata) {
             HASH_DEL(set->elements, data);
+
             data->destructor(data->data);
 
             free(data);
         }
+
+        free(set);
     }
 
     LDi_rwlockdestroy(&context->lock);
