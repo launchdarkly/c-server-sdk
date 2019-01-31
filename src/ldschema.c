@@ -998,12 +998,16 @@ segmentFromJSON(const cJSON *const json)
       }
 
       if (checkKey(json, "included", true, cJSON_IsArray, &item)) {
-          cJSON_ArrayForEach(iter, json) {
+          cJSON_ArrayForEach(iter, item) {
               if (cJSON_IsString(iter)) {
                   if (!LDHashSetAddKey(&result->included, iter->valuestring)) {
+                      LDi_log(LD_LOG_ERROR, "failed to add item to hash set");
+
                       goto error;
                   }
               } else {
+                  LDi_log(LD_LOG_ERROR, "item in included not string");
+
                   goto error;
               }
           }
@@ -1012,12 +1016,16 @@ segmentFromJSON(const cJSON *const json)
       }
 
       if (checkKey(json, "excluded", true, cJSON_IsArray, &item)) {
-          cJSON_ArrayForEach(iter, json) {
+          cJSON_ArrayForEach(iter, item) {
               if (cJSON_IsString(iter)) {
                   if (!LDHashSetAddKey(&result->excluded, iter->valuestring)) {
+                      LDi_log(LD_LOG_ERROR, "failed to add item to hash set");
+
                       goto error;
                   }
               } else {
+                  LDi_log(LD_LOG_ERROR, "item in excluded not string");
+
                   goto error;
               }
           }
