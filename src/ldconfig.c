@@ -52,6 +52,7 @@ LDConfigNew(const char *const key)
     config->allAttributesPrivate  = false;
     config->userKeysCapacity      = 1000;
     config->userKeysFlushInterval = 300;
+    config->store                 = NULL;
 
     return config;
 }
@@ -188,4 +189,12 @@ LDConfigAddPrivateAttribute(struct LDConfig *const config, const char *const att
     LD_ASSERT(config); LD_ASSERT(attribute);
 
     return LDHashSetAddKey(&config->privateAttributeNames, attribute);
+}
+
+void
+LDConfigSetFeatureStore(struct LDConfig *const config, struct LDFeatureStore *const store)
+{
+    LD_ASSERT(config);
+
+    config->store = store;
 }

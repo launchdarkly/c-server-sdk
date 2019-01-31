@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "ldinternal.h"
+#include "ldstore.h"
 
 struct LDClient *
 LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
@@ -15,6 +16,18 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     }
 
     memset(client, 0, sizeof(struct LDClient));
+
+    if (config->store) {
+        config->defaultStore = false;
+    } else {
+        if (!(config->store = makeInMemoryStore())) {
+            free(client);
+
+            return NULL;
+        }
+
+        config->defaultStore = true;
+    }
 
     client->shuttingdown = false;
     client->config       = config;
@@ -56,6 +69,11 @@ LDClientClose(struct LDClient *const client)
 
         /* cleanup resources */
         LD_ASSERT(LDi_rwlockdestroy(&client->lock));
+
+        if (client->config->defaultStore) {
+            freeStore(client->config->store);
+        }
+
         LDConfigFree(client->config);
 
         free(client);

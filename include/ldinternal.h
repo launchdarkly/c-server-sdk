@@ -17,6 +17,7 @@
 #endif
 
 #include "ldapi.h"
+#include "ldstore.h"
 
 /* **** Forward Declarations **** */
 
@@ -69,7 +70,8 @@ struct LDConfig {
     struct LDHashSet *privateAttributeNames;
     unsigned int userKeysCapacity;
     unsigned int userKeysFlushInterval;
-    /* featurestore */
+    bool defaultStore;
+    struct LDFeatureStore *store;
 };
 
 /* **** LDUser **** */

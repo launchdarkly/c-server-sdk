@@ -5,7 +5,7 @@
 
 /* **** Forward Declarations **** */
 
-struct LDConfig; struct LDUser; struct LDNode;
+struct LDConfig; struct LDUser; struct LDNode; struct LDFeatureStore;
 
 /* **** LDConfig **** */
 
@@ -28,6 +28,7 @@ void LDConfigSetAllAttributesPrivate(struct LDConfig *const config, const bool a
 void LDConfigSetUserKeysCapacity(struct LDConfig *const config, const unsigned int userKeysCapacity);
 void LDConfigSetUserKeysFlushInterval(struct LDConfig *const config, const unsigned int userKeysFlushInterval);
 bool LDConfigAddPrivateAttribute(struct LDConfig *const config, const char *const attribute);
+void LDConfigSetFeatureStore(struct LDConfig *const config, struct LDFeatureStore *const store);
 
 /* **** LDUser **** */
 
