@@ -119,6 +119,62 @@ LDi_networkinit(struct LDClient *const client)
     return client->multihandle != NULL;
 }
 
+static bool
+updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
+{
+    cJSON *decoded = NULL;
+
+    LD_ASSERT(store); LD_ASSERT(rawupdate);
+
+    if (!(decoded = cJSON_Parse(rawupdate))) {
+        LDi_log(LD_LOG_ERROR, "JSON parsing failed");
+
+        return false;
+    }
+
+    {
+        cJSON *flags = NULL; cJSON *iter = NULL;
+
+        if (!(flags = cJSON_GetObjectItemCaseSensitive(decoded, "flags"))) {
+            LDi_log(LD_LOG_ERROR, "key flags does not exist");
+
+            return false;
+        }
+
+        cJSON_ArrayForEach(iter, flags) {
+            struct FeatureFlag *const flag = featureFlagFromJSON(iter->string, iter);
+
+            if (!flag) {
+                LDi_log(LD_LOG_ERROR, "failed to marshall feature flag");
+                /* TODO: cleanup existing */
+                return false;
+            }
+        }
+    }
+
+    {
+        cJSON *segments = NULL; cJSON *iter = NULL;
+
+        if (!(segments = cJSON_GetObjectItemCaseSensitive(decoded, "segments"))) {
+            LDi_log(LD_LOG_ERROR, "key segments does not exist");
+
+            return false;
+        }
+
+        cJSON_ArrayForEach(iter, segments) {
+            struct Segment *const segment = segmentFromJSON(iter);
+
+            if (!segment) {
+                LDi_log(LD_LOG_ERROR, "failed to marshall segment");
+                /* TODO: cleanup existing */
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 THREAD_RETURN
 LDi_networkthread(void* const clientref)
 {
@@ -159,6 +215,8 @@ LDi_networkthread(void* const clientref)
                 LDi_log(LD_LOG_INFO, "message done code %d %d", info->data.result, responsecode);
 
                 LDi_log(LD_LOG_INFO, "message data %s", polling.data.memory);
+
+                LD_ASSERT(updateStore(client->config->store, polling.data.memory));
 
                 curl_multi_remove_handle(client->multihandle, easy);
                 curl_easy_cleanup(easy);
