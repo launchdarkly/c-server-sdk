@@ -75,6 +75,8 @@ prepareShared(const struct LDConfig *const config, struct LDNetworkContext *cons
         LDi_log(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_HTTPHEADER failed"); goto error;
     }
 
+    memset(context, 0, sizeof(struct LDNetworkContext));
+
     context->curl = curl; context->headers = headers;
 
     return true;
