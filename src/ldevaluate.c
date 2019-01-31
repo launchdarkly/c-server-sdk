@@ -1,5 +1,6 @@
 #include "sha1.h"
 #include "hexify.h"
+#include "semver.h"
 
 #include "ldinternal.h"
 #include "ldschema.h"
@@ -7,6 +8,8 @@
 /* **** Forward Declarations **** */
 
 bool evaluate(const struct FeatureFlag *const flag, const struct LDUser *const user);
+
+static bool checkPrerequisites(const struct FeatureFlag *const flag, const struct LDUser *const user);
 
 static bool ruleMatchesUser(const struct Rule *const rule, const struct LDUser *const user);
 
@@ -33,7 +36,9 @@ evaluate(const struct FeatureFlag *const flag, const struct LDUser *const user)
         /* TODO return isOff */
     }
 
-    /* Prerequisite */
+    if (!checkPrerequisites(flag, user)) {
+        return false;
+    }
 
     if (flag->targets) {
         struct Target *target = NULL;
@@ -52,6 +57,25 @@ evaluate(const struct FeatureFlag *const flag, const struct LDUser *const user)
             if (ruleMatchesUser(rule, user)) {
                 /* TODO return ruleMatch */
             }
+        }
+    }
+
+    return true;
+}
+
+static bool
+checkPrerequisites(const struct FeatureFlag *const flag, const struct LDUser *const user)
+{
+    struct Prerequisite *prerequisite = NULL;
+
+    LD_ASSERT(flag); LD_ASSERT(user);
+
+    for (prerequisite = flag->prerequisites; prerequisite; prerequisite = prerequisite->hh.next) {
+        /* TODO get from store */
+        const struct FeatureFlag *const preflag = NULL;
+
+        if (!preflag || !evaluate(flag, user)) {
+            return false;
         }
     }
 

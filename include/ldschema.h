@@ -142,6 +142,8 @@ enum Operator {
     OperatorContains,
     OperatorLessThan,
     OperatorLessThanOrEqual,
+    OperatorGreaterThan,
+    OperatorGreaterThanOrEqual,
     OperatorBefore,
     OperatorAfter,
     OperatorSegmentMatch,
