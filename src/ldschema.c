@@ -564,6 +564,8 @@ rolloutFree(struct Rollout *const rollout)
     if (rollout) {
         free(rollout->bucketBy);
 
+        weightedVariationFreeCollection(rollout->variations);
+
         free(rollout);
     }
 }
@@ -1034,7 +1036,7 @@ segmentFromJSON(const cJSON *const json)
       }
 
       if (checkKey(json, "salt", true, cJSON_IsString, &item)) {
-          if (!(result->key = strdup(item->valuestring))) {
+          if (!(result->salt = strdup(item->valuestring))) {
               LDi_log(LD_LOG_ERROR, "'strdup' for key 'salt' failed");
 
               goto error;

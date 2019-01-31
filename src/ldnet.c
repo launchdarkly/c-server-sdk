@@ -1,6 +1,7 @@
 #include "ldinternal.h"
 
 #include <stdio.h>
+#include <unistd.h>
 
 #include <curl/curl.h>
 
@@ -134,6 +135,7 @@ updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
         return false;
     }
 
+    /*
     {
         cJSON *flags = NULL; cJSON *iter = NULL;
 
@@ -148,11 +150,14 @@ updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
 
             if (!flag) {
                 LDi_log(LD_LOG_ERROR, "failed to marshall feature flag");
-                /* TODO: cleanup existing */
+
                 return false;
             }
+
+            featureFlagFree(flag);
         }
     }
+    */
 
     {
         cJSON *segments = NULL; cJSON *iter = NULL;
@@ -168,11 +173,15 @@ updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
 
             if (!segment) {
                 LDi_log(LD_LOG_ERROR, "failed to marshall segment");
-                /* TODO: cleanup existing */
+
                 return false;
             }
+
+            segmentFree(segment);
         }
     }
+
+    cJSON_Delete(decoded);
 
     return true;
 }
@@ -226,9 +235,13 @@ LDi_networkthread(void* const clientref)
         } while (info);
 
         LD_ASSERT(curl_multi_wait(client->multihandle, NULL, 0, 10, NULL) == CURLM_OK);
+        usleep(1000 * 5);
     }
 
     LD_ASSERT(curl_multi_cleanup(client->multihandle) == CURLM_OK);
+
+    free(polling.data.memory);
+    curl_slist_free_all(polling.headers);
 
     return THREAD_RETURN_DEFAULT;
 }
