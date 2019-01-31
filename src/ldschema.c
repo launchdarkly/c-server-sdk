@@ -145,6 +145,8 @@ featureFlagFromJSON(const char *const key, const cJSON *const json)
     memset(result, 0, sizeof(struct FeatureFlag));
 
     if (!(result->variations = LDNodeNewArray())) {
+        LDi_log(LD_LOG_ERROR, "failed to create array node");
+
         goto error;
     }
 
@@ -297,6 +299,8 @@ featureFlagFromJSON(const char *const key, const cJSON *const json)
     return result;
 
   error:
+    LDi_log(LD_LOG_ERROR, "featureFlagFromJSON failed");
+
     featureFlagFree(result);
 
     return NULL;
@@ -391,12 +395,16 @@ targetFromJSON(const cJSON *const json)
     }
 
     if (checkKey(json, "values", true, cJSON_IsArray, &item)) {
-        cJSON_ArrayForEach(iter, json) {
+        cJSON_ArrayForEach(iter, item) {
             if (cJSON_IsString(iter)) {
                 if (!LDHashSetAddKey(&result->values, iter->valuestring)) {
+                    LDi_log(LD_LOG_ERROR, "failed to add key to hash set");
+
                     goto error;
                 }
             } else {
+                LDi_log(LD_LOG_ERROR, "expect value string got: %s", typeToStringJSON(iter));
+
                 goto error;
             }
         }
@@ -407,6 +415,8 @@ targetFromJSON(const cJSON *const json)
     return result;
 
   error:
+    LDi_log(LD_LOG_ERROR, "targetFromJSON failed");
+
     targetFree(result);
 
     return NULL;
@@ -470,6 +480,8 @@ weightedVariationFromJSON(const cJSON *const json)
     return result;
 
   error:
+    LDi_log(LD_LOG_ERROR, "weightedVariationFromJSON failed");
+
     weightedVariationFree(result);
 
     return NULL;
@@ -515,7 +527,7 @@ rolloutFromJSON(const cJSON *const json)
     memset(result, 0, sizeof(struct Rollout));
 
     if (checkKey(json, "bucketBy", false, cJSON_IsString, &item)) {
-        if (!(result->bucketBy = strdup(item->valuestring))) {
+        if (item && !(result->bucketBy = strdup(item->valuestring))) {
             LDi_log(LD_LOG_ERROR, "'strdup' for key 'bucketBy' failed");
 
             goto error;
@@ -561,7 +573,7 @@ rolloutFree(struct Rollout *const rollout)
 struct VariationOrRollout *
 variationOrRolloutFromJSON(const cJSON *const json)
 {
-    struct VariationOrRollout*result = NULL; const cJSON *item = NULL;
+    struct VariationOrRollout *result = NULL; const cJSON *item = NULL;
 
     LD_ASSERT(json);
 
@@ -578,24 +590,30 @@ variationOrRolloutFromJSON(const cJSON *const json)
     memset(result, 0, sizeof(struct VariationOrRollout));
 
     if (checkKey(json, "variation", false, cJSON_IsNumber, &item)) {
-        result->isVariation = true;
+        if (item) {
+            result->isVariation = true;
 
-        result->value.variation = item->valueint;
-    } else {
-        if (checkKey(json, "rollout", true, cJSON_IsObject, &item)) {
-            result->isVariation = false;
+            result->value.variation = item->valueint;
+        } else {
+            if (checkKey(json, "rollout", true, cJSON_IsObject, &item)) {
+                result->isVariation = false;
 
-            if (!(result->value.rollout = rolloutFromJSON(item))) {
+                if (!(result->value.rollout = rolloutFromJSON(item))) {
+                    goto error;
+                }
+            } else {
                 goto error;
             }
-        } else {
-            goto error;
         }
+    } else {
+        goto error;
     }
 
     return result;
 
   error:
+    LDi_log(LD_LOG_ERROR, "variationOrRolloutFromJSON failed");
+
     variationOrRolloutFree(result);
 
     return NULL;
@@ -634,6 +652,10 @@ operatorFromString(const char *const text, enum Operator *const operator)
         *operator = OperatorLessThan;
     } else if (strcmp(text, "lessThanOrEqual") == 0) {
         *operator = OperatorLessThanOrEqual;
+    } else if (strcmp(text, "greaterThan") == 0) {
+        *operator = OperatorGreaterThan;
+    } else if (strcmp(text, "greaterThanOrEqual") == 0) {
+        *operator = OperatorGreaterThanOrEqual;
     } else if (strcmp(text, "before") == 0) {
         *operator = OperatorBefore;
     } else if (strcmp(text, "after") == 0) {
@@ -680,7 +702,7 @@ clauseFromJSON(const cJSON *const json)
         goto error;
     }
 
-    if (checkKey(json, "negate", true, cJSON_IsNumber, &item)) {
+    if (checkKey(json, "negate", true, cJSON_IsBool, &item)) {
         result->negate = cJSON_IsTrue(item);
     } else {
         goto error;
@@ -721,6 +743,8 @@ clauseFromJSON(const cJSON *const json)
     return result;
 
   error:
+    LDi_log(LD_LOG_ERROR, "clauseFromJSON failed");
+
     clauseFree(result);
 
     return NULL;
@@ -806,6 +830,8 @@ ruleFromJSON(const cJSON *const json)
     return result;
 
   error:
+    LDi_log(LD_LOG_ERROR, "ruleFromJSON failed");
+
     ruleFree(result);
 
     return NULL;
@@ -885,15 +911,19 @@ segmentRuleFromJSON(const cJSON *const json)
     }
 
     if (checkKey(json, "weight", false, cJSON_IsNumber, &item)) {
-        result->hasWeight = true;
+        if (item) {
+            result->hasWeight = true;
 
-        result->weight = item->valueint;
+            result->weight = item->valueint;
+        } else {
+            result->hasWeight = false;
+        }
     } else {
-        result->hasWeight = false;
+        goto error;
     }
 
     if (checkKey(json, "bucketBy", false, cJSON_IsString, &item)) {
-        if (!(result->bucketBy = strdup(item->valuestring))) {
+        if (item && !(result->bucketBy = strdup(item->valuestring))) {
             LDi_log(LD_LOG_ERROR, "'strdup' for key 'bucketBy' failed");
 
             goto error;
@@ -903,6 +933,8 @@ segmentRuleFromJSON(const cJSON *const json)
     return result;
 
   error:
+    LDi_log(LD_LOG_ERROR, "segmentRuleFromJSON failed");
+
     segmentRuleFree(result);
 
     return NULL;
@@ -1034,6 +1066,8 @@ segmentFromJSON(const cJSON *const json)
       return result;
 
     error:
+      LDi_log(LD_LOG_ERROR, "segmentFromJSON failed");
+
       segmentFree(result);
 
       return NULL;
