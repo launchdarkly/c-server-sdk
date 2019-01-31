@@ -218,7 +218,6 @@ upsertOlder()
 
     LD_ASSERT((lookup = store->get(store->context, "my-heap-key", kind)));
     LD_ASSERT(lookup->data == segment1);
-
     store->finalizeGet(store->context, lookup);
 
     freeStore(store);
@@ -243,7 +242,6 @@ upsertDelete()
     LD_ASSERT(store->upsert(store->context, kind, versioned));
 
     LD_ASSERT(!(lookup = store->get(store->context, "my-heap-key", kind)));
-
     store->finalizeGet(store->context, lookup);
 
     freeStore(store);
@@ -270,10 +268,10 @@ conflictDifferentNamespace()
 
     LD_ASSERT((lookup = store->get(store->context, "my-heap-key", segmentKind)));
     LD_ASSERT(lookup->data == segment);
+    store->finalizeGet(store->context, lookup);
 
     LD_ASSERT((lookup = store->get(store->context, "my-heap-key", flagKind)));
     LD_ASSERT(lookup->data == flag);
-
     store->finalizeGet(store->context, lookup);
 
     freeStore(store);

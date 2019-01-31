@@ -205,6 +205,27 @@ struct MemoryContext {
     ld_rwlock_t lock;
 };
 
+static void
+memoryFreeStore(struct LDVersionedSet *store)
+{
+    struct LDVersionedSet *set = NULL, *tmpset = NULL;
+    struct LDVersionedData *data = NULL, *tmpdata = NULL;;
+
+    HASH_ITER(hh, store, set, tmpset) {
+        HASH_DEL(store, set);
+
+        HASH_ITER(hh, set->elements, data, tmpdata) {
+            HASH_DEL(set->elements, data);
+
+            data->destructor(data->data);
+
+            free(data);
+        }
+
+        free(set);
+    }
+}
+
 static bool
 memoryInit(void *const rawcontext, struct LDVersionedSet *const sets)
 {
@@ -212,8 +233,16 @@ memoryInit(void *const rawcontext, struct LDVersionedSet *const sets)
 
     LD_ASSERT(context);
 
+    LD_ASSERT(LDi_rdlock(&context->lock));
+
+    if (context->store){
+        memoryFreeStore(context->store);
+    }
+
     context->initialized = true;
     context->store       = sets;
+
+    LD_ASSERT(LDi_rdunlock(&context->lock));
 
     return true;
 }
@@ -385,22 +414,7 @@ memoryDestructor(void *const rawcontext)
 {
     struct MemoryContext *const context = rawcontext;
 
-    struct LDVersionedSet *set = NULL, *tmpset = NULL;
-    struct LDVersionedData *data = NULL, *tmpdata = NULL;;
-
-    HASH_ITER(hh, context->store, set, tmpset) {
-        HASH_DEL(context->store, set);
-
-        HASH_ITER(hh, set->elements, data, tmpdata) {
-            HASH_DEL(set->elements, data);
-
-            data->destructor(data->data);
-
-            free(data);
-        }
-
-        free(set);
-    }
+    memoryFreeStore(context->store);
 
     LDi_rwlockdestroy(&context->lock);
 

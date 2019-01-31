@@ -125,9 +125,31 @@ LDi_networkinit(struct LDClient *const client)
 static bool
 updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
 {
-    cJSON *decoded = NULL;
+    struct LDVersionedSet *sets = NULL, *flagset = NULL, *segmentset = NULL;
+
+    cJSON *decoded = NULL; struct LDVersionedData *versioned = NULL; const char *namespace = NULL;
 
     LD_ASSERT(store); LD_ASSERT(rawupdate);
+
+    if (!(segmentset = malloc(sizeof(struct LDVersionedSet)))) {
+        LDi_log(LD_LOG_ERROR, "segmentset alloc failed");
+
+        return false;
+    }
+
+    memset(segmentset, 0, sizeof(struct LDVersionedSet));
+
+    segmentset->kind = getSegmentKind();
+
+    if (!(flagset = malloc(sizeof(struct LDVersionedSet)))) {
+        LDi_log(LD_LOG_ERROR, "flagset alloc failed");
+
+        return false;
+    }
+
+    memset(flagset, 0, sizeof(struct LDVersionedSet));
+
+    flagset->kind = getFlagKind();
 
     if (!(decoded = cJSON_Parse(rawupdate))) {
         LDi_log(LD_LOG_ERROR, "JSON parsing failed");
@@ -153,7 +175,13 @@ updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
                 return false;
             }
 
-            featureFlagFree(flag);
+            if (!(versioned = flagToVersioned(flag))) {
+                LDi_log(LD_LOG_ERROR, "failed make version interface for flag");
+
+                return false;
+            }
+
+            HASH_ADD_KEYPTR(hh, flagset->elements, flag->key, strlen(flag->key), versioned);
         }
     }
 
@@ -175,13 +203,25 @@ updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
                 return false;
             }
 
-            segmentFree(segment);
+            if (!(versioned = segmentToVersioned(segment))) {
+                LDi_log(LD_LOG_ERROR, "failed make version interface for segment");
+
+                return false;
+            }
+
+            HASH_ADD_KEYPTR(hh, segmentset->elements, segment->key, strlen(segment->key), versioned);
         }
     }
 
     cJSON_Delete(decoded);
 
-    return true;
+    namespace = flagset->kind.getNamespace();
+    HASH_ADD_KEYPTR(hh, sets, namespace, strlen(namespace), flagset);
+
+    namespace = segmentset->kind.getNamespace();
+    HASH_ADD_KEYPTR(hh, sets, namespace, strlen(namespace), segmentset);
+
+    return store->init(store->context, sets);
 }
 
 THREAD_RETURN
