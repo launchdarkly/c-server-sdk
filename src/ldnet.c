@@ -238,7 +238,7 @@ LDi_networkthread(void* const clientref)
     LD_ASSERT(curl_multi_add_handle(client->multihandle, polling.curl) == CURLM_OK);
 
     while (true) {
-        struct CURLMsg *info = NULL; int running_handles = 0;
+        struct CURLMsg *info = NULL; int running_handles = 0; int active_events = 0;
 
         LD_ASSERT(LDi_rdlock(&client->lock));
         if (client->shuttingdown) {
@@ -272,8 +272,12 @@ LDi_networkthread(void* const clientref)
             }
         } while (info);
 
-        LD_ASSERT(curl_multi_wait(client->multihandle, NULL, 0, 10, NULL) == CURLM_OK);
-        usleep(1000 * 5);
+        LD_ASSERT(curl_multi_wait(client->multihandle, NULL, 0, 5, &active_events) == CURLM_OK);
+
+        if (!active_events) {
+            /* if curl is not doing anything wait so we don't burn CPU */
+            usleep(1000 * 10);
+        }
     }
 
     LD_ASSERT(curl_multi_cleanup(client->multihandle) == CURLM_OK);
