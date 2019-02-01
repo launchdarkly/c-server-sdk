@@ -84,21 +84,19 @@ prepareShared(const struct LDConfig *const config, struct LDNetworkContext *cons
     return true;
 
   error:
-    if (curl) {
-        curl_easy_cleanup(curl);
-    }
+    curl_easy_cleanup(curl);
 
     return false;
 }
 
 bool
-prepareShared2(const struct LDConfig *const config, const char *const url, const struct NetworkInterface *const interface,
+prepareShared2(const struct LDConfig *const config, const char *const url,
     CURL **const o_curl, struct curl_slist **const o_headers)
 {
     CURL *curl = NULL;
     struct curl_slist *headers = NULL;
 
-    LD_ASSERT(config); LD_ASSERT(url); LD_ASSERT(interface); LD_ASSERT(o_curl); LD_ASSERT(o_headers);
+    LD_ASSERT(config); LD_ASSERT(url); LD_ASSERT(o_curl); LD_ASSERT(o_headers);
 
     if (!(curl = curl_easy_init())) {
         LDi_log(LD_LOG_CRITICAL, "curl_easy_init returned NULL");
@@ -142,22 +140,14 @@ prepareShared2(const struct LDConfig *const config, const char *const url, const
         goto error;
     }
 
-    if (curl_easy_setopt(curl,CURLOPT_PRIVATE, interface) != CURLE_OK) {
-        LDi_log(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_PRIVATE failed"); goto error;
-    }
-
     *o_curl = curl; *o_headers = headers;
 
     return true;
 
   error:
-    if (curl) {
-        curl_easy_cleanup(curl);
-    }
+    curl_easy_cleanup(curl);
 
-    if (headers) {
-        curl_slist_free_all(headers);
-    }
+    curl_slist_free_all(headers);
 
     return false;
 }
@@ -194,7 +184,7 @@ LDi_networkinit(struct LDClient *const client)
     return client->multihandle != NULL;
 }
 
-static bool
+bool
 updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
 {
     struct LDVersionedSet *sets = NULL, *flagset = NULL, *segmentset = NULL;
@@ -301,13 +291,11 @@ LDi_networkthread(void* const clientref)
 {
     struct LDClient *const client = clientref;
 
-    struct LDNetworkContext polling;
+    struct NetworkInterface *interfaces[1];
 
     LD_ASSERT(client);
 
-    LD_ASSERT(LDi_prepareFetch(client, &polling));
-
-    LD_ASSERT(curl_multi_add_handle(client->multihandle, polling.curl) == CURLM_OK);
+    interfaces[0] = constructPolling(client); LD_ASSERT(interfaces[0]);
 
     while (true) {
         struct CURLMsg *info = NULL; int running_handles = 0; int active_events = 0;
@@ -322,6 +310,16 @@ LDi_networkthread(void* const clientref)
 
         curl_multi_perform(client->multihandle, &running_handles);
 
+        for (unsigned int i = 0; i < 1; i++) {
+            CURL *const handle = interfaces[i]->poll(client, interfaces[i]->context);
+
+            if (handle) {
+                LD_ASSERT(curl_easy_setopt(handle, CURLOPT_PRIVATE, interfaces[i]) == CURLE_OK);
+
+                LD_ASSERT(curl_multi_add_handle(client->multihandle, handle) == CURLM_OK);
+            }
+        }
+
         do {
             int inqueue = 0;
 
@@ -330,14 +328,19 @@ LDi_networkthread(void* const clientref)
             if (info && (info->msg == CURLMSG_DONE)) {
                 long responsecode;
                 CURL *easy = info->easy_handle;
+                struct NetworkInterface *interface = NULL;
 
                 LD_ASSERT(curl_easy_getinfo(easy, CURLINFO_RESPONSE_CODE, &responsecode) == CURLE_OK);
 
                 LDi_log(LD_LOG_INFO, "message done code %d %d", info->data.result, responsecode);
 
-                LDi_log(LD_LOG_INFO, "message data %s", polling.data.memory);
+                // LDi_log(LD_LOG_INFO, "message data %s", polling.data.memory);
 
-                LD_ASSERT(updateStore(client->config->store, polling.data.memory));
+                // LD_ASSERT(updateStore(client->config->store, polling.data.memory));
+
+                LD_ASSERT(curl_easy_getinfo(easy, CURLINFO_PRIVATE, &interface) == CURLE_OK);
+                LD_ASSERT(interface); LD_ASSERT(interface->done); LD_ASSERT(interface->context);
+                interface->done(client, interface->context);
 
                 curl_multi_remove_handle(client->multihandle, easy);
                 curl_easy_cleanup(easy);
@@ -354,8 +357,8 @@ LDi_networkthread(void* const clientref)
 
     LD_ASSERT(curl_multi_cleanup(client->multihandle) == CURLM_OK);
 
-    free(polling.data.memory);
-    curl_slist_free_all(polling.headers);
+    interfaces[0]->destroy(interfaces[0]->context);
+    free(interfaces[0]);
 
     return THREAD_RETURN_DEFAULT;
 }
