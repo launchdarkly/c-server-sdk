@@ -15,7 +15,7 @@ struct NetworkInterface {
     void *context;
 };
 
-bool prepareShared2(const struct LDConfig *const config, const char *const url,
+bool prepareShared(const struct LDConfig *const config, const char *const url,
     CURL **const o_curl, struct curl_slist **const o_headers);
 
 struct NetworkInterface *constructPolling(const struct LDClient *const client);

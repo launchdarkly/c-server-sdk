@@ -99,7 +99,7 @@ poll(const struct LDClient *const client, void *const rawcontext)
 
     LDi_log(LD_LOG_INFO, "connecting to url: %s", url);
 
-    if (!prepareShared2(client->config, url, &curl, &context->headers)) {
+    if (!prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;
     }
 
