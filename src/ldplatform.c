@@ -2,6 +2,45 @@
 
 #include "ldinternal.h"
 
+#ifdef _WIN32
+    /* placeholder */
+#else
+    #include <time.h>
+    #include <unistd.h>
+#endif
+
+bool
+sleepMilliseconds(const unsigned int milliseconds)
+{
+    int status;
+
+    if ((status = usleep(1000 * milliseconds)) != 0) {
+        LDi_log(LD_LOG_CRITICAL, "upsleep failed with: %s", strerror(status));
+
+        return false;
+    }
+
+    return true;
+}
+
+bool
+getMonotonicMilliseconds(unsigned int *const resultMilliseconds)
+{
+    int status; struct timespec spec;
+
+    LD_ASSERT(resultMilliseconds);
+
+    if ((status = clock_gettime(CLOCK_MONOTONIC, &spec)) != 0) {
+        LDi_log(LD_LOG_CRITICAL, "clock_gettime failed with: %s", strerror(status));
+
+        return false;
+    }
+
+    *resultMilliseconds = (spec.tv_sec * 1000) + (spec.tv_nsec / 1000);
+
+    return true;
+}
+
 bool
 LDi_createthread(ld_thread_t *const thread, THREAD_RETURN (*const routine)(void *), void *const argument)
 {
