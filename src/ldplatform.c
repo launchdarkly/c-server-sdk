@@ -36,7 +36,7 @@ getMonotonicMilliseconds(unsigned int *const resultMilliseconds)
         return false;
     }
 
-    *resultMilliseconds = (spec.tv_sec * 1000) + (spec.tv_nsec / 1000);
+    *resultMilliseconds = (spec.tv_sec * 1000) + (spec.tv_nsec / 1000000);
 
     return true;
 }
