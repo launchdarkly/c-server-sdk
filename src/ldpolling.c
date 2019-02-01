@@ -107,19 +107,20 @@ updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
     return store->init(store->context, sets);
 }
 
-struct MemoryStruct {
+struct PollContext {
     char *memory;
     size_t size;
     struct curl_slist *headers;
     int count;
     bool active;
+    unsigned int lastpoll;
 };
 
 size_t
 WriteMemoryCallback(void *const contents, const size_t size, const size_t nmemb, void *const userp)
 {
     const size_t realsize = size * nmemb;
-    struct MemoryStruct *const mem = (struct MemoryStruct *)userp;
+    struct PollContext *const mem = (struct PollContext *)userp;
 
     LD_ASSERT(mem);
 
@@ -137,7 +138,7 @@ WriteMemoryCallback(void *const contents, const size_t size, const size_t nmemb,
 }
 
 static void
-resetMemory(struct MemoryStruct *const context)
+resetMemory(struct PollContext *const context)
 {
     LD_ASSERT(context);
 
@@ -149,9 +150,9 @@ resetMemory(struct MemoryStruct *const context)
 }
 
 static void
-done(const struct LDClient *const client, void *const rawcontext)
+done(struct LDClient *const client, void *const rawcontext)
 {
-    struct MemoryStruct *const context = rawcontext;
+    struct PollContext *const context = rawcontext;
 
     LD_ASSERT(client); LD_ASSERT(context);
 
@@ -164,13 +165,19 @@ done(const struct LDClient *const client, void *const rawcontext)
     context->count++;
     context->active = false;
 
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    client->initialized = true;
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    LD_ASSERT(getMonotonicMilliseconds(&context->lastpoll));
+
     resetMemory(context);
 }
 
 static void
 destroy(void *const rawcontext)
 {
-    struct MemoryStruct *const context = rawcontext;
+    struct PollContext *const context = rawcontext;
 
     LD_ASSERT(context);
 
@@ -182,17 +189,31 @@ destroy(void *const rawcontext)
 }
 
 static CURL *
-poll(const struct LDClient *const client, void *const rawcontext)
+poll(struct LDClient *const client, void *const rawcontext)
 {
     CURL *curl = NULL; char url[4096];
 
-    struct MemoryStruct *const context = rawcontext;
+    struct PollContext *const context = rawcontext;
 
     LD_ASSERT(context);
 
     if (context->active || context->count > 2) {
         return NULL;
     }
+
+    {
+        unsigned int now;
+
+        LD_ASSERT(getMonotonicMilliseconds(&now));
+        LD_ASSERT(now >= context->lastpoll);
+
+        if (now - context->lastpoll < client->config->pollInterval * 1000) {
+            return NULL;
+        }
+    }
+
+    /* sleep when waiting for interval */
+    /* usleep(1000 * 10); */
 
     LDi_log(LD_LOG_INFO, "poll!");
 
@@ -233,10 +254,10 @@ poll(const struct LDClient *const client, void *const rawcontext)
 }
 
 struct NetworkInterface *
-constructPolling(const struct LDClient *const client)
+constructPolling(struct LDClient *const client)
 {
     struct NetworkInterface *interface = NULL;
-    struct MemoryStruct *context = NULL;
+    struct PollContext *context = NULL;
 
     LD_ASSERT(client);
 
@@ -244,15 +265,16 @@ constructPolling(const struct LDClient *const client)
         goto error;
     }
 
-    if (!(context = malloc(sizeof(struct MemoryStruct)))) {
+    if (!(context = malloc(sizeof(struct PollContext)))) {
         goto error;
     }
 
-    context->memory  = NULL;
-    context->size    = 0;
-    context->count   = 0;
-    context->headers = NULL;
-    context->active  = false;
+    context->memory   = NULL;
+    context->size     = 0;
+    context->count    = 0;
+    context->headers  = NULL;
+    context->active   = false;
+    context->lastpoll = 0;
 
     interface->done    = done;
     interface->poll    = poll;
