@@ -56,6 +56,8 @@ LDHashSetFree(struct LDHashSet *set)
         HASH_DEL(set, item);
 
         free(item->key);
+
+        free(item);
     }
 }
 

@@ -137,6 +137,9 @@ void LDi_log(const LDLogLevel level, const char *const format, ...);
 
 /* **** LDUtility **** */
 
+bool sleepMilliseconds(const unsigned int milliseconds);
+bool getMonotonicMilliseconds(unsigned int *const resultMilliseconds);
+
 #define LD_ASSERT(condition) \
     if (!(condition)) { \
         LDi_log(0, "LD_ASSERT failed: expected condition '%s' in function '%s' aborting\n", #condition, __func__); \
