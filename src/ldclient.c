@@ -75,7 +75,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         goto error;
     }
 
-    if (maxwaitmilli) {} /* Temp NO-OP*/
+    if (maxwaitmilli) {} /* Temp NO-OP */
 
     return client;
 

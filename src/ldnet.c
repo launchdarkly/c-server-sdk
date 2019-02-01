@@ -1,4 +1,5 @@
 #include "ldinternal.h"
+#include "ldnetwork.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -91,7 +92,78 @@ prepareShared(const struct LDConfig *const config, struct LDNetworkContext *cons
 }
 
 bool
-LDi_prepareFetch(struct LDClient *const client, struct LDNetworkContext *const context)
+prepareShared2(const struct LDConfig *const config, const char *const url, const struct NetworkInterface *const interface,
+    CURL **const o_curl, struct curl_slist **const o_headers)
+{
+    CURL *curl = NULL;
+    struct curl_slist *headers = NULL;
+
+    LD_ASSERT(config); LD_ASSERT(url); LD_ASSERT(interface); LD_ASSERT(o_curl); LD_ASSERT(o_headers);
+
+    if (!(curl = curl_easy_init())) {
+        LDi_log(LD_LOG_CRITICAL, "curl_easy_init returned NULL");
+
+        goto error;
+    }
+
+    if (curl_easy_setopt(curl, CURLOPT_URL, url) != CURLE_OK) {
+        LDi_log(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_URL failed on: %s", url);
+
+        goto error;
+    }
+
+    {
+        char headerauth[256];
+
+        if (snprintf(headerauth, sizeof(headerauth), "Authorization: %s", config->key) < 0) {
+            LDi_log(LD_LOG_CRITICAL, "snprintf during Authorization header creation failed");
+
+            goto error;
+        }
+
+        LDi_log(LD_LOG_INFO, "using authentication: %s", headerauth);
+
+        if (!(headers = curl_slist_append(headers, headerauth))) {
+            LDi_log(LD_LOG_CRITICAL, "curl_slist_append failed for headerauth");
+
+            goto error;
+        }
+    }
+
+    if (!(headers = curl_slist_append(headers, "User-Agent: CServerClient/0.1"))) {
+        LDi_log(LD_LOG_CRITICAL, "curl_slist_append failed for headeragent");
+
+        goto error;
+    }
+
+    if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers) != CURLE_OK) {
+        LDi_log(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_HTTPHEADER failed");
+
+        goto error;
+    }
+
+    if (curl_easy_setopt(curl,CURLOPT_PRIVATE, interface) != CURLE_OK) {
+        LDi_log(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_PRIVATE failed"); goto error;
+    }
+
+    *o_curl = curl; *o_headers = headers;
+
+    return true;
+
+  error:
+    if (curl) {
+        curl_easy_cleanup(curl);
+    }
+
+    if (headers) {
+        curl_slist_free_all(headers);
+    }
+
+    return false;
+}
+
+bool
+LDi_prepareFetch(const struct LDClient *const client, struct LDNetworkContext *const context)
 {
     char url[4096];
 
@@ -255,7 +327,7 @@ LDi_networkthread(void* const clientref)
 
             info = curl_multi_info_read(client->multihandle, &inqueue);
 
-            if(info && (info->msg == CURLMSG_DONE)) {
+            if (info && (info->msg == CURLMSG_DONE)) {
                 long responsecode;
                 CURL *easy = info->easy_handle;
 
