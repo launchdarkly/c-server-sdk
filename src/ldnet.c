@@ -79,108 +79,6 @@ LDi_networkinit(struct LDClient *const client)
     return client->multihandle != NULL;
 }
 
-bool
-updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
-{
-    struct LDVersionedSet *sets = NULL, *flagset = NULL, *segmentset = NULL;
-
-    cJSON *decoded = NULL; struct LDVersionedData *versioned = NULL; const char *namespace = NULL;
-
-    LD_ASSERT(store); LD_ASSERT(rawupdate);
-
-    if (!(segmentset = malloc(sizeof(struct LDVersionedSet)))) {
-        LDi_log(LD_LOG_ERROR, "segmentset alloc failed");
-
-        return false;
-    }
-
-    memset(segmentset, 0, sizeof(struct LDVersionedSet));
-
-    segmentset->kind = getSegmentKind();
-
-    if (!(flagset = malloc(sizeof(struct LDVersionedSet)))) {
-        LDi_log(LD_LOG_ERROR, "flagset alloc failed");
-
-        return false;
-    }
-
-    memset(flagset, 0, sizeof(struct LDVersionedSet));
-
-    flagset->kind = getFlagKind();
-
-    if (!(decoded = cJSON_Parse(rawupdate))) {
-        LDi_log(LD_LOG_ERROR, "JSON parsing failed");
-
-        return false;
-    }
-
-    {
-        cJSON *flags = NULL; cJSON *iter = NULL;
-
-        if (!(flags = cJSON_GetObjectItemCaseSensitive(decoded, "flags"))) {
-            LDi_log(LD_LOG_ERROR, "key flags does not exist");
-
-            return false;
-        }
-
-        cJSON_ArrayForEach(iter, flags) {
-            struct FeatureFlag *const flag = featureFlagFromJSON(iter->string, iter);
-
-            if (!flag) {
-                LDi_log(LD_LOG_ERROR, "failed to marshall feature flag");
-
-                return false;
-            }
-
-            if (!(versioned = flagToVersioned(flag))) {
-                LDi_log(LD_LOG_ERROR, "failed make version interface for flag");
-
-                return false;
-            }
-
-            HASH_ADD_KEYPTR(hh, flagset->elements, flag->key, strlen(flag->key), versioned);
-        }
-    }
-
-    {
-        cJSON *segments = NULL; cJSON *iter = NULL;
-
-        if (!(segments = cJSON_GetObjectItemCaseSensitive(decoded, "segments"))) {
-            LDi_log(LD_LOG_ERROR, "key segments does not exist");
-
-            return false;
-        }
-
-        cJSON_ArrayForEach(iter, segments) {
-            struct Segment *const segment = segmentFromJSON(iter);
-
-            if (!segment) {
-                LDi_log(LD_LOG_ERROR, "failed to marshall segment");
-
-                return false;
-            }
-
-            if (!(versioned = segmentToVersioned(segment))) {
-                LDi_log(LD_LOG_ERROR, "failed make version interface for segment");
-
-                return false;
-            }
-
-            HASH_ADD_KEYPTR(hh, segmentset->elements, segment->key, strlen(segment->key), versioned);
-        }
-    }
-
-    cJSON_Delete(decoded);
-
-    namespace = flagset->kind.getNamespace();
-    HASH_ADD_KEYPTR(hh, sets, namespace, strlen(namespace), flagset);
-
-    namespace = segmentset->kind.getNamespace();
-    HASH_ADD_KEYPTR(hh, sets, namespace, strlen(namespace), segmentset);
-
-    return store->init(store->context, sets);
-}
-
 THREAD_RETURN
 LDi_networkthread(void* const clientref)
 {
@@ -228,10 +126,6 @@ LDi_networkthread(void* const clientref)
                 LD_ASSERT(curl_easy_getinfo(easy, CURLINFO_RESPONSE_CODE, &responsecode) == CURLE_OK);
 
                 LDi_log(LD_LOG_INFO, "message done code %d %d", info->data.result, responsecode);
-
-                // LDi_log(LD_LOG_INFO, "message data %s", polling.data.memory);
-
-                // LD_ASSERT(updateStore(client->config->store, polling.data.memory));
 
                 LD_ASSERT(curl_easy_getinfo(easy, CURLINFO_PRIVATE, &interface) == CURLE_OK);
                 LD_ASSERT(interface); LD_ASSERT(interface->done); LD_ASSERT(interface->context);
