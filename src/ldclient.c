@@ -75,7 +75,25 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         goto error;
     }
 
-    if (maxwaitmilli) {} /* Temp NO-OP */
+    LDi_log(LD_LOG_INFO, "waiting to initialize");
+    if (maxwaitmilli){
+        unsigned int start, diff, now;
+
+        LD_ASSERT(getMonotonicMilliseconds(&start));
+        do {
+            LD_ASSERT(LDi_rdlock(&client->lock));
+            if (client->initialized) {
+                LD_ASSERT(LDi_rdunlock(&client->lock));
+                break;
+            }
+            LD_ASSERT(LDi_rdunlock(&client->lock));
+
+            sleepMilliseconds(5);
+
+            LD_ASSERT(getMonotonicMilliseconds(&now));
+        } while ((diff = now - start) < maxwaitmilli);
+    }
+    LDi_log(LD_LOG_INFO, "initialized");
 
     return client;
 
