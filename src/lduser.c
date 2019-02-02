@@ -43,6 +43,7 @@ LDUserFree(struct LDUser *const user)
 
         free(       user->key       );
         free(       user->secondary );
+        free(       user->ip        );
         free(       user->firstName );
         free(       user->lastName  );
         free(       user->email     );
