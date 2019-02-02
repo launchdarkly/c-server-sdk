@@ -1,6 +1,6 @@
 #include "ldinternal.h"
 
-void
+static void
 allocCheckAndFreeNull()
 {
     char *resultJSON = NULL;
@@ -21,7 +21,7 @@ allocCheckAndFreeNull()
     LDNodeFree(node);
 }
 
-void
+static void
 allocCheckAndFreeBool()
 {
     char *resultJSON = NULL;
@@ -45,7 +45,7 @@ allocCheckAndFreeBool()
     LDNodeFree(node);
 }
 
-void
+static void
 allocCheckAndFreeNumber()
 {
     char *resultJSON = NULL;
@@ -69,7 +69,7 @@ allocCheckAndFreeNumber()
     LDNodeFree(node);
 }
 
-void
+static void
 allocCheckAndFreeText()
 {
     char *resultJSON = NULL;
