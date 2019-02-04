@@ -231,8 +231,6 @@ bucketUser(const struct LDUser *const user, const char *const segmentKey, const 
                 /* encodes to hex, and shortens, 16 characters in hex == 8 bytes */
                 LD_ASSERT(hexify((unsigned char *)digest, sizeof(digest), encoded, sizeof(encoded)) == 16);
 
-                /* TODO: check for size error (4 bytes only) */
-
                 return (float)strtoll(encoded, NULL, 16) / longScale;
             }
         } else {
