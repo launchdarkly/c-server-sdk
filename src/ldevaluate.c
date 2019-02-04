@@ -1,6 +1,5 @@
 #include "sha1.h"
 #include "hexify.h"
-#include "semver.h"
 
 #include "ldinternal.h"
 #include "ldschema.h"
@@ -234,7 +233,7 @@ bucketUser(const struct LDUser *const user, const char *const segmentKey, const 
 
                 /* TODO: check for size error (4 bytes only) */
 
-                return (float)strtol(encoded, NULL, 16) / longScale;
+                return (float)strtoll(encoded, NULL, 16) / longScale;
             }
         } else {
             return 0;
