@@ -138,6 +138,22 @@ LDGetText(const struct LDJSON *const node)
 }
 
 bool
+LDArrayLookup(const struct LDJSON *const rawarray, const unsigned int index, struct LDJSON **const result)
+{
+    cJSON *const array = (cJSON *const)rawarray, *item = NULL;
+
+    LD_ASSERT(array); LD_ASSERT(cJSON_IsArray(array)); LD_ASSERT(result);
+
+    if ((item = cJSON_GetArrayItem(array, index))) {
+        *result = (struct LDJSON *)item;
+
+        return true;
+    }
+
+    return false;
+}
+
+bool
 LDArrayGetIter(const struct LDJSON *const rawarray, struct LDArrayIter **const result)
 {
     const cJSON *const array = (const cJSON *const)rawarray;
@@ -185,6 +201,22 @@ void
 LDArrayIterFree(struct LDArrayIter *const iter)
 {
     (void)iter; /* no-op */
+}
+
+bool
+LDObjectLookup(const struct LDJSON *const rawobject, const char *const key, struct LDJSON **const result)
+{
+    cJSON *const object = (cJSON *const)rawobject, *item = NULL;
+
+    LD_ASSERT(object); LD_ASSERT(cJSON_IsObject(object)); LD_ASSERT(key); LD_ASSERT(result);
+
+    if ((item = cJSON_GetObjectItemCaseSensitive(object, key))) {
+        *result = (struct LDJSON *)item;
+
+        return true;
+    }
+
+    return false;
 }
 
 bool

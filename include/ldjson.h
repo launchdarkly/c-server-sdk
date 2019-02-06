@@ -138,12 +138,21 @@ char *LDGetText(const struct LDJSON *const node);
  * @{
  ******************************************************************************/
 
- /**
-  * @brief Allows iteration over an array. Modification of the array invalidates this iterator.
-  * @param[in] array May not be NULL (assert), must be of type `LDJSONArray` (assert).
-  * @param[out] result Where to place the iter. May not be NULL (assert). On failure this parameter is not mutated.
-  * @return True on success, False on failure.
-  */
+/**
+ * @brief Lookup up the value of an index for a given array
+ * @param[in] array May not be NULL (assert), must be of type `LDJSONArray` (assert).
+ * @param[in] index The index to lookup in the array
+ * @param[out] result Where to place the iter. May not be NULL (assert). If the key does not exist this parameter is not mutated.
+ * @return True item exists, False item does not exist
+ */
+bool LDArrayLookup(const struct LDJSON *const array, const unsigned int index, struct LDJSON **const result);
+
+/**
+ * @brief Allows iteration over an array. Modification of the array invalidates this iterator.
+ * @param[in] array May not be NULL (assert), must be of type `LDJSONArray` (assert).
+ * @param[out] result Where to place the iter. May not be NULL (assert). On failure this parameter is not mutated.
+ * @return True on success, False on failure.
+ */
 bool LDArrayGetIter(const struct LDJSON *const array, struct LDArrayIter **const result);
 
 /**
@@ -174,6 +183,15 @@ void LDArrayIterFree(struct LDArrayIter *const iter);
  * Routines for working with objects
  * @{
  ******************************************************************************/
+
+/**
+ * @brief Lookup up the value of a key for a given object
+ * @param[in] object May not be NULL (assert), must be of type `LDJSONObject` (assert).
+ * @param[in] key The key to lookup in the object. May not be NULL (assert),
+ * @param[out] result Where to place the iter. May not be NULL (assert). If the key does not exist this parameter is not mutated.
+ * @return True item exists, False item does not exist
+ */
+bool LDObjectLookup(const struct LDJSON *const object, const char *const key, struct LDJSON **const result);
 
  /**
   * @brief Allows iteration over an array. Modification of the array invalidates this iterator.
