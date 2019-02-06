@@ -139,6 +139,13 @@ char *LDGetText(const struct LDJSON *const node);
  ******************************************************************************/
 
 /**
+ * @brief Return the size of a JSON array
+ * @param[in] array May not be NULL (assert), must be of type `LDJSONArray` (assert).
+ * @return The size of the array
+ */
+unsigned int LDArrayGetSize(const struct LDJSON *const array);
+
+/**
  * @brief Lookup up the value of an index for a given array
  * @param[in] array May not be NULL (assert), must be of type `LDJSONArray` (assert).
  * @param[in] index The index to lookup in the array

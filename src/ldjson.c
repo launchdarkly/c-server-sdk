@@ -137,6 +137,16 @@ LDGetText(const struct LDJSON *const node)
     return strdup(json->valuestring);
 }
 
+unsigned int
+LDArrayGetSize(const struct LDJSON *const rawarray)
+{
+    cJSON *const array = (cJSON *const)rawarray;
+
+    LD_ASSERT(array);
+
+    return cJSON_GetArraySize(array);
+}
+
 bool
 LDArrayLookup(const struct LDJSON *const rawarray, const unsigned int index, struct LDJSON **const result)
 {
