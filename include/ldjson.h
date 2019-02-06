@@ -146,6 +146,43 @@ bool LDArrayIterValue(const struct LDArrayIter *const iter, struct LDJSON **cons
  */
 void LDArrayIterFree(struct LDArrayIter *const iter);
 
+/***************************************************************************//**
+ * @name Object Operations
+ * Routines for working with objects
+ * @{
+ ******************************************************************************/
+
+ /**
+  * @brief Allows iteration over an array. Modification of the array invalidates this iterator.
+  * @param[in] object May not be NULL (assert), must be of type `LDJSONObject` (assert).
+  * @param[out] result Where to place the iter. May not be NULL (assert). On failure this parameter is not mutated.
+  * @return True on success, False on failure.
+  */
+bool LDObjectGetIter(const struct LDJSON *const object, struct LDObjectIter **const result);
+
+/**
+ * @brief Returns the latest value and advances the iterator. The value returned is a non owning reference.
+ * @param[in] iter May be NULL depending on implementation
+ * @param[out] result Where to place the current value. May be NULL to only advance.
+ * @return False indicates end of object, result will not be set.
+ */
+bool LDObjectIterNext(struct LDObjectIter **const iter, struct LDJSON **const result);
+
+/**
+ * @brief Returns the value the iterator is currently on without advancing. The value returned is a non owning reference.
+ * @param[in] iter May be NULL depending on implementation
+ * @param[out] result Where to place the current value. May not be NULL (assert).
+ * @return False indicates the end of the object, result will not be set.
+ */
+bool LDObjectIterValue(const struct LDObjectIter *const iter, struct LDJSON **const result);
+
+/**
+ * @brief Frees an iterator provided by `LDObjectGetIter`.
+ * @param[in] iter May be NULL.
+ * @return Void.
+ */
+void LDObjectIterFree(struct LDObjectIter *const iter);
+
  /*@}*/
 
 /***************************************************************************//**

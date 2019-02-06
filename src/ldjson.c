@@ -167,6 +167,55 @@ LDArrayIterFree(struct LDArrayIter *const iter)
     (void)iter; /* no-op */
 }
 
+bool
+LDObjectGetIter(const struct LDJSON *const rawobject, struct LDObjectIter **const result)
+{
+    const cJSON *const object = (const cJSON *const)rawobject;
+
+    LD_ASSERT(object); LD_ASSERT(cJSON_IsObject(object));
+
+    *result = (struct LDObjectIter *)object->child;
+
+    return true;
+}
+
+bool
+LDObjectIterNext(struct LDObjectIter **const rawiter, struct LDJSON **const result)
+{
+    cJSON **const iter = (cJSON **const)rawiter;
+
+    if (iter) {
+        cJSON *const currentvalue = *iter;
+
+        *iter = currentvalue->next;
+
+        if (result) {
+            *result = (struct LDJSON *)currentvalue;
+        }
+
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool
+LDObjectIterValue(const struct LDObjectIter *const iter, struct LDJSON **const result)
+{
+    LD_ASSERT(result);
+
+    if (iter) {
+        *result = (struct LDJSON *)iter;
+    }
+
+    return iter != NULL;
+}
+
+void
+LDObjectIterFree(struct LDObjectIter *const iter)
+{
+    (void)iter; /* no-op */
+}
 
 char *
 LDJSONSerialize(const struct LDJSON *const json)
