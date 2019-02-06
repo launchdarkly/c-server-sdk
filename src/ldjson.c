@@ -87,6 +87,26 @@ LDNewArray(struct LDJSON **const result)
     return json != NULL;
 }
 
+void
+LDJSONFree(struct LDJSON *const json)
+{
+    cJSON_Delete((cJSON *)json);
+}
+
+bool
+LDJSONDuplicate(const struct LDJSON *const input, struct LDJSON **const output)
+{
+    cJSON *result = NULL;
+
+    LD_ASSERT(input); LD_ASSERT(output);
+
+    if ((result = cJSON_Duplicate((cJSON *)input, true))) {
+        *output = (struct LDJSON *)result;
+    }
+
+    return result != NULL;
+}
+
 bool
 LDGetBool(const struct LDJSON *const node)
 {

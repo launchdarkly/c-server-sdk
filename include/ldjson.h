@@ -81,6 +81,29 @@ bool LDNewArray(struct LDJSON **const result);
 /*@}*/
 
 /***************************************************************************//**
+ * @name Cleanup and Utility
+ * Miscellaneous Operations
+ * @{
+ ******************************************************************************/
+
+/**
+ * @brief Frees any allocated JSON structure.
+ * @param[in] json May be NULL.
+ * @return Void.
+ */
+void LDJSONFree(struct LDJSON *const json);
+
+/**
+ * @brief Duplicates an existing JSON strucutre. This acts as a deep copy.
+ * @param[in] input JSON to be duplicated.
+ * @param[out] output Where to place the node. May not be NULL (assert). On failure this parameter is not mutated.
+ * @return True on success, False on failure.
+ */
+bool LDJSONDuplicate(const struct LDJSON *const input, struct LDJSON **const output);
+
+/*@}*/
+
+/***************************************************************************//**
  * @name Reading Values
  * Routines for reading values
  * @{
