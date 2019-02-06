@@ -87,14 +87,16 @@ LDNewArray(struct LDJSON **const result)
     return json != NULL;
 }
 
-struct LDArrayIter *
-LDArrayGetIter(const struct LDJSON *const rawarray)
+bool
+LDArrayGetIter(const struct LDJSON *const rawarray, struct LDArrayIter **const result)
 {
     const cJSON *const array = (const cJSON *const)rawarray;
 
     LD_ASSERT(array); LD_ASSERT(cJSON_IsArray(array));
 
-    return (struct LDArrayIter *)array->child;
+    *result = (struct LDArrayIter *)array->child;
+
+    return true;
 }
 
 struct LDJSON *
