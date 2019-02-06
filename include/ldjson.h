@@ -211,18 +211,20 @@ bool LDObjectGetIter(const struct LDJSON *const object, struct LDObjectIter **co
 /**
  * @brief Returns the latest value and advances the iterator. The value returned is a non owning reference.
  * @param[in] iter May be NULL depending on implementation
- * @param[out] result Where to place the current value. May be NULL to only advance.
- * @return False indicates end of object, result will not be set.
+ * @param[out] key Where to place the current values key. May be NULL to only get value.
+ * @param[out] result Where to place the current value. May be NULL to only get key.
+ * @return False indicates end of object, key and result result will not be set.
  */
-bool LDObjectIterNext(struct LDObjectIter **const iter, struct LDJSON **const result);
+bool LDObjectIterNext(struct LDObjectIter **const iter, const char **const key, struct LDJSON **const result);
 
 /**
  * @brief Returns the value the iterator is currently on without advancing. The value returned is a non owning reference.
  * @param[in] iter May be NULL depending on implementation
- * @param[out] result Where to place the current value. May not be NULL (assert).
- * @return False indicates the end of the object, result will not be set.
+ * @param[out] key Where to place the current values key. May be NULL to only get value.
+ * @param[out] result Where to place the current value. May be NULL to only get key.
+ * @return False indicates the end of the object, key and result  will not be set.
  */
-bool LDObjectIterValue(const struct LDObjectIter *const iter, struct LDJSON **const result);
+bool LDObjectIterValue(const struct LDObjectIter *const iter, const char **const key, struct LDJSON **const result);
 
 /**
  * @brief Frees an iterator provided by `LDObjectGetIter`.

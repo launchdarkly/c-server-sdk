@@ -242,7 +242,7 @@ LDObjectGetIter(const struct LDJSON *const rawobject, struct LDObjectIter **cons
 }
 
 bool
-LDObjectIterNext(struct LDObjectIter **const rawiter, struct LDJSON **const result)
+LDObjectIterNext(struct LDObjectIter **const rawiter, const char **const key, struct LDJSON **const result)
 {
     cJSON **const iter = (cJSON **const)rawiter;
 
@@ -250,6 +250,10 @@ LDObjectIterNext(struct LDObjectIter **const rawiter, struct LDJSON **const resu
         cJSON *const currentvalue = *iter;
 
         *iter = currentvalue->next;
+
+        if (key) {
+            *key = currentvalue->string;
+        }
 
         if (result) {
             *result = (struct LDJSON *)currentvalue;
@@ -262,12 +266,16 @@ LDObjectIterNext(struct LDObjectIter **const rawiter, struct LDJSON **const resu
 }
 
 bool
-LDObjectIterValue(const struct LDObjectIter *const iter, struct LDJSON **const result)
+LDObjectIterValue(const struct LDObjectIter *const iter, const char **const key, struct LDJSON **const result)
 {
-    LD_ASSERT(result);
-
     if (iter) {
-        *result = (struct LDJSON *)iter;
+        if (key) {
+            *key = ((cJSON *)iter)->string;
+        }
+
+        if (result) {
+            *result = (struct LDJSON *)iter;
+        }
     }
 
     return iter != NULL;
