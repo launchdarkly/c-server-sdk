@@ -29,7 +29,7 @@ typedef enum {
 } LDJSONType;
 
 /***************************************************************************//**
- * @name LD JSON New
+ * @name Constructing values
  * Routines for constructing values
  * @{
  ******************************************************************************/
@@ -77,6 +77,35 @@ bool LDNewObject(struct LDJSON **const result);
   * @return True on success, False on failure.
   */
 bool LDNewArray(struct LDJSON **const result);
+
+/*@}*/
+
+/***************************************************************************//**
+ * @name Reading Values
+ * Routines for reading values
+ * @{
+ ******************************************************************************/
+
+ /**
+  * @brief Get the value from a node of type `LDJSONBool`.
+  * @param[in] node Node to read value from. Must be correct type (assert).
+  * @return The boolean nodes value
+  */
+bool LDGetBool(const struct LDJSON *const node);
+
+/**
+ * @brief Get the value from a node of type `LDJSONNumber`.
+ * @param[in] node Node to read value from. Must be correct type (assert).
+ * @return The number nodes value
+ */
+double LDGetNumber(const struct LDJSON *const node);
+
+/**
+ * @brief Get the value from a node of type `LDJSONText`.
+ * @param[in] node Node to read value from. Must be correct type (assert).
+ * @return The text nodes value. NULL on failure.
+ */
+char *LDGetText(const struct LDJSON *const node);
 
 /*@}*/
 

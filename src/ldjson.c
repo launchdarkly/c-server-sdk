@@ -88,6 +88,36 @@ LDNewArray(struct LDJSON **const result)
 }
 
 bool
+LDGetBool(const struct LDJSON *const node)
+{
+    cJSON *const json = (cJSON *const)node;
+
+    LD_ASSERT(json); LD_ASSERT(cJSON_IsBool(json));
+
+    return cJSON_IsTrue(json);
+}
+
+double
+LDGetNumber(const struct LDJSON *const node)
+{
+    cJSON *const json = (cJSON *const)node;
+
+    LD_ASSERT(json); LD_ASSERT(cJSON_IsNumber(json));
+
+    return json->valuedouble;
+}
+
+char *
+LDGetText(const struct LDJSON *const node)
+{
+    cJSON *const json = (cJSON *const)node;
+
+    LD_ASSERT(json); LD_ASSERT(cJSON_IsString(json));
+
+    return strdup(json->valuestring);
+}
+
+bool
 LDArrayGetIter(const struct LDJSON *const rawarray, struct LDArrayIter **const result)
 {
     const cJSON *const array = (const cJSON *const)rawarray;
