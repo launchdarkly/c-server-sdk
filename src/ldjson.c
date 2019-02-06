@@ -3,42 +3,88 @@
 
 #include "ldinternal.h"
 
-struct LDJSON *
-LDNewNull()
+bool
+LDNewNull(struct LDJSON **const result)
 {
-    return (struct LDJSON *)cJSON_CreateNull();
+    cJSON *json = NULL;
+
+    LD_ASSERT(result);
+
+    if ((json = cJSON_CreateNull())) {
+        *result = (struct LDJSON *)json;
+    }
+
+    return json != NULL;
 }
 
-struct LDJSON *
-LDNewBool(const bool boolean)
+bool
+LDNewBool(const bool boolean, struct LDJSON **const result)
 {
-    return (struct LDJSON *)cJSON_CreateBool(boolean);
+    cJSON *json = NULL;
+
+    LD_ASSERT(result);
+
+    if ((json = cJSON_CreateBool(boolean))) {
+        *result = (struct LDJSON *)json;
+    }
+
+    return json != NULL;
 }
 
-struct LDJSON *
-LDNewNumber(const double number)
+bool
+LDNewNumber(const double number, struct LDJSON **const result)
 {
-    return (struct LDJSON *)cJSON_CreateNumber(number);
+    cJSON *json = NULL;
+
+    LD_ASSERT(result);
+
+    if ((json = cJSON_CreateNumber(number))) {
+        *result = (struct LDJSON *)json;
+    }
+
+    return json != NULL;
 }
 
-struct LDJSON *
-LDNewText(const char *const text)
+bool
+LDNewText(const char *const text, struct LDJSON **const result)
 {
-    LD_ASSERT(text);
+    cJSON *json = NULL;
 
-    return (struct LDJSON *)cJSON_CreateString(text);
+    LD_ASSERT(text); LD_ASSERT(result);
+
+    if ((json = cJSON_CreateString(text))) {
+        *result = (struct LDJSON *)json;
+    }
+
+    return json != NULL;
 }
 
-struct LDJSON *
-LDNewObject()
+bool
+LDNewObject(struct LDJSON **const result)
 {
-    return (struct LDJSON *)cJSON_CreateObject();
+    cJSON *json = NULL;
+
+    LD_ASSERT(result);
+
+    if ((json = cJSON_CreateObject())) {
+        *result = (struct LDJSON *)json;
+    }
+
+    return json != NULL;
 }
 
-struct LDJSON *
-LDNewArray()
+bool
+LDNewArray(struct LDJSON **const result)
 {
-    return (struct LDJSON *)cJSON_CreateArray();
+    cJSON *json = NULL;
+
+    LD_ASSERT(result);
+
+    if ((json = cJSON_CreateArray())) {
+        *result = (struct LDJSON *)json;
+    }
+
+    return json != NULL;
 }
 
 struct LDArrayIter *
