@@ -96,17 +96,19 @@ bool LDArrayGetIter(const struct LDJSON *const array, struct LDArrayIter **const
 
 /**
  * @brief Returns the latest value and advances the iterator. The value returned is a non owning reference.
- * @param[in] iter May not be NULL (assert).
- * @return NULL indicates the end of the array..
+ * @param[in] iter May be NULL depending on implementation
+ * @param[out] result Where to place the current value. May be NULL to only advance.
+ * @return False indicates end of array, result will not be set.
  */
-struct LDJSON *LDArrayIterNext(struct LDArrayIter **const iter);
+bool LDArrayIterNext(struct LDArrayIter **const iter, struct LDJSON **const result);
 
 /**
  * @brief Returns the value the iterator is currently on without advancing. The value returned is a non owning reference.
- * @param[in] iter May not be NULL (assert).
- * @return NULL indicates the end of the array.
+ * @param[in] iter May be NULL depending on implementation
+ * @param[out] result Where to place the current value. May not be NULL (assert).
+ * @return False indicates the end of the array, result will not be set.
  */
-struct LDJSON *LDArrayIterValue(const struct LDArrayIter *const iter);
+bool LDArrayIterValue(const struct LDArrayIter *const iter, struct LDJSON **const result);
 
 /**
  * @brief Frees an iterator provided by `LDArrayGetIter`.

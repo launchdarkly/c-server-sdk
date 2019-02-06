@@ -99,23 +99,36 @@ LDArrayGetIter(const struct LDJSON *const rawarray, struct LDArrayIter **const r
     return true;
 }
 
-struct LDJSON *
-LDArrayIterNext(struct LDArrayIter **const rawiter)
+bool
+LDArrayIterNext(struct LDArrayIter **const rawiter, struct LDJSON **const result)
 {
     cJSON **const iter = (cJSON **const)rawiter;
-    cJSON *const currentvalue = *iter;
 
-    LD_ASSERT(iter);
+    if (iter) {
+        cJSON *const currentvalue = *iter;
 
-    *iter = currentvalue->next;
+        *iter = currentvalue->next;
 
-    return (struct LDJSON *)currentvalue;
+        if (result) {
+            *result = (struct LDJSON *)currentvalue;
+        }
+
+        return true;
+    } else {
+        return false;
+    }
 }
 
-struct LDJSON *
-LDArrayIterValue(const struct LDArrayIter *const iter)
+bool
+LDArrayIterValue(const struct LDArrayIter *const iter, struct LDJSON **const result)
 {
-    return (struct LDJSON *)iter;
+    LD_ASSERT(result);
+
+    if (iter) {
+        *result = (struct LDJSON *)iter;
+    }
+
+    return iter != NULL;
 }
 
 void
