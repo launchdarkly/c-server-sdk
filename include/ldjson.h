@@ -87,7 +87,7 @@ bool LDNewArray(struct LDJSON **const result);
  ******************************************************************************/
 
  /**
-  * @brief Allows iteration over an array.
+  * @brief Allows iteration over an array. Modification of the array invalidates this iterator.
   * @param[in] array May not be NULL (assert), must be of type `LDJSONArray` (assert).
   * @param[out] result Where to place the iter. May not be NULL (assert). On failure this parameter is not mutated.
   * @return True on success, False on failure.
@@ -95,14 +95,14 @@ bool LDNewArray(struct LDJSON **const result);
 bool LDArrayGetIter(const struct LDJSON *const array, struct LDArrayIter **const result);
 
 /**
- * @brief Returns the latest value and advances the iterator.
+ * @brief Returns the latest value and advances the iterator. The value returned is a non owning reference.
  * @param[in] iter May not be NULL (assert).
  * @return NULL indicates the end of the array..
  */
 struct LDJSON *LDArrayIterNext(struct LDArrayIter **const iter);
 
 /**
- * @brief Returns the value the iterator is currently on without advancing.
+ * @brief Returns the value the iterator is currently on without advancing. The value returned is a non owning reference.
  * @param[in] iter May not be NULL (assert).
  * @return NULL indicates the end of the array.
  */
