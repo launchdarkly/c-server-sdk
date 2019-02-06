@@ -166,3 +166,28 @@ LDArrayIterFree(struct LDArrayIter *const iter)
 {
     (void)iter; /* no-op */
 }
+
+
+char *
+LDJSONSerialize(const struct LDJSON *const json)
+{
+    LD_ASSERT(json);
+
+    return cJSON_Print((cJSON *)json);
+}
+
+bool
+LDJSONDeserialize(const char *const text, struct LDJSON **const json)
+{
+    cJSON *deserialized = NULL;
+
+    LD_ASSERT(text); LD_ASSERT(json);
+
+    if ((deserialized = cJSON_Parse(text))) {
+        *json = (struct LDJSON *)deserialized;
+
+        return true;
+    } else {
+        return false;
+    }
+}

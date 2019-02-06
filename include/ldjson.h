@@ -21,7 +21,7 @@ typedef enum {
     /** @brief JSON number (Double or Integer) */
     LDNumber,
     /** @brief JSON boolean (True or False) */
-    LDNBool,
+    LDBool,
     /** @brief JSON string indexed map */
     LDObject,
     /** @brief JSON integer indexed array */
@@ -147,3 +147,26 @@ bool LDArrayIterValue(const struct LDArrayIter *const iter, struct LDJSON **cons
 void LDArrayIterFree(struct LDArrayIter *const iter);
 
  /*@}*/
+
+/***************************************************************************//**
+ * @name Serialization / Deserialization
+ * Working with textual representations of JSON
+ * @{
+ ******************************************************************************/
+
+ /**
+  * @brief Serialize JSON text into a JSON structure.
+  * @param[in] json Structure to serialize. May be NULL depending on implementation.
+  * @return NULL on failure
+  */
+char *LDJSONSerialize(const struct LDJSON *const json);
+
+/**
+ * @brief Deserialize JSON text into a JSON structure.
+ * @param[in] text JSON text to deserialize. May not be NULL (ASSERT).
+ * @param[out] json May not be NULL (ASSERT). On failure this parameter is not mutated.
+ * @return True on success, False on failure
+ */
+bool LDJSONDeserialize(const char *const text, struct LDJSON **const json);
+
+/*@}*/
