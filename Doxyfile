@@ -1,0 +1,5 @@
+INPUT                = include/ src/
+
+OUTPUT_DIRECTORY     = docs
+
+ENUM_VALUES_PER_LINE = 10
