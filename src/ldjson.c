@@ -105,54 +105,24 @@ LDArrayLookup(const struct LDJSON *const rawarray, const unsigned int index)
     return (struct LDJSON *)cJSON_GetArrayItem(array, index);
 }
 
-bool
-LDArrayGetIter(const struct LDJSON *const rawarray, struct LDArrayIter **const result)
+struct LDJSON *
+LDGetIter(const struct LDJSON *const rawcollection)
 {
-    const cJSON *const array = (const cJSON *const)rawarray;
+    const cJSON *const collection = (const cJSON *const)rawcollection;
 
-    LD_ASSERT(array); LD_ASSERT(cJSON_IsArray(array));
+    LD_ASSERT(collection); LD_ASSERT(cJSON_IsArray(collection) || cJSON_IsObject(collection));
 
-    *result = (struct LDArrayIter *)array->child;
-
-    return true;
+    return (struct LDJSON *)collection->child;
 }
 
-bool
-LDArrayIterNext(struct LDArrayIter **const rawiter, struct LDJSON **const result)
+struct LDJSON *
+LDIterNext(struct LDJSON *const rawiter)
 {
-    cJSON **const iter = (cJSON **const)rawiter;
+    cJSON *const iter = (cJSON *const)rawiter;
 
-    if (iter) {
-        cJSON *const currentvalue = *iter;
+    LD_ASSERT(iter);
 
-        *iter = currentvalue->next;
-
-        if (result) {
-            *result = (struct LDJSON *)currentvalue;
-        }
-
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool
-LDArrayIterValue(const struct LDArrayIter *const iter, struct LDJSON **const result)
-{
-    LD_ASSERT(result);
-
-    if (iter) {
-        *result = (struct LDJSON *)iter;
-    }
-
-    return iter != NULL;
-}
-
-void
-LDArrayIterFree(struct LDArrayIter *const iter)
-{
-    (void)iter; /* no-op */
+    return (struct LDJSON *)iter->next;
 }
 
 bool
@@ -175,64 +145,6 @@ LDObjectLookup(const struct LDJSON *const rawobject, const char *const key)
     LD_ASSERT(object); LD_ASSERT(cJSON_IsObject(object)); LD_ASSERT(key);
 
     return (struct LDJSON *)cJSON_GetObjectItemCaseSensitive(object, key);
-}
-
-bool
-LDObjectGetIter(const struct LDJSON *const rawobject, struct LDObjectIter **const result)
-{
-    const cJSON *const object = (const cJSON *const)rawobject;
-
-    LD_ASSERT(object); LD_ASSERT(cJSON_IsObject(object));
-
-    *result = (struct LDObjectIter *)object->child;
-
-    return true;
-}
-
-bool
-LDObjectIterNext(struct LDObjectIter **const rawiter, const char **const key, struct LDJSON **const result)
-{
-    cJSON **const iter = (cJSON **const)rawiter;
-
-    if (iter) {
-        cJSON *const currentvalue = *iter;
-
-        *iter = currentvalue->next;
-
-        if (key) {
-            *key = currentvalue->string;
-        }
-
-        if (result) {
-            *result = (struct LDJSON *)currentvalue;
-        }
-
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool
-LDObjectIterValue(const struct LDObjectIter *const iter, const char **const key, struct LDJSON **const result)
-{
-    if (iter) {
-        if (key) {
-            *key = ((cJSON *)iter)->string;
-        }
-
-        if (result) {
-            *result = (struct LDJSON *)iter;
-        }
-    }
-
-    return iter != NULL;
-}
-
-void
-LDObjectIterFree(struct LDObjectIter *const iter)
-{
-    (void)iter; /* no-op */
 }
 
 bool
