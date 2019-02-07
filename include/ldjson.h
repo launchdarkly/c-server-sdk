@@ -185,6 +185,14 @@ bool LDArrayIterValue(const struct LDArrayIter *const iter, struct LDJSON **cons
  */
 void LDArrayIterFree(struct LDArrayIter *const iter);
 
+/**
+ * @brief Adds an item to the end of an existing array.
+ * @param[in] array Must be of type `LDJSONArrayt` (assert).
+ * @param[in] item The value to append to the array. This item is consumed.
+ * @return True on success, False on failure.
+ */
+bool LDArrayAppend(struct LDJSON *const array, struct LDJSON *const item);
+
 /***************************************************************************//**
  * @name Object Operations
  * Routines for working with objects
@@ -232,6 +240,15 @@ bool LDObjectIterValue(const struct LDObjectIter *const iter, const char **const
  * @return Void.
  */
 void LDObjectIterFree(struct LDObjectIter *const iter);
+
+/**
+ * @brief Sets the provided key in an object to item. If the key already exists the original value is deleted.
+ * @param[in] object Must be of type `LDJSONObject` (assert).
+ * @param[in] key The key that is being written to in the object. May not be NULL (assert).
+ * @param[in] item The value to assign to key. This item is consumed.
+ * @return True on success, False on failure.
+ */
+bool LDObjectSetKey(struct LDJSON *const object, const char *const key, struct LDJSON *const item);
 
  /*@}*/
 

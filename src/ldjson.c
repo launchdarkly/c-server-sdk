@@ -214,6 +214,18 @@ LDArrayIterFree(struct LDArrayIter *const iter)
 }
 
 bool
+LDArrayAppend(struct LDJSON *const rawarray, struct LDJSON *const item)
+{
+    cJSON *const array = (cJSON *const)rawarray;
+
+    LD_ASSERT(array); LD_ASSERT(cJSON_IsArray(array)); LD_ASSERT(item);
+
+    cJSON_AddItemToArray(array, (cJSON *)item);
+
+    return true;
+}
+
+bool
 LDObjectLookup(const struct LDJSON *const rawobject, const char *const key, struct LDJSON **const result)
 {
     cJSON *const object = (cJSON *const)rawobject, *item = NULL;
@@ -285,6 +297,18 @@ void
 LDObjectIterFree(struct LDObjectIter *const iter)
 {
     (void)iter; /* no-op */
+}
+
+bool
+LDObjectSetKey(struct LDJSON *const rawobject, const char *const key, struct LDJSON *const item)
+{
+    cJSON *const object = (cJSON *const)rawobject;
+
+    LD_ASSERT(object); LD_ASSERT(cJSON_IsObject(object)); LD_ASSERT(key); LD_ASSERT(item);
+
+    cJSON_AddItemToObject(object, key, (cJSON *)item);
+
+    return true;
 }
 
 char *
