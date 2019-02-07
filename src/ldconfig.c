@@ -17,30 +17,25 @@ LDConfigNew(const char *const key)
     memset(config, 0, sizeof(struct LDConfig));
 
     if (!(config->key = strdup(key))) {
-        LDConfigFree(config);
-
-        return NULL;
+        goto error;
     }
 
     if (!(config->baseURI = strdup("https://app.launchdarkly.com"))) {
-        LDConfigFree(config);
-
-        return NULL;
+        goto error;
     }
 
     if (!(config->streamURI = strdup("https://stream.launchdarkly.com"))) {
-        LDConfigFree(config);
-
-        return NULL;
+        goto error;
     }
 
     if (!(config->eventsURI = strdup("https://events.launchdarkly.com"))) {
-        LDConfigFree(config);
-
-        return NULL;
+        goto error;
     }
 
-    config->privateAttributeNames = NULL;
+    if (!(config->privateAttributeNames = LDNewArray())) {
+        goto error;
+    }
+
     config->stream                = true;
     config->sendEvents            = true;
     config->eventsCapacity        = 1000;
@@ -55,19 +50,23 @@ LDConfigNew(const char *const key)
     config->store                 = NULL;
 
     return config;
+
+  error:
+    LDConfigFree(config);
+
+    return NULL;
 }
 
 void
 LDConfigFree(struct LDConfig *const config)
 {
     if (config) {
-        LDHashSetFree(config->privateAttributeNames);
-
-        free( config->key       );
-        free( config->baseURI   );
-        free( config->streamURI );
-        free( config->eventsURI );
-        free( config            );
+        free(       config->key                   );
+        free(       config->baseURI               );
+        free(       config->streamURI             );
+        free(       config->eventsURI             );
+        LDJSONFree( config->privateAttributeNames );
+        free(       config                        );
     }
 }
 
@@ -186,9 +185,15 @@ LDConfigSetUserKeysFlushInterval(struct LDConfig *const config, const unsigned i
 bool
 LDConfigAddPrivateAttribute(struct LDConfig *const config, const char *const attribute)
 {
+    struct LDJSON *temp = NULL;
+
     LD_ASSERT(config); LD_ASSERT(attribute);
 
-    return LDHashSetAddKey(&config->privateAttributeNames, attribute);
+    if ((temp = LDNewText(attribute))) {
+        return LDArrayAppend(config->privateAttributeNames, temp);
+    } else {
+        return false;
+    }
 }
 
 void

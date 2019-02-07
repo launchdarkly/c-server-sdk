@@ -122,7 +122,7 @@ double LDGetNumber(const struct LDJSON *const node);
  * @param[in] node Node to read value from. Must be correct type (assert).
  * @return The text nodes value. NULL on failure.
  */
-char *LDGetText(const struct LDJSON *const node);
+const char *LDGetText(const struct LDJSON *const node);
 
 /*@}*/
 

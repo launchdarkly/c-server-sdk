@@ -75,14 +75,14 @@ LDGetNumber(const struct LDJSON *const node)
     return json->valuedouble;
 }
 
-char *
+const char *
 LDGetText(const struct LDJSON *const node)
 {
     cJSON *const json = (cJSON *const)node;
 
     LD_ASSERT(json); LD_ASSERT(cJSON_IsString(json));
 
-    return strdup(json->valuestring);
+    return json->valuestring;
 }
 
 struct LDJSON *

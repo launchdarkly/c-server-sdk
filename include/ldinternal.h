@@ -18,6 +18,7 @@
 
 #include "ldapi.h"
 #include "ldstore.h"
+#include "ldjson.h"
 
 /* **** Forward Declarations **** */
 
@@ -67,7 +68,7 @@ struct LDConfig {
     bool offline;
     bool useLDD;
     bool allAttributesPrivate;
-    struct LDHashSet *privateAttributeNames;
+    struct LDJSON *privateAttributeNames; /* Array of Text */
     unsigned int userKeysCapacity;
     unsigned int userKeysFlushInterval;
     bool defaultStore;
@@ -86,8 +87,8 @@ struct LDUser {
     char *email;
     char *name;
     char *avatar;
-    struct LDHashSet *privateAttributeNames;
-    struct LDNode *custom;
+    struct LDJSON *privateAttributeNames; /* Array of Text */
+    struct LDJSON *custom; /* Object, may be NULL */
 };
 
 struct LDNode *valueOfAttribute(const struct LDUser *const user, const char *const attribute);

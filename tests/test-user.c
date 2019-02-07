@@ -5,7 +5,7 @@
 static struct LDUser *
 constructBasic()
 {
-    struct LDNode *custom = NULL;
+    struct LDJSON *custom = NULL;
     struct LDUser *user = NULL;
 
     LD_ASSERT(user = LDUserNew("abc"));
@@ -19,7 +19,7 @@ constructBasic()
     LD_ASSERT(LDUserSetAvatar(user, "unknown101"));
     LD_ASSERT(LDUserSetSecondary(user, "unknown202"));
 
-    LD_ASSERT(custom = LDNodeNewObject());
+    LD_ASSERT(custom = LDNewObject());
 
     LDUserSetCustom(user, custom);
 
@@ -70,15 +70,15 @@ serializeRedacted()
     cJSON *json = NULL;
     struct LDUser *user = NULL;
     char *serialized = NULL;
-    struct LDNode *custom = NULL, *child = NULL;
+    struct LDJSON *custom = NULL, *child = NULL;
 
     LD_ASSERT(user = LDUserNew("123"));
 
-    LD_ASSERT(custom = LDNodeNewObject());
-    LD_ASSERT(child = LDNodeNewNumber(42));
-    LD_ASSERT(LDNodeObjectSetItem(custom, "secret", child));
-    LD_ASSERT(child = LDNodeNewNumber(52));
-    LD_ASSERT(LDNodeObjectSetItem(custom, "notsecret", child));
+    LD_ASSERT(custom = LDNewObject());
+    LD_ASSERT(child = LDNewNumber(42));
+    LD_ASSERT(LDObjectSetKey(custom, "secret", child));
+    LD_ASSERT(child = LDNewNumber(52));
+    LD_ASSERT(LDObjectSetKey(custom, "notsecret", child));
 
     LDUserSetCustom(user, custom);
     LD_ASSERT(LDUserAddPrivateAttribute(user, "secret"));
@@ -119,11 +119,11 @@ main()
 
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
-    constructNoSettings();
-    constructAllSettings();
-    serializeEmpty();
-    serializeRedacted();
-    serializeAll();
+    LDi_log(LD_LOG_INFO, "constructNoSettings()"); constructNoSettings();
+    LDi_log(LD_LOG_INFO, "constructAllSettings()"); constructAllSettings();
+    LDi_log(LD_LOG_INFO, "serializeEmpty()"); serializeEmpty();
+    LDi_log(LD_LOG_INFO, "serializeRedacted()"); serializeRedacted();
+    LDi_log(LD_LOG_INFO, "serializeAll()"); serializeAll();
 
     return 0;
 }

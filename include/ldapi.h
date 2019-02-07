@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "ldjson.h"
+
 /* **** Forward Declarations **** */
 
 struct LDConfig; struct LDUser; struct LDNode; struct LDFeatureStore;
@@ -43,7 +45,7 @@ bool LDUserSetEmail(struct LDUser *const user, const char *const email);
 bool LDUserSetName(struct LDUser *const user, const char *const name);
 bool LDUserSetAvatar(struct LDUser *const user, const char *const avatar);
 bool LDUserSetSecondary(struct LDUser *const user, const char *const secondary);
-void LDUserSetCustom(struct LDUser *const user, struct LDNode *const custom);
+void LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom);
 bool LDUserAddPrivateAttribute(struct LDUser *const user, const char *const attribute);
 
 /* **** LDClient **** */
