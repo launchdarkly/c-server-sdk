@@ -127,6 +127,35 @@ char *LDGetText(const struct LDJSON *const node);
 /*@}*/
 
 /***************************************************************************//**
+ * @name Iterator Operations
+ * Routines for working with collections (Objects, Arrays)
+ * @{
+ ******************************************************************************/
+
+/**
+ * @brief Returns the next item in the sequence
+ * @param[in] iter May be not be NULL (assert)
+ * @return Item, or NULL if the iterator is finished.
+ */
+struct LDJSON *LDIterNext(struct LDJSON *const iter);
+
+/**
+ * @brief Allows iteration over an array. Modification of the array invalidates this iterator.
+ * @param[in] collection May not be NULL (assert), must be of type `LDJSONArray` or `LDJSONObject` (assert).
+ * @return First child iterator, or NULL if empty
+ */
+struct LDJSON *LDGetIter(const struct LDJSON *const collection);
+
+/**
+ * @brief Returns the key associated with the iterator. Must be an object iterator.
+ * @param[in] iter The iterator obtained from an object. May not be NULL (assert).
+ * @return The key on success, or NULL if there is no key (wrong type).
+ */
+const char *LDIterKey(const struct LDJSON *const iter);
+
+ /*@}*/
+
+/***************************************************************************//**
  * @name Array Operations
  * Routines for working with arrays
  * @{
@@ -146,20 +175,6 @@ unsigned int LDArrayGetSize(const struct LDJSON *const array);
  * @return Item if it exists, otherwise NULL
  */
 struct LDJSON *LDArrayLookup(const struct LDJSON *const array, const unsigned int index);
-
-/**
- * @brief Allows iteration over an array. Modification of the array invalidates this iterator.
- * @param[in] collection May not be NULL (assert), must be of type `LDJSONArray` or `LDJSONObject` (assert).
- * @return First child iterator, or NULL if empty
- */
-struct LDJSON *LDGetIter(const struct LDJSON *const collection);
-
-/**
- * @brief Returns the next item in the sequence
- * @param[in] iter May be not be NULL (assert)
- * @return Item, or NULL if the iterator is finished.
- */
-struct LDJSON *LDIterNext(struct LDJSON *const iter);
 
 /**
  * @brief Adds an item to the end of an existing array.

@@ -85,26 +85,6 @@ LDGetText(const struct LDJSON *const node)
     return strdup(json->valuestring);
 }
 
-unsigned int
-LDArrayGetSize(const struct LDJSON *const rawarray)
-{
-    cJSON *const array = (cJSON *const)rawarray;
-
-    LD_ASSERT(array);
-
-    return cJSON_GetArraySize(array);
-}
-
-struct LDJSON *
-LDArrayLookup(const struct LDJSON *const rawarray, const unsigned int index)
-{
-    cJSON *const array = (cJSON *const)rawarray;
-
-    LD_ASSERT(array); LD_ASSERT(cJSON_IsArray(array));
-
-    return (struct LDJSON *)cJSON_GetArrayItem(array, index);
-}
-
 struct LDJSON *
 LDGetIter(const struct LDJSON *const rawcollection)
 {
@@ -123,6 +103,36 @@ LDIterNext(struct LDJSON *const rawiter)
     LD_ASSERT(iter);
 
     return (struct LDJSON *)iter->next;
+}
+
+const char *
+LDIterKey(const struct LDJSON *const rawiter)
+{
+    cJSON *const iter = (cJSON *const)rawiter;
+
+    LD_ASSERT(iter);
+
+    return iter->string;
+}
+
+unsigned int
+LDArrayGetSize(const struct LDJSON *const rawarray)
+{
+    cJSON *const array = (cJSON *const)rawarray;
+
+    LD_ASSERT(array);
+
+    return cJSON_GetArraySize(array);
+}
+
+struct LDJSON *
+LDArrayLookup(const struct LDJSON *const rawarray, const unsigned int index)
+{
+    cJSON *const array = (cJSON *const)rawarray;
+
+    LD_ASSERT(array); LD_ASSERT(cJSON_IsArray(array));
+
+    return (struct LDJSON *)cJSON_GetArrayItem(array, index);
 }
 
 bool
