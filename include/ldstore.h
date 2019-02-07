@@ -40,7 +40,7 @@ struct LDStore {
      * @brief Fetch all features in a given namespace
      * @param[in] context Implementation specific context. May not be NULL (assert).
      * @param[in] kind The namespace to search in. May not be NULL (assert).
-     * @return Returns an array of features, NULL on failure.
+     * @return Returns an object map keys to features, NULL on failure.
      */
     struct LDJSON *(*all)(void *const context, const char *const kind);
     /**
@@ -95,7 +95,7 @@ struct LDJSON *LDStoreAll(const struct LDStore *const store, const char *const k
 bool LDStoreDelete(const struct LDStore *const store, const char *const kind, const char *const key, const unsigned int version);
 
 /** @brief A convenience wrapper around `store->upsert`. */
-bool LDStoreUpsert(const struct LDStore *const store, const char *const key, const struct LDJSON *const feature);
+bool LDStoreUpsert(const struct LDStore *const store, const char *const key, struct LDJSON *const feature);
 
 /** @brief A convenience wrapper around `store->initialized`. */
 bool LDStoreInitialized(const struct LDStore *const store);

@@ -197,7 +197,7 @@ LDConfigAddPrivateAttribute(struct LDConfig *const config, const char *const att
 }
 
 void
-LDConfigSetFeatureStore(struct LDConfig *const config, struct LDFeatureStore *const store)
+LDConfigSetFeatureStore(struct LDConfig *const config, struct LDStore *const store)
 {
     LD_ASSERT(config);
 

@@ -72,7 +72,7 @@ struct LDConfig {
     unsigned int userKeysCapacity;
     unsigned int userKeysFlushInterval;
     bool defaultStore;
-    struct LDFeatureStore *store;
+    struct LDStore *store;
 };
 
 /* **** LDUser **** */

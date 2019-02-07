@@ -30,6 +30,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     }
 
     if (!config->store->initialized(config->store->context)) {
+        /*
         struct LDVersionedSet *sets = NULL;
 
         const char *namespace = NULL;
@@ -58,6 +59,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         if (!config->store->init(config->store->context, sets)) {
             goto error;
         }
+        */
     }
 
     client->shuttingdown = false;
@@ -99,7 +101,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
   error:
     if (config->defaultStore && config->store) {
-        freeStore(config->store);
+        LDStoreDestroy(config->store);
     }
 
     free(client);
@@ -123,7 +125,7 @@ LDClientClose(struct LDClient *const client)
         LD_ASSERT(LDi_rwlockdestroy(&client->lock));
 
         if (client->config->defaultStore) {
-            freeStore(client->config->store);
+            LDStoreDestroy(client->config->store);
         }
 
         LDConfigFree(client->config);

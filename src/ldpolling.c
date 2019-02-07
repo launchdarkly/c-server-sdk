@@ -5,8 +5,10 @@
 #include "ldinternal.h"
 
 static bool
-updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
+updateStore(struct LDStore *const store, const char *const rawupdate)
 {
+    (void)store; (void) rawupdate; return true;
+    /*
     struct LDVersionedSet *sets = NULL, *flagset = NULL, *segmentset = NULL;
 
     cJSON *decoded = NULL; struct LDVersionedData *versioned = NULL; const char *namespace = NULL;
@@ -105,6 +107,7 @@ updateStore(struct LDFeatureStore *const store, const char *const rawupdate)
 
     LDi_log(LD_LOG_INFO, "running store init");
     return store->init(store->context, sets);
+    */
 }
 
 struct PollContext {
