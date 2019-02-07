@@ -56,11 +56,29 @@ LDJSONDuplicate(const struct LDJSON *const input)
 }
 
 LDJSONType
-LDJSONGetType(const struct LDJSON *const input)
+LDJSONGetType(const struct LDJSON *const inputraw)
 {
+    const struct cJSON *const input = (const struct cJSON *const) inputraw;
+
     LD_ASSERT(input);
 
-    return LDNumber;
+    if (cJSON_IsBool(input)) {
+        return LDBool;
+    } else if (cJSON_IsNumber(input)) {
+        return LDNumber;
+    } else if (cJSON_IsNull(input)) {
+        return LDNull;
+    } else if (cJSON_IsObject(input)) {
+        return LDObject;
+    } else if (cJSON_IsArray(input)) {
+        return LDArray;
+    } else if (cJSON_IsString(input)) {
+        return LDText;
+    }
+
+    LDi_log(LD_LOG_CRITICAL, "LDJSONGetType Unknown");
+
+    abort();
 }
 
 bool
