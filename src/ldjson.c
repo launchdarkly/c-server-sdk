@@ -195,12 +195,22 @@ LDObjectSetKey(struct LDJSON *const rawobject, const char *const key, struct LDJ
     return true;
 }
 
+void
+LDObjectDeleteKey(struct LDJSON *const rawobject, const char *const key)
+{
+    cJSON *const object = (cJSON *const)rawobject;
+
+    LD_ASSERT(object); LD_ASSERT(cJSON_IsObject(object)); LD_ASSERT(key);
+
+    cJSON_DeleteItemFromObjectCaseSensitive(object, key);
+}
+
 char *
 LDJSONSerialize(const struct LDJSON *const json)
 {
     LD_ASSERT(json);
 
-    return cJSON_Print((cJSON *)json);
+    return cJSON_PrintUnformatted((cJSON *)json);
 }
 
 struct LDJSON *
