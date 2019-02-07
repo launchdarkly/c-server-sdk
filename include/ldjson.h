@@ -95,6 +95,13 @@ void LDJSONFree(struct LDJSON *const json);
  */
 struct LDJSON *LDJSONDuplicate(const struct LDJSON *const input);
 
+/**
+ * @brief Get the type of a JSON structure
+ * @param[in] json May be not be NULL (assert)
+ * @return The JSON type
+ */
+LDJSONType LDJSONGetType(const struct LDJSON *const input);
+
 /*@}*/
 
 /***************************************************************************//**

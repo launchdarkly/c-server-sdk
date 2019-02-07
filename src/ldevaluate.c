@@ -22,7 +22,7 @@ static bool clauseMatchesUserNoSegments(const struct Clause *const clause, const
 
 static float bucketUser(const struct LDUser *const user, const char *const segmentKey, const char *const attribute, const char *const salt);
 
-static char *bucketableStringValue(const struct LDNode *const node);
+static char *bucketableStringValue(const struct LDJSON *const node);
 
 /* **** Implementations **** */
 
@@ -169,35 +169,35 @@ segmentRuleMatchUser(const struct SegmentRule *const segmentRule, const char *co
 static bool
 clauseMatchesUserNoSegments(const struct Clause *const clause, const struct LDUser *const user)
 {
-    struct LDNode *attributeValue = NULL;
+    struct LDJSON *attributeValue = NULL;
 
     LD_ASSERT(clause); LD_ASSERT(user);
 
     if ((attributeValue = valueOfAttribute(user, clause->attribute))) {
-        LDNodeType type = LDNodeGetType(attributeValue);
+        LDJSONType type = LDJSONGetType(attributeValue);
 
-        if (type == LDNodeArray) {
-            const struct LDNode *iter = NULL;
+        if (type == LDArray) {
+            struct LDJSON *iter = NULL;
 
-            for (iter = LDNodeArrayGetIterator(attributeValue); iter; iter = LDNodeAdvanceIterator(iter)) {
-                type = LDNodeGetType(iter);
+            for (iter = LDGetIter(attributeValue); iter; iter = LDIterNext(iter)) {
+                type = LDJSONGetType(iter);
 
-                if (type == LDNodeObject || type == LDNodeArray) {
-                    LDNodeFree(attributeValue);
+                if (type == LDObject || type == LDArray) {
+                    LDJSONFree(attributeValue);
 
                     return false;
                 }
             }
 
-            LDNodeFree(attributeValue);
+            LDJSONFree(attributeValue);
 
             return clause->negate ? false : true;
-        } else if (type != LDNodeObject && type != LDNodeArray) {
-            LDNodeFree(attributeValue);
+        } else if (type != LDObject && type != LDArray) {
+            LDJSONFree(attributeValue);
 
             return true;
         } else {
-            LDNodeFree(attributeValue);
+            LDJSONFree(attributeValue);
 
             return false;
         }
@@ -209,14 +209,14 @@ clauseMatchesUserNoSegments(const struct Clause *const clause, const struct LDUs
 static float
 bucketUser(const struct LDUser *const user, const char *const segmentKey, const char *const attribute, const char *const salt)
 {
-    struct LDNode *attributeValue = NULL;
+    struct LDJSON *attributeValue = NULL;
 
     LD_ASSERT(user); LD_ASSERT(segmentKey); LD_ASSERT(attribute); LD_ASSERT(salt);
 
     if ((attributeValue = valueOfAttribute(user, attribute))) {
         const char *const bucketable = bucketableStringValue(attributeValue);
 
-        LDNodeFree(attributeValue);
+        LDJSONFree(attributeValue);
 
         if (bucketable) {
             char raw[256];
@@ -242,16 +242,16 @@ bucketUser(const struct LDUser *const user, const char *const segmentKey, const 
 }
 
 static char *
-bucketableStringValue(const struct LDNode *const node)
+bucketableStringValue(const struct LDJSON *const node)
 {
     LD_ASSERT(node);
 
-    if (LDNodeGetType(node) == LDNodeText) {
-        return strdup(LDNodeGetText(node));
-    } else if (LDNodeGetType(node) == LDNodeNumber) {
+    if (LDJSONGetType(node) == LDText) {
+        return strdup(LDGetText(node));
+    } else if (LDJSONGetType(node) == LDNumber) {
         char buffer[256];
 
-        if (snprintf(buffer, sizeof(buffer), "%d", (int)LDNodeGetNumber(node)) < 0) {
+        if (snprintf(buffer, sizeof(buffer), "%d", (int)LDGetNumber(node)) < 0) {
             return NULL;
         } else {
             return strdup(buffer);

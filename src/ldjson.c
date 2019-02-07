@@ -55,6 +55,14 @@ LDJSONDuplicate(const struct LDJSON *const input)
     return (struct LDJSON *)cJSON_Duplicate((cJSON *)input, true);
 }
 
+LDJSONType
+LDJSONGetType(const struct LDJSON *const input)
+{
+    LD_ASSERT(input);
+
+    return LDNumber;
+}
+
 bool
 LDGetBool(const struct LDJSON *const node)
 {

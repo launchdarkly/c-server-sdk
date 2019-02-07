@@ -17,40 +17,45 @@ LDUserNew(const char *const key)
     memset(user, 0, sizeof(struct LDUser));
 
     if (!LDSetString(&user->key, key)){
-        LDUserFree(user);
-
-        return NULL;
+        goto error;
     }
 
-    user->secondary             = NULL;
-    user->ip                    = NULL;
-    user->firstName             = NULL;
-    user->lastName              = NULL;
-    user->email                 = NULL;
-    user->name                  = NULL;
-    user->privateAttributeNames = NULL;
-    user->avatar                = NULL;
-    user->custom                = NULL;
+    if (!(user->privateAttributeNames = LDNewArray())) {
+        goto error;
+    }
+
+    user->secondary = NULL;
+    user->ip        = NULL;
+    user->firstName = NULL;
+    user->lastName  = NULL;
+    user->email     = NULL;
+    user->name      = NULL;
+    user->avatar    = NULL;
+    user->custom    = NULL;
 
     return user;
+
+  error:
+    LDUserFree(user);
+
+    return NULL;
 }
 
 void
 LDUserFree(struct LDUser *const user)
 {
     if (user) {
-        LDHashSetFree(user->privateAttributeNames);
-
-        free(       user->key       );
-        free(       user->secondary );
-        free(       user->ip        );
-        free(       user->firstName );
-        free(       user->lastName  );
-        free(       user->email     );
-        free(       user->name      );
-        free(       user->avatar    );
-        LDNodeFree( user->custom    );
-        free(       user            );
+        free(       user->key                   );
+        free(       user->secondary             );
+        free(       user->ip                    );
+        free(       user->firstName             );
+        free(       user->lastName              );
+        free(       user->email                 );
+        free(       user->name                  );
+        free(       user->avatar                );
+        LDJSONFree( user->custom                );
+        LDJSONFree( user->privateAttributeNames );
+        free(       user                        );
     }
 }
 
@@ -119,7 +124,7 @@ LDUserSetSecondary(struct LDUser *const user, const char *const secondary)
 }
 
 void
-LDUserSetCustom(struct LDUser *const user, struct LDNode *const custom)
+LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom)
 {
     LD_ASSERT(custom);
 
@@ -129,9 +134,29 @@ LDUserSetCustom(struct LDUser *const user, struct LDNode *const custom)
 bool
 LDUserAddPrivateAttribute(struct LDUser *const user, const char *const attribute)
 {
+    struct LDJSON *temp = NULL;
+
     LD_ASSERT(user); LD_ASSERT(attribute);
 
-    return LDHashSetAddKey(&user->privateAttributeNames, attribute);
+    if ((temp = LDNewText(attribute))) {
+        return LDArrayAppend(user->privateAttributeNames, temp);
+    } else {
+        return false;
+    }
+}
+
+static bool
+textInArray(const struct LDJSON *const array, const char *const text)
+{
+    struct LDJSON *iter = NULL;
+
+    for (iter = LDGetIter(array); iter; iter = LDIterNext(iter)) {
+        if (strcmp(LDGetText(iter), text) == 0) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 static bool
@@ -141,10 +166,10 @@ isPrivateAttr(struct LDClient *const client, struct LDUser *const user, const ch
 
     if (client) {
         global = client->config->allAttributesPrivate  ||
-            (LDHashSetLookup(client->config->privateAttributeNames, key) != NULL);
+            textInArray(client->config->privateAttributeNames, key);
     }
 
-    return global || (LDHashSetLookup(user->privateAttributeNames, key) != NULL);
+    return global || textInArray(user->privateAttributeNames, key);
 }
 
 static bool
@@ -202,7 +227,7 @@ LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const b
     addstring(avatar);
 
     if (lduser->custom) {
-        cJSON *const custom = LDNodeToJSON(lduser->custom);
+        cJSON *const custom = (cJSON *)LDJSONDuplicate(lduser->custom);
 
         if (!custom) {
             cJSON_Delete(json);
@@ -245,49 +270,51 @@ LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const b
     #undef addstring
 }
 
-struct LDNode *
+struct LDJSON *
 valueOfAttribute(const struct LDUser *const user, const char *const attribute)
 {
     LD_ASSERT(user); LD_ASSERT(attribute);
 
     if (strcmp(attribute, "key") == 0) {
         if (user->key) {
-            return LDNodeNewText(user->key);
+            return LDNewText(user->key);
         }
     } else if (strcmp(attribute, "ip") == 0) {
         if (user->ip) {
-            return LDNodeNewText(user->ip);
+            return LDNewText(user->ip);
         }
     } else if (strcmp(attribute, "email") == 0) {
         if (user->email) {
-            return LDNodeNewText(user->email);
+            return LDNewText(user->email);
         }
     } else if (strcmp(attribute, "firstName") == 0) {
         if (user->firstName) {
-            return LDNodeNewText(user->firstName);
+            return LDNewText(user->firstName);
         }
     } else if (strcmp(attribute, "lastName") == 0) {
         if (user->lastName) {
-            return LDNodeNewText(user->lastName);
+            return LDNewText(user->lastName);
         }
     } else if (strcmp(attribute, "avatar") == 0) {
         if (user->avatar) {
-            return LDNodeNewText(user->avatar);
+            return LDNewText(user->avatar);
         }
     } else if (strcmp(attribute, "name") == 0) {
         if (user->name) {
-            return LDNodeNewText(user->name);
+            return LDNewText(user->name);
         }
     } else if (strcmp(attribute, "anonymous") == 0) {
-        return LDNodeNewBool(user->anonymous);
+        return LDNewBool(user->anonymous);
     } else if (user->custom) {
-        const struct LDNode *node = NULL;
+        const struct LDJSON *node = NULL;
 
-        LD_ASSERT(LDNodeGetType(user->custom) == LDNodeObject);
+        LD_ASSERT(LDJSONGetType(user->custom) == LDObject);
 
-        if ((node = LDNodeObjectLookupKey(user->custom, attribute))) {
-            return LDNodeDeepCopy(node);
+        if ((node = LDObjectLookup(user->custom, attribute))) {
+            return LDJSONDuplicate(node);
         }
+
+        return NULL;
     }
 
     return NULL;
