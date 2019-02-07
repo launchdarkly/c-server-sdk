@@ -92,7 +92,7 @@ struct LDUser {
 };
 
 struct LDJSON *valueOfAttribute(const struct LDUser *const user, const char *const attribute);
-cJSON *LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const bool redact);
+struct LDJSON *LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const bool redact);
 
 /* **** LDClient **** */
 

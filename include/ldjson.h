@@ -215,6 +215,14 @@ struct LDJSON *LDObjectLookup(const struct LDJSON *const object, const char *con
  */
 bool LDObjectSetKey(struct LDJSON *const object, const char *const key, struct LDJSON *const item);
 
+/**
+ * @brief Delete the provided key from the given object.
+ * @param[in] object May not be NULL (assert), must be of type `LDJSONObject` (assert).
+ * @param[in] key The key to delete from the object. May not be NULL (assert),
+ * @return Void
+ */
+void LDObjectDeleteKey(struct LDJSON *const object, const char *const key);
+
  /*@}*/
 
 /***************************************************************************//**

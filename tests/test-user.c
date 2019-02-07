@@ -49,25 +49,25 @@ constructAllSettings()
 static void
 serializeEmpty()
 {
-    cJSON *json = NULL;
+    struct LDJSON *json = NULL;
     struct LDUser *user = NULL;
     char *serialized = NULL;
 
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(json = LDUserToJSON(NULL, user, false));
-    LD_ASSERT(serialized = cJSON_PrintUnformatted(json));
+    LD_ASSERT(serialized = LDJSONSerialize(json));
 
     LD_ASSERT(strcmp(serialized, "{\"key\":\"abc\"}") == 0);
 
     LDUserFree(user);
     free(serialized);
-    cJSON_Delete(json);
+    LDJSONFree(json);
 }
 
 static void
 serializeRedacted()
 {
-    cJSON *json = NULL;
+    struct LDJSON *json = NULL;
     struct LDUser *user = NULL;
     char *serialized = NULL;
     struct LDJSON *custom = NULL, *child = NULL;
@@ -84,32 +84,32 @@ serializeRedacted()
     LD_ASSERT(LDUserAddPrivateAttribute(user, "secret"));
 
     LD_ASSERT(json = LDUserToJSON(NULL, user, true));
-    LD_ASSERT(serialized = cJSON_PrintUnformatted(json));
+    LD_ASSERT(serialized = LDJSONSerialize(json));
 
     LD_ASSERT(strcmp(serialized, "{\"key\":\"123\",\"custom\":{\"notsecret\":52},\"privateAttrs\":[\"secret\"]}") == 0);
 
     LDUserFree(user);
     free(serialized);
-    cJSON_Delete(json);
+    LDJSONFree(json);
 }
 
 static void
 serializeAll()
 {
-    cJSON *json = NULL;
+    struct LDJSON *json = NULL;
     struct LDUser *user = NULL;
     char *serialized = NULL;
 
     LD_ASSERT(user = constructBasic());
 
     LD_ASSERT(json = LDUserToJSON(NULL, user, false));
-    LD_ASSERT(serialized = cJSON_PrintUnformatted(json));
+    LD_ASSERT(serialized = LDJSONSerialize(json));
 
     LD_ASSERT(strcmp(serialized, "{\"key\":\"abc\",\"secondary\":\"unknown202\",\"ip\":\"127.0.0.1\",\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"email\":\"janedoe@launchdarkly.com\",\"name\":\"Jane\",\"avatar\":\"unknown101\",\"custom\":{}}") == 0);
 
     LDUserFree(user);
     free(serialized);
-    cJSON_Delete(json);
+    LDJSONFree(json);
 }
 
 int
