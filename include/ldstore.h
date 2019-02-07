@@ -1,66 +1,120 @@
+/*!
+ * @file ldstore.h
+ * @brief Public API Interface for Store implementatons
+ */
+
 #pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "ldschema.h"
+#include "ldjson.h"
 
-/* **** Forward Declarations **** */
+/***************************************************************************//**
+ * @name Generic Store Interface
+ * Used to provide all interaction with a feature store. Redis, Consul, DynamoDB, etc.
+ * @{
+ ******************************************************************************/
 
-struct LDVersionedData; struct LDVersionedDataKind; struct LDVersionedSet; struct LDFeatureStore;
-
-/* **** Kind Interfaces **** */
-
-struct LDVersionedDataKind getFlagKind();
-struct LDVersionedDataKind getSegmentKind();
-
-struct LDVersionedData *segmentToVersioned(struct Segment *const segment);
-struct LDVersionedData *flagToVersioned(struct FeatureFlag *const flag);
-
-/* **** Store Interfaces **** */
-
-/* hh key from data->getKey */
-struct LDVersionedData {
-    void *data;
-    bool (*isDeleted)(const void *const object);
-    unsigned int (*getVersion)(const void *const object);
-    const char *(*getKey)(const void *const object);
-    char *(*serialize)(const void *const object);
-    void (*destructor)(void *const object);
-    UT_hash_handle hh;
-};
-
-struct LDVersionedDataKind {
-    const char *(*getNamespace)();
-    struct LDVersionedData *(*parse)(const char *const text);
-    struct LDVersionedData *(*makeDeletedItem)(const char *const key, const unsigned int version);
-};
-
-/* hh key from kind->getNamespace() */
-struct LDVersionedSet {
-    struct LDVersionedDataKind kind;
-    struct LDVersionedData *elements;
-    UT_hash_handle hh;
-};
-
-struct LDFeatureStore {
-    bool (*init)(void *const context, struct LDVersionedSet *const sets);
-    struct LDVersionedData *(*get)(void *const context, const char *const key, const struct LDVersionedDataKind kind);
-    /* must be first method of interface called after get */
-    void (*finalizeGet)(void *const context, struct LDVersionedData *const value);
-    struct LDVersionedData *(*all)(void *const context, const struct LDVersionedDataKind kind);
-    /* must be first method of interface called after all */
-    void (*finalizeAll)(void *const context, struct LDVersionedData *const all);
-    bool (*delete)(void *const context, const struct LDVersionedDataKind kind, const char *const key, const unsigned int version);
-    bool (*upsert)(void *const context, const struct LDVersionedDataKind kind, struct LDVersionedData *data);
-    bool (*initialized)(void *const context);
-    void (*destructor)(void *const context);
-    void (*finishAction)();
+/** @brief An Interface providing access to a store */
+struct LDStore {
+    /**
+     * @brief Used to store implementation specific data
+     */
     void *context;
+    /**
+     * @brief Initialize the feature store with a new data set
+     * @param[in] sets A JSON object containing the new feature values. This routine takes ownership of sets.
+     * @return True on success, False on failure.
+     */
+    bool (*init)(void *const context, struct LDJSON *const sets);
+    /**
+     * @brief Fetch a feature from the store
+     * @param[in] context Implementation specific context. May not be NULL (assert).
+     * @param[in] kind The namespace to search in. May not be NULL (assert).
+     * @param[in] key The key to return the value for. May not be NULL (assert).
+     * @return Returns the feature, or NULL if it does not exist.
+     */
+    struct LDJSON *(*get)(void *const context, const char *const kind, const char *const key);
+    /**
+     * @brief Fetch all features in a given namespace
+     * @param[in] context Implementation specific context. May not be NULL (assert).
+     * @param[in] kind The namespace to search in. May not be NULL (assert).
+     * @return Returns an array of features, NULL on failure.
+     */
+    struct LDJSON *(*all)(void *const context, const char *const kind);
+    /**
+     * @brief Mark an existing feature as deleted (only virtually deletes to maintain version)
+     * @param[in] context Implementation specific context. May not be NULL (assert).
+     * @param[in] kind The namespace to search in. May not be NULL (assert).
+     * @param[in] key The key to return the value for. May not be NULL (assert).
+     * @param[in] version Version of event. Only deletes if version is newer than the features.
+     * @return True on success, False on failure.
+     */
+    bool (*delete)(void *const context, const char *const kind, const char *const key, const unsigned int version);
+    /**
+     * @brief Replace an existing feature with a newer one
+     * @param[in] context Implementation specific context. May not be NULL (assert).
+     * @param[in] kind The namespace to search in. May not be NULL (assert).
+     * @param[in] feature The updated feature. Only deletes current if version is newer. Takes ownership of feature.
+     * @return True on success, False on failure.
+     */
+    bool (*upsert)(void *const context, const char *const kind, struct LDJSON *const feature);
+    /**
+     * @brief Determine if the store is initialized with features yet.
+     * @param[in] context Implementation specific context. May not be NULL (assert).
+     * @return True if the store is intialized, false otherwise.
+     */
+    bool (*initialized)(void *const context);
+    /**
+     * @brief Destroy the implementation specific context associated.
+     * @param[in] context Implementation specific context. May not be NULL (assert).
+     * @return Void.
+     */
+    void (*destructor)(void *const context);
 };
 
-void freeStore(struct LDFeatureStore *const store);
+/*@}*/
 
-/* **** Memory Concrete Instance **** */
+/***************************************************************************//**
+ * @name Store convenience functions
+ * Allows treating `LDStore` as more of an object
+ * @{
+ ******************************************************************************/
 
-struct LDFeatureStore *makeInMemoryStore();
+/** @brief A convenience wrapper around `store->init`. */
+bool LDStoreInit(const struct LDStore *const store, struct LDJSON *const sets);
+
+/** @brief A convenience wrapper around `store->get`. */
+struct LDJSON *LDStoreGet(const struct LDStore *const store, const char *const kind, const char *const key);
+
+/** @brief A convenience wrapper around `store->all`. */
+struct LDJSON *LDStoreAll(const struct LDStore *const store, const char *const kind);
+
+/** @brief A convenience wrapper around `store->delete`. */
+bool LDStoreDelete(const struct LDStore *const store, const char *const kind, const char *const key, const unsigned int version);
+
+/** @brief A convenience wrapper around `store->upsert`. */
+bool LDStoreUpsert(const struct LDStore *const store, const char *const key, const struct LDJSON *const feature);
+
+/** @brief A convenience wrapper around `store->initialized`. */
+bool LDStoreInitialized(const struct LDStore *const store);
+
+/** @brief A convenience wrapper around `store->destructor.` */
+void LDStoreDestroy(struct LDStore *const store);
+
+/*@}*/
+
+/***************************************************************************//**
+ * @name Memory store
+ * The default feature store with no external storage.
+ * @{
+ ******************************************************************************/
+
+ /**
+  * @brief The default store type.
+  * @return The newly allocated store, or NULL on failure.
+  */
+struct LDStore *makeInMemoryStore();
+
+/*@}*/
