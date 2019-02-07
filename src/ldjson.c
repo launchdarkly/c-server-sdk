@@ -3,88 +3,40 @@
 
 #include "ldinternal.h"
 
-bool
-LDNewNull(struct LDJSON **const result)
+struct LDJSON *
+LDNewNull()
 {
-    cJSON *json = NULL;
-
-    LD_ASSERT(result);
-
-    if ((json = cJSON_CreateNull())) {
-        *result = (struct LDJSON *)json;
-    }
-
-    return json != NULL;
+    return (struct LDJSON *)cJSON_CreateNull();
 }
 
-bool
-LDNewBool(const bool boolean, struct LDJSON **const result)
+struct LDJSON *
+LDNewBool(const bool boolean)
 {
-    cJSON *json = NULL;
-
-    LD_ASSERT(result);
-
-    if ((json = cJSON_CreateBool(boolean))) {
-        *result = (struct LDJSON *)json;
-    }
-
-    return json != NULL;
+    return (struct LDJSON *)cJSON_CreateBool(boolean);
 }
 
-bool
-LDNewNumber(const double number, struct LDJSON **const result)
+struct LDJSON *
+LDNewNumber(const double number)
 {
-    cJSON *json = NULL;
-
-    LD_ASSERT(result);
-
-    if ((json = cJSON_CreateNumber(number))) {
-        *result = (struct LDJSON *)json;
-    }
-
-    return json != NULL;
+    return (struct LDJSON *)cJSON_CreateNumber(number);
 }
 
-bool
-LDNewText(const char *const text, struct LDJSON **const result)
+struct LDJSON *
+LDNewText(const char *const text)
 {
-    cJSON *json = NULL;
-
-    LD_ASSERT(text); LD_ASSERT(result);
-
-    if ((json = cJSON_CreateString(text))) {
-        *result = (struct LDJSON *)json;
-    }
-
-    return json != NULL;
+    return (struct LDJSON *)cJSON_CreateString(text);
 }
 
-bool
-LDNewObject(struct LDJSON **const result)
+struct LDJSON *
+LDNewObject()
 {
-    cJSON *json = NULL;
-
-    LD_ASSERT(result);
-
-    if ((json = cJSON_CreateObject())) {
-        *result = (struct LDJSON *)json;
-    }
-
-    return json != NULL;
+    return (struct LDJSON *)cJSON_CreateObject();
 }
 
-bool
-LDNewArray(struct LDJSON **const result)
+struct LDJSON *
+LDNewArray()
 {
-    cJSON *json = NULL;
-
-    LD_ASSERT(result);
-
-    if ((json = cJSON_CreateArray())) {
-        *result = (struct LDJSON *)json;
-    }
-
-    return json != NULL;
+    return (struct LDJSON *)cJSON_CreateArray();
 }
 
 void

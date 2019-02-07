@@ -36,47 +36,42 @@ typedef enum {
 
  /**
   * @brief Constructs a JSON node of type `LDJSONNull`.
-  * @param[out] result Where to place the node. May not be NULL (assert). On failure this parameter is not mutated.
-  * @return True on success, False on failure.
+  * @return NULL on failure.
   */
-bool LDNewNull(struct LDJSON **const result);
+struct LDJSON *LDNewNull();
 
  /**
   * @brief Constructs a JSON node of type `LDJSONBool`.
   * @param[in] boolean The value to assign the new node
-  * @param[out] result Where to place the node. May not be NULL (assert). On failure this parameter is not mutated.
-  * @return True on success, False on failure.
+  * @return NULL on failure.
   */
-bool LDNewBool(const bool boolean, struct LDJSON **const result);
+struct LDJSON *LDNewBool(const bool boolean);
 
 /**
  * @brief Constructs a JSON node of type `LDJSONumber`.
  * @param[in] number The value to assign the new node
- * @param[out] result Where to place the node. May not be NULL (assert). On failure this parameter is not mutated.
- * @return True on success, False on failure.
+ * @return NULL on failure.
  */
-bool LDNewNumber(const double number, struct LDJSON **const result);
+struct LDJSON *LDNewNumber(const double number);
 
 /**
  * @brief Returns a a new constructed JSON node of type `LDJSONText`.
  * @param[in] text The text to copy and then assign the new node
  * @return NULL on failure.
  */
-bool LDNewText(const char *const text, struct LDJSON **const result);
+struct LDJSON *LDNewText(const char *const text);
 
  /**
   * @brief Constructs a JSON node of type `LDJSONObject`.
-  * @param[out] result Where to place the node. May not be NULL (assert). On failure this parameter is not mutated.
-  * @return True on success, False on failure.
+  * @return NULL on failure.
   */
-bool LDNewObject(struct LDJSON **const result);
+struct LDJSON *LDNewObject();
 
  /**
   * @brief Constructs a JSON node of type `LDJSONArray`.
-  * @param[out] result Where to place the node. May not be NULL (assert). On failure this parameter is not mutated.
-  * @return True on success, False on failure.
+  * @return NULL on failure.
   */
-bool LDNewArray(struct LDJSON **const result);
+struct LDJSON *LDNewArray();
 
 /*@}*/
 
