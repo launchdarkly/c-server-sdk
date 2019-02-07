@@ -91,10 +91,9 @@ void LDJSONFree(struct LDJSON *const json);
 /**
  * @brief Duplicates an existing JSON strucutre. This acts as a deep copy.
  * @param[in] input JSON to be duplicated.
- * @param[out] output Where to place the node. May not be NULL (assert). On failure this parameter is not mutated.
- * @return True on success, False on failure.
+ * @return NULL on failure
  */
-bool LDJSONDuplicate(const struct LDJSON *const input, struct LDJSON **const output);
+struct LDJSON *LDJSONDuplicate(const struct LDJSON *const input);
 
 /*@}*/
 
@@ -144,10 +143,9 @@ unsigned int LDArrayGetSize(const struct LDJSON *const array);
  * @brief Lookup up the value of an index for a given array
  * @param[in] array May not be NULL (assert), must be of type `LDJSONArray` (assert).
  * @param[in] index The index to lookup in the array
- * @param[out] result Where to place the iter. May not be NULL (assert). If the key does not exist this parameter is not mutated.
- * @return True item exists, False item does not exist
+ * @return Item if it exists, otherwise NULL
  */
-bool LDArrayLookup(const struct LDJSON *const array, const unsigned int index, struct LDJSON **const result);
+struct LDJSON *LDArrayLookup(const struct LDJSON *const array, const unsigned int index);
 
 /**
  * @brief Allows iteration over an array. Modification of the array invalidates this iterator.
@@ -198,10 +196,9 @@ bool LDArrayAppend(struct LDJSON *const array, struct LDJSON *const item);
  * @brief Lookup up the value of a key for a given object
  * @param[in] object May not be NULL (assert), must be of type `LDJSONObject` (assert).
  * @param[in] key The key to lookup in the object. May not be NULL (assert),
- * @param[out] result Where to place the iter. May not be NULL (assert). If the key does not exist this parameter is not mutated.
- * @return True item exists, False item does not exist
+ * @return The item if it exists, otherwise NULL.
  */
-bool LDObjectLookup(const struct LDJSON *const object, const char *const key, struct LDJSON **const result);
+struct LDJSON *LDObjectLookup(const struct LDJSON *const object, const char *const key);
 
  /**
   * @brief Allows iteration over an array. Modification of the array invalidates this iterator.
@@ -264,8 +261,8 @@ char *LDJSONSerialize(const struct LDJSON *const json);
  * @brief Deserialize JSON text into a JSON structure.
  * @param[in] text JSON text to deserialize. May not be NULL (ASSERT).
  * @param[out] json May not be NULL (ASSERT). On failure this parameter is not mutated.
- * @return True on success, False on failure
+ * @return JSON structure on success, NULL on failure.
  */
-bool LDJSONDeserialize(const char *const text, struct LDJSON **const json);
+struct LDJSON *LDJSONDeserialize(const char *const text);
 
 /*@}*/

@@ -24,6 +24,8 @@ LDNewNumber(const double number)
 struct LDJSON *
 LDNewText(const char *const text)
 {
+    LD_ASSERT(text);
+
     return (struct LDJSON *)cJSON_CreateString(text);
 }
 
@@ -45,18 +47,12 @@ LDJSONFree(struct LDJSON *const json)
     cJSON_Delete((cJSON *)json);
 }
 
-bool
-LDJSONDuplicate(const struct LDJSON *const input, struct LDJSON **const output)
+struct LDJSON *
+LDJSONDuplicate(const struct LDJSON *const input)
 {
-    cJSON *result = NULL;
+    LD_ASSERT(input);
 
-    LD_ASSERT(input); LD_ASSERT(output);
-
-    if ((result = cJSON_Duplicate((cJSON *)input, true))) {
-        *output = (struct LDJSON *)result;
-    }
-
-    return result != NULL;
+    return (struct LDJSON *)cJSON_Duplicate((cJSON *)input, true);
 }
 
 bool
@@ -99,20 +95,14 @@ LDArrayGetSize(const struct LDJSON *const rawarray)
     return cJSON_GetArraySize(array);
 }
 
-bool
-LDArrayLookup(const struct LDJSON *const rawarray, const unsigned int index, struct LDJSON **const result)
+struct LDJSON *
+LDArrayLookup(const struct LDJSON *const rawarray, const unsigned int index)
 {
-    cJSON *const array = (cJSON *const)rawarray, *item = NULL;
+    cJSON *const array = (cJSON *const)rawarray;
 
-    LD_ASSERT(array); LD_ASSERT(cJSON_IsArray(array)); LD_ASSERT(result);
+    LD_ASSERT(array); LD_ASSERT(cJSON_IsArray(array));
 
-    if ((item = cJSON_GetArrayItem(array, index))) {
-        *result = (struct LDJSON *)item;
-
-        return true;
-    }
-
-    return false;
+    return (struct LDJSON *)cJSON_GetArrayItem(array, index);
 }
 
 bool
@@ -177,20 +167,14 @@ LDArrayAppend(struct LDJSON *const rawarray, struct LDJSON *const item)
     return true;
 }
 
-bool
-LDObjectLookup(const struct LDJSON *const rawobject, const char *const key, struct LDJSON **const result)
+struct LDJSON *
+LDObjectLookup(const struct LDJSON *const rawobject, const char *const key)
 {
-    cJSON *const object = (cJSON *const)rawobject, *item = NULL;
+    cJSON *const object = (cJSON *const)rawobject;
 
-    LD_ASSERT(object); LD_ASSERT(cJSON_IsObject(object)); LD_ASSERT(key); LD_ASSERT(result);
+    LD_ASSERT(object); LD_ASSERT(cJSON_IsObject(object)); LD_ASSERT(key);
 
-    if ((item = cJSON_GetObjectItemCaseSensitive(object, key))) {
-        *result = (struct LDJSON *)item;
-
-        return true;
-    }
-
-    return false;
+    return (struct LDJSON *)cJSON_GetObjectItemCaseSensitive(object, key);
 }
 
 bool
@@ -271,18 +255,10 @@ LDJSONSerialize(const struct LDJSON *const json)
     return cJSON_Print((cJSON *)json);
 }
 
-bool
-LDJSONDeserialize(const char *const text, struct LDJSON **const json)
+struct LDJSON *
+LDJSONDeserialize(const char *const text)
 {
-    cJSON *deserialized = NULL;
+    LD_ASSERT(text);
 
-    LD_ASSERT(text); LD_ASSERT(json);
-
-    if ((deserialized = cJSON_Parse(text))) {
-        *json = (struct LDJSON *)deserialized;
-
-        return true;
-    } else {
-        return false;
-    }
+    return (struct LDJSON *)cJSON_Parse(text);
 }
