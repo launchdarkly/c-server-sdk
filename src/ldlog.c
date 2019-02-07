@@ -19,6 +19,8 @@ LDLogLevelToString(const LDLogLevel level)
         case LD_LOG_DEBUG:    return "LD_LOG_DEBUG";    break;
         case LD_LOG_TRACE:    return "LD_LOG_TRACE";    break;
     }
+
+    return NULL;
 }
 
 void

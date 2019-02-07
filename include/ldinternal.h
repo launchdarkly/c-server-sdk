@@ -91,11 +91,13 @@ struct LDUser {
 };
 
 struct LDNode *valueOfAttribute(const struct LDUser *const user, const char *const attribute);
+cJSON *LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const bool redact);
 
 /* **** LDClient **** */
 
 struct LDClient {
     /* LDClientInit */
+    bool initialized;
     bool shuttingdown;
     struct LDConfig *config;
     ld_thread_t thread;
