@@ -82,6 +82,12 @@ LDJSONGetType(const struct LDJSON *const inputraw)
 }
 
 bool
+LDJSONCompare(const struct LDJSON *const left, const struct LDJSON *const right)
+{
+    return cJSON_Compare((const cJSON *const)left, (const cJSON *const)right, true);
+}
+
+bool
 LDGetBool(const struct LDJSON *const node)
 {
     cJSON *const json = (cJSON *const)node;

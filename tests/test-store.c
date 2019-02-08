@@ -92,7 +92,7 @@ basicExists()
 
     LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "flags")));
 
-    /* LD_ASSERT(lookup->data == segment); NEED compare */
+    LD_ASSERT(LDJSONCompare(lookup, feature));
 
     LDJSONFree(lookup);
 
@@ -126,7 +126,7 @@ upsertNewer()
 
     LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "segments")));
 
-    /* LD_ASSERT(lookup->data == segment); requires deep compare */
+    LD_ASSERT(LDJSONCompare(lookup, feature));
 
     LDJSONFree(lookup);
 
@@ -148,7 +148,7 @@ upsertOlder()
 
     LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "segments")));
 
-    /* LD_ASSERT(lookup->data == segment2); requires deep compare */
+    LD_ASSERT(LDJSONCompare(lookup, feature2));
 
     LDJSONFree(lookup);
 
@@ -187,11 +187,11 @@ conflictDifferentNamespace()
     LD_ASSERT(LDStoreUpsert(store, "flags", feature2));
 
     LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "segments")));
-    /* LD_ASSERT(lookup->data == feature1); requires deep compare */
+    LD_ASSERT(LDJSONCompare(lookup, feature1));
     LDJSONFree(lookup);
 
     LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "flags")));
-    /* LD_ASSERT(lookup->data == feature2); requires deep compare */
+    LD_ASSERT(LDJSONCompare(lookup, feature2));
     LDJSONFree(lookup);
 
     LDStoreDestroy(store);

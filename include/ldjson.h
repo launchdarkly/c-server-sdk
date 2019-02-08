@@ -102,6 +102,14 @@ struct LDJSON *LDJSONDuplicate(const struct LDJSON *const json);
  */
 LDJSONType LDJSONGetType(const struct LDJSON *const json);
 
+/**
+ * @brief Deep compare to check if two JSON structures are equal
+ * @param[in] left May be NULL.
+ * @param[in] right May be NULL.
+ * @return True if equal, false otherwise.
+ */
+bool LDJSONCompare(const struct LDJSON *const left, const struct LDJSON *const right);
+
 /*@}*/
 
 /***************************************************************************//**
