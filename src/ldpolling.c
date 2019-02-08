@@ -124,9 +124,6 @@ poll(struct LDClient *const client, void *const rawcontext)
         }
     }
 
-    /* sleep when waiting for interval */
-    /* usleep(1000 * 10); */
-
     LDi_log(LD_LOG_INFO, "poll!");
 
     if (snprintf(url, sizeof(url), "%s/sdk/latest-all", client->config->baseURI) < 0) {
