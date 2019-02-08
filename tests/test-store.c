@@ -173,37 +173,29 @@ upsertDelete()
     LDStoreDestroy(store);
 }
 
-/*
 static void
 conflictDifferentNamespace()
 {
-    struct LDFeatureStore *store = NULL;
-    struct Segment *segment = NULL;
-    struct FeatureFlag *flag = NULL;
-    struct LDVersionedData *versioned = NULL, *lookup = NULL;
-    struct LDVersionedDataKind segmentKind = getSegmentKind(), flagKind = getFlagKind();
+    struct LDStore *store = NULL; struct LDJSON *feature1 = NULL, *feature2 = NULL, *lookup = NULL;
 
     LD_ASSERT(store = prepareEmptyStore());
 
-    LD_ASSERT(segment = constructSegment("my-heap-key", 3));
-    LD_ASSERT(versioned = segmentToVersioned(segment));
-    LD_ASSERT(store->upsert(store->context, segmentKind, versioned));
+    LD_ASSERT(feature1 = makeVersioned("my-heap-key", 3));
+    LD_ASSERT(LDStoreUpsert(store, "segments", feature1));
 
-    LD_ASSERT(flag = constructFlag("my-heap-key", 3));
-    LD_ASSERT(versioned = flagToVersioned(flag));
-    LD_ASSERT(store->upsert(store->context, flagKind, versioned));
+    LD_ASSERT(feature2 = makeVersioned("my-heap-key", 3));
+    LD_ASSERT(LDStoreUpsert(store, "flags", feature2));
 
-    LD_ASSERT((lookup = store->get(store->context, "my-heap-key", segmentKind)));
-    LD_ASSERT(lookup->data == segment);
-    store->finalizeGet(store->context, lookup);
+    LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "segments")));
+    /* LD_ASSERT(lookup->data == feature1); requires deep compare */
+    LDJSONFree(lookup);
 
-    LD_ASSERT((lookup = store->get(store->context, "my-heap-key", flagKind)));
-    LD_ASSERT(lookup->data == flag);
-    store->finalizeGet(store->context, lookup);
+    LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "flags")));
+    /* LD_ASSERT(lookup->data == feature2); requires deep compare */
+    LDJSONFree(lookup);
 
     LDStoreDestroy(store);
 }
-*/
 
 int
 main()
@@ -217,10 +209,7 @@ main()
     upsertNewer();
     upsertOlder();
     upsertDelete();
-
-    /*
     conflictDifferentNamespace();
-    */
 
     return 0;
 }
