@@ -31,7 +31,7 @@ memoryInit(void *const rawcontext, struct LDJSON *const sets)
 {
     struct MemoryContext *const context = rawcontext;
 
-    LD_ASSERT(context); LD_ASSERT(sets); LD_ASSERT(LDJSONGetType(sets) == LDArray);
+    LD_ASSERT(context); LD_ASSERT(sets); LD_ASSERT(LDJSONGetType(sets) == LDObject);
 
     LD_ASSERT(LDi_rdlock(&context->lock));
 

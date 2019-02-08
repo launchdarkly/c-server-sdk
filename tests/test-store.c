@@ -1,38 +1,58 @@
 #include "ldinternal.h"
 #include "ldstore.h"
 
-/*
-static struct LDFeatureStore *
+static struct LDStore *
 prepareEmptyStore()
 {
-    struct LDVersionedSet *sets = NULL;
-    struct LDFeatureStore *store = NULL;
-
-    const char *namespace = NULL;
-    struct LDVersionedSet *set = NULL;
+    struct LDStore *store = NULL; struct LDJSON *sets = NULL, *tmp = NULL;
 
     LD_ASSERT(store = makeInMemoryStore());
-    LD_ASSERT(!store->initialized(store->context));
+    LD_ASSERT(!LDStoreInitialized(store));
 
-    LD_ASSERT(set = malloc(sizeof(struct LDVersionedSet)));
-    set->kind = getSegmentKind();
-    set->elements = NULL;
-    LD_ASSERT(namespace = set->kind.getNamespace());
-    HASH_ADD_KEYPTR(hh, sets, namespace, strlen(namespace), set);
+    LD_ASSERT(sets = LDNewObject());
 
-    set = malloc(sizeof(struct LDVersionedSet));
-    LD_ASSERT(set);
-    set->kind = getFlagKind();
-    set->elements = NULL;
-    LD_ASSERT(namespace = set->kind.getNamespace());
-    HASH_ADD_KEYPTR(hh, sets, namespace, strlen(namespace), set);
+    LD_ASSERT(tmp = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(sets, "segments", tmp));
 
-    LD_ASSERT(store->init(store->context, sets));
-    LD_ASSERT(store->initialized(store->context));
+    LD_ASSERT(tmp = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(sets, "flags", tmp));
+
+    LD_ASSERT(LDStoreInit(store, sets));
+    LD_ASSERT(LDStoreInitialized(store));
 
     return store;
 }
 
+/*
+static struct LDJSON *
+constructSegment(const char *const key, const unsigned int version)
+{
+    struct LDJSON *segment = NULL, *tmp = NULL;
+
+    LD_ASSERT(key);
+
+    LD_ASSERT(segment = LDNewObject());
+
+    LD_ASSERT(tmp = LDNewArray());
+    LD_ASSERT(LDObjectSetKey(segment, "included", tmp));
+
+    LD_ASSERT(tmp = LDNewArray())
+    LD_ASSERT(LDObjectSetKey(segment, "excluded", tmp));
+
+    LD_ASSERT(tmp = LDNewArray())
+    LD_ASSERT(LDObjectSetKey(segment, "rules", tmp));
+
+    LD_ASSERT(tmp = LDNewNumber(version));
+    LD_ASSERT(LDObjectSetKey(segment, "version", tmp));
+
+    LD_ASSERT(tmp = LDNewBool(false));
+    LD_ASSERT(LDObjectSetKey(segment, "deleted", tmp));
+
+    return segment;
+}
+*/
+
+/*
 static struct Segment *
 constructSegment(const char *const key, const unsigned int version)
 {
@@ -100,15 +120,17 @@ constructFlag(const char *const key, const unsigned int version)
 
     return flag;
 }
+*/
 
 static void
 allocateAndFree()
 {
-    struct LDFeatureStore *const store = prepareEmptyStore();
+    struct LDStore *const store = prepareEmptyStore();
 
-    freeStore(store);
+    LDStoreDestroy(store);
 }
 
+/*
 static void
 deletedOnlySegment()
 {
@@ -283,8 +305,9 @@ main()
 {
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
-    /*
     allocateAndFree();
+
+    /*
     deletedOnlySegment();
     basicExistsSegment();
     basicDoesNotExist();
