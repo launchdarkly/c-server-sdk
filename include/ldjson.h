@@ -90,17 +90,17 @@ void LDJSONFree(struct LDJSON *const json);
 
 /**
  * @brief Duplicates an existing JSON strucutre. This acts as a deep copy.
- * @param[in] input JSON to be duplicated.
+ * @param[in] json JSON to be duplicated.
  * @return NULL on failure
  */
-struct LDJSON *LDJSONDuplicate(const struct LDJSON *const input);
+struct LDJSON *LDJSONDuplicate(const struct LDJSON *const json);
 
 /**
  * @brief Get the type of a JSON structure
  * @param[in] json May be not be NULL (assert)
  * @return The JSON type
  */
-LDJSONType LDJSONGetType(const struct LDJSON *const input);
+LDJSONType LDJSONGetType(const struct LDJSON *const json);
 
 /*@}*/
 
@@ -241,7 +241,6 @@ char *LDJSONSerialize(const struct LDJSON *const json);
 /**
  * @brief Deserialize JSON text into a JSON structure.
  * @param[in] text JSON text to deserialize. May not be NULL (ASSERT).
- * @param[out] json May not be NULL (ASSERT). On failure this parameter is not mutated.
  * @return JSON structure on success, NULL on failure.
  */
 struct LDJSON *LDJSONDeserialize(const char *const text);
