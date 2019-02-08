@@ -23,105 +23,6 @@ prepareEmptyStore()
     return store;
 }
 
-/*
-static struct LDJSON *
-constructSegment(const char *const key, const unsigned int version)
-{
-    struct LDJSON *segment = NULL, *tmp = NULL;
-
-    LD_ASSERT(key);
-
-    LD_ASSERT(segment = LDNewObject());
-
-    LD_ASSERT(tmp = LDNewArray());
-    LD_ASSERT(LDObjectSetKey(segment, "included", tmp));
-
-    LD_ASSERT(tmp = LDNewArray())
-    LD_ASSERT(LDObjectSetKey(segment, "excluded", tmp));
-
-    LD_ASSERT(tmp = LDNewArray())
-    LD_ASSERT(LDObjectSetKey(segment, "rules", tmp));
-
-    LD_ASSERT(tmp = LDNewNumber(version));
-    LD_ASSERT(LDObjectSetKey(segment, "version", tmp));
-
-    LD_ASSERT(tmp = LDNewBool(false));
-    LD_ASSERT(LDObjectSetKey(segment, "deleted", tmp));
-
-    return segment;
-}
-*/
-
-/*
-static struct Segment *
-constructSegment(const char *const key, const unsigned int version)
-{
-    struct Segment *segment = NULL;
-
-    LD_ASSERT(key);
-
-    if (!(segment = malloc(sizeof(struct Segment)))) {
-        return NULL;
-    }
-
-    memset(segment, 0, sizeof(struct Segment));
-
-    if (!(segment->key = strdup(key))) {
-        free(segment);
-
-        return NULL;
-    }
-
-    segment->included = NULL;
-    segment->excluded = NULL;
-    segment->salt     = NULL;
-    segment->rules    = NULL;
-    segment->version  = version;
-    segment->deleted  = false;
-
-    return segment;
-}
-
-static struct FeatureFlag *
-constructFlag(const char *const key, const unsigned int version)
-{
-    struct FeatureFlag *flag = NULL;
-
-    LD_ASSERT(key);
-
-    if (!(flag = malloc(sizeof(struct FeatureFlag)))) {
-        return NULL;
-    }
-
-    memset(flag, 0, sizeof(struct FeatureFlag));
-
-    if (!(flag->key = strdup(key))) {
-        free(flag);
-
-        return NULL;
-    }
-
-    flag->version                 = version;
-    flag->on                      = true;
-    flag->trackEvents             = true;
-    flag->deleted                 = false;
-    flag->prerequisites           = NULL;
-    flag->salt                    = NULL;
-    flag->sel                     = NULL;
-    flag->targets                 = NULL;
-    flag->rules                   = NULL;
-    flag->fallthrough             = NULL;
-    flag->offVariation            = 0;
-    flag->hasOffVariation         = false;
-    flag->variations              = NULL;
-    flag->debugEventsUntilDate    = 0;
-    flag->hasDebugEventsUntilDate = false;
-    flag->clientSide              = false;
-
-    return flag;
-}
-*/
-
 static void
 allocateAndFree()
 {
@@ -130,96 +31,108 @@ allocateAndFree()
     LDStoreDestroy(store);
 }
 
-/*
-static void
-deletedOnlySegment()
+static struct LDJSON *
+makeVersioned(const char *const key, const unsigned int version)
 {
-    struct LDFeatureStore *store = NULL;
-    struct Segment *segment = NULL;
-    struct LDVersionedData *versioned = NULL, *lookup = NULL;
-    struct LDVersionedDataKind kind = getSegmentKind();
+    struct LDJSON *feature = NULL, *tmp = NULL;
 
-    LD_ASSERT(store = prepareEmptyStore());
+    LD_ASSERT(feature = LDNewObject());
 
-    LD_ASSERT(segment = segmentMakeDeleted("abc", 123));
+    LD_ASSERT(tmp = LDNewText(key));
+    LD_ASSERT(LDObjectSetKey(feature, "key", tmp));
 
-    LD_ASSERT(versioned = segmentToVersioned(segment));
+    LD_ASSERT(tmp = LDNewNumber(version));
+    LD_ASSERT(LDObjectSetKey(feature, "version", tmp));
 
-    LD_ASSERT(store->upsert(store->context, kind, versioned));
+    LD_ASSERT(tmp = LDNewBool(false));
+    LD_ASSERT(LDObjectSetKey(feature, "deleted", tmp));
 
-    LD_ASSERT(!(lookup = store->get(store->context, "abc", kind)));
+    return feature;
+}
 
-    store->finalizeGet(store->context, lookup);
+static struct LDJSON *
+makeDeleted(const char *const key, const unsigned int version)
+{
+    struct LDJSON *feature = NULL, *tmp = NULL;
 
-    freeStore(store);
+    LD_ASSERT(feature = makeVersioned(key, version));
+
+    LD_ASSERT(tmp = LDNewBool(true));
+    LD_ASSERT(LDObjectSetKey(feature, "deleted", tmp));
+
+    return feature;
 }
 
 static void
-basicExistsSegment()
+deletedOnly()
 {
-    struct LDFeatureStore *store = NULL;
-    struct Segment *segment = NULL;
-    struct LDVersionedData *versioned = NULL, *lookup = NULL;
-    struct LDVersionedDataKind kind = getSegmentKind();
+    struct LDStore *store = NULL; struct LDJSON *feature = NULL, *lookup = NULL;
 
     LD_ASSERT(store = prepareEmptyStore());
 
-    LD_ASSERT(segment = constructSegment("my-heap-key", 3))
+    LD_ASSERT(feature = makeDeleted("abc", 123));
 
-    LD_ASSERT(versioned = segmentToVersioned(segment));
+    LD_ASSERT(LDStoreUpsert(store, "flags", feature));
 
-    LD_ASSERT(store->upsert(store->context, kind, versioned));
+    LD_ASSERT(!(lookup = LDStoreGet(store, "abc", "flags")));
 
-    LD_ASSERT((lookup = store->get(store->context, "my-heap-key", kind)));
-    LD_ASSERT(lookup->data == segment);
+    LDStoreDestroy(store);
+}
 
-    store->finalizeGet(store->context, lookup);
+static void
+basicExists()
+{
+    struct LDStore *store = NULL; struct LDJSON *feature = NULL, *lookup = NULL;
 
-    freeStore(store);
+    LD_ASSERT(store = prepareEmptyStore());
+
+    LD_ASSERT(feature = makeVersioned("my-heap-key", 3))
+
+    LD_ASSERT(LDStoreUpsert(store, "flags", feature));
+
+    LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "flags")));
+
+    /* LD_ASSERT(lookup->data == segment); NEED compare */
+
+    LDJSONFree(lookup);
+
+    LDStoreDestroy(store);
 }
 
 static void
 basicDoesNotExist()
 {
-    struct LDFeatureStore *store = NULL;
-    struct LDVersionedData *lookup = NULL;
-    struct LDVersionedDataKind kind = getSegmentKind();
+    struct LDStore *store = NULL; struct LDJSON *lookup = NULL;
 
     LD_ASSERT(store = prepareEmptyStore());
 
-    LD_ASSERT(!(lookup = store->get(store->context, "abc", kind)));
+    LD_ASSERT(!(lookup = LDStoreGet(store, "abc", "flags")));
 
-    store->finalizeGet(store->context, lookup);
-
-    freeStore(store);
+    LDStoreDestroy(store);
 }
 
 static void
 upsertNewer()
 {
-    struct LDFeatureStore *store = NULL;
-    struct Segment *segment;
-    struct LDVersionedData *versioned = NULL, *lookup = NULL;
-    struct LDVersionedDataKind kind = getSegmentKind();
+    struct LDStore *store = NULL; struct LDJSON *feature = NULL, *lookup = NULL;
 
     LD_ASSERT(store = prepareEmptyStore());
 
-    LD_ASSERT(segment = constructSegment("my-heap-key", 3))
-    LD_ASSERT(versioned = segmentToVersioned(segment));
-    LD_ASSERT(store->upsert(store->context, kind, versioned));
+    LD_ASSERT(feature = makeVersioned("my-heap-key", 3))
+    LD_ASSERT(LDStoreUpsert(store, "segments", feature));
 
-    LD_ASSERT(segment = constructSegment("my-heap-key", 5))
-    LD_ASSERT(versioned = segmentToVersioned(segment));
-    LD_ASSERT(store->upsert(store->context, kind, versioned));
+    LD_ASSERT(feature = makeVersioned("my-heap-key", 5))
+    LD_ASSERT(LDStoreUpsert(store, "segments", feature));
 
-    LD_ASSERT((lookup = store->get(store->context, "my-heap-key", kind)));
-    LD_ASSERT(lookup->data == segment);
+    LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "segments")));
 
-    store->finalizeGet(store->context, lookup);
+    /* LD_ASSERT(lookup->data == segment); requires deep compare */
 
-    freeStore(store);
+    LDJSONFree(lookup);
+
+    LDStoreDestroy(store);
 }
-
+/*
 static void
 upsertOlder()
 {
@@ -242,7 +155,7 @@ upsertOlder()
     LD_ASSERT(lookup->data == segment1);
     store->finalizeGet(store->context, lookup);
 
-    freeStore(store);
+    LDStoreDestroy(store);
 }
 
 static void
@@ -266,7 +179,7 @@ upsertDelete()
     LD_ASSERT(!(lookup = store->get(store->context, "my-heap-key", kind)));
     store->finalizeGet(store->context, lookup);
 
-    freeStore(store);
+    LDStoreDestroy(store);
 }
 
 static void
@@ -296,7 +209,7 @@ conflictDifferentNamespace()
     LD_ASSERT(lookup->data == flag);
     store->finalizeGet(store->context, lookup);
 
-    freeStore(store);
+    LDStoreDestroy(store);
 }
 */
 
@@ -306,12 +219,12 @@ main()
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
     allocateAndFree();
-
-    /*
-    deletedOnlySegment();
-    basicExistsSegment();
+    deletedOnly();
+    basicExists();
     basicDoesNotExist();
     upsertNewer();
+
+    /*
     upsertOlder();
     upsertDelete();
     conflictDifferentNamespace();
