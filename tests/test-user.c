@@ -32,7 +32,9 @@ static void
 constructNoSettings()
 {
     struct LDUser *const user = LDUserNew("abc");
+
     LD_ASSERT(user);
+
     LDUserFree(user);
 }
 
