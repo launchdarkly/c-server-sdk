@@ -30,11 +30,15 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user)
 {
     LD_ASSERT(flag); LD_ASSERT(user); LD_ASSERT(LDJSONGetType(flag) == LDObject);
 
-    /*
-    if (!flag->on) {
-        TODO return isOff
+    {
+        const struct LDJSON *on = LDObjectLookup(flag, "on");
+
+        LD_ASSERT(on); LD_ASSERT(LDJSONGetType(on) == LDBool);
+
+        if (!LDGetBool(on)) {
+            /* TODO return isOFf */
+        }
     }
-    */
 
     if (!checkPrerequisites(flag, user)) {
         return false;
