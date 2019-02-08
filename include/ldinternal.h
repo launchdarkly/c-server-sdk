@@ -126,13 +126,4 @@ bool getMonotonicMilliseconds(unsigned int *const resultMilliseconds);
     if (!(condition)) { \
         LDi_log(0, "LD_ASSERT failed: expected condition '%s' in function '%s' aborting\n", #condition, __func__); \
         abort(); \
-    } \
-
-bool LDHashSetAddKey(struct LDHashSet **const set, const char *const key);
-void LDHashSetFree(struct LDHashSet *const set);
-struct LDHashSet *LDHashSetLookup(const struct LDHashSet *const set, const char *const key);
-
-struct LDHashSet {
-    char *key;
-    UT_hash_handle hh;
-};
+    }
