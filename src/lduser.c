@@ -14,7 +14,7 @@ LDUserNew(const char *const key)
 
     memset(user, 0, sizeof(struct LDUser));
 
-    if (!LDSetString(&user->key, key)){
+    if (!LDSetString(&user->key, key)) {
         goto error;
     }
 
