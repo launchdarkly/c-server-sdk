@@ -144,7 +144,7 @@ const char *LDGetText(const struct LDJSON *const node);
  * @param[in] iter May be not be NULL (assert)
  * @return Item, or NULL if the iterator is finished.
  */
-struct LDJSON *LDIterNext(struct LDJSON *const iter);
+struct LDJSON *LDIterNext(const struct LDJSON *const iter);
 
 /**
  * @brief Allows iteration over an array. Modification of the array invalidates this iterator.
@@ -246,3 +246,5 @@ char *LDJSONSerialize(const struct LDJSON *const json);
 struct LDJSON *LDJSONDeserialize(const char *const text);
 
 /*@}*/
+
+bool textInArray(const struct LDJSON *const array, const char *const text);

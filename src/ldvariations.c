@@ -44,13 +44,13 @@ LDStringVariation(struct LDClient *const client, struct LDUser *const user,
     return strdup(fallback);
 }
 
-struct LDNode *
+struct LDJSON *
 LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
-    const char *const key, const struct LDNode *const fallback, struct LDVariationDetails *const details)
+    const char *const key, const struct LDJSON *const fallback, struct LDVariationDetails *const details)
 {
     LD_ASSERT(client); LD_ASSERT(user); LD_ASSERT(key);
 
     LD_ASSERT(details); /* place holder */
 
-    return LDNodeDeepCopy(fallback);
+    return LDJSONDuplicate(fallback);
 }

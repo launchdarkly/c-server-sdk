@@ -7,7 +7,7 @@
 
 /* **** Forward Declarations **** */
 
-struct LDConfig; struct LDUser; struct LDNode; struct LDStore;
+struct LDConfig; struct LDUser; struct LDStore;
 
 /* **** LDConfig **** */
 
@@ -67,48 +67,8 @@ double LDDoubleVariation(struct LDClient *const client, struct LDUser *const use
 char *LDStringVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const char* const fallback, struct LDVariationDetails *const details);
 
-struct LDNode *LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
-    const char *const key, const struct LDNode *const fallback, struct LDVariationDetails *const details);
-
-/* **** LDNode **** */
-
-typedef enum {
-    LDNodeNull = 0,
-    LDNodeText,
-    LDNodeNumber,
-    LDNodeBool,
-    LDNodeObject,
-    LDNodeArray
-} LDNodeType;
-
-struct LDNode *LDNodeNewNull();
-struct LDNode *LDNodeNewBool(const bool boolean);
-struct LDNode *LDNodeNewNumber(const double number);
-struct LDNode *LDNodeNewText(const char *const text);
-struct LDNode *LDNodeNewObject();
-struct LDNode *LDNodeNewArray();
-
-void LDNodeFree(struct LDNode *const node);
-
-bool LDNodeGetBool(const struct LDNode *const node);
-double LDNodeGetNumber(const struct LDNode *const node);
-struct LDNode *LDNodeArrayGetIterator(const struct LDNode *const array);
-struct LDNode *LDNodeObjectGetIterator(const struct LDNode *const object);
-const char *LDNodeGetText(const struct LDNode *const node);
-LDNodeType LDNodeGetType(const struct LDNode *const node);
-
-bool LDNodeObjectSetItem(struct LDNode *const object, const char *const key, struct LDNode *const item);
-bool LDNodeArrayAppendItem(struct LDNode *const array, struct LDNode *const item);
-unsigned int LDNodeArrayIterGetIndex(struct LDNode *const iter);
-const char *LDNodeObjectIterGetKey(struct LDNode *const iter);
-struct LDNode *LDNodeAdvanceIterator(const struct LDNode *const iter);
-struct LDNode *LDNodeArrayLookupIndex(const struct LDNode *const array, const unsigned int index);
-struct LDNode *LDNodeObjectLookupKey(const struct LDNode *const object, const char *const key);
-
-char *LDNodeToJSONString(const struct LDNode *const node);
-struct LDNode *LDNodeFromJSONString(const char *const serialized);
-
-struct LDNode *LDNodeDeepCopy(const struct LDNode *const node);
+struct LDJSON *LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
+    const char *const key, const struct LDJSON *const fallback, struct LDVariationDetails *const details);
 
 /* **** LDLogging **** */
 

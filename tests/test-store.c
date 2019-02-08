@@ -1,7 +1,7 @@
 #include "ldinternal.h"
 #include "ldstore.h"
-#include "ldschema.h"
 
+/*
 static struct LDFeatureStore *
 prepareEmptyStore()
 {
@@ -276,12 +276,14 @@ conflictDifferentNamespace()
 
     freeStore(store);
 }
+*/
 
 int
 main()
 {
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
+    /*
     allocateAndFree();
     deletedOnlySegment();
     basicExistsSegment();
@@ -290,6 +292,7 @@ main()
     upsertOlder();
     upsertDelete();
     conflictDifferentNamespace();
+    */
 
     return 0;
 }

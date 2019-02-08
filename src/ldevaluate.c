@@ -2,59 +2,82 @@
 #include "hexify.h"
 
 #include "ldinternal.h"
-#include "ldschema.h"
 
 /* **** Forward Declarations **** */
 
-bool evaluate(const struct FeatureFlag *const flag, const struct LDUser *const user);
+bool evaluate(const struct LDJSON *const flag, const struct LDUser *const user);
 
-static bool checkPrerequisites(const struct FeatureFlag *const flag, const struct LDUser *const user);
+static bool checkPrerequisites(const struct LDJSON *const flag, const struct LDUser *const user);
 
-static bool ruleMatchesUser(const struct Rule *const rule, const struct LDUser *const user);
+static bool ruleMatchesUser(const struct LDJSON *const rule, const struct LDUser *const user);
 
-static bool clauseMatchesUser(const struct Clause *const clause, const struct LDUser *const user);
+static bool clauseMatchesUser(const struct LDJSON *const clause, const struct LDUser *const user);
 
-static bool segmentMatchesUser(const struct Segment *const segment, const struct LDUser *const user);
+bool segmentMatchesUser(const struct LDJSON *const segment, const struct LDUser *const user);
 
-static bool segmentRuleMatchUser(const struct SegmentRule *const segmentRule, const char *const segmentKey, const struct LDUser *const user, const char *const salt);
+bool segmentRuleMatchUser(const struct LDJSON *const segmentRule, const char *const segmentKey, const struct LDUser *const user, const char *const salt);
 
-static bool clauseMatchesUserNoSegments(const struct Clause *const clause, const struct LDUser *const user);
+bool clauseMatchesUserNoSegments(const struct LDJSON *const clause, const struct LDUser *const user);
 
-static float bucketUser(const struct LDUser *const user, const char *const segmentKey, const char *const attribute, const char *const salt);
+float bucketUser(const struct LDUser *const user, const char *const segmentKey, const char *const attribute, const char *const salt);
 
 static char *bucketableStringValue(const struct LDJSON *const node);
 
 /* **** Implementations **** */
 
 bool
-evaluate(const struct FeatureFlag *const flag, const struct LDUser *const user)
+evaluate(const struct LDJSON *const flag, const struct LDUser *const user)
 {
-    LD_ASSERT(flag); LD_ASSERT(user);
+    LD_ASSERT(flag); LD_ASSERT(user); LD_ASSERT(LDJSONGetType(flag) == LDObject);
 
+    /*
     if (!flag->on) {
-        /* TODO return isOff */
+        TODO return isOff
     }
+    */
 
     if (!checkPrerequisites(flag, user)) {
         return false;
     }
 
-    if (flag->targets) {
-        struct Target *target = NULL;
+    {
+        const struct LDJSON *const targets = LDObjectLookup(flag, "targets");
 
-        for (target = flag->targets; target; target++) {
-            if (LDHashSetLookup(target->values, user->key) != NULL) {
-                /* TODO return isTarget */
+        LD_ASSERT(LDJSONGetType(targets) == LDArray);
+
+        {
+            const struct LDJSON *iter = NULL;
+
+            for (iter = LDGetIter(targets); iter; iter = LDIterNext(iter)) {
+                const struct LDJSON *values = NULL;
+
+                LD_ASSERT(LDJSONGetType(iter) == LDObject);
+
+                values = LDObjectLookup(iter, "values");
+
+                LD_ASSERT(values); LD_ASSERT(LDJSONGetType(values) == LDArray);
+
+                if (textInArray(values, user->key)) {
+                    /* TODO return isTarget */
+                }
             }
         }
     }
 
-    if (flag->rules) {
-        const struct Rule *rule = NULL;
+    {
+        const struct LDJSON *const rules = LDObjectLookup(flag, "rules");
 
-        for (rule = flag->rules; rule; rule = rule->hh.next) {
-            if (ruleMatchesUser(rule, user)) {
-                /* TODO return ruleMatch */
+        LD_ASSERT(LDJSONGetType(rules) == LDArray);
+
+        {
+            const struct LDJSON *iter = NULL;
+
+            for (iter = LDGetIter(rules); iter; iter = LDIterNext(iter)) {
+                LD_ASSERT(LDJSONGetType(iter) == LDObject);
+
+                if (ruleMatchesUser(iter, user)) {
+                    /* TODO return ruleMatch */
+                }
             }
         }
     }
@@ -63,15 +86,19 @@ evaluate(const struct FeatureFlag *const flag, const struct LDUser *const user)
 }
 
 static bool
-checkPrerequisites(const struct FeatureFlag *const flag, const struct LDUser *const user)
+checkPrerequisites(const struct LDJSON *const flag, const struct LDUser *const user)
 {
-    struct Prerequisite *prerequisite = NULL;
+    struct LDJSON *prerequisites = NULL, *iter = NULL;
 
-    LD_ASSERT(flag); LD_ASSERT(user);
+    LD_ASSERT(flag); LD_ASSERT(LDJSONGetType(flag) == LDObject); LD_ASSERT(user);
 
-    for (prerequisite = flag->prerequisites; prerequisite; prerequisite = prerequisite->hh.next) {
+    LD_ASSERT(prerequisites = LDObjectLookup(flag, "prerequisites"));
+
+    LD_ASSERT(LDJSONGetType(prerequisites) == LDArray);
+
+    for (iter = LDGetIter(prerequisites); iter; iter = LDIterNext(iter)) {
         /* TODO get from store */
-        const struct FeatureFlag *const preflag = NULL;
+        const struct LDJSON *const preflag = NULL;
 
         if (!preflag || !evaluate(flag, user)) {
             return false;
@@ -82,14 +109,20 @@ checkPrerequisites(const struct FeatureFlag *const flag, const struct LDUser *co
 }
 
 static bool
-ruleMatchesUser(const struct Rule *const rule, const struct LDUser *const user)
+ruleMatchesUser(const struct LDJSON *const rule, const struct LDUser *const user)
 {
-    const struct Clause *clause = NULL;
+    const struct LDJSON *clauses = NULL, *iter = NULL;
 
     LD_ASSERT(rule); LD_ASSERT(user);
 
-    for (clause = rule->clauses; clause; clause = clause->hh.next) {
-        if (!clauseMatchesUser(clause, user)) {
+    LD_ASSERT(clauses = LDObjectLookup(rule, "clauses"));
+
+    LD_ASSERT(LDJSONGetType(clauses) == LDArray);
+
+    for (iter = LDGetIter(clauses); iter; iter = LDIterNext(iter)) {
+        LD_ASSERT(LDJSONGetType(iter) == LDObject);
+
+        if (!clauseMatchesUser(iter, user)) {
             return false;
         }
     }
@@ -98,16 +131,18 @@ ruleMatchesUser(const struct Rule *const rule, const struct LDUser *const user)
 }
 
 static bool
-clauseMatchesUser(const struct Clause *const clause, const struct LDUser *const user)
+clauseMatchesUser(const struct LDJSON *const clause, const struct LDUser *const user)
 {
     LD_ASSERT(clause); LD_ASSERT(user);
 
+    return true;
+
+    /*
     if (clause->op == OperatorSegmentMatch) {
         const struct LDNode *value = NULL;
 
         for (value = clause->values; value; value = value->hh.next) {
             if (LDNodeGetType(value) == LDNodeText) {
-                /* TODO get from store */
                 const struct Segment *const segment = NULL;
 
                 if (segmentMatchesUser(segment, user)) {
@@ -120,13 +155,17 @@ clauseMatchesUser(const struct Clause *const clause, const struct LDUser *const 
     }
 
     return clauseMatchesUserNoSegments(clause, user);
+    */
 }
 
-static bool
-segmentMatchesUser(const struct Segment *const segment, const struct LDUser *const user)
+bool
+segmentMatchesUser(const struct LDJSON *const segment, const struct LDUser *const user)
 {
     LD_ASSERT(segment); LD_ASSERT(user);
 
+    return true;
+
+    /*
     if (LDHashSetLookup(segment->included, user->key) != NULL) {
         return true;
     } else if (LDHashSetLookup(segment->excluded, user->key) != NULL) {
@@ -142,15 +181,21 @@ segmentMatchesUser(const struct Segment *const segment, const struct LDUser *con
 
         return false;
     }
+    */
 }
 
-static bool
-segmentRuleMatchUser(const struct SegmentRule *const segmentRule, const char *const segmentKey, const struct LDUser *const user, const char *const salt)
+bool
+segmentRuleMatchUser(const struct LDJSON *const segmentRule, const char *const segmentKey, const struct LDUser *const user, const char *const salt)
 {
     const struct Clause *clause = NULL; const char *attribute = NULL;
 
     LD_ASSERT(segmentRule); LD_ASSERT(segmentKey); LD_ASSERT(user); LD_ASSERT(salt);
 
+    (void)clause; (void)attribute;
+
+    return true;
+
+    /*
     for (clause = segmentRule->clauses; clause; clause = clause->hh.next) {
         if (!clauseMatchesUserNoSegments(clause, user)) {
             return false;
@@ -164,15 +209,21 @@ segmentRuleMatchUser(const struct SegmentRule *const segmentRule, const char *co
     attribute = segmentRule->bucketBy == NULL ? "key" : segmentRule->bucketBy;
 
     return bucketUser(user, segmentKey, attribute, salt) < segmentRule->weight / 100000;
+    */
 }
 
-static bool
-clauseMatchesUserNoSegments(const struct Clause *const clause, const struct LDUser *const user)
+bool
+clauseMatchesUserNoSegments(const struct LDJSON *const clause, const struct LDUser *const user)
 {
     struct LDJSON *attributeValue = NULL;
 
     LD_ASSERT(clause); LD_ASSERT(user);
 
+    (void)attributeValue;
+
+    return true;
+
+    /*
     if ((attributeValue = valueOfAttribute(user, clause->attribute))) {
         LDJSONType type = LDJSONGetType(attributeValue);
 
@@ -204,9 +255,10 @@ clauseMatchesUserNoSegments(const struct Clause *const clause, const struct LDUs
     } else {
         return false;
     }
+    */
 }
 
-static float
+float
 bucketUser(const struct LDUser *const user, const char *const segmentKey, const char *const attribute, const char *const salt)
 {
     struct LDJSON *attributeValue = NULL;

@@ -122,7 +122,7 @@ LDGetIter(const struct LDJSON *const rawcollection)
 }
 
 struct LDJSON *
-LDIterNext(struct LDJSON *const rawiter)
+LDIterNext(const struct LDJSON *const rawiter)
 {
     cJSON *const iter = (cJSON *const)rawiter;
 

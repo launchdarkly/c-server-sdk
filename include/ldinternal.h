@@ -107,27 +107,6 @@ struct LDClient {
     CURLM *multihandle;
 };
 
-/* **** LDNode **** */
-
-struct LDNode {
-    LDNodeType type;
-    union {
-        char *key;
-        unsigned int index;
-    } location;
-    union {
-        bool boolean;
-        char *text;
-        double number;
-        struct LDNode* object;
-        struct LDNode* array;
-    } value;
-    UT_hash_handle hh;
-};
-
-cJSON *LDNodeToJSON(const struct LDNode *const node);
-struct LDNode *LDNodeFromJSON(const cJSON *const json);
-
 /* **** LDNetwork **** */
 
 bool LDi_networkinit(struct LDClient *const client);

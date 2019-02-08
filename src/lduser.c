@@ -1,8 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "cJSON.h"
-
 #include "ldinternal.h"
 
 struct LDUser *
@@ -145,7 +143,7 @@ LDUserAddPrivateAttribute(struct LDUser *const user, const char *const attribute
     }
 }
 
-static bool
+bool
 textInArray(const struct LDJSON *const array, const char *const text)
 {
     struct LDJSON *iter = NULL;
