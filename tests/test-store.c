@@ -74,7 +74,7 @@ deletedOnly()
 
     LD_ASSERT(LDStoreUpsert(store, "flags", feature));
 
-    LD_ASSERT(!(lookup = LDStoreGet(store, "abc", "flags")));
+    LD_ASSERT(!(lookup = LDStoreGet(store, "flags", "abc")));
 
     LDStoreDestroy(store);
 }
@@ -90,7 +90,7 @@ basicExists()
 
     LD_ASSERT(LDStoreUpsert(store, "flags", feature));
 
-    LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "flags")));
+    LD_ASSERT((lookup = LDStoreGet(store, "flags", "my-heap-key")));
 
     LD_ASSERT(LDJSONCompare(lookup, feature));
 
@@ -106,7 +106,7 @@ basicDoesNotExist()
 
     LD_ASSERT(store = prepareEmptyStore());
 
-    LD_ASSERT(!(lookup = LDStoreGet(store, "abc", "flags")));
+    LD_ASSERT(!(lookup = LDStoreGet(store, "flags", "abc")));
 
     LDStoreDestroy(store);
 }
@@ -124,7 +124,7 @@ upsertNewer()
     LD_ASSERT(feature = makeVersioned("my-heap-key", 5))
     LD_ASSERT(LDStoreUpsert(store, "segments", feature));
 
-    LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "segments")));
+    LD_ASSERT((lookup = LDStoreGet(store, "segments", "my-heap-key")));
 
     LD_ASSERT(LDJSONCompare(lookup, feature));
 
@@ -146,9 +146,9 @@ upsertOlder()
     LD_ASSERT(feature2 = makeVersioned("my-heap-key", 3))
     LD_ASSERT(LDStoreUpsert(store, "segments", feature2));
 
-    LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "segments")));
+    LD_ASSERT((lookup = LDStoreGet(store, "segments", "my-heap-key")));
 
-    LD_ASSERT(LDJSONCompare(lookup, feature2));
+    LD_ASSERT(LDJSONCompare(lookup, feature1));
 
     LDJSONFree(lookup);
 
@@ -168,7 +168,7 @@ upsertDelete()
     LD_ASSERT(feature = makeDeleted("my-heap-key", 5))
     LD_ASSERT(LDStoreUpsert(store, "segments", feature));
 
-    LD_ASSERT(!(lookup = LDStoreGet(store, "my-heap-key", "segments")));
+    LD_ASSERT(!(lookup = LDStoreGet(store, "segments", "my-heap-key")));
 
     LDStoreDestroy(store);
 }
@@ -186,11 +186,11 @@ conflictDifferentNamespace()
     LD_ASSERT(feature2 = makeVersioned("my-heap-key", 3));
     LD_ASSERT(LDStoreUpsert(store, "flags", feature2));
 
-    LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "segments")));
+    LD_ASSERT((lookup = LDStoreGet(store, "segments", "my-heap-key")));
     LD_ASSERT(LDJSONCompare(lookup, feature1));
     LDJSONFree(lookup);
 
-    LD_ASSERT((lookup = LDStoreGet(store, "my-heap-key", "flags")));
+    LD_ASSERT((lookup = LDStoreGet(store, "flags", "my-heap-key")));
     LD_ASSERT(LDJSONCompare(lookup, feature2));
     LDJSONFree(lookup);
 
@@ -202,14 +202,14 @@ main()
 {
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
-    allocateAndFree();
-    deletedOnly();
-    basicExists();
-    basicDoesNotExist();
-    upsertNewer();
-    upsertOlder();
-    upsertDelete();
-    conflictDifferentNamespace();
+    LDi_log(LD_LOG_INFO, "allocateAndFree()"); allocateAndFree();
+    LDi_log(LD_LOG_INFO, "deletedOnly()"); deletedOnly();
+    LDi_log(LD_LOG_INFO, "basicExists()"); basicExists();
+    LDi_log(LD_LOG_INFO, "basicDoesNotExist()"); basicDoesNotExist();
+    LDi_log(LD_LOG_INFO, "upsertNewer()"); upsertNewer();
+    LDi_log(LD_LOG_INFO, "upsertOlder()"); upsertOlder();
+    LDi_log(LD_LOG_INFO, "upsertDelete()"); upsertDelete();
+    LDi_log(LD_LOG_INFO, "conflictDifferentNamespace()"); conflictDifferentNamespace();
 
     return 0;
 }

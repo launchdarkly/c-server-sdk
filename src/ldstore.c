@@ -52,7 +52,7 @@ isDeleted(const struct LDJSON *const feature)
 {
     struct LDJSON *deleted = NULL;
 
-    LD_ASSERT(deleted); LD_ASSERT(LDJSONGetType(deleted) == LDObject);
+    LD_ASSERT(feature); LD_ASSERT(LDJSONGetType(feature) == LDObject);
 
     deleted = LDObjectLookup(feature, "deleted");
 
@@ -74,12 +74,18 @@ memoryGet(void *const rawcontext, const char *const kind, const char *const key)
         return NULL;
     }
 
-    if ((current = LDObjectLookup(set, key)) && !isDeleted(current)) {
-        struct LDJSON *const copy = LDJSONDuplicate(current);
+    if ((current = LDObjectLookup(set, key))) {
+        if (isDeleted(current)) {
+            LD_ASSERT(LDi_rdunlock(&context->lock));
 
-        LD_ASSERT(LDi_rdunlock(&context->lock));
+            return NULL;
+        } else {
+            struct LDJSON *const copy = LDJSONDuplicate(current);
 
-        return copy;
+            LD_ASSERT(LDi_rdunlock(&context->lock));
+
+            return copy;
+        }
     } else {
         LD_ASSERT(LDi_rdunlock(&context->lock));
 
@@ -212,9 +218,15 @@ memoryUpsert(void *const rawcontext, const char *const kind, struct LDJSON *cons
             goto error;
         }
 
-        if (LDGetNumber(currentversion) < LDGetNumber(replacementversion)) {
-            LDObjectSetKey(set, LDGetText(key), replacement);
+        if (LDGetNumber(currentversion) >= LDGetNumber(replacementversion)) {
+            LD_ASSERT(LDi_wrunlock(&context->lock));
+
+            LDJSONFree(replacement);
+
+            return true;
         }
+
+        LDObjectSetKey(set, LDGetText(key), replacement);
     } else {
         LDObjectSetKey(set, LDGetText(key), replacement);
     }
@@ -224,6 +236,8 @@ memoryUpsert(void *const rawcontext, const char *const kind, struct LDJSON *cons
     return true;
 
   error:
+    LD_ASSERT(LDi_wrunlock(&context->lock));
+
     LDJSONFree(replacement);
 
     return false;
