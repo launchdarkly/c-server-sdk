@@ -4,11 +4,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <curl/curl.h>
-
-#include "uthash.h"
-#include "cJSON.h"
 
 #ifdef _WIN32
     #include <windows.h>
