@@ -196,6 +196,8 @@ LDObjectSetKey(struct LDJSON *const rawobject, const char *const key, struct LDJ
 
     LD_ASSERT(object); LD_ASSERT(cJSON_IsObject(object)); LD_ASSERT(key); LD_ASSERT(item);
 
+    cJSON_DeleteItemFromObjectCaseSensitive(object, key);
+
     cJSON_AddItemToObject(object, key, (cJSON *)item);
 
     return true;
