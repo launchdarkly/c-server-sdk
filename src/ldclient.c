@@ -29,39 +29,6 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         config->defaultStore = true;
     }
 
-    if (!config->store->initialized(config->store->context)) {
-        /*
-        struct LDVersionedSet *sets = NULL;
-
-        const char *namespace = NULL;
-        struct LDVersionedSet *set = NULL;
-
-        if (!(set = malloc(sizeof(struct LDVersionedSet)))) {
-            goto error;
-        }
-
-        set->kind = getSegmentKind();
-        set->elements = NULL;
-        namespace = set->kind.getNamespace();
-
-        HASH_ADD_KEYPTR(hh, sets, namespace, strlen(namespace), set);
-
-        if (!(set = malloc(sizeof(struct LDVersionedSet)))) {
-            goto error;
-        }
-
-        set->kind = getFlagKind();
-        set->elements = NULL;
-        namespace = set->kind.getNamespace();
-
-        HASH_ADD_KEYPTR(hh, sets, namespace, strlen(namespace), set);
-
-        if (!config->store->init(config->store->context, sets)) {
-            goto error;
-        }
-        */
-    }
-
     client->shuttingdown = false;
     client->config       = config;
 

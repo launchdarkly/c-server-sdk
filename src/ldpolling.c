@@ -7,107 +7,16 @@
 static bool
 updateStore(struct LDStore *const store, const char *const rawupdate)
 {
-    (void)store; (void) rawupdate; return true;
-    /*
-    struct LDVersionedSet *sets = NULL, *flagset = NULL, *segmentset = NULL;
-
-    cJSON *decoded = NULL; struct LDVersionedData *versioned = NULL; const char *namespace = NULL;
+    struct LDJSON *update = NULL;
 
     LD_ASSERT(store); LD_ASSERT(rawupdate);
 
-    if (!(segmentset = malloc(sizeof(struct LDVersionedSet)))) {
-        LDi_log(LD_LOG_ERROR, "segmentset alloc failed");
-
+    if (!(update = LDJSONDeserialize(rawupdate))) {
         return false;
     }
-
-    memset(segmentset, 0, sizeof(struct LDVersionedSet));
-
-    segmentset->kind = getSegmentKind();
-
-    if (!(flagset = malloc(sizeof(struct LDVersionedSet)))) {
-        LDi_log(LD_LOG_ERROR, "flagset alloc failed");
-
-        return false;
-    }
-
-    memset(flagset, 0, sizeof(struct LDVersionedSet));
-
-    flagset->kind = getFlagKind();
-
-    if (!(decoded = cJSON_Parse(rawupdate))) {
-        LDi_log(LD_LOG_ERROR, "JSON parsing failed");
-
-        return false;
-    }
-
-    {
-        cJSON *flags = NULL; cJSON *iter = NULL;
-
-        if (!(flags = cJSON_GetObjectItemCaseSensitive(decoded, "flags"))) {
-            LDi_log(LD_LOG_ERROR, "key flags does not exist");
-
-            return false;
-        }
-
-        cJSON_ArrayForEach(iter, flags) {
-            struct FeatureFlag *const flag = featureFlagFromJSON(iter->string, iter);
-
-            if (!flag) {
-                LDi_log(LD_LOG_ERROR, "failed to marshall feature flag");
-
-                return false;
-            }
-
-            if (!(versioned = flagToVersioned(flag))) {
-                LDi_log(LD_LOG_ERROR, "failed make version interface for flag");
-
-                return false;
-            }
-
-            HASH_ADD_KEYPTR(hh, flagset->elements, flag->key, strlen(flag->key), versioned);
-        }
-    }
-
-    {
-        cJSON *segments = NULL; cJSON *iter = NULL;
-
-        if (!(segments = cJSON_GetObjectItemCaseSensitive(decoded, "segments"))) {
-            LDi_log(LD_LOG_ERROR, "key segments does not exist");
-
-            return false;
-        }
-
-        cJSON_ArrayForEach(iter, segments) {
-            struct Segment *const segment = segmentFromJSON(iter);
-
-            if (!segment) {
-                LDi_log(LD_LOG_ERROR, "failed to marshall segment");
-
-                return false;
-            }
-
-            if (!(versioned = segmentToVersioned(segment))) {
-                LDi_log(LD_LOG_ERROR, "failed make version interface for segment");
-
-                return false;
-            }
-
-            HASH_ADD_KEYPTR(hh, segmentset->elements, segment->key, strlen(segment->key), versioned);
-        }
-    }
-
-    cJSON_Delete(decoded);
-
-    namespace = flagset->kind.getNamespace();
-    HASH_ADD_KEYPTR(hh, sets, namespace, strlen(namespace), flagset);
-
-    namespace = segmentset->kind.getNamespace();
-    HASH_ADD_KEYPTR(hh, sets, namespace, strlen(namespace), segmentset);
 
     LDi_log(LD_LOG_INFO, "running store init");
-    return store->init(store->context, sets);
-    */
+    return LDStoreInit(store, update);
 }
 
 struct PollContext {

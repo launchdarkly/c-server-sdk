@@ -290,6 +290,56 @@ makeInMemoryStore()
     return store;
 }
 
+/* **** Covenience Operations **** */
+
+bool
+LDStoreInit(const struct LDStore *const store, struct LDJSON *const sets)
+{
+    LD_ASSERT(store); LD_ASSERT(sets);
+
+    return store->init(store->context, sets);
+}
+
+struct LDJSON *
+LDStoreGet(const struct LDStore *const store, const char *const kind, const char *const key)
+{
+    LD_ASSERT(store); LD_ASSERT(key);
+
+    return store->get(store->context, kind, key);
+}
+
+struct LDJSON *
+LDStoreAll(const struct LDStore *const store, const char *const kind)
+{
+    LD_ASSERT(store); LD_ASSERT(kind);
+
+    return store->all(store->context, kind);
+}
+
+bool
+LDStoreDelete(const struct LDStore *const store, const char *const kind, const char *const key, const unsigned int version)
+{
+    LD_ASSERT(store); LD_ASSERT(kind);
+
+    return store->delete(store->context, kind, key, version);
+}
+
+bool
+LDStoreUpsert(const struct LDStore *const store, const char *const key, struct LDJSON *const feature)
+{
+    LD_ASSERT(store); LD_ASSERT(key); LD_ASSERT(feature);
+
+    return store->upsert(store->context, key, feature);
+}
+
+bool
+LDStoreInitialized(const struct LDStore *const store)
+{
+    LD_ASSERT(store);
+
+    return store->initialized(store->context);
+}
+
 void
 LDStoreDestroy(struct LDStore *const store)
 {
