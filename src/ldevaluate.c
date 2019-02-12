@@ -6,10 +6,11 @@
 
 bool
 evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
-    struct LDJSON **const result)
+    struct LDStore *const store, struct LDJSON **const result)
 {
     LD_ASSERT(flag);
     LD_ASSERT(user);
+    LD_ASSERT(store);
     LD_ASSERT(result);
 
     if (!(*result = LDNewObject())) {
@@ -75,22 +76,24 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
             /* variationIndex */
 
-            if (!(variationIndex = LDObjectLookup(flag, "offVariation"))) {
-                LDi_log(LD_LOG_ERROR, "schema error");
+            if ((variationIndex = LDObjectLookup(flag, "offVariation"))) {
+                if (LDJSONGetType(variationIndex) != LDNumber) {
+                    LDi_log(LD_LOG_ERROR, "schema error");
 
-                return false;
-            }
+                    return false;
+                }
 
-            if (LDJSONGetType(variationIndex) != LDNumber) {
-                LDi_log(LD_LOG_ERROR, "schema error");
+                if (!(tmp = LDNewNumber(LDGetNumber(variationIndex)))) {
+                    LDi_log(LD_LOG_ERROR, "allocation error");
 
-                return false;
-            }
+                    return false;
+                }
+            } else {
+                if (!(tmp = LDNewNull())) {
+                    LDi_log(LD_LOG_ERROR, "allocation error");
 
-            if (!(tmp = LDNewNumber(LDGetNumber(variationIndex)))) {
-                LDi_log(LD_LOG_ERROR, "allocation error");
-
-                return false;
+                    return false;
+                }
             }
 
             if (!(LDObjectSetKey(*result, "variationIndex", tmp))) {
@@ -101,30 +104,38 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
             /* value */
 
-            if (!(variations = LDObjectLookup(flag, "variations"))) {
-                LDi_log(LD_LOG_ERROR, "schema error");
+            if (variationIndex) {
+                if (!(variations = LDObjectLookup(flag, "variations"))) {
+                    LDi_log(LD_LOG_ERROR, "schema error");
 
-                return false;
-            }
+                    return false;
+                }
 
-            if (LDJSONGetType(variations) != LDArray) {
-                LDi_log(LD_LOG_ERROR, "schema error");
+                if (LDJSONGetType(variations) != LDArray) {
+                    LDi_log(LD_LOG_ERROR, "schema error");
 
-                return false;
-            }
+                    return false;
+                }
 
-            if (!(variation = LDArrayLookup(variations,
-                LDGetNumber(variationIndex))))
-            {
-                LDi_log(LD_LOG_ERROR, "schema error");
+                if (!(variation = LDArrayLookup(variations,
+                    LDGetNumber(variationIndex))))
+                {
+                    LDi_log(LD_LOG_ERROR, "schema error");
 
-                return false;
-            }
+                    return false;
+                }
 
-            if (!(tmp = LDJSONDuplicate(variation))) {
-                LDi_log(LD_LOG_ERROR, "allocation error");
+                if (!(tmp = LDJSONDuplicate(variation))) {
+                    LDi_log(LD_LOG_ERROR, "allocation error");
 
-                return false;
+                    return false;
+                }
+            } else {
+                if (!(tmp = LDNewNull())) {
+                    LDi_log(LD_LOG_ERROR, "allocation error");
+
+                    return false;
+                }
             }
 
             if (!(LDObjectSetKey(*result, "value", tmp))) {
@@ -140,7 +151,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     {
         bool submatch;
 
-        if (!checkPrerequisites(flag, user, &submatch)) {
+        if (!checkPrerequisites(flag, user, store, &submatch)) {
             LDi_log(LD_LOG_ERROR, "sub error error");
 
             return false;
@@ -210,13 +221,15 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
 bool
 checkPrerequisites(const struct LDJSON *const flag,
-    const struct LDUser *const user, bool *const matches)
+    const struct LDUser *const user, struct LDStore *const store,
+    bool *const matches)
 {
     struct LDJSON *prerequisites = NULL;
     struct LDJSON *iter = NULL;
 
     LD_ASSERT(flag);
     LD_ASSERT(user);
+    LD_ASSERT(store);
     LD_ASSERT(matches);
 
     if (LDJSONGetType(flag) != LDObject) {
@@ -238,12 +251,23 @@ checkPrerequisites(const struct LDJSON *const flag,
     }
 
     for (iter = LDGetIter(prerequisites); iter; iter = LDIterNext(iter)) {
-        /* TODO get from store */
-        const struct LDJSON *const preflag = NULL;
-        (void)preflag;
+        const struct LDJSON *preflag = NULL;
+
+        if (LDJSONGetType(iter) == LDText) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (!(preflag = LDStoreGet(store, "flags", LDGetText(iter)))) {
+            LDi_log(LD_LOG_ERROR, "store lookup error");
+
+            return false;
+        }
 
         /*
-        if (!preflag || !evaluate(flag, user)) {
+        TODO proper recursive evaluation
+        if (!evaluate(flag, user)) {
             return false;
         }
         */

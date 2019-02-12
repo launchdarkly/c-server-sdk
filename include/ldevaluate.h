@@ -9,12 +9,14 @@
 #include <stddef.h>
 
 #include "ldjson.h"
+#include "ldstore.h"
 
 bool evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
-    struct LDJSON **const result);
+    struct LDStore *const store, struct LDJSON **const result);
 
 bool checkPrerequisites(const struct LDJSON *const flag,
-    const struct LDUser *const user, bool *const matches);
+    const struct LDUser *const user, struct LDStore *const store,
+    bool *const matches);
 
 bool ruleMatchesUser(const struct LDJSON *const rule,
     const struct LDUser *const user, bool *const matches);

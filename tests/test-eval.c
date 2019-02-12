@@ -6,20 +6,16 @@
 #include <math.h>
 #include <float.h>
 
-static void
-returnsOffVariationIfFlagIsOff()
+static struct LDJSON *
+testFlag1()
 {
-    struct LDUser *user;
-
     struct LDJSON *flag = NULL;
     struct LDJSON *tmp = NULL;
-    struct LDJSON *result = NULL;
 
     LD_ASSERT(flag = LDNewObject());
 
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(false)));
-    LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
 
     LD_ASSERT(tmp = LDNewObject());
     LD_ASSERT(LDObjectSetKey(tmp, "variation", LDNewNumber(0)));
@@ -31,15 +27,56 @@ returnsOffVariationIfFlagIsOff()
     LD_ASSERT(LDArrayAppend(tmp, LDNewText("on")));
     LD_ASSERT(LDObjectSetKey(flag, "variations", tmp));
 
+    return flag;
+}
+
+static void
+returnsOffVariationIfFlagIsOff()
+{
+    struct LDUser *user;
+
+    struct LDJSON *flag = NULL;
+    struct LDJSON *result = NULL;
+
+    LD_ASSERT(flag = testFlag1());
+    LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
+
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
-    LD_ASSERT(evaluate(flag, user, &result));
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
 
     LD_ASSERT(strcmp("off", LDGetText(LDObjectLookup(result, "value"))) == 0);
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 1);
 
-    LD_ASSERT(strcmp("isOff", LDGetText(LDObjectLookup(
-        LDObjectLookup(result, "reason"), "kind"))) == 0);
+    LD_ASSERT(strcmp("isOff", LDGetText(
+        LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDUserFree(user);
+}
+
+static void
+testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
+{
+    struct LDUser *user;
+
+    struct LDJSON *flag = NULL;
+    struct LDJSON *result = NULL;
+
+    LD_ASSERT(flag = testFlag1());
+
+    LD_ASSERT(user = LDUserNew("userKeyA"));
+
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
+
+    LD_ASSERT(LDJSONGetType(LDObjectLookup(result, "value")) == LDNull);
+
+    LD_ASSERT(LDJSONGetType(
+        LDObjectLookup(result, "variationIndex")) == LDNull);
+
+    LD_ASSERT(strcmp("isOff", LDGetText(
+        LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -80,6 +117,8 @@ main()
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
     returnsOffVariationIfFlagIsOff();
+    testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified();
+
     testBucketUserByKey();
 
     return 0;
