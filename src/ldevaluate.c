@@ -7,7 +7,8 @@
 
 bool evaluate(const struct LDJSON *const flag, const struct LDUser *const user);
 
-static bool checkPrerequisites(const struct LDJSON *const flag, const struct LDUser *const user);
+static bool checkPrerequisites(const struct LDJSON *const flag,
+    const struct LDUser *const user, bool *const matches);
 
 static bool ruleMatchesUser(const struct LDJSON *const rule,
     const struct LDUser *const user, bool *const matches);
@@ -38,21 +39,49 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user)
 {
     LD_ASSERT(flag);
     LD_ASSERT(user);
-    LD_ASSERT(LDJSONGetType(flag) == LDObject);
+
+    if (LDJSONGetType(flag) != LDObject) {
+        LDi_log(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
 
     {
-        const struct LDJSON *on = LDObjectLookup(flag, "on");
+        const struct LDJSON *on = NULL;
 
-        LD_ASSERT(on);
-        LD_ASSERT(LDJSONGetType(on) == LDBool);
+        if (!(on = LDObjectLookup(flag, "on"))) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (LDJSONGetType(on) != LDBool) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
 
         if (!LDGetBool(on)) {
             /* TODO return isOFf */
+
+            return true;
         }
     }
 
-    if (!checkPrerequisites(flag, user)) {
-        return false;
+    {
+        bool submatch;
+
+        if (!checkPrerequisites(flag, user, &submatch)) {
+            LDi_log(LD_LOG_ERROR, "sub error error");
+
+            return false;
+        }
+
+        if (!submatch) {
+            /* TODO return prereq failed */
+
+            return true;
+        }
     }
 
     {
@@ -88,10 +117,20 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user)
             const struct LDJSON *iter = NULL;
 
             for (iter = LDGetIter(rules); iter; iter = LDIterNext(iter)) {
+                bool submatch;
+
                 LD_ASSERT(LDJSONGetType(iter) == LDObject);
 
-                if (ruleMatchesUser(iter, user)) {
+                if (!ruleMatchesUser(iter, user, &submatch)) {
+                    LDi_log(LD_LOG_ERROR, "sub error error");
+
+                    return false;
+                }
+
+                if (submatch) {
                     /* TODO return ruleMatch */
+
+                    return true;
                 }
             }
         }
@@ -101,26 +140,47 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user)
 }
 
 static bool
-checkPrerequisites(const struct LDJSON *const flag, const struct LDUser *const user)
+checkPrerequisites(const struct LDJSON *const flag,
+    const struct LDUser *const user, bool *const matches)
 {
-    struct LDJSON *prerequisites = NULL, *iter = NULL;
+    struct LDJSON *prerequisites = NULL;
+    struct LDJSON *iter = NULL;
 
     LD_ASSERT(flag);
-    LD_ASSERT(LDJSONGetType(flag) == LDObject);
     LD_ASSERT(user);
+    LD_ASSERT(matches);
 
-    LD_ASSERT(prerequisites = LDObjectLookup(flag, "prerequisites"));
+    if (LDJSONGetType(flag) != LDObject) {
+        LDi_log(LD_LOG_ERROR, "schema error");
 
-    LD_ASSERT(LDJSONGetType(prerequisites) == LDArray);
+        return false;
+    }
+
+    if (!(prerequisites = LDObjectLookup(flag, "prerequisites"))) {
+        LDi_log(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if (LDJSONGetType(prerequisites) != LDArray) {
+        LDi_log(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
 
     for (iter = LDGetIter(prerequisites); iter; iter = LDIterNext(iter)) {
         /* TODO get from store */
         const struct LDJSON *const preflag = NULL;
+        (void)preflag;
 
+        /*
         if (!preflag || !evaluate(flag, user)) {
             return false;
         }
+        */
     }
+
+    *matches = true;
 
     return true;
 }
@@ -158,6 +218,8 @@ ruleMatchesUser(const struct LDJSON *const rule,
         }
 
         if (!clauseMatchesUser(iter, user, &submatch)) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
             return false;
         }
 
