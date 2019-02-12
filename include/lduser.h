@@ -24,14 +24,14 @@ struct LDUser *LDUserNew(const char *const userkey);
 void LDUserFree(struct LDUser *const user);
 
 /**
- * @brief
+ * @brief Mark the user as anonymous.
  * @param[in] user The user to mutate, may not be NULL (assert).
  * @return True on success, False on failure.
  */
 void LDUserSetAnonymous(struct LDUser *const user, const bool anon);
 
 /**
- * @brief
+ * @brief Set the user's IP.
  * @param[in] user The user to mutate, may not be NULL (assert).
  * @param[in] ip The users IP, may be NULL.
  * @return True on success, False on failure.
@@ -39,7 +39,7 @@ void LDUserSetAnonymous(struct LDUser *const user, const bool anon);
 bool LDUserSetIP(struct LDUser *const user, const char *const ip);
 
 /**
- * @brief
+ * @brief Set the user's first name.
  * @param[in] user The user to mutate, may not be NULL (assert).
  * @param[in] firstName The users first name, may be NULL.
  * @return True on success, False on failure.
@@ -47,7 +47,7 @@ bool LDUserSetIP(struct LDUser *const user, const char *const ip);
 bool LDUserSetFirstName(struct LDUser *const user, const char *const firstName);
 
 /**
- * @brief
+ * @brief Set the user's last name
  * @param[in] user The user to mutate, may not be NULL (assert).
  * @param[in] lastname The users last name, may be NULL.
  * @return True on success, False on failure.
@@ -55,7 +55,7 @@ bool LDUserSetFirstName(struct LDUser *const user, const char *const firstName);
 bool LDUserSetLastName(struct LDUser *const user, const char *const lastName);
 
 /**
- * @brief
+ * @brief Set the user's email.
  * @param[in] user The user to mutate, may not be NULL (assert).
  * @param[in] email The users email, may be NULL.
  * @return True on success, False on failure.
@@ -63,7 +63,7 @@ bool LDUserSetLastName(struct LDUser *const user, const char *const lastName);
 bool LDUserSetEmail(struct LDUser *const user, const char *const email);
 
 /**
- * @brief
+ * @brief Set the user's name.
  * @param[in] user The user to mutate, may not be NULL (assert).
  * @param[in] name The users name, may be NULL.
  * @return True on success, False on failure.
@@ -71,7 +71,7 @@ bool LDUserSetEmail(struct LDUser *const user, const char *const email);
 bool LDUserSetName(struct LDUser *const user, const char *const name);
 
 /**
- * @brief
+ * @brief Set the user's avatar.
  * @param[in] user The user to mutate, may not be NULL (assert).
  * @param[in] avatar The users avatar, may be NULL.
  * @return True on success, False on failure.
@@ -79,7 +79,7 @@ bool LDUserSetName(struct LDUser *const user, const char *const name);
 bool LDUserSetAvatar(struct LDUser *const user, const char *const avatar);
 
 /**
- * @brief
+ * @brief Set the user's secondary key.
  * @param[in] user The user to mutate, may not be NULL (assert).
  * @param[in] secondary The users secondary key, may be NULL.
  * @return True on success, False on failure.
@@ -87,7 +87,7 @@ bool LDUserSetAvatar(struct LDUser *const user, const char *const avatar);
 bool LDUserSetSecondary(struct LDUser *const user, const char *const secondary);
 
 /**
- * @brief
+ * @brief Set the user's custom JSON.
  * @param[in] user The user to mutate, may not be NULL (assert).
  * @param[in] custom Custom JSON for the user, may be NULL.
  * @return Void.
@@ -95,9 +95,9 @@ bool LDUserSetSecondary(struct LDUser *const user, const char *const secondary);
 void LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom);
 
 /**
- * @brief
+ * @brief Mark an attribute as private.
  * @param[in] user The user to mutate, may not be NULL (assert).
- * @param[in] attribute Mark an attribute as private, may not be NULL (assert).
+ * @param[in] attribute Attribute to mark as private, may not be NULL (assert).
  * @return True on success, False on failure.
  */
 bool LDUserAddPrivateAttribute(struct LDUser *const user,
