@@ -10,7 +10,8 @@
 
 #include "ldjson.h"
 
-bool evaluate(const struct LDJSON *const flag, const struct LDUser *const user);
+bool evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
+    struct LDJSON **const result);
 
 bool checkPrerequisites(const struct LDJSON *const flag,
     const struct LDUser *const user, bool *const matches);

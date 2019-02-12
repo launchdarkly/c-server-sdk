@@ -5,10 +5,18 @@
 #include "ldevaluate.h"
 
 bool
-evaluate(const struct LDJSON *const flag, const struct LDUser *const user)
+evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
+    struct LDJSON **const result)
 {
     LD_ASSERT(flag);
     LD_ASSERT(user);
+    LD_ASSERT(result);
+
+    if (!(*result = LDNewObject())) {
+        LDi_log(LD_LOG_ERROR, "allocation error");
+
+        return false;
+    }
 
     if (LDJSONGetType(flag) != LDObject) {
         LDi_log(LD_LOG_ERROR, "schema error");
@@ -32,7 +40,98 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user)
         }
 
         if (!LDGetBool(on)) {
-            /* TODO return isOFf */
+            struct LDJSON *tmp;
+            struct LDJSON *tmpcollection;
+
+            struct LDJSON *variation;
+            struct LDJSON *variationIndex;
+            struct LDJSON *variations;
+
+            /* reason */
+
+            if (!(tmpcollection = LDNewObject())) {
+                LDi_log(LD_LOG_ERROR, "allocation error");
+
+                return false;
+            }
+
+            if (!(tmp = LDNewText("isOff"))) {
+                LDi_log(LD_LOG_ERROR, "allocation error");
+
+                return false;
+            }
+
+            if (!(LDObjectSetKey(tmpcollection, "kind", tmp))) {
+                LDi_log(LD_LOG_ERROR, "allocation error");
+
+                return false;
+            }
+
+            if (!(LDObjectSetKey(*result, "reason", tmpcollection))) {
+                LDi_log(LD_LOG_ERROR, "allocation error");
+
+                return false;
+            }
+
+            /* variationIndex */
+
+            if (!(variationIndex = LDObjectLookup(flag, "offVariation"))) {
+                LDi_log(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            if (LDJSONGetType(variationIndex) != LDNumber) {
+                LDi_log(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            if (!(tmp = LDNewNumber(LDGetNumber(variationIndex)))) {
+                LDi_log(LD_LOG_ERROR, "allocation error");
+
+                return false;
+            }
+
+            if (!(LDObjectSetKey(*result, "variationIndex", tmp))) {
+                LDi_log(LD_LOG_ERROR, "allocation error");
+
+                return false;
+            }
+
+            /* value */
+
+            if (!(variations = LDObjectLookup(flag, "variations"))) {
+                LDi_log(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            if (LDJSONGetType(variations) != LDArray) {
+                LDi_log(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            if (!(variation = LDArrayLookup(variations,
+                LDGetNumber(variationIndex))))
+            {
+                LDi_log(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            if (!(tmp = LDJSONDuplicate(variation))) {
+                LDi_log(LD_LOG_ERROR, "allocation error");
+
+                return false;
+            }
+
+            if (!(LDObjectSetKey(*result, "value", tmp))) {
+                LDi_log(LD_LOG_ERROR, "allocation error");
+
+                return false;
+            }
 
             return true;
         }
