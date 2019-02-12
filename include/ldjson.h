@@ -34,17 +34,17 @@ typedef enum {
  * @{
  ******************************************************************************/
 
- /**
-  * @brief Constructs a JSON node of type `LDJSONNull`.
-  * @return NULL on failure.
-  */
+/**
+ * @brief Constructs a JSON node of type `LDJSONNull`.
+ * @return NULL on failure.
+ */
 struct LDJSON *LDNewNull();
 
- /**
-  * @brief Constructs a JSON node of type `LDJSONBool`.
-  * @param[in] boolean The value to assign the new node
-  * @return NULL on failure.
-  */
+/**
+ * @brief Constructs a JSON node of type `LDJSONBool`.
+ * @param[in] boolean The value to assign the new node
+ * @return NULL on failure.
+ */
 struct LDJSON *LDNewBool(const bool boolean);
 
 /**
@@ -61,16 +61,16 @@ struct LDJSON *LDNewNumber(const double number);
  */
 struct LDJSON *LDNewText(const char *const text);
 
- /**
-  * @brief Constructs a JSON node of type `LDJSONObject`.
-  * @return NULL on failure.
-  */
+/**
+ * @brief Constructs a JSON node of type `LDJSONObject`.
+ * @return NULL on failure.
+ */
 struct LDJSON *LDNewObject();
 
- /**
-  * @brief Constructs a JSON node of type `LDJSONArray`.
-  * @return NULL on failure.
-  */
+/**
+ * @brief Constructs a JSON node of type `LDJSONArray`.
+ * @return NULL on failure.
+ */
 struct LDJSON *LDNewArray();
 
 /*@}*/
@@ -108,7 +108,8 @@ LDJSONType LDJSONGetType(const struct LDJSON *const json);
  * @param[in] right May be NULL.
  * @return True if equal, false otherwise.
  */
-bool LDJSONCompare(const struct LDJSON *const left, const struct LDJSON *const right);
+bool LDJSONCompare(const struct LDJSON *const left,
+    const struct LDJSON *const right);
 
 /*@}*/
 
@@ -118,11 +119,11 @@ bool LDJSONCompare(const struct LDJSON *const left, const struct LDJSON *const r
  * @{
  ******************************************************************************/
 
- /**
-  * @brief Get the value from a node of type `LDJSONBool`.
-  * @param[in] node Node to read value from. Must be correct type (assert).
-  * @return The boolean nodes value
-  */
+/**
+ * @brief Get the value from a node of type `LDJSONBool`.
+ * @param[in] node Node to read value from. Must be correct type (assert).
+ * @return The boolean nodes value
+ */
 bool LDGetBool(const struct LDJSON *const node);
 
 /**
@@ -155,20 +156,24 @@ const char *LDGetText(const struct LDJSON *const node);
 struct LDJSON *LDIterNext(const struct LDJSON *const iter);
 
 /**
- * @brief Allows iteration over an array. Modification of the array invalidates this iterator.
- * @param[in] collection May not be NULL (assert), must be of type `LDJSONArray` or `LDJSONObject` (assert).
+ * @brief Allows iteration over an array. Modification of the array invalidates
+ * this iterator.
+ * @param[in] collection May not be NULL (assert),
+ * must be of type `LDJSONArray` or `LDJSONObject` (assert).
  * @return First child iterator, or NULL if empty
  */
 struct LDJSON *LDGetIter(const struct LDJSON *const collection);
 
 /**
- * @brief Returns the key associated with the iterator. Must be an object iterator.
- * @param[in] iter The iterator obtained from an object. May not be NULL (assert).
+ * @brief Returns the key associated with the iterator
+ * Must be an object iterator.
+ * @param[in] iter The iterator obtained from an object.
+ * May not be NULL (assert).
  * @return The key on success, or NULL if there is no key (wrong type).
  */
 const char *LDIterKey(const struct LDJSON *const iter);
 
- /*@}*/
+/*@}*/
 
 /***************************************************************************//**
  * @name Array Operations
@@ -178,18 +183,21 @@ const char *LDIterKey(const struct LDJSON *const iter);
 
 /**
  * @brief Return the size of a JSON array
- * @param[in] array May not be NULL (assert), must be of type `LDJSONArray` (assert).
+ * @param[in] array May not be NULL (assert),
+ * must be of type `LDJSONArray` (assert).
  * @return The size of the array
  */
 unsigned int LDArrayGetSize(const struct LDJSON *const array);
 
 /**
  * @brief Lookup up the value of an index for a given array
- * @param[in] array May not be NULL (assert), must be of type `LDJSONArray` (assert).
+ * @param[in] array May not be NULL (assert),
+ * must be of type `LDJSONArray` (assert).
  * @param[in] index The index to lookup in the array
  * @return Item if it exists, otherwise NULL
  */
-struct LDJSON *LDArrayLookup(const struct LDJSON *const array, const unsigned int index);
+struct LDJSON *LDArrayLookup(const struct LDJSON *const array,
+    const unsigned int index);
 
 /**
  * @brief Adds an item to the end of an existing array.
@@ -207,25 +215,30 @@ bool LDArrayAppend(struct LDJSON *const array, struct LDJSON *const item);
 
 /**
  * @brief Lookup up the value of a key for a given object
- * @param[in] object May not be NULL (assert), must be of type `LDJSONObject` (assert).
+ * @param[in] object May not be NULL (assert),
+ * must be of type `LDJSONObject` (assert).
  * @param[in] key The key to lookup in the object. May not be NULL (assert),
  * @return The item if it exists, otherwise NULL.
  */
-struct LDJSON *LDObjectLookup(const struct LDJSON *const object, const char *const key);
-
+struct LDJSON *LDObjectLookup(const struct LDJSON *const object,
+    const char *const key);
 
 /**
- * @brief Sets the provided key in an object to item. If the key already exists the original value is deleted.
+ * @brief Sets the provided key in an object to item.
+ * If the key already exists the original value is deleted.
  * @param[in] object Must be of type `LDJSONObject` (assert).
- * @param[in] key The key that is being written to in the object. May not be NULL (assert).
+ * @param[in] key The key that is being written to in the object.
+ * May not be NULL (assert).
  * @param[in] item The value to assign to key. This item is consumed.
  * @return True on success, False on failure.
  */
-bool LDObjectSetKey(struct LDJSON *const object, const char *const key, struct LDJSON *const item);
+bool LDObjectSetKey(struct LDJSON *const object, const char *const key,
+    struct LDJSON *const item);
 
 /**
  * @brief Delete the provided key from the given object.
- * @param[in] object May not be NULL (assert), must be of type `LDJSONObject` (assert).
+ * @param[in] object May not be NULL (assert),
+ * must be of type `LDJSONObject` (assert).
  * @param[in] key The key to delete from the object. May not be NULL (assert),
  * @return Void
  */
@@ -239,11 +252,12 @@ void LDObjectDeleteKey(struct LDJSON *const object, const char *const key);
  * @{
  ******************************************************************************/
 
- /**
-  * @brief Serialize JSON text into a JSON structure.
-  * @param[in] json Structure to serialize. May be NULL depending on implementation.
-  * @return NULL on failure
-  */
+/**
+ * @brief Serialize JSON text into a JSON structure.
+ * @param[in] json Structure to serialize.
+ * May be NULL depending on implementation.
+ * @return NULL on failure
+ */
 char *LDJSONSerialize(const struct LDJSON *const json);
 
 /**

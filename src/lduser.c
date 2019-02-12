@@ -130,11 +130,13 @@ LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom)
 }
 
 bool
-LDUserAddPrivateAttribute(struct LDUser *const user, const char *const attribute)
+LDUserAddPrivateAttribute(struct LDUser *const user,
+    const char *const attribute)
 {
     struct LDJSON *temp = NULL;
 
-    LD_ASSERT(user); LD_ASSERT(attribute);
+    LD_ASSERT(user);
+    LD_ASSERT(attribute);
 
     if ((temp = LDNewText(attribute))) {
         return LDArrayAppend(user->privateAttributeNames, temp);
@@ -158,7 +160,8 @@ textInArray(const struct LDJSON *const array, const char *const text)
 }
 
 static bool
-isPrivateAttr(struct LDClient *const client, struct LDUser *const user, const char *const key)
+isPrivateAttr(struct LDClient *const client, struct LDUser *const user,
+    const char *const key)
 {
     bool global = false;
 
@@ -192,7 +195,8 @@ addHidden(struct LDJSON **ref, const char *const value){
 }
 
 struct LDJSON *
-LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const bool redact)
+LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser,
+    const bool redact)
 {
     struct LDJSON *hidden = NULL, *json = NULL, *temp = NULL;
 
@@ -257,7 +261,8 @@ LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const b
             struct LDJSON *item = LDGetIter(custom);
 
             while(item) {
-                struct LDJSON *const next = LDIterNext(item); /* must record next to make delete safe */
+                /* must record next to make delete safe */
+                struct LDJSON *const next = LDIterNext(item);
 
                 if (isPrivateAttr(client, lduser, LDIterKey(item))) {
                     if (!addHidden(&hidden, LDIterKey(item))) {
@@ -288,7 +293,8 @@ LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const b
 struct LDJSON *
 valueOfAttribute(const struct LDUser *const user, const char *const attribute)
 {
-    LD_ASSERT(user); LD_ASSERT(attribute);
+    LD_ASSERT(user);
+    LD_ASSERT(attribute);
 
     if (strcmp(attribute, "key") == 0) {
         if (user->key) {

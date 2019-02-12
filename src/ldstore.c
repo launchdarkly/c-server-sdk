@@ -5,13 +5,16 @@
 
 static bool memoryInit(void *const rawcontext, struct LDJSON *const sets);
 
-static struct LDJSON *memoryGet(void *const rawcontext, const char *const kind, const char *const key);
+static struct LDJSON *memoryGet(void *const rawcontext, const char *const kind,
+    const char *const key);
 
 static struct LDJSON *memoryAll(void *const rawcontext, const char *const kind);
 
-static bool memoryDelete(void *const rawcontext, const char *const kind, const char *const key, const unsigned int version);
+static bool memoryDelete(void *const rawcontext, const char *const kind,
+    const char *const key, const unsigned int version);
 
-static bool memoryUpsert(void *const rawcontext, const char *const kind, struct LDJSON *const feature);
+static bool memoryUpsert(void *const rawcontext, const char *const kind,
+    struct LDJSON *const feature);
 
 static bool memoryInitialized(void *const rawcontext);
 
@@ -31,7 +34,9 @@ memoryInit(void *const rawcontext, struct LDJSON *const sets)
 {
     struct MemoryContext *const context = rawcontext;
 
-    LD_ASSERT(context); LD_ASSERT(sets); LD_ASSERT(LDJSONGetType(sets) == LDObject);
+    LD_ASSERT(context);
+    LD_ASSERT(sets);
+    LD_ASSERT(LDJSONGetType(sets) == LDObject);
 
     LD_ASSERT(LDi_rdlock(&context->lock));
 
@@ -52,7 +57,8 @@ isDeleted(const struct LDJSON *const feature)
 {
     struct LDJSON *deleted = NULL;
 
-    LD_ASSERT(feature); LD_ASSERT(LDJSONGetType(feature) == LDObject);
+    LD_ASSERT(feature);
+    LD_ASSERT(LDJSONGetType(feature) == LDObject);
 
     deleted = LDObjectLookup(feature, "deleted");
 
@@ -66,7 +72,9 @@ memoryGet(void *const rawcontext, const char *const kind, const char *const key)
 
     struct LDJSON *set = NULL, *current = NULL;
 
-    LD_ASSERT(context); LD_ASSERT(kind); LD_ASSERT(key);
+    LD_ASSERT(context);
+    LD_ASSERT(kind);
+    LD_ASSERT(key);
 
     LD_ASSERT(LDi_rdlock(&context->lock));
 
@@ -136,13 +144,16 @@ memoryAll(void *const rawcontext, const char *const kind)
 }
 
 static bool
-memoryDelete(void *const rawcontext, const char *const kind, const char *const key, const unsigned int version)
+memoryDelete(void *const rawcontext, const char *const kind,
+    const char *const key, const unsigned int version)
 {
     struct MemoryContext *const context = rawcontext;
 
     struct LDJSON *placeholder = NULL, *temp = NULL;
 
-    LD_ASSERT(context); LD_ASSERT(kind); LD_ASSERT(key);
+    LD_ASSERT(context);
+    LD_ASSERT(kind);
+    LD_ASSERT(key);
 
     if (!(placeholder = LDNewObject())) {
         return false;
@@ -181,13 +192,16 @@ memoryDelete(void *const rawcontext, const char *const kind, const char *const k
 }
 
 static bool
-memoryUpsert(void *const rawcontext, const char *const kind, struct LDJSON *const replacement)
+memoryUpsert(void *const rawcontext, const char *const kind,
+    struct LDJSON *const replacement)
 {
     struct MemoryContext *const context = rawcontext;
 
     struct LDJSON *set = NULL, *current = NULL, *key = NULL;
 
-    LD_ASSERT(context); LD_ASSERT(kind); LD_ASSERT(replacement);
+    LD_ASSERT(context);
+    LD_ASSERT(kind);
+    LD_ASSERT(replacement);
 
     LD_ASSERT(LDi_wrlock(&context->lock));
 
@@ -309,15 +323,18 @@ makeInMemoryStore()
 bool
 LDStoreInit(const struct LDStore *const store, struct LDJSON *const sets)
 {
-    LD_ASSERT(store); LD_ASSERT(sets);
+    LD_ASSERT(store);
+    LD_ASSERT(sets);
 
     return store->init(store->context, sets);
 }
 
 struct LDJSON *
-LDStoreGet(const struct LDStore *const store, const char *const kind, const char *const key)
+LDStoreGet(const struct LDStore *const store, const char *const kind,
+    const char *const key)
 {
-    LD_ASSERT(store); LD_ASSERT(key);
+    LD_ASSERT(store);
+    LD_ASSERT(key);
 
     return store->get(store->context, kind, key);
 }
@@ -325,23 +342,29 @@ LDStoreGet(const struct LDStore *const store, const char *const kind, const char
 struct LDJSON *
 LDStoreAll(const struct LDStore *const store, const char *const kind)
 {
-    LD_ASSERT(store); LD_ASSERT(kind);
+    LD_ASSERT(store);
+    LD_ASSERT(kind);
 
     return store->all(store->context, kind);
 }
 
 bool
-LDStoreDelete(const struct LDStore *const store, const char *const kind, const char *const key, const unsigned int version)
+LDStoreDelete(const struct LDStore *const store, const char *const kind,
+    const char *const key, const unsigned int version)
 {
-    LD_ASSERT(store); LD_ASSERT(kind);
+    LD_ASSERT(store);
+    LD_ASSERT(kind);
 
     return store->delete(store->context, kind, key, version);
 }
 
 bool
-LDStoreUpsert(const struct LDStore *const store, const char *const key, struct LDJSON *const feature)
+LDStoreUpsert(const struct LDStore *const store, const char *const key,
+    struct LDJSON *const feature)
 {
-    LD_ASSERT(store); LD_ASSERT(key); LD_ASSERT(feature);
+    LD_ASSERT(store);
+    LD_ASSERT(key);
+    LD_ASSERT(feature);
 
     return store->upsert(store->context, key, feature);
 }
