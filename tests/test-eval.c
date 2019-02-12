@@ -15,7 +15,6 @@ testFlag1()
     LD_ASSERT(flag = LDNewObject());
 
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(false)));
 
     LD_ASSERT(tmp = LDNewObject());
     LD_ASSERT(LDObjectSetKey(tmp, "variation", LDNewNumber(0)));
@@ -40,6 +39,7 @@ returnsOffVariationIfFlagIsOff()
 
     LD_ASSERT(flag = testFlag1());
     LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(false)));
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -48,7 +48,7 @@ returnsOffVariationIfFlagIsOff()
     LD_ASSERT(strcmp("off", LDGetText(LDObjectLookup(result, "value"))) == 0);
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 1);
 
-    LD_ASSERT(strcmp("isOff", LDGetText(
+    LD_ASSERT(strcmp("OFF", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
 
     LDJSONFree(flag);
@@ -65,6 +65,7 @@ testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
     struct LDJSON *result = NULL;
 
     LD_ASSERT(flag = testFlag1());
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(false)));
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -75,7 +76,35 @@ testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
     LD_ASSERT(LDJSONGetType(
         LDObjectLookup(result, "variationIndex")) == LDNull);
 
-    LD_ASSERT(strcmp("isOff", LDGetText(
+    LD_ASSERT(strcmp("OFF", LDGetText(
+        LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDUserFree(user);
+}
+
+static void
+testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
+{
+    struct LDUser *user;
+
+    struct LDJSON *flag = NULL;
+    struct LDJSON *result = NULL;
+
+    LD_ASSERT(flag = testFlag1());
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "rules", LDNewArray()));
+
+    LD_ASSERT(user = LDUserNew("userKeyA"));
+
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
+
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(result, "value")), "fall") == 0);
+
+    LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 0);
+
+    LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
 
     LDJSONFree(flag);
@@ -118,6 +147,7 @@ main()
 
     returnsOffVariationIfFlagIsOff();
     testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified();
+    testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules();
 
     testBucketUserByKey();
 

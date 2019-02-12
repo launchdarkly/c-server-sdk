@@ -4,6 +4,122 @@
 #include "ldinternal.h"
 #include "ldevaluate.h"
 
+static bool
+addReason(struct LDJSON *result, const char *const reason)
+{
+    struct LDJSON *tmpcollection;
+    struct LDJSON *tmp;
+
+    LD_ASSERT(result);
+    LD_ASSERT(reason);
+
+    if (!(tmpcollection = LDNewObject())) {
+        LDi_log(LD_LOG_ERROR, "allocation error");
+
+        return false;
+    }
+
+    if (!(tmp = LDNewText(reason))) {
+        LDi_log(LD_LOG_ERROR, "allocation error");
+
+        return false;
+    }
+
+    if (!(LDObjectSetKey(tmpcollection, "kind", tmp))) {
+        LDi_log(LD_LOG_ERROR, "allocation error");
+
+        return false;
+    }
+
+    if (!(LDObjectSetKey(result, "reason", tmpcollection))) {
+        LDi_log(LD_LOG_ERROR, "allocation error");
+
+        return false;
+    }
+
+    return true;
+}
+
+static bool
+addValue(const struct LDJSON *const flag, struct LDJSON *result,
+    const struct LDJSON *const index)
+{
+    struct LDJSON *tmp;
+    struct LDJSON *variations;
+    struct LDJSON *variation;
+
+    LD_ASSERT(flag);
+    LD_ASSERT(result);
+
+    if (index) {
+        if (LDJSONGetType(index) != LDNumber) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (!(tmp = LDNewNumber(LDGetNumber(index)))) {
+            LDi_log(LD_LOG_ERROR, "allocation error");
+
+            return false;
+        }
+    } else {
+        if (!(tmp = LDNewNull())) {
+            LDi_log(LD_LOG_ERROR, "allocation error");
+
+            return false;
+        }
+    }
+
+    if (!(LDObjectSetKey(result, "variationIndex", tmp))) {
+        LDi_log(LD_LOG_ERROR, "allocation error");
+
+        return false;
+    }
+
+    if (index) {
+        if (!(variations = LDObjectLookup(flag, "variations"))) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (LDJSONGetType(variations) != LDArray) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (!(variation = LDArrayLookup(variations,
+            LDGetNumber(index))))
+        {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (!(tmp = LDJSONDuplicate(variation))) {
+            LDi_log(LD_LOG_ERROR, "allocation error");
+
+            return false;
+        }
+    } else {
+        if (!(tmp = LDNewNull())) {
+            LDi_log(LD_LOG_ERROR, "allocation error");
+
+            return false;
+        }
+    }
+
+    if (!(LDObjectSetKey(result, "value", tmp))) {
+        LDi_log(LD_LOG_ERROR, "allocation error");
+
+        return false;
+    }
+
+    return true;
+}
+
 bool
 evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     struct LDStore *const store, struct LDJSON **const result)
@@ -41,105 +157,17 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
         }
 
         if (!LDGetBool(on)) {
-            struct LDJSON *tmp;
-            struct LDJSON *tmpcollection;
+            const struct LDJSON *offVariation =
+                LDObjectLookup(flag, "offVariation");
 
-            struct LDJSON *variation;
-            struct LDJSON *variationIndex;
-            struct LDJSON *variations;
-
-            /* reason */
-
-            if (!(tmpcollection = LDNewObject())) {
-                LDi_log(LD_LOG_ERROR, "allocation error");
+            if (!addReason(*result, "OFF")) {
+                LDi_log(LD_LOG_ERROR, "failed to add reason");
 
                 return false;
             }
 
-            if (!(tmp = LDNewText("isOff"))) {
-                LDi_log(LD_LOG_ERROR, "allocation error");
-
-                return false;
-            }
-
-            if (!(LDObjectSetKey(tmpcollection, "kind", tmp))) {
-                LDi_log(LD_LOG_ERROR, "allocation error");
-
-                return false;
-            }
-
-            if (!(LDObjectSetKey(*result, "reason", tmpcollection))) {
-                LDi_log(LD_LOG_ERROR, "allocation error");
-
-                return false;
-            }
-
-            /* variationIndex */
-
-            if ((variationIndex = LDObjectLookup(flag, "offVariation"))) {
-                if (LDJSONGetType(variationIndex) != LDNumber) {
-                    LDi_log(LD_LOG_ERROR, "schema error");
-
-                    return false;
-                }
-
-                if (!(tmp = LDNewNumber(LDGetNumber(variationIndex)))) {
-                    LDi_log(LD_LOG_ERROR, "allocation error");
-
-                    return false;
-                }
-            } else {
-                if (!(tmp = LDNewNull())) {
-                    LDi_log(LD_LOG_ERROR, "allocation error");
-
-                    return false;
-                }
-            }
-
-            if (!(LDObjectSetKey(*result, "variationIndex", tmp))) {
-                LDi_log(LD_LOG_ERROR, "allocation error");
-
-                return false;
-            }
-
-            /* value */
-
-            if (variationIndex) {
-                if (!(variations = LDObjectLookup(flag, "variations"))) {
-                    LDi_log(LD_LOG_ERROR, "schema error");
-
-                    return false;
-                }
-
-                if (LDJSONGetType(variations) != LDArray) {
-                    LDi_log(LD_LOG_ERROR, "schema error");
-
-                    return false;
-                }
-
-                if (!(variation = LDArrayLookup(variations,
-                    LDGetNumber(variationIndex))))
-                {
-                    LDi_log(LD_LOG_ERROR, "schema error");
-
-                    return false;
-                }
-
-                if (!(tmp = LDJSONDuplicate(variation))) {
-                    LDi_log(LD_LOG_ERROR, "allocation error");
-
-                    return false;
-                }
-            } else {
-                if (!(tmp = LDNewNull())) {
-                    LDi_log(LD_LOG_ERROR, "allocation error");
-
-                    return false;
-                }
-            }
-
-            if (!(LDObjectSetKey(*result, "value", tmp))) {
-                LDi_log(LD_LOG_ERROR, "allocation error");
+            if (!(addValue(flag, *result, offVariation))) {
+                LDi_log(LD_LOG_ERROR, "failed to add value");
 
                 return false;
             }
@@ -147,7 +175,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
             return true;
         }
     }
-
+    /*
     {
         bool submatch;
 
@@ -158,7 +186,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
         }
 
         if (!submatch) {
-            /* TODO return prereq failed */
+            // TODO return prereq failed
 
             return true;
         }
@@ -182,16 +210,47 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
                 LD_ASSERT(values); LD_ASSERT(LDJSONGetType(values) == LDArray);
 
                 if (textInArray(values, user->key)) {
-                    /* TODO return isTarget */
+                    // TODO return isTarget
                 }
             }
         }
     }
+    */
 
     {
         const struct LDJSON *const rules = LDObjectLookup(flag, "rules");
 
-        LD_ASSERT(LDJSONGetType(rules) == LDArray);
+        if (LDJSONGetType(rules) != LDArray) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (LDArrayGetSize(rules) == 0) {
+            const struct LDJSON *fallthrough = NULL;
+
+            if (!(fallthrough = LDObjectLookup(flag, "fallthrough"))) {
+                LDi_log(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            fallthrough = LDObjectLookup(fallthrough, "variation");
+
+            if (!addReason(*result, "FALLTHROUGH")) {
+                LDi_log(LD_LOG_ERROR, "failed to add reason");
+
+                return false;
+            }
+
+            if (!(addValue(flag, *result, fallthrough))) {
+                LDi_log(LD_LOG_ERROR, "failed to add value");
+
+                return false;
+            }
+
+            return true;
+        }
 
         {
             const struct LDJSON *iter = NULL;
