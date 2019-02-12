@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "ldinternal.h"
+#include "lduser.h"
 
 struct LDUser *
 LDUserNew(const char *const key)

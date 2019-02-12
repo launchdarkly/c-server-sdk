@@ -5,27 +5,11 @@
 
 #include "ldjson.h"
 #include "ldconfig.h"
+#include "lduser.h"
 
 /* **** Forward Declarations **** */
 
-struct LDUser; struct LDStore;
-
-/* **** LDUser **** */
-
-struct LDUser *LDUserNew(const char *const userkey);
-void LDUserFree(struct LDUser *const user);
-
-void LDUserSetAnonymous(struct LDUser *const user, const bool anon);
-bool LDUserSetIP(struct LDUser *const user, const char *const ip);
-bool LDUserSetFirstName(struct LDUser *const user, const char *const firstName);
-bool LDUserSetLastName(struct LDUser *const user, const char *const lastName);
-bool LDUserSetEmail(struct LDUser *const user, const char *const email);
-bool LDUserSetName(struct LDUser *const user, const char *const name);
-bool LDUserSetAvatar(struct LDUser *const user, const char *const avatar);
-bool LDUserSetSecondary(struct LDUser *const user, const char *const secondary);
-void LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom);
-bool LDUserAddPrivateAttribute(struct LDUser *const user,
-    const char *const attribute);
+struct LDStore;
 
 /* **** LDClient **** */
 
