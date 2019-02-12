@@ -2,37 +2,7 @@
 #include "hexify.h"
 
 #include "ldinternal.h"
-
-/* **** Forward Declarations **** */
-
-bool evaluate(const struct LDJSON *const flag, const struct LDUser *const user);
-
-static bool checkPrerequisites(const struct LDJSON *const flag,
-    const struct LDUser *const user, bool *const matches);
-
-static bool ruleMatchesUser(const struct LDJSON *const rule,
-    const struct LDUser *const user, bool *const matches);
-
-static bool clauseMatchesUser(const struct LDJSON *const clause,
-    const struct LDUser *const user, bool *const matches);
-
-static bool segmentMatchesUser(const struct LDJSON *const segment,
-    const struct LDUser *const user, bool *const matches);
-
-static bool segmentRuleMatchUser(const struct LDJSON *const segmentRule,
-    const char *const segmentKey, const struct LDUser *const user,
-    const char *const salt, bool *const matches);
-
-static bool clauseMatchesUserNoSegments(const struct LDJSON *const clause,
-    const struct LDUser *const user, bool *const matches);
-
-static bool bucketUser(const struct LDUser *const user,
-    const char *const segmentKey, const char *const attribute,
-    const char *const salt, float *const bucket);
-
-static char *bucketableStringValue(const struct LDJSON *const node);
-
-/* **** Implementations **** */
+#include "ldevaluate.h"
 
 bool
 evaluate(const struct LDJSON *const flag, const struct LDUser *const user)
@@ -139,7 +109,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user)
     return true;
 }
 
-static bool
+bool
 checkPrerequisites(const struct LDJSON *const flag,
     const struct LDUser *const user, bool *const matches)
 {
@@ -185,7 +155,7 @@ checkPrerequisites(const struct LDJSON *const flag,
     return true;
 }
 
-static bool
+bool
 ruleMatchesUser(const struct LDJSON *const rule,
     const struct LDUser *const user, bool *const matches)
 {
@@ -235,7 +205,7 @@ ruleMatchesUser(const struct LDJSON *const rule,
     return true;
 }
 
-static bool
+bool
 clauseMatchesUser(const struct LDJSON *const clause,
     const struct LDUser *const user, bool *const matches)
 {
@@ -623,6 +593,8 @@ bucketUser(const struct LDUser *const user, const char *const segmentKey,
             LD_ASSERT(hexify((unsigned char *)digest,
                 sizeof(digest), encoded, sizeof(encoded)) == 16);
 
+            encoded[15] = 0;
+
             *bucket = (float)strtoll(encoded, NULL, 16) / longScale;
 
             free(bucketable);
@@ -634,7 +606,7 @@ bucketUser(const struct LDUser *const user, const char *const segmentKey,
     return false;
 }
 
-static char *
+char *
 bucketableStringValue(const struct LDJSON *const node)
 {
     LD_ASSERT(node);
