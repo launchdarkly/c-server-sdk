@@ -282,7 +282,49 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
 static void
 testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
 {
+    struct LDUser *user;
+    struct LDStore *store;
+    struct LDJSON *flag1;
+    struct LDJSON *flag2;
+    struct LDJSON *result;
 
+    LD_ASSERT(user = LDUserNew("userKeyA"));
+
+    /* flag1 */
+    LD_ASSERT(flag1 = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("feature0")));
+    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag1, "offVariation", LDNewNumber(1)));
+    addPrerequisite(flag1, "feature1", 1);
+    setFallthrough(flag1, 0);
+    addVariations1(flag1);
+
+    /* flag2 */
+    LD_ASSERT(flag2 = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag2, "key", LDNewText("feature1")));
+    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(3)));
+    LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
+    setFallthrough(flag2, 1);
+    addVariations2(flag2);
+
+    /* store */
+    LD_ASSERT(store = prepareEmptyStore());
+    LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
+
+    /* run */
+    LD_ASSERT(evaluate(flag1, user, store, &result));
+
+    /* validate */
+    LD_ASSERT(strcmp("fall", LDGetText(LDObjectLookup(result, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 0);
+    LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
+        LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+
+    LDJSONFree(flag1);
+    LDJSONFree(result);
+    LDStoreDestroy(store);
+    LDUserFree(user);
 }
 
 static bool
