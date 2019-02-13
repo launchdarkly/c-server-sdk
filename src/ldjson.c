@@ -226,6 +226,29 @@ LDObjectDeleteKey(struct LDJSON *const rawobject, const char *const key)
     cJSON_DeleteItemFromObjectCaseSensitive(object, key);
 }
 
+bool
+LDObjectMerge(struct LDJSON *const to, const struct LDJSON *const from)
+{
+    const struct LDJSON *iter;
+
+    LD_ASSERT(to);
+    LD_ASSERT(LDJSONGetType(to) == LDObject);
+    LD_ASSERT(from);
+    LD_ASSERT(LDJSONGetType(from) == LDObject);
+
+    for (iter = LDGetIter(from); iter; iter = LDIterNext(iter)) {
+        struct LDJSON *duplicate;
+
+        if (!(duplicate = LDJSONDuplicate(iter))) {
+            return false;
+        }
+
+        LDObjectSetKey(to, LDIterKey(iter), duplicate);
+    }
+
+    return true;
+}
+
 char *
 LDJSONSerialize(const struct LDJSON *const json)
 {

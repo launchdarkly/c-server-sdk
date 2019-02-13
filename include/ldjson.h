@@ -244,6 +244,15 @@ bool LDObjectSetKey(struct LDJSON *const object, const char *const key,
  */
 void LDObjectDeleteKey(struct LDJSON *const object, const char *const key);
 
+/**
+ * @brief Copy keys from one object to another. If a key already exists it is
+ * overwritten by the new value.
+ * @param[in] to Object to assign to. May not be NULL (assert).
+ * @param[in] from Object to copy keys from. May not be NULL (assert).
+ * @return True on success, `to` is polluted on failure.
+ */
+bool LDObjectMerge(struct LDJSON *const to, const struct LDJSON *const from);
+
  /*@}*/
 
 /***************************************************************************//**
