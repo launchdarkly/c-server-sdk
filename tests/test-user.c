@@ -121,11 +121,11 @@ main()
 
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
-    LDi_log(LD_LOG_INFO, "constructNoSettings()"); constructNoSettings();
-    LDi_log(LD_LOG_INFO, "constructAllSettings()"); constructAllSettings();
-    LDi_log(LD_LOG_INFO, "serializeEmpty()"); serializeEmpty();
-    LDi_log(LD_LOG_INFO, "serializeRedacted()"); serializeRedacted();
-    LDi_log(LD_LOG_INFO, "serializeAll()"); serializeAll();
+    constructNoSettings();
+    constructAllSettings();
+    serializeEmpty();
+    serializeRedacted();
+    serializeAll();
 
     return 0;
 }

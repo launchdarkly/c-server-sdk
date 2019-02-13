@@ -15,7 +15,7 @@ sleepMilliseconds(const unsigned int milliseconds)
     int status;
 
     if ((status = usleep(1000 * milliseconds)) != 0) {
-        LDi_log(LD_LOG_CRITICAL, "upsleep failed with: %s", strerror(status));
+        LD_LOG(LD_LOG_CRITICAL, "upsleep failed with: %s", strerror(status));
 
         return false;
     }
@@ -31,7 +31,8 @@ getMonotonicMilliseconds(unsigned int *const resultMilliseconds)
     LD_ASSERT(resultMilliseconds);
 
     if ((status = clock_gettime(CLOCK_MONOTONIC, &spec)) != 0) {
-        LDi_log(LD_LOG_CRITICAL, "clock_gettime failed with: %s", strerror(status));
+        LD_LOG(LD_LOG_CRITICAL, "clock_gettime failed with: %s",
+            strerror(status));
 
         return false;
     }
@@ -42,7 +43,8 @@ getMonotonicMilliseconds(unsigned int *const resultMilliseconds)
 }
 
 bool
-LDi_createthread(ld_thread_t *const thread, THREAD_RETURN (*const routine)(void *), void *const argument)
+LDi_createthread(ld_thread_t *const thread,
+    THREAD_RETURN (*const routine)(void *), void *const argument)
 {
     #ifdef _WIN32
         ld_thread_t attempt = CreateThread(NULL, 0, routine, argument, 0, NULL);
@@ -58,7 +60,8 @@ LDi_createthread(ld_thread_t *const thread, THREAD_RETURN (*const routine)(void 
         int status;
 
         if ((status = pthread_create(thread, NULL, routine, argument)) != 0) {
-            LDi_log(LD_LOG_CRITICAL, "pthread_create failed with: %s", strerror(status));
+            LD_LOG(LD_LOG_CRITICAL, "pthread_create failed with: %s",
+                strerror(status));
         }
 
         return status == 0;
@@ -74,7 +77,8 @@ LDi_jointhread(ld_thread_t thread)
         int status;
 
         if ((status = pthread_join(thread, NULL)) != 0) {
-            LDi_log(LD_LOG_CRITICAL, "pthread_join failed with: %s", strerror(status));
+            LD_LOG(LD_LOG_CRITICAL, "pthread_join failed with: %s",
+                strerror(status));
         }
 
         return status == 0;
@@ -96,7 +100,8 @@ LDi_rwlockinit(ld_rwlock_t *const lock)
         LD_ASSERT(lock);
 
         if ((status = pthread_rwlock_init(lock, NULL)) != 0) {
-            LDi_log(LD_LOG_CRITICAL, "pthread_rwlock_init failed with: %s", strerror(status));
+            LD_LOG(LD_LOG_CRITICAL, "pthread_rwlock_init failed with: %s",
+                strerror(status));
         }
 
         return status == 0;
@@ -116,7 +121,8 @@ LDi_rwlockdestroy(ld_rwlock_t *const lock)
         LD_ASSERT(lock);
 
         if ((status = pthread_rwlock_destroy(lock)) != 0) {
-            LDi_log(LD_LOG_CRITICAL, "pthread_rwlock_destroy failed with: %s", strerror(status));
+            LD_LOG(LD_LOG_CRITICAL, "pthread_rwlock_destroy failed with: %s",
+                strerror(status));
         }
 
         return status == 0;
@@ -138,7 +144,8 @@ LDi_rdlock(ld_rwlock_t *const lock)
         LD_ASSERT(lock);
 
         if ((status = pthread_rwlock_rdlock(lock)) != 0) {
-            LDi_log(LD_LOG_CRITICAL, "pthread_rwlock_rdlock failed with: %s", strerror(status));
+            LD_LOG(LD_LOG_CRITICAL, "pthread_rwlock_rdlock failed with: %s",
+                strerror(status));
         }
 
         return status == 0;
@@ -160,7 +167,8 @@ LDi_wrlock(ld_rwlock_t *const lock)
         LD_ASSERT(lock);
 
         if ((status = pthread_rwlock_wrlock(lock)) != 0) {
-            LDi_log(LD_LOG_CRITICAL, "pthread_rwlock_wrlock failed with: %s", strerror(status));
+            LD_LOG(LD_LOG_CRITICAL, "pthread_rwlock_wrlock failed with: %s",
+                strerror(status));
         }
 
         return status == 0;
@@ -182,7 +190,8 @@ LDi_rdunlock(ld_rwlock_t *const lock)
         LD_ASSERT(lock);
 
         if ((status = pthread_rwlock_unlock(lock)) != 0) {
-            LDi_log(LD_LOG_CRITICAL, "pthread_rwlock_unlock failed with: %s", strerror(status));
+            LD_LOG(LD_LOG_CRITICAL, "pthread_rwlock_unlock failed with: %s",
+                strerror(status));
         }
 
         return status == 0;
@@ -204,7 +213,8 @@ LDi_wrunlock(ld_rwlock_t *const lock)
         LD_ASSERT(lock);
 
         if ((status = pthread_rwlock_unlock(lock)) != 0) {
-            LDi_log(LD_LOG_CRITICAL, "pthread_rwlock_unlock failed with: %s", strerror(status));
+            LD_LOG(LD_LOG_CRITICAL, "pthread_rwlock_unlock failed with: %s",
+                strerror(status));
         }
 
         return status == 0;

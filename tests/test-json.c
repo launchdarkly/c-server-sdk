@@ -120,12 +120,12 @@ main()
 {
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
-    LDi_log(LD_LOG_INFO, "testNull()"); testNull();
-    LDi_log(LD_LOG_INFO, "testBool()"); testBool();
-    LDi_log(LD_LOG_INFO, "testNumber()"); testNumber();
-    LDi_log(LD_LOG_INFO, "testText()"); testText();
-    LDi_log(LD_LOG_INFO, "testArray()"); testArray();
-    LDi_log(LD_LOG_INFO, "testObject()"); testObject();
+    testNull();
+    testBool();
+    testNumber();
+    testText();
+    testArray();
+    testObject();
 
     return 0;
 }

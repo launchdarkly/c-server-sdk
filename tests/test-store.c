@@ -202,14 +202,14 @@ main()
 {
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
-    LDi_log(LD_LOG_INFO, "allocateAndFree()"); allocateAndFree();
-    LDi_log(LD_LOG_INFO, "deletedOnly()"); deletedOnly();
-    LDi_log(LD_LOG_INFO, "basicExists()"); basicExists();
-    LDi_log(LD_LOG_INFO, "basicDoesNotExist()"); basicDoesNotExist();
-    LDi_log(LD_LOG_INFO, "upsertNewer()"); upsertNewer();
-    LDi_log(LD_LOG_INFO, "upsertOlder()"); upsertOlder();
-    LDi_log(LD_LOG_INFO, "upsertDelete()"); upsertDelete();
-    LDi_log(LD_LOG_INFO, "conflictDifferentNamespace()"); conflictDifferentNamespace();
+    allocateAndFree();
+    deletedOnly();
+    basicExists();
+    basicDoesNotExist();
+    upsertNewer();
+    upsertOlder();
+    upsertDelete();
+    conflictDifferentNamespace();
 
     return 0;
 }

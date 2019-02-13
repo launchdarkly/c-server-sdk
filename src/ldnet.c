@@ -16,13 +16,13 @@ prepareShared(const struct LDConfig *const config, const char *const url,
     LD_ASSERT(config); LD_ASSERT(url); LD_ASSERT(o_curl); LD_ASSERT(o_headers);
 
     if (!(curl = curl_easy_init())) {
-        LDi_log(LD_LOG_CRITICAL, "curl_easy_init returned NULL");
+        LD_LOG(LD_LOG_CRITICAL, "curl_easy_init returned NULL");
 
         goto error;
     }
 
     if (curl_easy_setopt(curl, CURLOPT_URL, url) != CURLE_OK) {
-        LDi_log(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_URL failed on: %s", url);
+        LD_LOG(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_URL failed on: %s", url);
 
         goto error;
     }
@@ -31,28 +31,28 @@ prepareShared(const struct LDConfig *const config, const char *const url,
         char headerauth[256];
 
         if (snprintf(headerauth, sizeof(headerauth), "Authorization: %s", config->key) < 0) {
-            LDi_log(LD_LOG_CRITICAL, "snprintf during Authorization header creation failed");
+            LD_LOG(LD_LOG_CRITICAL, "snprintf during Authorization header creation failed");
 
             goto error;
         }
 
-        LDi_log(LD_LOG_INFO, "using authentication: %s", headerauth);
+        LD_LOG(LD_LOG_INFO, "using authentication: %s", headerauth);
 
         if (!(headers = curl_slist_append(headers, headerauth))) {
-            LDi_log(LD_LOG_CRITICAL, "curl_slist_append failed for headerauth");
+            LD_LOG(LD_LOG_CRITICAL, "curl_slist_append failed for headerauth");
 
             goto error;
         }
     }
 
     if (!(headers = curl_slist_append(headers, "User-Agent: CServerClient/0.1"))) {
-        LDi_log(LD_LOG_CRITICAL, "curl_slist_append failed for headeragent");
+        LD_LOG(LD_LOG_CRITICAL, "curl_slist_append failed for headeragent");
 
         goto error;
     }
 
     if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers) != CURLE_OK) {
-        LDi_log(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_HTTPHEADER failed");
+        LD_LOG(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_HTTPHEADER failed");
 
         goto error;
     }
@@ -125,7 +125,7 @@ LDi_networkthread(void* const clientref)
 
                 LD_ASSERT(curl_easy_getinfo(easy, CURLINFO_RESPONSE_CODE, &responsecode) == CURLE_OK);
 
-                LDi_log(LD_LOG_INFO, "message done code %d %d", info->data.result, responsecode);
+                LD_LOG(LD_LOG_INFO, "message done code %d %d", info->data.result, responsecode);
 
                 LD_ASSERT(curl_easy_getinfo(easy, CURLINFO_PRIVATE, &interface) == CURLE_OK);
                 LD_ASSERT(interface); LD_ASSERT(interface->done); LD_ASSERT(interface->context);

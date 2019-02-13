@@ -44,7 +44,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         goto error;
     }
 
-    LDi_log(LD_LOG_INFO, "waiting to initialize");
+    LD_LOG(LD_LOG_INFO, "waiting to initialize");
     if (maxwaitmilli){
         unsigned int start, diff, now;
 
@@ -62,7 +62,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
             LD_ASSERT(getMonotonicMilliseconds(&now));
         } while ((diff = now - start) < maxwaitmilli);
     }
-    LDi_log(LD_LOG_INFO, "initialized");
+    LD_LOG(LD_LOG_INFO, "initialized");
 
     return client;
 

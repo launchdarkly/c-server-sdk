@@ -15,7 +15,7 @@ updateStore(struct LDStore *const store, const char *const rawupdate)
         return false;
     }
 
-    LDi_log(LD_LOG_INFO, "running store init");
+    LD_LOG(LD_LOG_INFO, "running store init");
     return LDStoreInit(store, update);
 }
 
@@ -37,7 +37,7 @@ WriteMemoryCallback(void *const contents, const size_t size, const size_t nmemb,
     LD_ASSERT(mem);
 
     if (!(mem->memory = realloc(mem->memory, mem->size + realsize + 1))) {
-        LDi_log(LD_LOG_CRITICAL, "not enough memory (realloc returned NULL)");
+        LD_LOG(LD_LOG_CRITICAL, "not enough memory (realloc returned NULL)");
 
         return 0;
     }
@@ -68,9 +68,9 @@ done(struct LDClient *const client, void *const rawcontext)
 
     LD_ASSERT(client); LD_ASSERT(context);
 
-    LDi_log(LD_LOG_INFO, "done!");
+    LD_LOG(LD_LOG_INFO, "done!");
 
-    LDi_log(LD_LOG_INFO, "message data %s", context->memory);
+    LD_LOG(LD_LOG_INFO, "message data %s", context->memory);
 
     LD_ASSERT(updateStore(client->config->store, context->memory));
 
@@ -93,7 +93,7 @@ destroy(void *const rawcontext)
 
     LD_ASSERT(context);
 
-    LDi_log(LD_LOG_INFO, "destroy!");
+    LD_LOG(LD_LOG_INFO, "destroy!");
 
     resetMemory(context);
 
@@ -124,28 +124,28 @@ poll(struct LDClient *const client, void *const rawcontext)
         }
     }
 
-    LDi_log(LD_LOG_INFO, "poll!");
+    LD_LOG(LD_LOG_INFO, "poll!");
 
     if (snprintf(url, sizeof(url), "%s/sdk/latest-all", client->config->baseURI) < 0) {
-        LDi_log(LD_LOG_CRITICAL, "snprintf usereport failed");
+        LD_LOG(LD_LOG_CRITICAL, "snprintf usereport failed");
 
         return false;
     }
 
-    LDi_log(LD_LOG_INFO, "connecting to url: %s", url);
+    LD_LOG(LD_LOG_INFO, "connecting to url: %s", url);
 
     if (!prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;
     }
 
     if (curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback) != CURLE_OK) {
-        LDi_log(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_WRITEFUNCTION failed");
+        LD_LOG(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_WRITEFUNCTION failed");
 
         goto error;
     }
 
     if (curl_easy_setopt(curl, CURLOPT_WRITEDATA, context) != CURLE_OK) {
-        LDi_log(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_WRITEDATA failed");
+        LD_LOG(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_WRITEDATA failed");
 
         goto error;
     }

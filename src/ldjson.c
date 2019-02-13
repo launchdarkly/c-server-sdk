@@ -76,7 +76,7 @@ LDJSONGetType(const struct LDJSON *const inputraw)
         return LDText;
     }
 
-    LDi_log(LD_LOG_CRITICAL, "LDJSONGetType Unknown");
+    LD_LOG(LD_LOG_CRITICAL, "LDJSONGetType Unknown");
 
     abort();
 }
