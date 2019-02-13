@@ -6,6 +6,7 @@
 #include "ldjson.h"
 #include "ldconfig.h"
 #include "lduser.h"
+#include "ldlogging.h"
 
 /* **** Forward Declarations **** */
 
@@ -39,25 +40,6 @@ struct LDJSON *LDJSONVariation(struct LDClient *const client,
     struct LDUser *const user, const char *const key,
     const struct LDJSON *const fallback,
     struct LDVariationDetails *const details);
-
-/* **** LDLogging **** */
-
-typedef enum {
-    LD_LOG_FATAL = 0,
-    LD_LOG_CRITICAL,
-    LD_LOG_ERROR,
-    LD_LOG_WARNING,
-    LD_LOG_INFO,
-    LD_LOG_DEBUG,
-    LD_LOG_TRACE
-} LDLogLevel;
-
-const char *LDLogLevelToString(const LDLogLevel level);
-
-void LDBasicLogger(const LDLogLevel level, const char *const text);
-
-void LDConfigureGlobalLogger(const LDLogLevel level,
-    void (*logger)(const LDLogLevel level, const char *const text));
 
 /* **** LDUtility **** */
 

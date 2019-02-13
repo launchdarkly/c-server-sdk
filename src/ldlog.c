@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "ldlogging.h"
 #include "ldinternal.h"
 
 static ld_rwlock_t sdkloggerlock = LD_RWLOCK_INIT;
@@ -30,7 +31,8 @@ LDBasicLogger(const LDLogLevel level, const char *const text)
 }
 
 void
-LDConfigureGlobalLogger(const LDLogLevel level, void (*logger)(const LDLogLevel level, const char *const text))
+LDConfigureGlobalLogger(const LDLogLevel level,
+    void (*logger)(const LDLogLevel level, const char *const text))
 {
     if (!LDi_wrlock(&sdkloggerlock)) {
         abort();
