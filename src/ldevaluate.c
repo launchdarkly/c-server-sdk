@@ -235,7 +235,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
                     variation = LDObjectLookup(iter, "variation");
 
-                    if (!addReason(*result, "RULE_MATCH")) {
+                    if (!addReason(*result, "TARGET_MATCH")) {
                         LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
                         return false;

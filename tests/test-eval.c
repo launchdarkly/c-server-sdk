@@ -88,6 +88,44 @@ addVariations2(struct LDJSON *const flag)
     addVariation(flag, LDNewText("go"));
 }
 
+static struct LDJSON *
+makeFlagToMatchUser(const char *const key,
+    struct LDJSON *const variationOrRollout)
+{
+    struct LDJSON *flag;
+    struct LDJSON *clause;
+    struct LDJSON *tmp;
+    struct LDJSON *rule;
+
+    LD_ASSERT(clause = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("key")));
+    LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
+    LD_ASSERT(tmp = LDNewArray());
+    LD_ASSERT(LDArrayAppend(tmp, LDNewText(key)));
+    LD_ASSERT(LDObjectSetKey(clause, "values", tmp));
+
+    LD_ASSERT(rule = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(rule, "id", LDNewText("rule-id")));
+    LD_ASSERT(LDObjectMerge(rule, variationOrRollout));
+    LD_ASSERT(tmp = LDNewArray());
+    LD_ASSERT(LDArrayAppend(tmp, clause));
+    LD_ASSERT(LDObjectSetKey(rule, "clauses", tmp));
+
+    LD_ASSERT(flag = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
+    LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    addVariations1(flag);
+    setFallthrough(flag, 0);
+    LD_ASSERT(tmp = LDNewArray());
+    LD_ASSERT(LDArrayAppend(tmp, rule));
+    LD_ASSERT(LDObjectSetKey(flag, "rules", tmp));
+
+    LDJSONFree(variationOrRollout);
+
+    return flag;
+}
+
 static void
 returnsOffVariationIfFlagIsOff()
 {
@@ -368,6 +406,35 @@ testFlagMatchesUserFromTarget()
     /* validate */
     LD_ASSERT(strcmp("on", LDGetText(LDObjectLookup(result, "value"))) == 0);
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 2);
+    LD_ASSERT(strcmp("TARGET_MATCH", LDGetText(
+        LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDUserFree(user);
+}
+
+static void
+testFlagMatchesUserFromRules()
+{
+    struct LDUser *user;
+    struct LDJSON *flag;
+    struct LDJSON *result;
+    struct LDJSON *variation;
+
+    LD_ASSERT(user = LDUserNew("userkey"));
+
+    /* flag */
+    LD_ASSERT(variation = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(variation, "variation", LDNewNumber(2)))
+    flag = makeFlagToMatchUser("userkey", variation);
+
+    /* run */
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
+
+    /* validate */
+    LD_ASSERT(strcmp("on", LDGetText(LDObjectLookup(result, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 2);
     LD_ASSERT(strcmp("RULE_MATCH", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
 
@@ -416,6 +483,7 @@ main()
     testFlagReturnsOffVariationIfPrerequisiteIsNotMet();
     testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules();
     testFlagMatchesUserFromTarget();
+    testFlagMatchesUserFromRules();
 
     testBucketUserByKey();
 
