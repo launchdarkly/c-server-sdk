@@ -300,7 +300,13 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
             for (iter = LDGetIter(rules); iter; iter = LDIterNext(iter)) {
                 bool submatch;
 
-                LD_ASSERT(LDJSONGetType(iter) == LDObject);
+                LD_LOG(LD_LOG_TRACE, "trace 1");
+
+                if (LDJSONGetType(iter) != LDObject) {
+                    LD_LOG(LD_LOG_ERROR, "schema error");
+
+                    return false;
+                }
 
                 if (!ruleMatchesUser(iter, user, &submatch)) {
                     LD_LOG(LD_LOG_ERROR, "sub error");
@@ -309,7 +315,23 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
                 }
 
                 if (submatch) {
-                    /* TODO return ruleMatch */
+                    const struct LDJSON *variation = NULL;
+
+                    LD_LOG(LD_LOG_TRACE, "trace 2");
+
+                    variation = LDObjectLookup(iter, "variation");
+
+                    if (!addReason(*result, "RULE_MATCH")) {
+                        LD_LOG(LD_LOG_ERROR, "failed to add reason");
+
+                        return false;
+                    }
+
+                    if (!(addValue(flag, *result, variation))) {
+                        LD_LOG(LD_LOG_ERROR, "failed to add value");
+
+                        return false;
+                    }
 
                     return true;
                 }
