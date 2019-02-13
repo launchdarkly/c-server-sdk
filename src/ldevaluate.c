@@ -204,11 +204,19 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
             return true;
         }
     }
-    /*
-    {
+
+    while (true) {
         const struct LDJSON *const targets = LDObjectLookup(flag, "targets");
 
-        LD_ASSERT(LDJSONGetType(targets) == LDArray);
+        if (targets && LDJSONGetType(targets) != LDArray) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (!targets) {
+            break;
+        }
 
         {
             const struct LDJSON *iter = NULL;
@@ -223,12 +231,33 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
                 LD_ASSERT(values); LD_ASSERT(LDJSONGetType(values) == LDArray);
 
                 if (textInArray(values, user->key)) {
-                    // TODO return isTarget
+                    const struct LDJSON *variation = NULL;
+
+                    if (!(variation = LDObjectLookup(iter, "variation"))) {
+                        LD_LOG(LD_LOG_ERROR, "schema error");
+
+                        return false;
+                    }
+
+                    if (!addReason(*result, "RULE_MATCH")) {
+                        LD_LOG(LD_LOG_ERROR, "failed to add reason");
+
+                        return false;
+                    }
+
+                    if (!(addValue(flag, *result, variation))) {
+                        LD_LOG(LD_LOG_ERROR, "failed to add value");
+
+                        return false;
+                    }
+
+                    return true;
                 }
             }
         }
+
+        break;
     }
-    */
 
     while (true) {
         const struct LDJSON *const rules = LDObjectLookup(flag, "rules");
