@@ -233,11 +233,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
                 if (textInArray(values, user->key)) {
                     const struct LDJSON *variation = NULL;
 
-                    if (!(variation = LDObjectLookup(iter, "variation"))) {
-                        LD_LOG(LD_LOG_ERROR, "schema error");
-
-                        return false;
-                    }
+                    variation = LDObjectLookup(iter, "variation");
 
                     if (!addReason(*result, "RULE_MATCH")) {
                         LD_LOG(LD_LOG_ERROR, "failed to add reason");
