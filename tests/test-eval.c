@@ -195,6 +195,70 @@ testFlagReturnsOffVariationAndEventIfPrerequisiteIsOff()
     LDUserFree(user);
 }
 
+void
+testFlagReturnsOffVariationAndEventIfPrerequisiteIsNotMet()
+{
+    struct LDUser *user;
+    struct LDStore *store;
+    struct LDJSON *flag1;
+    struct LDJSON *flag2;
+    struct LDJSON *result = NULL;
+    struct LDJSON *tmpcollection;
+    struct LDJSON *tmp;
+
+    LD_ASSERT(user = LDUserNew("userKeyA"));
+    LD_ASSERT(store = prepareEmptyStore());
+
+    LD_ASSERT(flag1 = testFlag1());
+    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag1, "offVariation", LDNewNumber(1)));
+
+    {
+        LD_ASSERT(tmpcollection = LDNewArray());
+
+        LD_ASSERT(tmp = LDNewObject());
+        LD_ASSERT(LDObjectSetKey(tmp, "key", LDNewText("feature1")));
+        LD_ASSERT(LDObjectSetKey(tmp, "variation", LDNewNumber(1)));
+        LD_ASSERT(LDArrayAppend(tmpcollection, tmp));
+
+        LD_ASSERT(LDObjectSetKey(flag1, "prerequisites", tmpcollection));
+    }
+
+    LD_ASSERT(flag2 = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag2, "key", LDNewText("feature1")));
+    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(3)));
+    LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
+
+    {
+        LD_ASSERT(tmp = LDNewArray());
+        LD_ASSERT(LDArrayAppend(tmp, LDNewText("nogo")));
+        LD_ASSERT(LDArrayAppend(tmp, LDNewText("go")));
+        LD_ASSERT(LDObjectSetKey(flag2, "variations", tmp));
+    }
+
+    {
+        LD_ASSERT(tmp = LDNewObject());
+        LD_ASSERT(LDObjectSetKey(tmp, "variation", LDNewNumber(0)));
+        LD_ASSERT(LDObjectSetKey(flag2, "fallthrough", tmp));
+    }
+
+    LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
+
+    LD_ASSERT(evaluate(flag1, user, store, &result));
+
+    LD_ASSERT(strcmp("off", LDGetText(LDObjectLookup(result, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 1);
+
+    LD_ASSERT(strcmp("PREREQUISITE_FAILED", LDGetText(
+        LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+
+    LDJSONFree(flag1);
+    LDJSONFree(result);
+    LDStoreDestroy(store);
+    LDUserFree(user);
+}
+
 static bool
 floateq(const float left, const float right)
 {
@@ -232,6 +296,7 @@ main()
     testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified();
     testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules();
     testFlagReturnsOffVariationAndEventIfPrerequisiteIsOff();
+    testFlagReturnsOffVariationAndEventIfPrerequisiteIsNotMet();
 
     testBucketUserByKey();
 
