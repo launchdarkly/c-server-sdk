@@ -175,7 +175,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
             return true;
         }
     }
-    /*
+
     {
         bool submatch;
 
@@ -186,12 +186,25 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
         }
 
         if (!submatch) {
-            // TODO return prereq failed
+            const struct LDJSON *offVariation =
+                LDObjectLookup(flag, "offVariation");
+
+            if (!addReason(*result, "PREREQUISITE_FAILED")) {
+                LDi_log(LD_LOG_ERROR, "failed to add reason");
+
+                return false;
+            }
+
+            if (!(addValue(flag, *result, offVariation))) {
+                LDi_log(LD_LOG_ERROR, "failed to add value");
+
+                return false;
+            }
 
             return true;
         }
     }
-
+    /*
     {
         const struct LDJSON *const targets = LDObjectLookup(flag, "targets");
 
@@ -217,8 +230,12 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     }
     */
 
-    {
+    while (true) {
         const struct LDJSON *const rules = LDObjectLookup(flag, "rules");
+
+        if (!rules) {
+            break;
+        }
 
         if (LDJSONGetType(rules) != LDArray) {
             LDi_log(LD_LOG_ERROR, "schema error");
@@ -261,7 +278,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
                 LD_ASSERT(LDJSONGetType(iter) == LDObject);
 
                 if (!ruleMatchesUser(iter, user, &submatch)) {
-                    LDi_log(LD_LOG_ERROR, "sub error error");
+                    LDi_log(LD_LOG_ERROR, "sub error");
 
                     return false;
                 }
@@ -273,6 +290,8 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
                 }
             }
         }
+
+        break;
     }
 
     return true;
@@ -297,10 +316,12 @@ checkPrerequisites(const struct LDJSON *const flag,
         return false;
     }
 
-    if (!(prerequisites = LDObjectLookup(flag, "prerequisites"))) {
-        LDi_log(LD_LOG_ERROR, "schema error");
+    prerequisites = LDObjectLookup(flag, "prerequisites");
 
-        return false;
+    if (!prerequisites) {
+        *matches = true;
+
+        return true;
     }
 
     if (LDJSONGetType(prerequisites) != LDArray) {
@@ -310,26 +331,113 @@ checkPrerequisites(const struct LDJSON *const flag,
     }
 
     for (iter = LDGetIter(prerequisites); iter; iter = LDIterNext(iter)) {
-        const struct LDJSON *preflag = NULL;
+        struct LDJSON *result = NULL;
+        struct LDJSON *preflag = NULL;
+        const struct LDJSON *key = NULL;
+        const struct LDJSON *variation = NULL;
 
-        if (LDJSONGetType(iter) == LDText) {
+        if (LDJSONGetType(iter) != LDObject) {
             LDi_log(LD_LOG_ERROR, "schema error");
 
             return false;
         }
 
-        if (!(preflag = LDStoreGet(store, "flags", LDGetText(iter)))) {
+        if (!(key = LDObjectLookup(iter, "key"))) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (LDJSONGetType(key) != LDText) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (!(variation = LDObjectLookup(iter, "variation"))) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (LDJSONGetType(variation) != LDNumber) {
+            LDi_log(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (!(preflag = LDStoreGet(store, "flags", LDGetText(key)))) {
             LDi_log(LD_LOG_ERROR, "store lookup error");
 
             return false;
         }
 
-        /*
-        TODO proper recursive evaluation
-        if (!evaluate(flag, user)) {
+        if (!evaluate(preflag, user, store, &result)) {
+            LDJSONFree(preflag);
+
             return false;
         }
-        */
+
+        if (!result) {
+            LDJSONFree(preflag);
+
+            LDi_log(LD_LOG_ERROR, "sub error with result");
+        }
+
+        {
+            struct LDJSON *on;
+            struct LDJSON *variationIndex;
+
+            if (!(on = LDObjectLookup(preflag, "on"))) {
+                LDJSONFree(preflag);
+                LDJSONFree(result);
+
+                LDi_log(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            if (LDJSONGetType(on) != LDBool) {
+                LDJSONFree(preflag);
+                LDJSONFree(result);
+
+                LDi_log(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            if (!(variationIndex = LDObjectLookup(result, "variationIndex"))) {
+                LDJSONFree(preflag);
+                LDJSONFree(result);
+
+                LDi_log(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            if (LDJSONGetType(variationIndex) != LDNumber) {
+                LDJSONFree(preflag);
+                LDJSONFree(result);
+
+                LDi_log(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            if (!LDGetBool(on) ||
+                LDGetNumber(variationIndex) != LDGetNumber(variation))
+            {
+                LDJSONFree(preflag);
+                LDJSONFree(result);
+
+                *matches = false;
+
+                return true;
+            }
+        }
+
+        LDJSONFree(preflag);
+        LDJSONFree(result);
     }
 
     *matches = true;
