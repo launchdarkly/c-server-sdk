@@ -18,6 +18,8 @@ typedef enum {
     LD_LOG_TRACE
 } LDLogLevel;
 
+void LDi_log(const LDLogLevel level, const char *const format, ...);
+
 void LDBasicLogger(const LDLogLevel level, const char *const text);
 
 void LDConfigureGlobalLogger(const LDLogLevel level,

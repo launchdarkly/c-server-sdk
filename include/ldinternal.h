@@ -111,10 +111,6 @@ bool LDi_networkinit(struct LDClient *const client);
 
 THREAD_RETURN LDi_networkthread(void *const clientref);
 
-/* **** LDLogging **** */
-
-void LDi_log(const LDLogLevel level, const char *const format, ...);
-
 /* **** LDUtility **** */
 
 bool sleepMilliseconds(const unsigned int milliseconds);
