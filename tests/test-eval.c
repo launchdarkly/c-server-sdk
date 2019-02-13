@@ -327,6 +327,55 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     LDUserFree(user);
 }
 
+static void
+testFlagMatchesUserFromTarget()
+{
+    struct LDUser *user;
+    struct LDJSON *flag;
+    struct LDJSON *result;
+
+    LD_ASSERT(user = LDUserNew("userkey"));
+
+    /* flag */
+    LD_ASSERT(flag = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
+    setFallthrough(flag, 0);
+    addVariations1(flag);
+
+    {
+        struct LDJSON *targetsets;
+        struct LDJSON *targetset;
+        struct LDJSON *list;
+
+        LD_ASSERT(list = LDNewArray());
+        LD_ASSERT(LDArrayAppend(list, LDNewText("whoever")));
+        LD_ASSERT(LDArrayAppend(list, LDNewText("userkey")));
+
+        LD_ASSERT(targetset = LDNewObject());
+        LD_ASSERT(LDObjectSetKey(targetset, "values", list));
+        LD_ASSERT(LDObjectSetKey(targetset, "variation", LDNewNumber(2)));
+
+        LD_ASSERT(targetsets = LDNewArray());
+        LD_ASSERT(LDArrayAppend(targetsets, targetset));
+        LD_ASSERT(LDObjectSetKey(flag, "targets", targetsets));
+    }
+
+    /* run */
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
+
+    /* validate */
+    LD_ASSERT(strcmp("on", LDGetText(LDObjectLookup(result, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 2);
+    LD_ASSERT(strcmp("RULE_MATCH", LDGetText(
+        LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDUserFree(user);
+}
+
 static bool
 floateq(const float left, const float right)
 {
@@ -366,6 +415,7 @@ main()
     testFlagReturnsOffVariationIfPrerequisiteIsOff();
     testFlagReturnsOffVariationIfPrerequisiteIsNotMet();
     testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules();
+    testFlagMatchesUserFromTarget();
 
     testBucketUserByKey();
 
