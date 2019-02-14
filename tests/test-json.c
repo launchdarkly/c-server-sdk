@@ -115,6 +115,28 @@ testObject()
     LDJSONFree(json);
 }
 
+static void
+testMerge()
+{
+    struct LDJSON *left, *right;
+
+    LD_ASSERT(left = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(left, "a", LDNewNumber(1)));
+
+    LD_ASSERT(right = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(right, "b", LDNewNumber(2)));
+    LD_ASSERT(LDObjectSetKey(right, "c", LDNewNumber(3)));
+
+    LD_ASSERT(LDObjectMerge(left, right));
+
+    LD_ASSERT(LDGetNumber(LDObjectLookup(left, "a")) == 1);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(left, "b")) == 2);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(left, "c")) == 3);
+
+    LDJSONFree(left);
+    LDJSONFree(right);
+}
+
 int
 main()
 {
@@ -126,6 +148,7 @@ main()
     testText();
     testArray();
     testObject();
+    testMerge();
 
     return 0;
 }
