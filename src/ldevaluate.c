@@ -300,8 +300,6 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
             for (iter = LDGetIter(rules); iter; iter = LDIterNext(iter)) {
                 bool submatch;
 
-                LD_LOG(LD_LOG_TRACE, "trace 1");
-
                 if (LDJSONGetType(iter) != LDObject) {
                     LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -316,8 +314,6 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
                 if (submatch) {
                     const struct LDJSON *variation = NULL;
-
-                    LD_LOG(LD_LOG_TRACE, "trace 2");
 
                     variation = LDObjectLookup(iter, "variation");
 
@@ -812,13 +808,61 @@ segmentRuleMatchUser(const struct LDJSON *const segmentRule,
     }
 }
 
+typedef bool (*OpFn)(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue, bool *const matches);
+
+bool
+operatorInFn(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue, bool *const matches)
+{
+    *matches = LDJSONCompare(uvalue, cvalue);
+
+    return true;
+}
+
+bool
+matchAny(OpFn f, const struct LDJSON *const value,
+    const struct LDJSON *const values, bool *const matches)
+{
+    const struct LDJSON *iter;
+
+    LD_ASSERT(f);
+    LD_ASSERT(value);
+    LD_ASSERT(values);
+    LD_ASSERT(matches);
+
+    for (iter = LDGetIter(values); iter; iter = LDIterNext(iter)) {
+        bool submatch;
+
+        if (!(f(value, iter, &submatch))) {
+            return false;
+        }
+
+        if (submatch) {
+            *matches = true;
+
+            return true;
+        }
+    }
+
+    *matches = false;
+
+    return true;
+}
+
 bool
 clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     const struct LDUser *const user, bool *const matches)
 {
-    const char *attributeText = NULL;
-    struct LDJSON *attributeValue = NULL;
-    struct LDJSON *attribute = NULL;
+    OpFn fn;
+    const char *operatorText;
+    struct LDJSON *operator;
+    const char *attributeText;
+    struct LDJSON *attributeValue;
+    struct LDJSON *attribute;
+    const struct LDJSON *values;
+    bool negate;
+    struct LDJSON *negateJSON;
     LDJSONType type;
 
     LD_ASSERT(clause);
@@ -842,17 +886,64 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
         return false;
     }
 
+    if (!(operator = LDObjectLookup(clause, "op"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if (LDJSONGetType(operator) != LDText) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if (!(operatorText = LDGetText(operator))) {
+        LD_LOG(LD_LOG_ERROR, "allocation error");
+
+        return false;
+    }
+
+    if (!(values = LDObjectLookup(clause, "values"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if ((negateJSON = LDObjectLookup(clause, "negate"))) {
+        if (LDJSONGetType(negateJSON) != LDBool) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        negate = LDGetBool(negateJSON);
+    } else {
+        negate = false;
+    }
+
+    if (strcmp(operatorText, "in") == 0) {
+        fn = operatorInFn;
+    } else {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
     if (!(attributeValue = valueOfAttribute(user, attributeText))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
         return false;
     }
 
-    if ((type = LDJSONGetType(attributeValue)) == LDArray) {
-        const struct LDJSON *negate = NULL;
+    type = LDJSONGetType(attributeValue);
+
+    if (type == LDArray || type == LDObject) {
         struct LDJSON *iter = LDGetIter(attributeValue);
 
         for (; iter; iter = LDIterNext(iter)) {
+            bool submatch;
+
             type = LDJSONGetType(iter);
 
             if (type == LDObject || type == LDArray) {
@@ -862,35 +953,45 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
 
                 return false;
             }
+
+            if (!matchAny(fn, iter, values, &submatch)) {
+                LD_LOG(LD_LOG_ERROR, "sub error");
+
+                LDJSONFree(attributeValue);
+
+                return false;
+            }
+
+            if (submatch) {
+                LDJSONFree(attributeValue);
+
+                *matches = negate ? false : true;
+
+                return true;
+            }
         }
 
         LDJSONFree(attributeValue);
 
-        if (!(negate = LDObjectLookup(clause, "negate"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return false;
-        }
-
-        if (LDJSONGetType(negate) != LDBool) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return false;
-        }
-
-        *matches = LDGetBool(negate) ? false : true;
-
-        return true;
-    } else if (type != LDObject && type != LDArray) {
-
-        /* match any */
-        LDJSONFree(attributeValue);
+        *matches = negate ? false : true;
 
         return true;
     } else {
+        bool submatch;
+
+        if (!matchAny(fn, attributeValue, values, &submatch)) {
+            LD_LOG(LD_LOG_ERROR, "sub error");
+
+            LDJSONFree(attributeValue);
+
+            return false;
+        }
+
         LDJSONFree(attributeValue);
 
-        return false;
+        *matches = negate ? !submatch : submatch;
+
+        return true;
     }
 }
 
