@@ -506,6 +506,43 @@ testClauseCanMatchBuiltInAttribute()
     LDUserFree(user);
 }
 
+void
+testClauseCanMatchCustomAttribute()
+{
+    struct LDJSON *result;
+    struct LDUser *user;
+    struct LDJSON *flag;
+    struct LDJSON *clause;
+    struct LDJSON *values;
+    struct LDJSON *custom;
+
+    /* user */
+    LD_ASSERT(user = LDUserNew("key"));
+    LD_ASSERT(custom = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(custom, "legs", LDNewNumber(4)));
+    LDUserSetCustom(user, custom);
+
+    /* flag */
+    LD_ASSERT(values = LDNewArray());
+    LD_ASSERT(LDArrayAppend(values, LDNewNumber(4)));
+
+    LD_ASSERT(clause = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
+    LD_ASSERT(LDObjectSetKey(clause, "values", values));
+    LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("legs")));
+
+    LD_ASSERT(flag = booleanFlagWithClause(clause));
+
+    /* run */
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
+
+    /* validate */
+    LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
+
+    LDJSONFree(flag);
+    LDUserFree(user);
+}
+
 static bool
 floateq(const float left, const float right)
 {
@@ -548,6 +585,7 @@ main()
     testFlagMatchesUserFromTarget();
     testFlagMatchesUserFromRules();
     testClauseCanMatchBuiltInAttribute();
+    testClauseCanMatchCustomAttribute();
 
     testBucketUserByKey();
 
