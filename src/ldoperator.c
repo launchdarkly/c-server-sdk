@@ -114,7 +114,7 @@ lookupOperation(const char *const operation)
 {
     LD_ASSERT(operation);
 
-    if (strcmp(operation, "in")) {
+    if (strcmp(operation, "in") == 0) {
         return operatorInFn;
     } else if (strcmp(operation, "endsWith") == 0) {
         return operatorEndsWithFn;
