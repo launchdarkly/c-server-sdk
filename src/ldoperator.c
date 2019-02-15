@@ -82,7 +82,7 @@ operatorMatchesFn(const struct LDJSON *const uvalue,
 
     CHECKSTRING(uvalue, cvalue);
 
-    if (regcomp(&context, LDGetText(cvalue), 0) != 0) {
+    if (regcomp(&context, LDGetText(cvalue), REG_EXTENDED) != 0) {
         LD_LOG(LD_LOG_ERROR, "failed to compile regex");
 
         return false;
