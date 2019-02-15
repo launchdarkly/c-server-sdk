@@ -11,7 +11,16 @@ typedef bool (*StringOpFn)(const char *const uvalue, const char *const cvalue);
 typedef bool (*NumberOpFn)(const float uvalue, const float cvalue);
 
 #define CHECKSTRING(uvalue, cvalue) \
-    if (LDJSONGetType(uvalue) != LDText || LDJSONGetType(cvalue) != LDText) { \
+    if (LDJSONGetType(uvalue) != LDText || \
+        LDJSONGetType(cvalue) != LDText) \
+    { \
+        return false; \
+    }
+
+#define CHECKNUMBER(uvalue, cvalue) \
+    if (LDJSONGetType(uvalue) != LDNumber || \
+        LDJSONGetType(cvalue) != LDNumber) \
+    { \
         return false; \
     }
 
@@ -95,6 +104,42 @@ operatorContainsFn(const struct LDJSON *const uvalue,
     return strstr(LDGetText(uvalue), LDGetText(cvalue)) != NULL;
 }
 
+static bool
+operatorLessThanFn(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue)
+{
+    CHECKNUMBER(uvalue, cvalue);
+
+    return LDGetNumber(uvalue) < LDGetNumber(cvalue);
+}
+
+static bool
+operatorLessThanOrEqualFn(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue)
+{
+    CHECKNUMBER(uvalue, cvalue);
+
+    return LDGetNumber(uvalue) <= LDGetNumber(cvalue);
+}
+
+static bool
+operatorGreaterThanFn(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue)
+{
+    CHECKNUMBER(uvalue, cvalue);
+
+    return LDGetNumber(uvalue) > LDGetNumber(cvalue);
+}
+
+static bool
+operatorGreaterThanOrEqualFn(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue)
+{
+    CHECKNUMBER(uvalue, cvalue);
+
+    return LDGetNumber(uvalue) >= LDGetNumber(cvalue);
+}
+
 OpFn
 lookupOperation(const char *const operation)
 {
@@ -110,6 +155,14 @@ lookupOperation(const char *const operation)
         return operatorMatchesFn;
     } else if (strcmp(operation, "contains") == 0) {
         return operatorContainsFn;
+    } else if (strcmp(operation, "lessThan") == 0) {
+        return operatorLessThanFn;
+    } else if (strcmp(operation, "lessThanOrEqual") == 0) {
+        return operatorLessThanOrEqualFn;
+    } else if (strcmp(operation, "greaterThan") == 0) {
+        return operatorGreaterThanFn;
+    } else if (strcmp(operation, "greaterThanOrEqual") == 0) {
+        return operatorGreaterThanOrEqualFn;
     }
 
     return NULL;
