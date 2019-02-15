@@ -8,6 +8,13 @@ typedef bool (*OpFn)(const struct LDJSON *const uvalue,
 
 typedef bool (*StringOpFn)(const char *const uvalue, const char *const cvalue);
 
+typedef bool (*NumberOpFn)(const float uvalue, const float cvalue);
+
+#define CHECKSTRING(uvalue, cvalue) \
+    if (LDJSONGetType(uvalue) != LDText || LDJSONGetType(cvalue) != LDText) { \
+        return false; \
+    }
+
 bool
 operatorInFn(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue)
@@ -20,69 +27,59 @@ operatorInFn(const struct LDJSON *const uvalue,
 }
 
 static bool
-stringOperator(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue, StringOpFn fn)
-{
-    if (LDJSONGetType(uvalue) == LDText && LDJSONGetType(cvalue) == LDText) {
-        return fn(LDGetText(uvalue), LDGetText(cvalue));
-    }
-
-    return false;
-}
-
-static bool
-operatorStartsWithFnImp(const char *const uvalue, const char *const cvalue)
-{
-    const size_t ulen = strlen(uvalue);
-    const size_t clen = strlen(cvalue);
-
-    if (clen > ulen) {
-        return false;
-    }
-
-    return strncmp(uvalue, cvalue, clen) == 0;
-}
-
-static bool
 operatorStartsWithFn(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue)
 {
-    return stringOperator(uvalue, cvalue, operatorStartsWithFnImp);
-}
+    size_t ulen;
+    size_t clen;
 
-static bool
-operatorEndsWithFnImp(const char *const uvalue, const char *const cvalue)
-{
-    const size_t ulen = strlen(uvalue);
-    const size_t clen = strlen(cvalue);
+    CHECKSTRING(uvalue, cvalue);
+
+    ulen = strlen(LDGetText(uvalue));
+    clen = strlen(LDGetText(cvalue));
 
     if (clen > ulen) {
         return false;
     }
 
-    return strcmp(uvalue + ulen - clen, cvalue) == 0;
+    return strncmp(LDGetText(uvalue), LDGetText(cvalue), clen) == 0;
 }
 
 static bool
 operatorEndsWithFn(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue)
 {
-    return stringOperator(uvalue, cvalue, operatorEndsWithFnImp);
+    size_t ulen;
+    size_t clen;
+
+    CHECKSTRING(uvalue, cvalue);
+
+    ulen = strlen(LDGetText(uvalue));
+    clen = strlen(LDGetText(cvalue));
+
+    if (clen > ulen) {
+        return false;
+    }
+
+    return strcmp(LDGetText(uvalue) + ulen - clen, LDGetText(cvalue)) == 0;
 }
 
 static bool
-operatorMatchesFnImp(const char *const uvalue, const char *const cvalue)
+operatorMatchesFn(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue)
 {
     bool matches;
     regex_t *context = NULL;
 
-    if (regcomp(context, cvalue, 0) != 0) {
+    CHECKSTRING(uvalue, cvalue);
+
+    if (regcomp(context, LDGetText(cvalue), 0) != 0) {
         LD_LOG(LD_LOG_ERROR, "failed to compile regex");
 
         return false;
     }
 
-    matches = regexec(context, uvalue, 0, NULL, 0) == 0;
+    matches = regexec(context, LDGetText(uvalue), 0, NULL, 0) == 0;
 
     regfree(context);
 
@@ -90,23 +87,12 @@ operatorMatchesFnImp(const char *const uvalue, const char *const cvalue)
 }
 
 static bool
-operatorMatchesFn(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
-{
-    return stringOperator(uvalue, cvalue, operatorMatchesFnImp);
-}
-
-static bool
-operatorContainsFnImp(const char *const uvalue, const char *const cvalue)
-{
-    return strstr(uvalue, cvalue) != NULL;
-}
-
-static bool
 operatorContainsFn(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue)
 {
-    return stringOperator(uvalue, cvalue, operatorContainsFnImp);
+    CHECKSTRING(uvalue, cvalue);
+
+    return strstr(LDGetText(uvalue), LDGetText(cvalue)) != NULL;
 }
 
 OpFn
