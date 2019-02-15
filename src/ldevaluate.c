@@ -900,9 +900,11 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     if (strcmp(operatorText, "in") == 0) {
         fn = operatorInFn;
     } else {
-        LD_LOG(LD_LOG_ERROR, "schema error");
+        LD_LOG(LD_LOG_WARNING, "unknown operator");
 
-        return false;
+        *matches = false;
+
+        return true;
     }
 
     if (!(attributeValue = valueOfAttribute(user, attributeText))) {
