@@ -61,6 +61,14 @@ main()
     addTest("greaterThanOrEqual", LDNewText("99"), LDNewNumber(99), false);
     addTest("greaterThanOrEqual", LDNewNumber(99), LDNewText("99"), false);
 
+    /* regex */
+    addTest("matches", LDNewText("hello world"), LDNewText("hello.*rld"), true);
+    addTest("matches", LDNewText("hello world"), LDNewText("hello.*orl"), true);
+    addTest("matches", LDNewText("hello world"), LDNewText("l+"), true);
+    addTest("matches", LDNewText("hello world"), LDNewText("(world|pl)"), true);
+    addTest("matches", LDNewText("hello world"), LDNewText("aloha"), false);
+    addTest("matches", LDNewText("hello world"), LDNewText("***bad rg"), false);
+
     for (iter = LDGetIter(tests); iter; iter = LDIterNext(iter)) {
         OpFn opfn;
         struct LDJSON *op;
