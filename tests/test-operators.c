@@ -50,6 +50,17 @@ main()
     addTest("contains", LDNewText("xyz"), LDNewText("y"), true);
     addTest("contains", LDNewText("y"), LDNewText("yz"), false);
 
+    /* mixed strings and numbers */
+    addTest("in", LDNewText("99"), LDNewNumber(99), false);
+    addTest("in", LDNewNumber(99), LDNewText("99"), false);
+    addTest("contains", LDNewText("99"), LDNewNumber(99), false);
+    addTest("startsWith", LDNewText("99"), LDNewNumber(99), false);
+    addTest("endsWith", LDNewText("99"), LDNewNumber(99), false);
+    addTest("lessThanOrEqual", LDNewText("99"), LDNewNumber(99), false);
+    addTest("lessThanOrEqual", LDNewNumber(99), LDNewText("99"), false);
+    addTest("greaterThanOrEqual", LDNewText("99"), LDNewNumber(99), false);
+    addTest("greaterThanOrEqual", LDNewNumber(99), LDNewText("99"), false);
+
     for (iter = LDGetIter(tests); iter; iter = LDIterNext(iter)) {
         OpFn opfn;
         struct LDJSON *op;
@@ -57,16 +68,26 @@ main()
         struct LDJSON *cvalue;
         struct LDJSON *expect;
 
+        char *serializeduvalue;
+        char *serializedcvalue;
+
         LD_ASSERT(op = LDObjectLookup(iter, "op"));
         LD_ASSERT(uvalue = LDObjectLookup(iter, "uvalue"));
         LD_ASSERT(cvalue = LDObjectLookup(iter, "cvalue"));
         LD_ASSERT(expect = LDObjectLookup(iter, "expect"));
 
-        LD_LOG(LD_LOG_TRACE, "%s", LDGetText(op));
+        LD_ASSERT(serializeduvalue = LDJSONSerialize(uvalue));
+        LD_ASSERT(serializedcvalue = LDJSONSerialize(cvalue));
+
+        LD_LOG(LD_LOG_TRACE, "%s %s, %s %u", LDGetText(op),
+            serializeduvalue, serializedcvalue, LDGetBool(expect));
 
         LD_ASSERT(opfn = lookupOperation(LDGetText(op)));
 
         LD_ASSERT(opfn(uvalue, cvalue) == LDGetBool(expect));
+
+        free(serializeduvalue);
+        free(serializedcvalue);
     }
 
     LDJSONFree(tests);
