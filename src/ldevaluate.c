@@ -337,7 +337,31 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
         break;
     }
 
-    return true;
+    {
+        const struct LDJSON *fallthrough = NULL;
+
+        if (!(fallthrough = LDObjectLookup(flag, "fallthrough"))) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        fallthrough = LDObjectLookup(fallthrough, "variation");
+
+        if (!addReason(*result, "FALLTHROUGH")) {
+            LD_LOG(LD_LOG_ERROR, "failed to add reason");
+
+            return false;
+        }
+
+        if (!(addValue(flag, *result, fallthrough))) {
+            LD_LOG(LD_LOG_ERROR, "failed to add value");
+
+            return false;
+        }
+
+        return true;
+    }
 }
 
 bool
@@ -931,9 +955,9 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     }
 
     if (!(attributeValue = valueOfAttribute(user, attributeText))) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
+        *matches = false;
 
-        return false;
+        return true;
     }
 
     type = LDJSONGetType(attributeValue);
