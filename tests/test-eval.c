@@ -577,6 +577,41 @@ testClauseReturnsFalseForMissingAttribute()
     LDUserFree(user);
 }
 
+static void
+testClauseCanBeNegated()
+{
+    struct LDJSON *result;
+    struct LDUser *user;
+    struct LDJSON *flag;
+    struct LDJSON *clause;
+    struct LDJSON *values;
+
+    /* user */
+    LD_ASSERT(user = LDUserNew("key"));
+    LD_ASSERT(LDUserSetName(user, "Bob"));
+
+    /* flag */
+    LD_ASSERT(values = LDNewArray());
+    LD_ASSERT(LDArrayAppend(values, LDNewText("Bob")));
+
+    LD_ASSERT(clause = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
+    LD_ASSERT(LDObjectSetKey(clause, "values", values));
+    LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("name")));
+    LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(true)));
+
+    LD_ASSERT(flag = booleanFlagWithClause(clause));
+
+    /* run */
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
+
+    /* validate */
+    LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
+
+    LDJSONFree(flag);
+    LDUserFree(user);
+}
+
 static bool
 floateq(const float left, const float right)
 {
@@ -621,6 +656,7 @@ main()
     testClauseCanMatchBuiltInAttribute();
     testClauseCanMatchCustomAttribute();
     testClauseReturnsFalseForMissingAttribute();
+    testClauseCanBeNegated();
 
     testBucketUserByKey();
 
