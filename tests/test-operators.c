@@ -65,9 +65,35 @@ main()
     addTest("matches", LDNewText("hello world"), LDNewText("hello.*rld"), true);
     addTest("matches", LDNewText("hello world"), LDNewText("hello.*orl"), true);
     addTest("matches", LDNewText("hello world"), LDNewText("l+"), true);
-    addTest("matches", LDNewText("hello world"), LDNewText("(world|pl)"), true);
+    addTest("matches", LDNewText("hello world"),
+        LDNewText("(world|planet)"), true);
     addTest("matches", LDNewText("hello world"), LDNewText("aloha"), false);
     addTest("matches", LDNewText("hello world"), LDNewText("***bad rg"), false);
+
+    /* semver operators */
+    addTest("semVerEqual", LDNewText("2.0.0"), LDNewText("2.0.0"), true);
+    addTest("semVerEqual", LDNewText("2.0"), LDNewText("2.0.0"), true);
+    addTest("semVerEqual", LDNewText("2-rc1"), LDNewText("2.0.0-rc1"), true);
+    addTest("semVerEqual", LDNewText("2+build2"),
+        LDNewText("2.0.0+build2"), true);
+    addTest("semVerEqual", LDNewText("2.0.0"), LDNewText("2.0.1"), false);
+    addTest("semVerLessThan", LDNewText("2.0.0"), LDNewText("2.0.1"), true);
+    addTest("semVerLessThan", LDNewText("2.0"), LDNewText("2.0.1"), true);
+    addTest("semVerLessThan", LDNewText("2.0.1"), LDNewText("2.0.0"), false);
+    addTest("semVerLessThan", LDNewText("2.0.1"), LDNewText("2.0"), false);
+    addTest("semVerLessThan", LDNewText("2.0.1"), LDNewText("xbad%ver"), false);
+    addTest("semVerLessThan", LDNewText("2.0.0-rc"),
+        LDNewText("2.0.0-rc.beta"), true);
+    addTest("semVerGreaterThan", LDNewText("2.0.1"), LDNewText("2.0"), true);
+    addTest("semVerGreaterThan", LDNewText("2.0.1"), LDNewText("2.0"), true);
+    addTest("semVerGreaterThan", LDNewText("2.0.0"),
+        LDNewText("2.0.1"), false);
+    addTest("semVerGreaterThan", LDNewText("2.0"), LDNewText("2.0.1"), false);
+    addTest("semVerGreaterThan", LDNewText("2.0.1"),
+        LDNewText("xbad%ver"), false);
+    addTest("semVerGreaterThan", LDNewText("2.0.0-rc.1"),
+        LDNewText("2.0.0-rc.0"), true);
+
 
     for (iter = LDGetIter(tests); iter; iter = LDIterNext(iter)) {
         OpFn opfn;
