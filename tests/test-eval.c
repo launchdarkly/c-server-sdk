@@ -768,6 +768,56 @@ testSegmentMatchClauseFallsThroughIfSegmentNotFound()
     LDUserFree(user);
 }
 
+static void
+testCanMatchJustOneSegmentFromList()
+{
+    struct LDUser *user;
+    struct LDStore *store;
+    struct LDJSON *segment;
+    struct LDJSON *flag;
+    struct LDJSON *result;
+    struct LDJSON *included;
+    struct LDJSON *values;
+    struct LDJSON *clause;
+
+    LD_ASSERT(user = LDUserNew("foo"));
+
+    /* segment */
+    LD_ASSERT(included = LDNewArray());
+    LD_ASSERT(LDArrayAppend(included, LDNewText("foo")));
+
+    LD_ASSERT(segment = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("segkey")));
+    LD_ASSERT(LDObjectSetKey(segment, "included", included));
+
+    /* flag */
+    LD_ASSERT(values = LDNewArray());
+    LD_ASSERT(LDArrayAppend(values, LDNewText("unknownsegkey")));
+    LD_ASSERT(LDArrayAppend(values, LDNewText("segkey")));
+
+    LD_ASSERT(clause = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("")));
+    LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("segmentMatch")));
+    LD_ASSERT(LDObjectSetKey(clause, "values", values));
+
+    LD_ASSERT(flag = booleanFlagWithClause(clause));
+
+    /* store */
+    LD_ASSERT(store = prepareEmptyStore());
+    LD_ASSERT(LDStoreUpsert(store, "segments", segment));
+
+    /* run */
+    LD_ASSERT(evaluate(flag, user, store, &result));
+
+    /* validate */
+    LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDStoreDestroy(store);
+    LDUserFree(user);
+}
+
 static bool
 floateq(const float left, const float right)
 {
@@ -817,6 +867,7 @@ main()
     testClauseWithUnknownOperatorDoesNotMatch();
     testSegmentMatchClauseRetrievesSegmentFromStore();
     testSegmentMatchClauseFallsThroughIfSegmentNotFound();
+    testCanMatchJustOneSegmentFromList();
 
     testBucketUserByKey();
 

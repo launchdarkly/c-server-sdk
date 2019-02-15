@@ -570,24 +570,20 @@ clauseMatchesUser(const struct LDJSON *const clause,
             negate = LDGetBool(negateJSON);
         }
 
+        bool anysuccess = false;
+
         for (iter = LDGetIter(values); iter; iter = LDIterNext(iter)) {
             if (LDJSONGetType(iter) == LDText) {
                 bool submatch;
                 const struct LDJSON *segment;
 
-                if (LDJSONGetType(iter) != LDText) {
-                    LD_LOG(LD_LOG_ERROR, "schema error");
-
-                    return false;
-                }
-
                 if (!(segment = LDStoreGet(store, "segments", LDGetText(iter)))) {
                     LD_LOG(LD_LOG_WARNING, "store lookup error");
 
-                    *matches = false;
-
-                    return true;
+                    continue;
                 }
+
+                anysuccess = true;
 
                 if (!segmentMatchesUser(segment, user, &submatch)) {
                     LD_LOG(LD_LOG_ERROR, "sub error");
@@ -601,6 +597,12 @@ clauseMatchesUser(const struct LDJSON *const clause,
                     return true;
                 }
             }
+        }
+
+        if (!anysuccess && LDGetIter(values)) {
+            *matches = false;
+
+            return true;
         }
 
         *matches = negate ? true : true;
