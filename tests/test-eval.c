@@ -730,6 +730,44 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
     LDUserFree(user);
 }
 
+static void
+testSegmentMatchClauseFallsThroughIfSegmentNotFound()
+{
+    struct LDUser *user;
+    struct LDStore *store;
+    struct LDJSON *flag;
+    struct LDJSON *result;
+    struct LDJSON *values;
+    struct LDJSON *clause;
+
+    LD_ASSERT(user = LDUserNew("foo"));
+
+    /* flag */
+    LD_ASSERT(values = LDNewArray());
+    LD_ASSERT(LDArrayAppend(values, LDNewText("segkey")));
+
+    LD_ASSERT(clause = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("")));
+    LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("segmentMatch")));
+    LD_ASSERT(LDObjectSetKey(clause, "values", values));
+
+    LD_ASSERT(flag = booleanFlagWithClause(clause));
+
+    /* store */
+    LD_ASSERT(store = prepareEmptyStore());
+
+    /* run */
+    LD_ASSERT(evaluate(flag, user, store, &result));
+
+    /* validate */
+    LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDStoreDestroy(store);
+    LDUserFree(user);
+}
+
 static bool
 floateq(const float left, const float right)
 {
@@ -778,6 +816,7 @@ main()
     testClauseForMissingAttributeIsFalseEvenIfNegate();
     testClauseWithUnknownOperatorDoesNotMatch();
     testSegmentMatchClauseRetrievesSegmentFromStore();
+    testSegmentMatchClauseFallsThroughIfSegmentNotFound();
 
     testBucketUserByKey();
 

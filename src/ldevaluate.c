@@ -582,9 +582,11 @@ clauseMatchesUser(const struct LDJSON *const clause,
                 }
 
                 if (!(segment = LDStoreGet(store, "segments", LDGetText(iter)))) {
-                    LD_LOG(LD_LOG_ERROR, "store lookup error");
+                    LD_LOG(LD_LOG_WARNING, "store lookup error");
 
-                    return false;
+                    *matches = false;
+
+                    return true;
                 }
 
                 if (!segmentMatchesUser(segment, user, &submatch)) {
