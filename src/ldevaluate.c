@@ -124,6 +124,13 @@ bool
 evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     struct LDStore *const store, struct LDJSON **const result)
 {
+    bool submatch;
+    const struct LDJSON *iter;
+    const struct LDJSON *rules;
+    const struct LDJSON *targets;
+    const struct LDJSON *on;
+    const struct LDJSON *fallthrough;
+
     LD_ASSERT(flag);
     LD_ASSERT(user);
     LD_ASSERT(store);
@@ -141,220 +148,30 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
         return false;
     }
 
-    {
-        const struct LDJSON *on = NULL;
+    /* on */
+    if (!(on = LDObjectLookup(flag, "on"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
 
-        if (!(on = LDObjectLookup(flag, "on"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return false;
-        }
-
-        if (LDJSONGetType(on) != LDBool) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return false;
-        }
-
-        if (!LDGetBool(on)) {
-            const struct LDJSON *offVariation =
-                LDObjectLookup(flag, "offVariation");
-
-            if (!addReason(*result, "OFF")) {
-                LD_LOG(LD_LOG_ERROR, "failed to add reason");
-
-                return false;
-            }
-
-            if (!(addValue(flag, *result, offVariation))) {
-                LD_LOG(LD_LOG_ERROR, "failed to add value");
-
-                return false;
-            }
-
-            return true;
-        }
+        return false;
     }
 
-    {
-        bool submatch;
+    if (LDJSONGetType(on) != LDBool) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
 
-        if (!checkPrerequisites(flag, user, store, &submatch)) {
-            LD_LOG(LD_LOG_ERROR, "sub error error");
-
-            return false;
-        }
-
-        if (!submatch) {
-            const struct LDJSON *offVariation =
-                LDObjectLookup(flag, "offVariation");
-
-            if (!addReason(*result, "PREREQUISITE_FAILED")) {
-                LD_LOG(LD_LOG_ERROR, "failed to add reason");
-
-                return false;
-            }
-
-            if (!(addValue(flag, *result, offVariation))) {
-                LD_LOG(LD_LOG_ERROR, "failed to add value");
-
-                return false;
-            }
-
-            return true;
-        }
+        return false;
     }
 
-    while (true) {
-        const struct LDJSON *const targets = LDObjectLookup(flag, "targets");
+    if (!LDGetBool(on)) {
+        const struct LDJSON *offVariation =
+            LDObjectLookup(flag, "offVariation");
 
-        if (targets && LDJSONGetType(targets) != LDArray) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return false;
-        }
-
-        if (!targets) {
-            break;
-        }
-
-        {
-            const struct LDJSON *iter = NULL;
-
-            for (iter = LDGetIter(targets); iter; iter = LDIterNext(iter)) {
-                const struct LDJSON *values = NULL;
-
-                LD_ASSERT(LDJSONGetType(iter) == LDObject);
-
-                values = LDObjectLookup(iter, "values");
-
-                LD_ASSERT(values); LD_ASSERT(LDJSONGetType(values) == LDArray);
-
-                if (textInArray(values, user->key)) {
-                    const struct LDJSON *variation = NULL;
-
-                    variation = LDObjectLookup(iter, "variation");
-
-                    if (!addReason(*result, "TARGET_MATCH")) {
-                        LD_LOG(LD_LOG_ERROR, "failed to add reason");
-
-                        return false;
-                    }
-
-                    if (!(addValue(flag, *result, variation))) {
-                        LD_LOG(LD_LOG_ERROR, "failed to add value");
-
-                        return false;
-                    }
-
-                    return true;
-                }
-            }
-        }
-
-        break;
-    }
-
-    while (true) {
-        const struct LDJSON *const rules = LDObjectLookup(flag, "rules");
-
-        if (rules && LDJSONGetType(rules) != LDArray) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return false;
-        }
-
-        if (!rules || LDArrayGetSize(rules) == 0) {
-            const struct LDJSON *fallthrough = NULL;
-
-            if (!(fallthrough = LDObjectLookup(flag, "fallthrough"))) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
-
-                return false;
-            }
-
-            fallthrough = LDObjectLookup(fallthrough, "variation");
-
-            if (!addReason(*result, "FALLTHROUGH")) {
-                LD_LOG(LD_LOG_ERROR, "failed to add reason");
-
-                return false;
-            }
-
-            if (!(addValue(flag, *result, fallthrough))) {
-                LD_LOG(LD_LOG_ERROR, "failed to add value");
-
-                return false;
-            }
-
-            return true;
-        }
-
-        if (!rules) {
-            break;
-        }
-
-        {
-            const struct LDJSON *iter = NULL;
-
-            for (iter = LDGetIter(rules); iter; iter = LDIterNext(iter)) {
-                bool submatch;
-
-                if (LDJSONGetType(iter) != LDObject) {
-                    LD_LOG(LD_LOG_ERROR, "schema error");
-
-                    return false;
-                }
-
-                if (!ruleMatchesUser(iter, user, &submatch)) {
-                    LD_LOG(LD_LOG_ERROR, "sub error");
-
-                    return false;
-                }
-
-                if (submatch) {
-                    const struct LDJSON *variation = NULL;
-
-                    variation = LDObjectLookup(iter, "variation");
-
-                    if (!addReason(*result, "RULE_MATCH")) {
-                        LD_LOG(LD_LOG_ERROR, "failed to add reason");
-
-                        return false;
-                    }
-
-                    if (!(addValue(flag, *result, variation))) {
-                        LD_LOG(LD_LOG_ERROR, "failed to add value");
-
-                        return false;
-                    }
-
-                    return true;
-                }
-            }
-        }
-
-        break;
-    }
-
-    {
-        const struct LDJSON *fallthrough = NULL;
-
-        if (!(fallthrough = LDObjectLookup(flag, "fallthrough"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return false;
-        }
-
-        fallthrough = LDObjectLookup(fallthrough, "variation");
-
-        if (!addReason(*result, "FALLTHROUGH")) {
+        if (!addReason(*result, "OFF")) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
             return false;
         }
 
-        if (!(addValue(flag, *result, fallthrough))) {
+        if (!(addValue(flag, *result, offVariation))) {
             LD_LOG(LD_LOG_ERROR, "failed to add value");
 
             return false;
@@ -362,6 +179,140 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
         return true;
     }
+
+    /* prerequisites */
+    if (!checkPrerequisites(flag, user, store, &submatch)) {
+        LD_LOG(LD_LOG_ERROR, "sub error error");
+
+        return false;
+    }
+
+    if (!submatch) {
+        if (!addReason(*result, "PREREQUISITE_FAILED")) {
+            LD_LOG(LD_LOG_ERROR, "failed to add reason");
+
+            return false;
+        }
+
+        if (!(addValue(flag, *result, LDObjectLookup(flag, "offVariation")))) {
+            LD_LOG(LD_LOG_ERROR, "failed to add value");
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /* targets */
+    targets = LDObjectLookup(flag, "targets");
+
+    if (targets && LDJSONGetType(targets) != LDArray) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if (targets) {
+        for (iter = LDGetIter(targets); iter; iter = LDIterNext(iter)) {
+            const struct LDJSON *values = NULL;
+
+            LD_ASSERT(LDJSONGetType(iter) == LDObject);
+
+            values = LDObjectLookup(iter, "values");
+
+            LD_ASSERT(values); LD_ASSERT(LDJSONGetType(values) == LDArray);
+
+            if (textInArray(values, user->key)) {
+                const struct LDJSON *variation = NULL;
+
+                variation = LDObjectLookup(iter, "variation");
+
+                if (!addReason(*result, "TARGET_MATCH")) {
+                    LD_LOG(LD_LOG_ERROR, "failed to add reason");
+
+                    return false;
+                }
+
+                if (!(addValue(flag, *result, variation))) {
+                    LD_LOG(LD_LOG_ERROR, "failed to add value");
+
+                    return false;
+                }
+
+                return true;
+            }
+        }
+    }
+
+    /* rules */
+    rules = LDObjectLookup(flag, "rules");
+
+    if (rules && LDJSONGetType(rules) != LDArray) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if (rules && LDArrayGetSize(rules) != 0) {
+        for (iter = LDGetIter(rules); iter; iter = LDIterNext(iter)) {
+            bool submatch;
+
+            if (LDJSONGetType(iter) != LDObject) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            if (!ruleMatchesUser(iter, user, &submatch)) {
+                LD_LOG(LD_LOG_ERROR, "sub error");
+
+                return false;
+            }
+
+            if (submatch) {
+                const struct LDJSON *variation = NULL;
+
+                variation = LDObjectLookup(iter, "variation");
+
+                if (!addReason(*result, "RULE_MATCH")) {
+                    LD_LOG(LD_LOG_ERROR, "failed to add reason");
+
+                    return false;
+                }
+
+                if (!(addValue(flag, *result, variation))) {
+                    LD_LOG(LD_LOG_ERROR, "failed to add value");
+
+                    return false;
+                }
+
+                return true;
+            }
+        }
+    }
+
+    /* fallthrough */
+    if (!(fallthrough = LDObjectLookup(flag, "fallthrough"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    fallthrough = LDObjectLookup(fallthrough, "variation");
+
+    if (!addReason(*result, "FALLTHROUGH")) {
+        LD_LOG(LD_LOG_ERROR, "failed to add reason");
+
+        return false;
+    }
+
+    if (!(addValue(flag, *result, fallthrough))) {
+        LD_LOG(LD_LOG_ERROR, "failed to add value");
+
+        return false;
+    }
+
+    return true;
 }
 
 bool
