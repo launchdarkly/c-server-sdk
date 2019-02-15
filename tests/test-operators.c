@@ -28,15 +28,27 @@ main()
 
     LD_ASSERT(tests = LDNewArray());
 
+    /* numeric operators */
+    addTest("in", LDNewNumber(99), LDNewNumber(99), true);
+    addTest("in", LDNewNumber(99.0001), LDNewNumber(99.0001), true);
+    addTest("lessThan", LDNewNumber(1), LDNewNumber(1.99999), true);
+    addTest("lessThan", LDNewNumber(1.99999), LDNewNumber(1), false);
+    addTest("lessThan", LDNewNumber(1), LDNewNumber(2), true);
+    addTest("lessThanOrEqual", LDNewNumber(1), LDNewNumber(1), true);
+    addTest("greaterThan", LDNewNumber(2), LDNewNumber(1.99999), true);
+    addTest("greaterThan", LDNewNumber(1.99999), LDNewNumber(2), false);
+    addTest("greaterThan", LDNewNumber(2), LDNewNumber(1), true);
+    addTest("greaterThanOrEqual", LDNewNumber(1), LDNewNumber(1), true);
+
     /* string operators */
-    addTest("in",         LDNewText("x"),   LDNewText("x"),   true);
-    addTest("in",         LDNewText("x"),   LDNewText("xyz"), false);
-    addTest("startsWith", LDNewText("xyz"), LDNewText("x"),   true);
-    addTest("startsWith", LDNewText("x"),   LDNewText("xyz"), false);
-    addTest("endsWith",   LDNewText("xyz"), LDNewText("z"),   true);
-    addTest("endsWith",   LDNewText("z"),   LDNewText("xyz"), false);
-    addTest("contains",   LDNewText("xyz"), LDNewText("y"),   true);
-    addTest("contains",   LDNewText("y"),   LDNewText("yz"),  false);
+    addTest("in", LDNewText("x"), LDNewText("x"), true);
+    addTest("in", LDNewText("x"), LDNewText("xyz"), false);
+    addTest("startsWith", LDNewText("xyz"), LDNewText("x"), true);
+    addTest("startsWith", LDNewText("x"), LDNewText("xyz"), false);
+    addTest("endsWith", LDNewText("xyz"), LDNewText("z"), true);
+    addTest("endsWith", LDNewText("z"), LDNewText("xyz"), false);
+    addTest("contains", LDNewText("xyz"), LDNewText("y"), true);
+    addTest("contains", LDNewText("y"), LDNewText("yz"), false);
 
     for (iter = LDGetIter(tests); iter; iter = LDIterNext(iter)) {
         OpFn opfn;
