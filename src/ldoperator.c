@@ -78,19 +78,19 @@ operatorMatchesFn(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue)
 {
     bool matches;
-    regex_t *context = NULL;
+    regex_t context;
 
     CHECKSTRING(uvalue, cvalue);
 
-    if (regcomp(context, LDGetText(cvalue), 0) != 0) {
+    if (regcomp(&context, LDGetText(cvalue), 0) != 0) {
         LD_LOG(LD_LOG_ERROR, "failed to compile regex");
 
         return false;
     }
 
-    matches = regexec(context, LDGetText(uvalue), 0, NULL, 0) == 0;
+    matches = regexec(&context, LDGetText(uvalue), 0, NULL, 0) == 0;
 
-    regfree(context);
+    regfree(&context);
 
     return matches;
 }
