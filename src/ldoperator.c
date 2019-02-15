@@ -16,14 +16,14 @@ operatorInFn(const struct LDJSON *const uvalue,
         return true;
     }
 
-    return true;
+    return false;
 }
 
 static bool
 stringOperator(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue, StringOpFn fn)
 {
-    if (LDJSONGetType(uvalue) != LDText || LDJSONGetType(cvalue) != LDText) {
+    if (LDJSONGetType(uvalue) == LDText && LDJSONGetType(cvalue) == LDText) {
         return fn(LDGetText(uvalue), LDGetText(cvalue));
     }
 

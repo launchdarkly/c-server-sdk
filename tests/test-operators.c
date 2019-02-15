@@ -24,10 +24,19 @@ main()
 {
     struct LDJSON *iter;
 
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+
     LD_ASSERT(tests = LDNewArray());
 
     /* string operators */
-    addTest("in", LDNewText("x"), LDNewText("x"), true);
+    addTest("in",         LDNewText("x"),   LDNewText("x"),   true);
+    addTest("in",         LDNewText("x"),   LDNewText("xyz"), false);
+    addTest("startsWith", LDNewText("xyz"), LDNewText("x"),   true);
+    addTest("startsWith", LDNewText("x"),   LDNewText("xyz"), false);
+    addTest("endsWith",   LDNewText("xyz"), LDNewText("z"),   true);
+    addTest("endsWith",   LDNewText("z"),   LDNewText("xyz"), false);
+    addTest("contains",   LDNewText("xyz"), LDNewText("y"),   true);
+    addTest("contains",   LDNewText("y"),   LDNewText("yz"),  false);
 
     for (iter = LDGetIter(tests); iter; iter = LDIterNext(iter)) {
         OpFn opfn;
@@ -40,6 +49,8 @@ main()
         LD_ASSERT(uvalue = LDObjectLookup(iter, "uvalue"));
         LD_ASSERT(cvalue = LDObjectLookup(iter, "cvalue"));
         LD_ASSERT(expect = LDObjectLookup(iter, "expect"));
+
+        LD_LOG(LD_LOG_TRACE, "%s", LDGetText(op));
 
         LD_ASSERT(opfn = lookupOperation(LDGetText(op)));
 
