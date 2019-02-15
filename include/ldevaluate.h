@@ -19,10 +19,12 @@ bool checkPrerequisites(const struct LDJSON *const flag,
     bool *const matches);
 
 bool ruleMatchesUser(const struct LDJSON *const rule,
-    const struct LDUser *const user, bool *const matches);
+    const struct LDUser *const user, struct LDStore *const store,
+    bool *const matches);
 
 bool clauseMatchesUser(const struct LDJSON *const clause,
-    const struct LDUser *const user, bool *const matches);
+    const struct LDUser *const user, struct LDStore *const store,
+    bool *const matches);
 
 bool segmentMatchesUser(const struct LDJSON *const segment,
     const struct LDUser *const user, bool *const matches);
