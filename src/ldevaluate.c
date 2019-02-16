@@ -3,6 +3,7 @@
 
 #include "ldinternal.h"
 #include "ldevaluate.h"
+#include "ldoperators.h"
 
 static bool
 addReason(struct LDJSON *result, const char *const reason)
@@ -800,18 +801,6 @@ segmentRuleMatchUser(const struct LDJSON *const segmentRule,
     }
 }
 
-typedef bool (*OpFn)(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue, bool *const matches);
-
-bool
-operatorInFn(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue, bool *const matches)
-{
-    *matches = LDJSONCompare(uvalue, cvalue);
-
-    return true;
-}
-
 bool
 matchAny(OpFn f, const struct LDJSON *const value,
     const struct LDJSON *const values, bool *const matches)
@@ -824,13 +813,7 @@ matchAny(OpFn f, const struct LDJSON *const value,
     LD_ASSERT(matches);
 
     for (iter = LDGetIter(values); iter; iter = LDIterNext(iter)) {
-        bool submatch;
-
-        if (!(f(value, iter, &submatch))) {
-            return false;
-        }
-
-        if (submatch) {
+        if (f(value, iter)) {
             *matches = true;
 
             return true;
@@ -914,9 +897,7 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
         negate = false;
     }
 
-    if (strcmp(operatorText, "in") == 0) {
-        fn = operatorInFn;
-    } else {
+    if (!(fn = lookupOperation(operatorText))) {
         LD_LOG(LD_LOG_WARNING, "unknown operator");
 
         *matches = false;
