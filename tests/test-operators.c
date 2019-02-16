@@ -4,6 +4,12 @@
 
 static struct LDJSON *tests;
 
+static const char *const dateStr1 = "2017-12-06T00:00:00.000-07:00";
+static const char *const dateStr2 = "2017-12-06T00:01:01.000-07:00";
+static const unsigned int dateMs1 = 10000000;
+static const unsigned int dateMs2 = 10000001;
+static const char *const invalidDate = "hey what's this?";
+
 void
 addTest(const char *const op, struct LDJSON *const uvalue,
     struct LDJSON *const cvalue, const bool expect)
@@ -70,6 +76,24 @@ main()
     addTest("matches", LDNewText("hello world"), LDNewText("aloha"), false);
     addTest("matches", LDNewText("hello world"), LDNewText("***bad rg"), false);
 
+    /* date operators */
+    addTest("before", LDNewText(dateStr1), LDNewText(dateStr2), true);
+    addTest("before", LDNewNumber(dateMs1), LDNewNumber(dateMs2), true);
+    addTest("before", LDNewText(dateStr2), LDNewText(dateStr1), false);
+    addTest("before", LDNewNumber(dateMs2), LDNewNumber(dateMs1), false);
+    addTest("before", LDNewText(dateStr1), LDNewText(dateStr1), false);
+    addTest("before", LDNewNumber(dateMs1), LDNewNumber(dateMs1), false);
+    addTest("before", LDNewText(""), LDNewText(dateStr1), false);
+    addTest("before", LDNewText(dateStr1), LDNewText(invalidDate), false);
+    addTest("after", LDNewText(dateStr2), LDNewText(dateStr1), true);
+    addTest("after", LDNewNumber(dateMs2), LDNewNumber(dateMs1), true);
+    addTest("after", LDNewText(dateStr1), LDNewText(dateStr2), false);
+    addTest("after", LDNewNumber(dateMs1), LDNewNumber(dateMs2), false);
+    addTest("after", LDNewText(dateStr1), LDNewText(dateStr1), false);
+    addTest("after", LDNewNumber(dateMs1), LDNewNumber(dateMs1), false);
+    addTest("after", LDNewText(""), LDNewText(dateStr1), false);
+    addTest("after", LDNewText(dateStr1), LDNewText(invalidDate), false);
+
     /* semver operators */
     addTest("semVerEqual", LDNewText("2.0.0"), LDNewText("2.0.0"), true);
     addTest("semVerEqual", LDNewText("2.0"), LDNewText("2.0.0"), true);
@@ -93,7 +117,6 @@ main()
         LDNewText("xbad%ver"), false);
     addTest("semVerGreaterThan", LDNewText("2.0.0-rc.1"),
         LDNewText("2.0.0-rc.0"), true);
-
 
     for (iter = LDGetIter(tests); iter; iter = LDIterNext(iter)) {
         OpFn opfn;
