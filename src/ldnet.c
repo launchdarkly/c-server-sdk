@@ -6,6 +6,8 @@
 
 #include <curl/curl.h>
 
+const char *const agentheader = "User-Agent: CServerClient/0.1";
+
 bool
 prepareShared(const struct LDConfig *const config, const char *const url,
     CURL **const o_curl, struct curl_slist **const o_headers)
@@ -13,7 +15,10 @@ prepareShared(const struct LDConfig *const config, const char *const url,
     CURL *curl = NULL;
     struct curl_slist *headers = NULL;
 
-    LD_ASSERT(config); LD_ASSERT(url); LD_ASSERT(o_curl); LD_ASSERT(o_headers);
+    LD_ASSERT(config);
+    LD_ASSERT(url);
+    LD_ASSERT(o_curl);
+    LD_ASSERT(o_headers);
 
     if (!(curl = curl_easy_init())) {
         LD_LOG(LD_LOG_CRITICAL, "curl_easy_init returned NULL");
@@ -22,7 +27,7 @@ prepareShared(const struct LDConfig *const config, const char *const url,
     }
 
     if (curl_easy_setopt(curl, CURLOPT_URL, url) != CURLE_OK) {
-        LD_LOG(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_URL failed on: %s", url);
+        LD_LOG(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_URL failed on");
 
         goto error;
     }
@@ -30,8 +35,10 @@ prepareShared(const struct LDConfig *const config, const char *const url,
     {
         char headerauth[256];
 
-        if (snprintf(headerauth, sizeof(headerauth), "Authorization: %s", config->key) < 0) {
-            LD_LOG(LD_LOG_CRITICAL, "snprintf during Authorization header creation failed");
+        if (snprintf(headerauth, sizeof(headerauth), "Authorization: %s",
+            config->key) < 0)
+        {
+            LD_LOG(LD_LOG_CRITICAL, "snprintf during failed");
 
             goto error;
         }
@@ -45,7 +52,7 @@ prepareShared(const struct LDConfig *const config, const char *const url,
         }
     }
 
-    if (!(headers = curl_slist_append(headers, "User-Agent: CServerClient/0.1"))) {
+    if (!(headers = curl_slist_append(headers, agentheader))) {
         LD_LOG(LD_LOG_CRITICAL, "curl_slist_append failed for headeragent");
 
         goto error;
@@ -57,7 +64,8 @@ prepareShared(const struct LDConfig *const config, const char *const url,
         goto error;
     }
 
-    *o_curl = curl; *o_headers = headers;
+    *o_curl = curl;
+    *o_headers = headers;
 
     return true;
 
@@ -86,12 +94,21 @@ LDi_networkthread(void* const clientref)
 
     struct NetworkInterface *interfaces[1];
 
+    const size_t interfacecount =
+        sizeof(interfaces) / sizeof(struct NetworkInterface *);
+
     LD_ASSERT(client);
 
-    interfaces[0] = constructPolling(client); LD_ASSERT(interfaces[0]);
+    if (!(interfaces[0] = constructPolling(client))) {
+        LD_LOG(LD_LOG_ERROR, "failed to construct polling");
+
+        return THREAD_RETURN_DEFAULT;
+    }
 
     while (true) {
-        struct CURLMsg *info = NULL; int running_handles = 0; int active_events = 0;
+        struct CURLMsg *info = NULL;
+        int running_handles = 0;
+        int active_events = 0;
 
         LD_ASSERT(LDi_rdlock(&client->lock));
         if (client->shuttingdown) {
@@ -103,13 +120,16 @@ LDi_networkthread(void* const clientref)
 
         curl_multi_perform(client->multihandle, &running_handles);
 
-        for (unsigned int i = 0; i < 1; i++) {
-            CURL *const handle = interfaces[i]->poll(client, interfaces[i]->context);
+        for (unsigned int i = 0; i < interfacecount; i++) {
+            CURL *const handle =
+                interfaces[i]->poll(client, interfaces[i]->context);
 
             if (handle) {
-                LD_ASSERT(curl_easy_setopt(handle, CURLOPT_PRIVATE, interfaces[i]) == CURLE_OK);
+                LD_ASSERT(curl_easy_setopt(
+                    handle, CURLOPT_PRIVATE, interfaces[i]) == CURLE_OK);
 
-                LD_ASSERT(curl_multi_add_handle(client->multihandle, handle) == CURLM_OK);
+                LD_ASSERT(curl_multi_add_handle(
+                    client->multihandle, handle) == CURLM_OK);
             }
         }
 
@@ -123,12 +143,19 @@ LDi_networkthread(void* const clientref)
                 CURL *easy = info->easy_handle;
                 struct NetworkInterface *interface = NULL;
 
-                LD_ASSERT(curl_easy_getinfo(easy, CURLINFO_RESPONSE_CODE, &responsecode) == CURLE_OK);
+                LD_ASSERT(curl_easy_getinfo(
+                    easy, CURLINFO_RESPONSE_CODE, &responsecode) == CURLE_OK);
 
-                LD_LOG(LD_LOG_INFO, "message done code %d %d", info->data.result, responsecode);
+                LD_LOG(LD_LOG_INFO, "message done code %d %d",
+                    info->data.result, responsecode);
 
-                LD_ASSERT(curl_easy_getinfo(easy, CURLINFO_PRIVATE, &interface) == CURLE_OK);
-                LD_ASSERT(interface); LD_ASSERT(interface->done); LD_ASSERT(interface->context);
+                LD_ASSERT(curl_easy_getinfo(
+                    easy, CURLINFO_PRIVATE, &interface) == CURLE_OK);
+
+                LD_ASSERT(interface);
+                LD_ASSERT(interface->done);
+                LD_ASSERT(interface->context);
+
                 interface->done(client, interface->context);
 
                 curl_multi_remove_handle(client->multihandle, easy);
@@ -136,7 +163,8 @@ LDi_networkthread(void* const clientref)
             }
         } while (info);
 
-        LD_ASSERT(curl_multi_wait(client->multihandle, NULL, 0, 5, &active_events) == CURLM_OK);
+        LD_ASSERT(curl_multi_wait(
+            client->multihandle, NULL, 0, 5, &active_events) == CURLM_OK);
 
         if (!active_events) {
             /* if curl is not doing anything wait so we don't burn CPU */
