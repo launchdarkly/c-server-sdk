@@ -5,40 +5,81 @@
 #include "ldevaluate.h"
 #include "ldoperators.h"
 
-static bool
-addReason(struct LDJSON *result, const char *const reason)
+struct LDJSON *
+addReason(struct LDJSON **const result, const char *const reason)
 {
     struct LDJSON *tmpcollection;
     struct LDJSON *tmp;
 
-    LD_ASSERT(result);
     LD_ASSERT(reason);
+
+    if (!(*result)) {
+        if (!(*result = LDNewObject())) {
+            LD_LOG(LD_LOG_ERROR, "allocation error");
+
+            return NULL;
+        }
+    }
 
     if (!(tmpcollection = LDNewObject())) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
-        return false;
+        return NULL;
     }
 
     if (!(tmp = LDNewText(reason))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
-        return false;
+        return NULL;
     }
 
     if (!(LDObjectSetKey(tmpcollection, "kind", tmp))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
-        return false;
+        return NULL;
     }
 
-    if (!(LDObjectSetKey(result, "reason", tmpcollection))) {
+    if (!(LDObjectSetKey(*result, "reason", tmpcollection))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
-        return false;
+        return NULL;
     }
 
-    return true;
+    return tmpcollection;
+}
+
+struct LDJSON *
+addErrorReason(struct LDJSON **const result, const char *const kind)
+{
+    struct LDJSON *tmpcollection;
+    struct LDJSON *tmp;
+
+    LD_ASSERT(result);
+    LD_ASSERT(kind);
+
+    if (!(tmpcollection = addReason(result, "ERROR"))) {
+        LD_LOG(LD_LOG_ERROR, "addReason failed");
+
+        return NULL;
+    }
+
+    if (!(tmp = LDNewText(kind))) {
+        LDJSONFree(tmpcollection);
+
+        LD_LOG(LD_LOG_ERROR, "allocation error");
+
+        return NULL;
+    }
+
+    if (!(LDObjectSetKey(tmpcollection, "kind", tmp))) {
+        LDJSONFree(tmpcollection);
+
+        LD_LOG(LD_LOG_ERROR, "failed to set key");
+
+        return NULL;
+    }
+
+    return tmpcollection;
 }
 
 static bool
@@ -137,12 +178,6 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     LD_ASSERT(store);
     LD_ASSERT(result);
 
-    if (!(*result = LDNewObject())) {
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        return false;
-    }
-
     if (LDJSONGetType(flag) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -166,7 +201,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
         const struct LDJSON *offVariation =
             LDObjectLookup(flag, "offVariation");
 
-        if (!addReason(*result, "OFF")) {
+        if (!addReason(result, "OFF")) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
             return false;
@@ -189,7 +224,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     }
 
     if (!submatch) {
-        if (!addReason(*result, "PREREQUISITE_FAILED")) {
+        if (!addReason(result, "PREREQUISITE_FAILED")) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
             return false;
@@ -228,7 +263,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
                 variation = LDObjectLookup(iter, "variation");
 
-                if (!addReason(*result, "TARGET_MATCH")) {
+                if (!addReason(result, "TARGET_MATCH")) {
                     LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
                     return false;
@@ -275,7 +310,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
                 variation = LDObjectLookup(iter, "variation");
 
-                if (!addReason(*result, "RULE_MATCH")) {
+                if (!addReason(result, "RULE_MATCH")) {
                     LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
                     return false;
@@ -301,7 +336,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
     fallthrough = LDObjectLookup(fallthrough, "variation");
 
-    if (!addReason(*result, "FALLTHROUGH")) {
+    if (!addReason(result, "FALLTHROUGH")) {
         LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
         return false;

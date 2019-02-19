@@ -14,32 +14,31 @@ struct LDStore;
 
 /* **** LDClient **** */
 
-struct LDVariationDetails { int placeholder; };
-
 struct LDClient *LDClientInit(struct LDConfig *const config,
     const unsigned int maxwaitmilli);
+
 void LDClientClose(struct LDClient *const client);
 
 bool LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const bool fallback,
-    struct LDVariationDetails *const details);
+    struct LDJSON **const details);
 
 int LDIntVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const int fallback,
-    struct LDVariationDetails *const details);
+    struct LDJSON **const details);
 
 double LDDoubleVariation(struct LDClient *const client,
     struct LDUser *const user, const char *const key, const double fallback,
-    struct LDVariationDetails *const details);
+    struct LDJSON **const details);
 
 char *LDStringVariation(struct LDClient *const client,
     struct LDUser *const user, const char *const key,
-    const char* const fallback, struct LDVariationDetails *const details);
+    const char* const fallback, struct LDJSON **const details);
 
 struct LDJSON *LDJSONVariation(struct LDClient *const client,
     struct LDUser *const user, const char *const key,
     const struct LDJSON *const fallback,
-    struct LDVariationDetails *const details);
+    struct LDJSON **const details);
 
 /* **** LDUtility **** */
 

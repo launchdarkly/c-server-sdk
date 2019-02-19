@@ -11,6 +11,11 @@
 #include "ldjson.h"
 #include "ldstore.h"
 
+struct LDJSON *addReason(struct LDJSON **const result, const char *const reason);
+
+struct LDJSON *addErrorReason(struct LDJSON **const result,
+    const char *const kind);
+
 bool evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     struct LDStore *const store, struct LDJSON **const result);
 
