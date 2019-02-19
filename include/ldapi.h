@@ -7,17 +7,9 @@
 #include "ldconfig.h"
 #include "lduser.h"
 #include "ldlogging.h"
+#include "ldclient.h"
 
-/* **** Forward Declarations **** */
-
-struct LDStore;
-
-/* **** LDClient **** */
-
-struct LDClient *LDClientInit(struct LDConfig *const config,
-    const unsigned int maxwaitmilli);
-
-void LDClientClose(struct LDClient *const client);
+/* **** LDVariations **** */
 
 bool LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const bool fallback,

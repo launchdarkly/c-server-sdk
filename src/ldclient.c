@@ -3,6 +3,7 @@
 
 #include "ldinternal.h"
 #include "ldstore.h"
+#include "ldclient.h"
 
 struct LDClient *
 LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
