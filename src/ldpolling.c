@@ -29,7 +29,8 @@ struct PollContext {
 };
 
 size_t
-WriteMemoryCallback(void *const contents, const size_t size, const size_t nmemb, void *const userp)
+WriteMemoryCallback(void *const contents, const size_t size,
+    const size_t nmemb, void *const userp)
 {
     const size_t realsize = size * nmemb;
     struct PollContext *const mem = (struct PollContext *)userp;
@@ -103,7 +104,8 @@ destroy(void *const rawcontext)
 static CURL *
 poll(struct LDClient *const client, void *const rawcontext)
 {
-    CURL *curl = NULL; char url[4096];
+    CURL *curl = NULL;
+    char url[4096];
 
     struct PollContext *const context = rawcontext;
 
@@ -126,7 +128,9 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     LD_LOG(LD_LOG_INFO, "poll!");
 
-    if (snprintf(url, sizeof(url), "%s/sdk/latest-all", client->config->baseURI) < 0) {
+    if (snprintf(url, sizeof(url), "%s/sdk/latest-all",
+        client->config->baseURI) < 0)
+    {
         LD_LOG(LD_LOG_CRITICAL, "snprintf usereport failed");
 
         return false;
@@ -138,8 +142,11 @@ poll(struct LDClient *const client, void *const rawcontext)
         goto error;
     }
 
-    if (curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback) != CURLE_OK) {
-        LD_LOG(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_WRITEFUNCTION failed");
+    if (curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback)
+        != CURLE_OK)
+    {
+        LD_LOG(LD_LOG_CRITICAL,
+            "curl_easy_setopt CURLOPT_WRITEFUNCTION failed");
 
         goto error;
     }
