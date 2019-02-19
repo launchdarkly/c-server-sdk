@@ -1,5 +1,6 @@
 #include "ldinternal.h"
 #include "ldevaluate.h"
+#include "ldvariations.h"
 
 static struct LDJSON *
 variation(struct LDClient *const client, const struct LDUser *const user,

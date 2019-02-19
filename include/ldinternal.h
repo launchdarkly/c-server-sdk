@@ -116,6 +116,8 @@ THREAD_RETURN LDi_networkthread(void *const clientref);
 bool sleepMilliseconds(const unsigned int milliseconds);
 bool getMonotonicMilliseconds(unsigned int *const resultMilliseconds);
 
+bool LDSetString(char **const target, const char *const value);
+
 #define LD_ASSERT(condition) \
     if (!(condition)) { \
         LDi_log(0, "LD_ASSERT failed: expected condition '%s' in function '%s' aborting\n", #condition, __func__); \
