@@ -41,7 +41,8 @@ struct LDHashSet;
 #endif
 
 bool LDi_jointhread(ld_thread_t thread);
-bool LDi_createthread(ld_thread_t *const thread, THREAD_RETURN (*const routine)(void *), void *const argument);
+bool LDi_createthread(ld_thread_t *const thread,
+    THREAD_RETURN (*const routine)(void *), void *const argument);
 
 bool LDi_rwlockinit(ld_rwlock_t *const lock);
 bool LDi_rwlockdestroy(ld_rwlock_t *const lock);
@@ -89,8 +90,11 @@ struct LDUser {
     struct LDJSON *custom; /* Object, may be NULL */
 };
 
-struct LDJSON *valueOfAttribute(const struct LDUser *const user, const char *const attribute);
-struct LDJSON *LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser, const bool redact);
+struct LDJSON *valueOfAttribute(const struct LDUser *const user,
+    const char *const attribute);
+
+struct LDJSON *LDUserToJSON(struct LDClient *const client,
+    struct LDUser *const lduser, const bool redact);
 
 /* **** LDClient **** */
 
@@ -118,8 +122,11 @@ bool getMonotonicMilliseconds(unsigned int *const resultMilliseconds);
 
 bool LDSetString(char **const target, const char *const value);
 
+#define ASSERT_FMT \
+    "LD_ASSERT failed: expected condition '%s' in function '%s' aborting\n"
+
 #define LD_ASSERT(condition) \
     if (!(condition)) { \
-        LDi_log(0, "LD_ASSERT failed: expected condition '%s' in function '%s' aborting\n", #condition, __func__); \
+        LDi_log(0, ASSERT_FMT, #condition, __func__); \
         abort(); \
     }
