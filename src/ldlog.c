@@ -4,7 +4,6 @@
 #include "ldlogging.h"
 #include "ldinternal.h"
 
-static ld_rwlock_t sdkloggerlock = LD_RWLOCK_INIT;
 static LDLogLevel sdkloggerlevel = LD_LOG_INFO;
 static void (*sdklogger)(const LDLogLevel level, const char *const text) = NULL;
 
@@ -34,16 +33,8 @@ void
 LDConfigureGlobalLogger(const LDLogLevel level,
     void (*logger)(const LDLogLevel level, const char *const text))
 {
-    if (!LDi_wrlock(&sdkloggerlock)) {
-        abort();
-    }
-
     sdklogger = logger;
     sdkloggerlevel = level;
-
-    if (!LDi_wrunlock(&sdkloggerlock)) {
-        abort();
-    }
 }
 
 void
@@ -53,15 +44,7 @@ LDi_log(const LDLogLevel level, const char *const format, ...)
 
     LD_ASSERT(format);
 
-    if (!LDi_rdlock(&sdkloggerlock)) {
-        abort();
-    }
-
     if (!sdklogger || level > sdkloggerlevel) {
-        if (!LDi_rdunlock(&sdkloggerlock)) {
-            abort();
-        }
-
         return;
     }
 
@@ -70,8 +53,4 @@ LDi_log(const LDLogLevel level, const char *const format, ...)
     va_end(va);
 
     sdklogger(level, buffer);
-
-    if (!LDi_rdunlock(&sdkloggerlock)) {
-        abort();
-    }
 }
