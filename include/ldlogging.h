@@ -18,14 +18,31 @@ typedef enum {
     LD_LOG_TRACE
 } LDLogLevel;
 
+/** @brief Internal: Used for the non macro portion */
 void LDi_log(const LDLogLevel level, const char *const format, ...);
 
+/** @brief A provided logger that can be used as a convenient default */
 void LDBasicLogger(const LDLogLevel level, const char *const text);
 
+/**
+ * @brief Set the logger, and the log level to use. This routine should only be
+ * used before any other LD routine. After any other routine has been used
+ * setting the logger is no longer a safe operation and may result in undefined
+ * behavior manifesting itself.
+ * @param[in] level The verbosity of logs to send to logger.
+ * @param[in] logger The new function to use for all future logging.
+ * @return Void.
+ */
 void LDConfigureGlobalLogger(const LDLogLevel level,
     void (*logger)(const LDLogLevel level, const char *const text));
 
 #define LD_LOG(level, format, ...) \
     LDi_log(level, "[%s, %d] " format, __FILE__, __LINE__, ##__VA_ARGS__)
 
+/**
+ * @brief Convert a verbosity level Enum value to an equivalent static string.
+ * This is intended as a convenience operation for building other loggers.
+ * @param[in] level The log level to convert.
+ * @return A static string on success, NULL on failure.
+ */
 const char *LDLogLevelToString(const LDLogLevel level);
