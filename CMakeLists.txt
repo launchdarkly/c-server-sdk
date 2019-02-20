@@ -3,13 +3,13 @@ find_package(CURL REQUIRED)
 
 enable_testing() # CTEST_OUTPUT_ON_FAILURE=1 make test
 
-set(CMAKE_C_FLAGS "-pedantic -Wall -Wextra -Werror -g3 -fsanitize=address -fno-omit-frame-pointer -Wno-pointer-to-int-cast -no-pie")
+set(CMAKE_C_FLAGS "-Wall -Wextra -Werror -g3 -fno-omit-frame-pointer -Wno-pointer-to-int-cast -no-pie -Wdeclaration-after-statement")
 
 include_directories("include" "third-party/include" ${CURL_INCLUDE_DIR})
 file(GLOB SOURCES "src/*" "third-party/src/*")
 
 add_library(sdk ${SOURCES})
-target_link_libraries(sdk asan ${CURL_LIBRARIES} pthread)
+target_link_libraries(sdk ${CURL_LIBRARIES} pthread)
 
 add_executable(main "src/main.c")
 target_link_libraries(main sdk)
