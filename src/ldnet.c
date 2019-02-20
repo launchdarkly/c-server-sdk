@@ -128,7 +128,7 @@ LDi_networkthread(void* const clientref)
                 if (curl_easy_setopt(
                     handle, CURLOPT_PRIVATE, interfaces[i]) != CURLE_OK)
                 {
-                    LD_LOG(LD_LOG_ERROR, "failed to associated context");
+                    LD_LOG(LD_LOG_ERROR, "failed to associate context");
 
                     return THREAD_RETURN_DEFAULT;
                 }
