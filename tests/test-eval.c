@@ -258,7 +258,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     struct LDStore *store;
     struct LDJSON *flag1;
     struct LDJSON *flag2;
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -305,7 +305,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     struct LDStore *store;
     struct LDJSON *flag1;
     struct LDJSON *flag2;
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -353,7 +353,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     struct LDStore *store;
     struct LDJSON *flag1;
     struct LDJSON *flag2;
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -399,7 +399,7 @@ testFlagMatchesUserFromTarget()
 {
     struct LDUser *user;
     struct LDJSON *flag;
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
 
     LD_ASSERT(user = LDUserNew("userkey"));
 
@@ -448,7 +448,7 @@ testFlagMatchesUserFromRules()
 {
     struct LDUser *user;
     struct LDJSON *flag;
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
     struct LDJSON *variation;
 
     LD_ASSERT(user = LDUserNew("userkey"));
@@ -475,7 +475,7 @@ testFlagMatchesUserFromRules()
 static void
 testClauseCanMatchBuiltInAttribute()
 {
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
@@ -509,7 +509,7 @@ testClauseCanMatchBuiltInAttribute()
 static void
 testClauseCanMatchCustomAttribute()
 {
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
@@ -546,7 +546,7 @@ testClauseCanMatchCustomAttribute()
 static void
 testClauseReturnsFalseForMissingAttribute()
 {
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
@@ -580,7 +580,7 @@ testClauseReturnsFalseForMissingAttribute()
 static void
 testClauseCanBeNegated()
 {
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
@@ -615,7 +615,7 @@ testClauseCanBeNegated()
 static void
 testClauseForMissingAttributeIsFalseEvenIfNegate()
 {
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
@@ -650,7 +650,7 @@ testClauseForMissingAttributeIsFalseEvenIfNegate()
 static void
 testClauseWithUnknownOperatorDoesNotMatch()
 {
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
@@ -688,7 +688,7 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
     struct LDStore *store;
     struct LDJSON *segment;
     struct LDJSON *flag;
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
     struct LDJSON *included;
     struct LDJSON *values;
     struct LDJSON *clause;
@@ -736,7 +736,7 @@ testSegmentMatchClauseFallsThroughIfSegmentNotFound()
     struct LDUser *user;
     struct LDStore *store;
     struct LDJSON *flag;
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
     struct LDJSON *values;
     struct LDJSON *clause;
 
@@ -775,7 +775,7 @@ testCanMatchJustOneSegmentFromList()
     struct LDStore *store;
     struct LDJSON *segment;
     struct LDJSON *flag;
-    struct LDJSON *result;
+    struct LDJSON *result = NULL;
     struct LDJSON *included;
     struct LDJSON *values;
     struct LDJSON *clause;
