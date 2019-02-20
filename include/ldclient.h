@@ -12,3 +12,5 @@ struct LDClient *LDClientInit(struct LDConfig *const config,
     const unsigned int maxwaitmilli);
 
 void LDClientClose(struct LDClient *const client);
+
+bool LDClientIsInitialized(struct LDClient *const client);

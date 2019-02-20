@@ -101,3 +101,11 @@ LDClientClose(struct LDClient *const client)
         free(client);
     }
 }
+
+bool
+LDClientIsInitialized(struct LDClient *const client)
+{
+    LD_ASSERT(client);
+
+    return LDStoreInitialized(client->config->store);
+}

@@ -22,6 +22,16 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto fallback;
     }
 
+    if (!LDClientIsInitialized(client)) {
+        if (!addErrorReason(details, "CLIENT_NOT_READY")) {
+            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
+
+            goto error;
+        }
+
+        goto fallback;
+    }
+
     if (!key) {
         if (!addErrorReason(details, "NULL_KEY")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
