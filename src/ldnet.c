@@ -125,11 +125,21 @@ LDi_networkthread(void* const clientref)
                 interfaces[i]->poll(client, interfaces[i]->context);
 
             if (handle) {
-                LD_ASSERT(curl_easy_setopt(
-                    handle, CURLOPT_PRIVATE, interfaces[i]) == CURLE_OK);
+                if (curl_easy_setopt(
+                    handle, CURLOPT_PRIVATE, interfaces[i]) != CURLE_OK)
+                {
+                    LD_LOG(LD_LOG_ERROR, "failed to associated context");
 
-                LD_ASSERT(curl_multi_add_handle(
-                    client->multihandle, handle) == CURLM_OK);
+                    return THREAD_RETURN_DEFAULT;
+                }
+
+                if (curl_multi_add_handle(
+                    client->multihandle, handle) != CURLM_OK)
+                {
+                    LD_LOG(LD_LOG_ERROR, "failed to add handle");
+
+                    return THREAD_RETURN_DEFAULT;
+                }
             }
         }
 
@@ -143,14 +153,24 @@ LDi_networkthread(void* const clientref)
                 CURL *easy = info->easy_handle;
                 struct NetworkInterface *interface = NULL;
 
-                LD_ASSERT(curl_easy_getinfo(
-                    easy, CURLINFO_RESPONSE_CODE, &responsecode) == CURLE_OK);
+                if (curl_easy_getinfo(
+                    easy, CURLINFO_RESPONSE_CODE, &responsecode) != CURLE_OK)
+                {
+                    LD_LOG(LD_LOG_ERROR, "failed to get response code");
+
+                    return THREAD_RETURN_DEFAULT;
+                }
 
                 LD_LOG(LD_LOG_INFO, "message done code %d %d",
                     info->data.result, responsecode);
 
-                LD_ASSERT(curl_easy_getinfo(
-                    easy, CURLINFO_PRIVATE, &interface) == CURLE_OK);
+                if (curl_easy_getinfo(
+                    easy, CURLINFO_PRIVATE, &interface) != CURLE_OK)
+                {
+                    LD_LOG(LD_LOG_ERROR, "failed to get context");
+
+                    return THREAD_RETURN_DEFAULT;
+                }
 
                 LD_ASSERT(interface);
                 LD_ASSERT(interface->done);
@@ -163,8 +183,13 @@ LDi_networkthread(void* const clientref)
             }
         } while (info);
 
-        LD_ASSERT(curl_multi_wait(
-            client->multihandle, NULL, 0, 5, &active_events) == CURLM_OK);
+        if (curl_multi_wait(
+            client->multihandle, NULL, 0, 5, &active_events) != CURLM_OK)
+        {
+            LD_LOG(LD_LOG_ERROR, "failed to wait on handles");
+
+            return THREAD_RETURN_DEFAULT;
+        }
 
         if (!active_events) {
             /* if curl is not doing anything wait so we don't burn CPU */
