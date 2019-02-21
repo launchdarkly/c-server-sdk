@@ -1,6 +1,8 @@
 #include "ldinternal.h"
 #include "ldoperators.h"
 
+#include "semver.h"
+
 #include <time.h>
 #include <regex.h>
 
@@ -210,6 +212,58 @@ operatorAfter(const struct LDJSON *const uvalue,
     return compareTime(uvalue, cvalue, fnGT);
 }
 
+static bool
+compareSemVer(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue, int (*op)(semver_t, semver_t))
+{
+    bool result;
+
+    semver_t usem = {};
+    semver_t csem = {};
+
+    CHECKSTRING(uvalue, cvalue);
+
+    if (semver_parse(LDGetText(uvalue), &usem)) {
+        LD_LOG(LD_LOG_ERROR, "failed to parse uvalue");
+
+        return false;
+    }
+
+    if (semver_parse(LDGetText(cvalue), &csem)) {
+        LD_LOG(LD_LOG_ERROR, "failed to parse cvalue");
+
+        return false;
+    }
+
+    result = op(usem, csem);
+
+    semver_free(&usem);
+    semver_free(&csem);
+
+    return result;
+}
+
+static bool
+operatorSemVerEqual(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue)
+{
+    return compareSemVer(uvalue, cvalue, semver_eq);
+}
+
+static bool
+operatorSemVerLessThan(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue)
+{
+    return compareSemVer(uvalue, cvalue, semver_lt);
+}
+
+static bool
+operatorSemVerGreaterThan(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue)
+{
+    return compareSemVer(uvalue, cvalue, semver_gt);
+}
+
 OpFn
 lookupOperation(const char *const operation)
 {
@@ -237,6 +291,12 @@ lookupOperation(const char *const operation)
         return operatorBefore;
     } else if (strcmp(operation, "after") == 0) {
         return operatorAfter;
+    } else if (strcmp(operation, "semVerEqual") == 0) {
+        return operatorSemVerEqual;
+    } else if (strcmp(operation, "semVerLessThan") == 0) {
+        return operatorSemVerLessThan;
+    } else if (strcmp(operation, "semVerGreaterThan") == 0) {
+        return operatorSemVerGreaterThan;
     }
 
     return NULL;
