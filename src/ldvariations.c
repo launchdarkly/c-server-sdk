@@ -7,7 +7,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     const char *const key, struct LDJSON *const fallback,
     const LDJSONType type, struct LDJSON **const reason)
 {
-    bool status;
+    EvalStatus status;
     struct LDJSON *flag;
     struct LDJSON *value;
     struct LDStore *store;
@@ -69,7 +69,21 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     status = evaluate(flag, user, store, &details);
 
-    if (!status) {
+    if (status == EVAL_MEM) {
+        goto error;
+    }
+
+    if (status == EVAL_SCHEMA) {
+        if (!addErrorReason(&details, "MALFORMED_FLAG")) {
+            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
+
+            goto error;
+        }
+
+        goto fallback;
+    }
+
+    if (status != EVAL_MATCH) {
         goto fallback;
     }
 
