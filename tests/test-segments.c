@@ -3,6 +3,21 @@
 #include "ldinternal.h"
 #include "ldevaluate.h"
 
+static struct LDJSON *
+makeTestSegment(struct LDJSON *const rules)
+{
+    struct LDJSON *segment;
+
+    LD_ASSERT(segment = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("test")));
+    LD_ASSERT(LDObjectSetKey(segment, "salt", LDNewText("abcdef")));
+    LD_ASSERT(LDObjectSetKey(segment, "rules", rules));
+    LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
+
+    return segment;
+}
+
 static void
 testExplicitIncludeUser()
 {
@@ -123,12 +138,7 @@ testMatchingRuleWithFullRollout()
     LD_ASSERT(rules = LDNewArray());
     LD_ASSERT(LDArrayAppend(rules, rule));
 
-    LD_ASSERT(segment = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("test")));
-    LD_ASSERT(LDObjectSetKey(segment, "salt", LDNewText("abcdef")));
-    LD_ASSERT(LDObjectSetKey(segment, "rules", rules));
-    LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
+    LD_ASSERT(segment = makeTestSegment(rules));
 
     /* run */
     LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MATCH);
@@ -171,12 +181,7 @@ testMatchingRuleWithZeroRollout()
     LD_ASSERT(rules = LDNewArray());
     LD_ASSERT(LDArrayAppend(rules, rule));
 
-    LD_ASSERT(segment = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("test")));
-    LD_ASSERT(LDObjectSetKey(segment, "salt", LDNewText("abcdef")));
-    LD_ASSERT(LDObjectSetKey(segment, "rules", rules));
-    LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
+    LD_ASSERT(segment = makeTestSegment(rules));
 
     /* run */
     LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MISS);
@@ -231,12 +236,7 @@ testMatchingRuleWithMultipleClauses()
     LD_ASSERT(rules = LDNewArray());
     LD_ASSERT(LDArrayAppend(rules, rule));
 
-    LD_ASSERT(segment = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("test")));
-    LD_ASSERT(LDObjectSetKey(segment, "salt", LDNewText("abcdef")));
-    LD_ASSERT(LDObjectSetKey(segment, "rules", rules));
-    LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
+    LD_ASSERT(segment = makeTestSegment(rules));
 
     /* run */
     LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MATCH);
@@ -291,12 +291,7 @@ testNonMatchingRuleWithMultipleClauses()
     LD_ASSERT(rules = LDNewArray());
     LD_ASSERT(LDArrayAppend(rules, rule));
 
-    LD_ASSERT(segment = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("test")));
-    LD_ASSERT(LDObjectSetKey(segment, "salt", LDNewText("abcdef")));
-    LD_ASSERT(LDObjectSetKey(segment, "rules", rules));
-    LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
+    LD_ASSERT(segment = makeTestSegment(rules));
 
     /* run */
     LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MISS);
