@@ -653,89 +653,95 @@ segmentMatchesUser(const struct LDJSON *const segment,
     const struct LDJSON *included = NULL;
     const struct LDJSON *excluded = NULL;
 
+    const struct LDJSON *segmentRules = NULL;
+    const struct LDJSON *iter = NULL;
+
     LD_ASSERT(segment);
     LD_ASSERT(user);
 
-    if (!(included = LDObjectLookup(segment, "included"))) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        return EVAL_SCHEMA;
-    }
-
-    if (LDJSONGetType(included) != LDArray) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        return EVAL_SCHEMA;
-    }
-
-    if (textInArray(included, user->key)) {
-        return EVAL_MATCH;
-    } else if (textInArray(excluded, user->key)) {
-        return EVAL_MISS;
-    } else {
-        const struct LDJSON *segmentRules = NULL;
-        const struct LDJSON *iter = NULL;
-
-        if (!(segmentRules = LDObjectLookup(segment, "included"))) {
+    if ((included = LDObjectLookup(segment, "included"))) {
+        if (LDJSONGetType(included) != LDArray) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
             return EVAL_SCHEMA;
         }
 
-        if (LDJSONGetType(segmentRules) != LDArray) {
+        if (textInArray(included, user->key)) {
+            return EVAL_MATCH;
+        }
+    }
+
+    if ((excluded = LDObjectLookup(segment, "excluded"))) {
+        if (LDJSONGetType(excluded) != LDArray) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
             return EVAL_SCHEMA;
         }
 
-        for (iter = LDGetIter(segmentRules); iter; iter = LDIterNext(iter)) {
-            const struct LDJSON *key = NULL;
-            const struct LDJSON *salt = NULL;
-            EvalStatus substatus;
+        if (textInArray(excluded, user->key)) {
+            return EVAL_MISS;
+        }
+    }
 
-            if (LDJSONGetType(iter) != LDObject) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
+    if (!(segmentRules = LDObjectLookup(segment, "rules"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return EVAL_SCHEMA;
-            }
+        return EVAL_SCHEMA;
+    }
 
-            if (!(key = LDObjectLookup(iter, "key"))) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
+    if (LDJSONGetType(segmentRules) != LDArray) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return EVAL_SCHEMA;
-            }
+        return EVAL_SCHEMA;
+    }
 
-            if (LDJSONGetType(key) != LDText) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
+    for (iter = LDGetIter(segmentRules); iter; iter = LDIterNext(iter)) {
+        const struct LDJSON *key = NULL;
+        const struct LDJSON *salt = NULL;
+        EvalStatus substatus;
 
-                return EVAL_SCHEMA;
-            }
+        if (LDJSONGetType(iter) != LDObject) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
 
-            if (!(salt = LDObjectLookup(iter, "salt"))) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
-
-                return EVAL_SCHEMA;
-            }
-
-            if (LDJSONGetType(salt) != LDText) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
-
-                return EVAL_SCHEMA;
-            }
-
-            if (isEvalError(substatus = segmentRuleMatchUser(iter,
-                LDGetText(key), user, LDGetText(salt))))
-            {
-                return substatus;
-            }
-
-            if (substatus == EVAL_MATCH) {
-                return EVAL_MATCH;
-            }
+            return EVAL_SCHEMA;
         }
 
-        return EVAL_MISS;
+        if (!(key = LDObjectLookup(iter, "key"))) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return EVAL_SCHEMA;
+        }
+
+        if (LDJSONGetType(key) != LDText) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return EVAL_SCHEMA;
+        }
+
+        if (!(salt = LDObjectLookup(iter, "salt"))) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return EVAL_SCHEMA;
+        }
+
+        if (LDJSONGetType(salt) != LDText) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return EVAL_SCHEMA;
+        }
+
+        if (isEvalError(substatus = segmentRuleMatchUser(iter,
+            LDGetText(key), user, LDGetText(salt))))
+        {
+            return substatus;
+        }
+
+        if (substatus == EVAL_MATCH) {
+            return EVAL_MATCH;
+        }
     }
+
+    return EVAL_MISS;
 }
 
 EvalStatus
