@@ -5,6 +5,12 @@
 #include "ldevaluate.h"
 #include "ldoperators.h"
 
+bool
+isEvalError(const EvalStatus status)
+{
+    return status == EVAL_MEM || status == EVAL_SCHEMA || status == EVAL_STORE;
+}
+
 struct LDJSON *
 addReason(struct LDJSON **const result, const char *const reason)
 {
@@ -162,11 +168,11 @@ addValue(const struct LDJSON *const flag, struct LDJSON *result,
     return true;
 }
 
-bool
+EvalStatus
 evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     struct LDStore *const store, struct LDJSON **const result)
 {
-    bool submatch;
+    EvalStatus substatus;
     const struct LDJSON *iter;
     const struct LDJSON *rules;
     const struct LDJSON *targets;
@@ -181,20 +187,20 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     if (LDJSONGetType(flag) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     /* on */
     if (!(on = LDObjectLookup(flag, "on"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (LDJSONGetType(on) != LDBool) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (!LDGetBool(on)) {
@@ -204,39 +210,39 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
         if (!addReason(result, "OFF")) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
-            return false;
+            return EVAL_MEM;
         }
 
         if (!(addValue(flag, *result, offVariation))) {
             LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-            return false;
+            return EVAL_MEM;
         }
 
         return true;
     }
 
     /* prerequisites */
-    if (!checkPrerequisites(flag, user, store, &submatch)) {
+    if (isEvalError(substatus = checkPrerequisites(flag, user, store))) {
         LD_LOG(LD_LOG_ERROR, "sub error error");
 
-        return false;
+        return substatus;
     }
 
-    if (!submatch) {
+    if (substatus == EVAL_MISS) {
         if (!addReason(result, "PREREQUISITE_FAILED")) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
-            return false;
+            return EVAL_MEM;
         }
 
         if (!(addValue(flag, *result, LDObjectLookup(flag, "offVariation")))) {
             LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-            return false;
+            return EVAL_MEM;
         }
 
-        return true;
+        return EVAL_MISS;
     }
 
     /* targets */
@@ -245,7 +251,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     if (targets && LDJSONGetType(targets) != LDArray) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (targets) {
@@ -266,16 +272,16 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
                 if (!addReason(result, "TARGET_MATCH")) {
                     LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
-                    return false;
+                    return EVAL_MEM;
                 }
 
                 if (!(addValue(flag, *result, variation))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-                    return false;
+                    return EVAL_MEM;
                 }
 
-                return true;
+                return EVAL_MATCH;
             }
         }
     }
@@ -286,26 +292,26 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     if (rules && LDJSONGetType(rules) != LDArray) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (rules && LDArrayGetSize(rules) != 0) {
         for (iter = LDGetIter(rules); iter; iter = LDIterNext(iter)) {
-            bool submatch;
+            EvalStatus substatus;
 
             if (LDJSONGetType(iter) != LDObject) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
-            if (!ruleMatchesUser(iter, user, store, &submatch)) {
+            if (isEvalError(substatus = ruleMatchesUser(iter, user, store))) {
                 LD_LOG(LD_LOG_ERROR, "sub error");
 
-                return false;
+                return substatus;
             }
 
-            if (submatch) {
+            if (substatus == EVAL_MATCH) {
                 const struct LDJSON *variation = NULL;
 
                 variation = LDObjectLookup(iter, "variation");
@@ -313,16 +319,16 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
                 if (!addReason(result, "RULE_MATCH")) {
                     LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
-                    return false;
+                    return EVAL_MEM;
                 }
 
                 if (!(addValue(flag, *result, variation))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-                    return false;
+                    return EVAL_MEM;
                 }
 
-                return true;
+                return EVAL_MATCH;
             }
         }
     }
@@ -331,7 +337,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     if (!(fallthrough = LDObjectLookup(flag, "fallthrough"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     fallthrough = LDObjectLookup(fallthrough, "variation");
@@ -339,22 +345,21 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     if (!addReason(result, "FALLTHROUGH")) {
         LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
-        return false;
+        return EVAL_MEM;
     }
 
     if (!(addValue(flag, *result, fallthrough))) {
         LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-        return false;
+        return EVAL_MEM;
     }
 
-    return true;
+    return EVAL_MATCH;
 }
 
-bool
+EvalStatus
 checkPrerequisites(const struct LDJSON *const flag,
-    const struct LDUser *const user, struct LDStore *const store,
-    bool *const matches)
+    const struct LDUser *const user, struct LDStore *const store)
 {
     struct LDJSON *prerequisites = NULL;
     struct LDJSON *iter = NULL;
@@ -362,26 +367,23 @@ checkPrerequisites(const struct LDJSON *const flag,
     LD_ASSERT(flag);
     LD_ASSERT(user);
     LD_ASSERT(store);
-    LD_ASSERT(matches);
 
     if (LDJSONGetType(flag) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     prerequisites = LDObjectLookup(flag, "prerequisites");
 
     if (!prerequisites) {
-        *matches = true;
-
-        return true;
+        return EVAL_MATCH;
     }
 
     if (LDJSONGetType(prerequisites) != LDArray) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     for (iter = LDGetIter(prerequisites); iter; iter = LDIterNext(iter)) {
@@ -393,40 +395,40 @@ checkPrerequisites(const struct LDJSON *const flag,
         if (LDJSONGetType(iter) != LDObject) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
         if (!(key = LDObjectLookup(iter, "key"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
         if (LDJSONGetType(key) != LDText) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
         if (!(variation = LDObjectLookup(iter, "variation"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
         if (LDJSONGetType(variation) != LDNumber) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
         if (!(preflag = LDStoreGet(store, "flags", LDGetText(key)))) {
             LD_LOG(LD_LOG_ERROR, "store lookup error");
 
-            return false;
+            return EVAL_STORE;
         }
 
-        if (!evaluate(preflag, user, store, &result)) {
+        if (evaluate(preflag, user, store, &result) != EVAL_MATCH) {
             LDJSONFree(preflag);
 
             return false;
@@ -448,7 +450,7 @@ checkPrerequisites(const struct LDJSON *const flag,
 
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
             if (LDJSONGetType(on) != LDBool) {
@@ -457,7 +459,7 @@ checkPrerequisites(const struct LDJSON *const flag,
 
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
             if (!(variationIndex = LDObjectLookup(result, "variationIndex"))) {
@@ -466,7 +468,7 @@ checkPrerequisites(const struct LDJSON *const flag,
 
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
             if (LDJSONGetType(variationIndex) != LDNumber) {
@@ -475,7 +477,7 @@ checkPrerequisites(const struct LDJSON *const flag,
 
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
             if (!LDGetBool(on) ||
@@ -484,9 +486,7 @@ checkPrerequisites(const struct LDJSON *const flag,
                 LDJSONFree(preflag);
                 LDJSONFree(result);
 
-                *matches = false;
-
-                return true;
+                return EVAL_MISS;
             }
         }
 
@@ -494,66 +494,57 @@ checkPrerequisites(const struct LDJSON *const flag,
         LDJSONFree(result);
     }
 
-    *matches = true;
-
-    return true;
+    return EVAL_MATCH;
 }
 
-bool
+EvalStatus
 ruleMatchesUser(const struct LDJSON *const rule,
-    const struct LDUser *const user, struct LDStore *const store,
-    bool *const matches)
+    const struct LDUser *const user, struct LDStore *const store)
 {
     const struct LDJSON *clauses = NULL;
     const struct LDJSON *iter = NULL;
 
     LD_ASSERT(rule);
     LD_ASSERT(user);
-    LD_ASSERT(matches);
 
     if (!(clauses = LDObjectLookup(rule, "clauses"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (LDJSONGetType(clauses) != LDArray) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     for (iter = LDGetIter(clauses); iter; iter = LDIterNext(iter)) {
-        bool submatch;
+        EvalStatus substatus;
 
         if (LDJSONGetType(iter) != LDObject) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
-        if (!clauseMatchesUser(iter, user, store, &submatch)) {
+        if (isEvalError(substatus = clauseMatchesUser(iter, user, store))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return substatus;
         }
 
-        if (!submatch) {
-            *matches = false;
-
-            return true;
+        if (substatus == EVAL_MISS) {
+            return EVAL_MISS;
         }
     }
 
-    *matches = true;
-
-    return true;
+    return EVAL_MATCH;
 }
 
-bool
+EvalStatus
 clauseMatchesUser(const struct LDJSON *const clause,
-    const struct LDUser *const user, struct LDStore *const store,
-    bool *const matches)
+    const struct LDUser *const user, struct LDStore *const store)
 {
     const struct LDJSON *op = NULL;
 
@@ -563,19 +554,19 @@ clauseMatchesUser(const struct LDJSON *const clause,
     if (LDJSONGetType(clause) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (!(op = LDObjectLookup(clause, "op"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (LDJSONGetType(op) != LDText) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (strcmp(LDGetText(op), "segmentMatch") == 0) {
@@ -587,20 +578,20 @@ clauseMatchesUser(const struct LDJSON *const clause,
         if (!(values = LDObjectLookup(clause, "values"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
         if (LDJSONGetType(values) != LDArray) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
         if ((negateJSON = LDObjectLookup(clause, "negate"))) {
             if (LDJSONGetType(negateJSON) != LDBool) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
             negate = LDGetBool(negateJSON);
@@ -610,10 +601,12 @@ clauseMatchesUser(const struct LDJSON *const clause,
 
         for (iter = LDGetIter(values); iter; iter = LDIterNext(iter)) {
             if (LDJSONGetType(iter) == LDText) {
-                bool submatch;
+                EvalStatus evalstatus;
                 const struct LDJSON *segment;
 
-                if (!(segment = LDStoreGet(store, "segments", LDGetText(iter)))) {
+                segment = LDStoreGet(store, "segments", LDGetText(iter));
+
+                if (!segment) {
                     LD_LOG(LD_LOG_WARNING, "store lookup error");
 
                     continue;
@@ -621,49 +614,41 @@ clauseMatchesUser(const struct LDJSON *const clause,
 
                 anysuccess = true;
 
-                if (!segmentMatchesUser(segment, user, &submatch)) {
+                if (isEvalError(
+                    evalstatus = segmentMatchesUser(segment, user)))
+                {
                     LD_LOG(LD_LOG_ERROR, "sub error");
 
-                    return false;
+                    return evalstatus;
                 }
 
-                if (submatch) {
-                    *matches = negate ? false : true;
-
-                    return true;
+                if (evalstatus == EVAL_MATCH) {
+                    if (!negate) {
+                        return EVAL_MATCH;
+                    } else {
+                        return EVAL_MISS;
+                    }
                 }
             }
         }
 
         if (!anysuccess && LDGetIter(values)) {
-            *matches = false;
-
-            return true;
+            return EVAL_MISS;
         }
 
-        *matches = negate ? true : true;
-
-        return true;
-    }
-
-    {
-        bool submatch;
-
-        if (!clauseMatchesUserNoSegments(clause, user, &submatch)) {
-            LD_LOG(LD_LOG_ERROR, "sub error");
-
-            return false;
+        if (!negate) {
+            return EVAL_MATCH;
+        } else {
+            return EVAL_MISS;
         }
-
-        *matches = submatch;
-
-        return true;
     }
+
+    return clauseMatchesUserNoSegments(clause, user);
 }
 
-bool
+EvalStatus
 segmentMatchesUser(const struct LDJSON *const segment,
-    const struct LDUser *const user, bool *const matches)
+    const struct LDUser *const user)
 {
     const struct LDJSON *included = NULL;
     const struct LDJSON *excluded = NULL;
@@ -674,23 +659,19 @@ segmentMatchesUser(const struct LDJSON *const segment,
     if (!(included = LDObjectLookup(segment, "included"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (LDJSONGetType(included) != LDArray) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (textInArray(included, user->key)) {
-        *matches = true;
-
-        return true;
+        return EVAL_MATCH;
     } else if (textInArray(excluded, user->key)) {
-        *matches = false;
-
-        return true;
+        return EVAL_MISS;
     } else {
         const struct LDJSON *segmentRules = NULL;
         const struct LDJSON *iter = NULL;
@@ -698,73 +679,69 @@ segmentMatchesUser(const struct LDJSON *const segment,
         if (!(segmentRules = LDObjectLookup(segment, "included"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
         if (LDJSONGetType(segmentRules) != LDArray) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
         for (iter = LDGetIter(segmentRules); iter; iter = LDIterNext(iter)) {
             const struct LDJSON *key = NULL;
             const struct LDJSON *salt = NULL;
-            bool submatches;
+            EvalStatus substatus;
 
             if (LDJSONGetType(iter) != LDObject) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
             if (!(key = LDObjectLookup(iter, "key"))) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
             if (LDJSONGetType(key) != LDText) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
             if (!(salt = LDObjectLookup(iter, "salt"))) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
             if (LDJSONGetType(salt) != LDText) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
-            if (!segmentRuleMatchUser(iter, LDGetText(key), user,
-                LDGetText(salt), &submatches))
+            if (isEvalError(substatus = segmentRuleMatchUser(iter,
+                LDGetText(key), user, LDGetText(salt))))
             {
-                return false;
+                return substatus;
             }
 
-            if (submatches) {
-                *matches = submatches;
-
-                return true;
+            if (substatus == EVAL_MATCH) {
+                return EVAL_MATCH;
             }
         }
 
-        *matches = false;
-
-        return true;
+        return EVAL_MISS;
     }
 }
 
-bool
+EvalStatus
 segmentRuleMatchUser(const struct LDJSON *const segmentRule,
     const char *const segmentKey, const struct LDUser *const user,
-    const char *const salt, bool *const matches)
+    const char *const salt)
 {
     const struct LDJSON *clauses = NULL;
     const struct LDJSON *clause = NULL;
@@ -773,31 +750,30 @@ segmentRuleMatchUser(const struct LDJSON *const segmentRule,
     LD_ASSERT(segmentKey);
     LD_ASSERT(user);
     LD_ASSERT(salt);
-    LD_ASSERT(matches);
 
     if (!(clauses = LDObjectLookup(segmentRule, "clauses"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (LDJSONGetType(clauses) != LDArray) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     for (clause = LDGetIter(clauses); clause; clause = LDIterNext(clause)) {
-        bool submatches;
+        EvalStatus substatus;
 
-        if (!clauseMatchesUserNoSegments(clause, user, &submatches)) {
-            return false;
+        if (isEvalError(substatus =
+            clauseMatchesUserNoSegments(clause, user)))
+        {
+            return substatus;
         }
 
-        if (!submatches) {
-            *matches = false;
-
-            return true;
+        if (substatus == EVAL_MISS) {
+            return substatus = EVAL_MISS;
         }
     }
 
@@ -805,13 +781,13 @@ segmentRuleMatchUser(const struct LDJSON *const segmentRule,
         const struct LDJSON *weight = LDObjectLookup(segmentRule, "weight");
 
         if (!weight) {
-            return true;
+            return EVAL_MATCH;
         }
 
         if (LDJSONGetType(weight) != LDNumber) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
         {
@@ -826,43 +802,40 @@ segmentRuleMatchUser(const struct LDJSON *const segmentRule,
             if (!bucketUser(user, segmentKey, attribute, salt, &bucket)) {
                 LD_LOG(LD_LOG_ERROR, "bucketUser error");
 
-                return false;
+                return EVAL_MEM;
             }
 
-            *matches = bucket < LDGetNumber(weight) / 100000;
-
-            return true;
+            if (bucket < LDGetNumber(weight) / 100000) {
+                return EVAL_MATCH;
+            } else {
+                return EVAL_MISS;
+            }
         }
     }
 }
 
-bool
+EvalStatus
 matchAny(OpFn f, const struct LDJSON *const value,
-    const struct LDJSON *const values, bool *const matches)
+    const struct LDJSON *const values)
 {
     const struct LDJSON *iter;
 
     LD_ASSERT(f);
     LD_ASSERT(value);
     LD_ASSERT(values);
-    LD_ASSERT(matches);
 
     for (iter = LDGetIter(values); iter; iter = LDIterNext(iter)) {
         if (f(value, iter)) {
-            *matches = true;
-
-            return true;
+            return EVAL_MATCH;
         }
     }
 
-    *matches = false;
-
-    return true;
+    return EVAL_MISS;
 }
 
-bool
+EvalStatus
 clauseMatchesUserNoSegments(const struct LDJSON *const clause,
-    const struct LDUser *const user, bool *const matches)
+    const struct LDUser *const user)
 {
     OpFn fn;
     const char *operatorText;
@@ -881,50 +854,50 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     if (!(attribute = LDObjectLookup(clause, "attribute"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (LDJSONGetType(attribute) != LDText) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (!(attributeText = LDGetText(attribute))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (!(operator = LDObjectLookup(clause, "op"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (LDJSONGetType(operator) != LDText) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_SCHEMA;
     }
 
     if (!(operatorText = LDGetText(operator))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
-        return false;
+        return EVAL_MEM;
     }
 
     if (!(values = LDObjectLookup(clause, "values"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return EVAL_MEM;
     }
 
     if ((negateJSON = LDObjectLookup(clause, "negate"))) {
         if (LDJSONGetType(negateJSON) != LDBool) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return EVAL_SCHEMA;
         }
 
         negate = LDGetBool(negateJSON);
@@ -935,15 +908,11 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     if (!(fn = lookupOperation(operatorText))) {
         LD_LOG(LD_LOG_WARNING, "unknown operator");
 
-        *matches = false;
-
-        return true;
+        return EVAL_SCHEMA;
     }
 
     if (!(attributeValue = valueOfAttribute(user, attributeText))) {
-        *matches = false;
-
-        return true;
+        return EVAL_MISS;
     }
 
     type = LDJSONGetType(attributeValue);
@@ -952,7 +921,7 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
         struct LDJSON *iter = LDGetIter(attributeValue);
 
         for (; iter; iter = LDIterNext(iter)) {
-            bool submatch;
+            EvalStatus substatus;
 
             type = LDJSONGetType(iter);
 
@@ -961,47 +930,53 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
 
                 LDJSONFree(attributeValue);
 
-                return false;
+                return EVAL_SCHEMA;
             }
 
-            if (!matchAny(fn, iter, values, &submatch)) {
+            if (isEvalError(substatus = matchAny(fn, iter, values))) {
                 LD_LOG(LD_LOG_ERROR, "sub error");
 
                 LDJSONFree(attributeValue);
 
-                return false;
+                return substatus;
             }
 
-            if (submatch) {
+            if (substatus == EVAL_MATCH) {
                 LDJSONFree(attributeValue);
 
-                *matches = negate ? false : true;
-
-                return true;
+                if (!negate) {
+                    return EVAL_MATCH;
+                } else {
+                    return EVAL_MISS;
+                }
             }
         }
 
         LDJSONFree(attributeValue);
 
-        *matches = negate ? false : true;
-
-        return true;
+        if (!negate) {
+            return EVAL_MATCH;
+        } else {
+            return EVAL_MISS;
+        }
     } else {
-        bool submatch;
+        EvalStatus substatus;
 
-        if (!matchAny(fn, attributeValue, values, &submatch)) {
+        if (isEvalError(substatus = matchAny(fn, attributeValue, values))) {
             LD_LOG(LD_LOG_ERROR, "sub error");
 
             LDJSONFree(attributeValue);
 
-            return false;
+            return substatus;
         }
 
         LDJSONFree(attributeValue);
 
-        *matches = negate ? !submatch : submatch;
-
-        return true;
+        if (negate ? !(substatus == EVAL_MATCH) : (substatus == EVAL_MATCH)) {
+            return EVAL_MATCH;
+        } else {
+            return EVAL_MISS;
+        }
     }
 }
 

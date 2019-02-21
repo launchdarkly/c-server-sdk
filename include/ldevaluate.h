@@ -11,35 +11,44 @@
 #include "ldjson.h"
 #include "ldstore.h"
 
-struct LDJSON *addReason(struct LDJSON **const result, const char *const reason);
+typedef enum {
+    EVAL_MEM,
+    EVAL_SCHEMA,
+    EVAL_STORE,
+    EVAL_MATCH,
+    EVAL_MISS
+} EvalStatus;
+
+bool isEvalError(const EvalStatus status);
+
+struct LDJSON *addReason(struct LDJSON **const result,
+    const char *const reason);
 
 struct LDJSON *addErrorReason(struct LDJSON **const result,
     const char *const kind);
 
-bool evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
-    struct LDStore *const store, struct LDJSON **const result);
-
-bool checkPrerequisites(const struct LDJSON *const flag,
+EvalStatus evaluate(const struct LDJSON *const flag,
     const struct LDUser *const user, struct LDStore *const store,
-    bool *const matches);
+    struct LDJSON **const result);
 
-bool ruleMatchesUser(const struct LDJSON *const rule,
-    const struct LDUser *const user, struct LDStore *const store,
-    bool *const matches);
+EvalStatus checkPrerequisites(const struct LDJSON *const flag,
+    const struct LDUser *const user, struct LDStore *const store);
 
-bool clauseMatchesUser(const struct LDJSON *const clause,
-    const struct LDUser *const user, struct LDStore *const store,
-    bool *const matches);
+EvalStatus ruleMatchesUser(const struct LDJSON *const rule,
+    const struct LDUser *const user, struct LDStore *const store);
 
-bool segmentMatchesUser(const struct LDJSON *const segment,
-    const struct LDUser *const user, bool *const matches);
+EvalStatus clauseMatchesUser(const struct LDJSON *const clause,
+    const struct LDUser *const user, struct LDStore *const store);
 
-bool segmentRuleMatchUser(const struct LDJSON *const segmentRule,
+EvalStatus segmentMatchesUser(const struct LDJSON *const segment,
+    const struct LDUser *const user);
+
+EvalStatus segmentRuleMatchUser(const struct LDJSON *const segmentRule,
     const char *const segmentKey, const struct LDUser *const user,
-    const char *const salt, bool *const matches);
+    const char *const salt);
 
-bool clauseMatchesUserNoSegments(const struct LDJSON *const clause,
-    const struct LDUser *const user, bool *const matches);
+EvalStatus clauseMatchesUserNoSegments(const struct LDJSON *const clause,
+    const struct LDUser *const user);
 
 bool bucketUser(const struct LDUser *const user,
     const char *const segmentKey, const char *const attribute,
