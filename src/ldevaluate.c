@@ -653,6 +653,9 @@ segmentMatchesUser(const struct LDJSON *const segment,
     const struct LDJSON *included = NULL;
     const struct LDJSON *excluded = NULL;
 
+    const struct LDJSON *key = NULL;
+    const struct LDJSON *salt = NULL;
+
     const struct LDJSON *segmentRules = NULL;
     const struct LDJSON *iter = NULL;
 
@@ -695,36 +698,34 @@ segmentMatchesUser(const struct LDJSON *const segment,
         return EVAL_SCHEMA;
     }
 
+    if (!(key = LDObjectLookup(segment, "key"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return EVAL_SCHEMA;
+    }
+
+    if (LDJSONGetType(key) != LDText) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return EVAL_SCHEMA;
+    }
+
+    if (!(salt = LDObjectLookup(segment, "salt"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return EVAL_SCHEMA;
+    }
+
+    if (LDJSONGetType(salt) != LDText) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return EVAL_SCHEMA;
+    }
+
     for (iter = LDGetIter(segmentRules); iter; iter = LDIterNext(iter)) {
-        const struct LDJSON *key = NULL;
-        const struct LDJSON *salt = NULL;
         EvalStatus substatus;
 
         if (LDJSONGetType(iter) != LDObject) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return EVAL_SCHEMA;
-        }
-
-        if (!(key = LDObjectLookup(iter, "key"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return EVAL_SCHEMA;
-        }
-
-        if (LDJSONGetType(key) != LDText) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return EVAL_SCHEMA;
-        }
-
-        if (!(salt = LDObjectLookup(iter, "salt"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return EVAL_SCHEMA;
-        }
-
-        if (LDJSONGetType(salt) != LDText) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
             return EVAL_SCHEMA;

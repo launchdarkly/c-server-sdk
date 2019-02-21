@@ -88,6 +88,54 @@ testExplicitIncludeHasPrecedence()
     LDUserFree(user);
 }
 
+static void
+testMatchingRuleWithFullRollout()
+{
+    struct LDUser *user;
+    struct LDJSON *segment;
+    struct LDJSON *rules;
+    struct LDJSON *rule;
+    struct LDJSON *clauses;
+    struct LDJSON *clause;
+    struct LDJSON *values;
+
+    /* user */
+    LD_ASSERT(user = LDUserNew("foo"));
+    LD_ASSERT(LDUserSetEmail(user, "test@example.com"));
+
+    /* segment */
+    LD_ASSERT(values = LDNewArray());
+    LD_ASSERT(LDArrayAppend(values, LDNewText("test@example.com")));
+
+    LD_ASSERT(clause = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("email")));
+    LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
+    LD_ASSERT(LDObjectSetKey(clause, "values", values));
+    LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(false)));
+
+    LD_ASSERT(clauses = LDNewArray());
+    LD_ASSERT(LDArrayAppend(clauses, clause));
+
+    LD_ASSERT(rule = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(rule, "clauses", clauses));
+    LD_ASSERT(LDObjectSetKey(rule, "weight", LDNewNumber(100000)));
+
+    LD_ASSERT(rules = LDNewArray());
+    LD_ASSERT(LDArrayAppend(rules, rule));
+
+    LD_ASSERT(segment = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("test")));
+    LD_ASSERT(LDObjectSetKey(segment, "salt", LDNewText("abcdef")));
+    LD_ASSERT(LDObjectSetKey(segment, "rules", rules));
+    LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
+
+    /* run */
+    LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MATCH);
+
+    LDUserFree(user);
+}
+
 int
 main()
 {
@@ -96,6 +144,7 @@ main()
     testExplicitIncludeUser();
     testExplicitExcludeUser();
     testExplicitIncludeHasPrecedence();
+    testMatchingRuleWithFullRollout();
 
     return 0;
 }
