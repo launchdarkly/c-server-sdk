@@ -388,3 +388,48 @@ LDStoreDestroy(struct LDStore *const store)
         free(store);
     }
 }
+
+bool
+LDStoreInitEmpty(struct LDStore *const store)
+{
+    struct LDJSON *tmp;
+    struct LDJSON *values;
+
+    if (!(values = LDNewObject())) {
+        return false;
+    }
+
+    if (!(tmp = LDNewObject())) {
+        LDJSONFree(values);
+
+        return false;
+    }
+
+    if (!(LDObjectSetKey(values, "segments", tmp))) {
+        LDJSONFree(values);
+        LDJSONFree(tmp);
+
+        return false;
+    }
+
+    if (!(tmp = LDNewObject())) {
+        LDJSONFree(values);
+
+        return false;
+    }
+
+    if (!(LDObjectSetKey(values, "flags", tmp))) {
+        LDJSONFree(values);
+        LDJSONFree(tmp);
+
+        return false;
+    }
+
+    if (!(LDStoreInit(store, values))) {
+        LDJSONFree(values);
+
+        return false;
+    }
+
+    return true;
+}

@@ -127,6 +127,6 @@ bool LDSetString(char **const target, const char *const value);
 
 #define LD_ASSERT(condition) \
     if (!(condition)) { \
-        LDi_log(0, ASSERT_FMT, #condition, __func__); \
+        LD_LOG(LD_LOG_FATAL, ASSERT_FMT, #condition, __func__); \
         abort(); \
     }

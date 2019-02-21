@@ -18,7 +18,7 @@ struct LDStore; struct LDConfig;
  * it should no longer be modified.
  * @return NULL on failure.
  */
-struct LDConfig *LDConfigNew();
+struct LDConfig *LDConfigNew(const char *const key);
 
 /**
  * @brief Destory a config not associated with a client instance.
@@ -191,3 +191,5 @@ bool LDConfigAddPrivateAttribute(struct LDConfig *const config,
  */
 void LDConfigSetFeatureStore(struct LDConfig *const config,
     struct LDStore *const store);
+
+bool LDStoreInitEmpty(struct LDStore *const store);

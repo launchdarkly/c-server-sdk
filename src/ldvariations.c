@@ -5,15 +5,16 @@
 static struct LDJSON *
 variation(struct LDClient *const client, const struct LDUser *const user,
     const char *const key, struct LDJSON *const fallback,
-    const LDJSONType type, struct LDJSON **const details)
+    const LDJSONType type, struct LDJSON **const reason)
 {
     bool status;
     struct LDJSON *flag;
     struct LDJSON *value;
     struct LDStore *store;
+    struct LDJSON *details = NULL;
 
     if (!client) {
-        if (!addErrorReason(details, "NULL_CLIENT")) {
+        if (!addErrorReason(&details, "NULL_CLIENT")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -23,7 +24,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!LDClientIsInitialized(client)) {
-        if (!addErrorReason(details, "CLIENT_NOT_READY")) {
+        if (!addErrorReason(&details, "CLIENT_NOT_READY")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -33,7 +34,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!key) {
-        if (!addErrorReason(details, "NULL_KEY")) {
+        if (!addErrorReason(&details, "NULL_KEY")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             return NULL;
@@ -43,7 +44,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!user) {
-        if (!addErrorReason(details, "USER_NOT_SPECIFIED")) {
+        if (!addErrorReason(&details, "USER_NOT_SPECIFIED")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -57,7 +58,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     flag = LDStoreGet(store, "flags", key);
 
     if (!flag) {
-        if (!addErrorReason(details, "FLAG_NOT_FOUND")) {
+        if (!addErrorReason(&details, "FLAG_NOT_FOUND")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -66,18 +67,16 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto fallback;
     }
 
-    status = evaluate(flag, user, store, details);
+    status = evaluate(flag, user, store, &details);
 
     if (!status) {
         goto fallback;
     }
 
-    value = LDObjectLookup(*details, "value");
-
-    LD_ASSERT(details);
+    value = LDObjectLookup(details, "value");
 
     if (LDJSONGetType(value) != type) {
-        if (!addErrorReason(details, "WRONG_TYPE")) {
+        if (!addErrorReason(&details, "WRONG_TYPE")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -88,16 +87,28 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     value = LDJSONDuplicate(value);
 
+    if (reason) {
+        *reason = LDObjectLookup(details, "reason");
+        *reason = LDJSONDuplicate(*reason);
+    }
+
+    LDJSONFree(details);
     LDJSONFree(fallback);
 
     return value;
 
   fallback:
+    if (reason) {
+        *reason = LDObjectLookup(details, "reason");
+        *reason = LDJSONDuplicate(*reason);
+    }
+
+    LDJSONFree(details);
+
     return fallback;
 
   error:
-    *details = NULL;
-
+    LDJSONFree(details);
     LDJSONFree(fallback);
 
     return NULL;
@@ -198,7 +209,7 @@ LDStringVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const char* const fallback,
     struct LDJSON **const details)
 {
-    const char *value;
+    char *value;
     struct LDJSON *result;
     struct LDJSON *fallbackJSON = NULL;
 
@@ -224,15 +235,16 @@ LDStringVariation(struct LDClient *const client, struct LDUser *const user,
         }
     }
 
-    value = LDGetText(result);
+    /* never mutate just type hack */
+    value = (char *)LDGetText(result);
+
+    if (value) {
+        value = strdup(value);
+    }
 
     LDJSONFree(result);
 
-    if (value) {
-        return strdup(value);
-    } else {
-        return NULL;
-    }
+    return value;
 }
 
 struct LDJSON *
@@ -249,7 +261,7 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
         return NULL;
     }
 
-    result = variation(client, user, key, fallbackJSON, LDText, details);
+    result = variation(client, user, key, fallbackJSON, LDObject, details);
 
     if (!result) {
         LD_LOG(LD_LOG_ERROR, "LDVariation internal failure");
