@@ -174,7 +174,7 @@ returnsOffVariationIfFlagIsOff()
     setFallthrough(flag, 0);
 
     /* run */
-    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result) == EVAL_MATCH);
 
     /* validation */
     LD_ASSERT(strcmp("off", LDGetText(LDObjectLookup(result, "value"))) == 0);
@@ -205,7 +205,7 @@ testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
     addVariations1(flag);
 
     /* run */
-    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result) == EVAL_MATCH);
 
     /* validation */
     LD_ASSERT(LDJSONGetType(LDObjectLookup(result, "value")) == LDNull);
@@ -238,7 +238,7 @@ testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
     addVariations1(flag);
 
     /* run */
-    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result) == EVAL_MATCH);
 
     /* validate */
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(result, "value")), "fall") == 0);
@@ -672,7 +672,7 @@ testClauseWithUnknownOperatorDoesNotMatch()
     LD_ASSERT(flag = booleanFlagWithClause(clause));
 
     /* run */
-    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result) == EVAL_MATCH);
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
@@ -719,7 +719,7 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
     LD_ASSERT(LDStoreUpsert(store, "segments", segment));
 
     /* run */
-    LD_ASSERT(evaluate(flag, user, store, &result));
+    LD_ASSERT(evaluate(flag, user, store, &result) == EVAL_MATCH);
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
@@ -757,7 +757,7 @@ testSegmentMatchClauseFallsThroughIfSegmentNotFound()
     LD_ASSERT(store = prepareEmptyStore());
 
     /* run */
-    LD_ASSERT(evaluate(flag, user, store, &result));
+    LD_ASSERT(evaluate(flag, user, store, &result) == EVAL_MATCH);
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
@@ -807,7 +807,7 @@ testCanMatchJustOneSegmentFromList()
     LD_ASSERT(LDStoreUpsert(store, "segments", segment));
 
     /* run */
-    LD_ASSERT(evaluate(flag, user, store, &result));
+    LD_ASSERT(evaluate(flag, user, store, &result) == EVAL_MATCH);
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);

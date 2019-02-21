@@ -219,7 +219,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
             return EVAL_MEM;
         }
 
-        return true;
+        return EVAL_MATCH;
     }
 
     /* prerequisites */
@@ -908,7 +908,7 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     if (!(fn = lookupOperation(operatorText))) {
         LD_LOG(LD_LOG_WARNING, "unknown operator");
 
-        return EVAL_SCHEMA;
+        return EVAL_MISS;
     }
 
     if (!(attributeValue = valueOfAttribute(user, attributeText))) {
