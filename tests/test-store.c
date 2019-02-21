@@ -4,7 +4,9 @@
 static struct LDStore *
 prepareEmptyStore()
 {
-    struct LDStore *store = NULL; struct LDJSON *sets = NULL, *tmp = NULL;
+    struct LDStore *store;
+    struct LDJSON *sets;
+    struct LDJSON *tmp;
 
     LD_ASSERT(store = makeInMemoryStore());
     LD_ASSERT(!LDStoreInitialized(store));
@@ -34,7 +36,8 @@ allocateAndFree()
 static struct LDJSON *
 makeVersioned(const char *const key, const unsigned int version)
 {
-    struct LDJSON *feature = NULL, *tmp = NULL;
+    struct LDJSON *feature;
+    struct LDJSON *tmp;
 
     LD_ASSERT(feature = LDNewObject());
 
@@ -53,7 +56,8 @@ makeVersioned(const char *const key, const unsigned int version)
 static struct LDJSON *
 makeDeleted(const char *const key, const unsigned int version)
 {
-    struct LDJSON *feature = NULL, *tmp = NULL;
+    struct LDJSON *feature;
+    struct LDJSON *tmp;
 
     LD_ASSERT(feature = makeVersioned(key, version));
 
@@ -66,7 +70,9 @@ makeDeleted(const char *const key, const unsigned int version)
 static void
 deletedOnly()
 {
-    struct LDStore *store = NULL; struct LDJSON *feature = NULL, *lookup = NULL;
+    struct LDStore *store;
+    struct LDJSON *feature;
+    struct LDJSON *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -82,7 +88,9 @@ deletedOnly()
 static void
 basicExists()
 {
-    struct LDStore *store = NULL; struct LDJSON *feature = NULL, *lookup = NULL;
+    struct LDStore *store;
+    struct LDJSON *feature;
+    struct LDJSON *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -102,7 +110,8 @@ basicExists()
 static void
 basicDoesNotExist()
 {
-    struct LDStore *store = NULL; struct LDJSON *lookup = NULL;
+    struct LDStore *store;
+    struct LDJSON *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -114,7 +123,9 @@ basicDoesNotExist()
 static void
 upsertNewer()
 {
-    struct LDStore *store = NULL; struct LDJSON *feature = NULL, *lookup = NULL;
+    struct LDStore *store;
+    struct LDJSON *feature;
+    struct LDJSON *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -136,7 +147,10 @@ upsertNewer()
 static void
 upsertOlder()
 {
-    struct LDStore *store = NULL; struct LDJSON *feature1 = NULL, *feature2 = NULL, *lookup = NULL;
+    struct LDStore *store;
+    struct LDJSON *feature1;
+    struct LDJSON *feature2;
+    struct LDJSON *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -158,7 +172,9 @@ upsertOlder()
 static void
 upsertDelete()
 {
-    struct LDStore *store = NULL; struct LDJSON *feature = NULL, *lookup = NULL;
+    struct LDStore *store;
+    struct LDJSON *feature;
+    struct LDJSON *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -176,7 +192,10 @@ upsertDelete()
 static void
 conflictDifferentNamespace()
 {
-    struct LDStore *store = NULL; struct LDJSON *feature1 = NULL, *feature2 = NULL, *lookup = NULL;
+    struct LDStore *store;
+    struct LDJSON *feature1;
+    struct LDJSON *feature2;
+    struct LDJSON *lookup;;
 
     LD_ASSERT(store = prepareEmptyStore());
 
