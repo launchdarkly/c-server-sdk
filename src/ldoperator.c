@@ -1,6 +1,7 @@
 #include "ldinternal.h"
 #include "ldoperators.h"
 
+#include <time.h>
 #include <regex.h>
 
 typedef bool (*OpFn)(const struct LDJSON *const uvalue,
@@ -140,6 +141,75 @@ operatorGreaterThanOrEqualFn(const struct LDJSON *const uvalue,
     return LDGetNumber(uvalue) >= LDGetNumber(cvalue);
 }
 
+
+static bool
+compareTime(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue, bool (*op) (double, double))
+{
+    if (LDJSONGetType(uvalue) == LDNumber &&
+        LDJSONGetType(cvalue) == LDNumber)
+    {
+        return op(LDGetNumber(uvalue), LDGetNumber(cvalue));
+    } else if (LDJSONGetType(uvalue) == LDText &&
+        LDJSONGetType(cvalue) == LDText)
+    {
+        time_t utime;
+        time_t ctime;
+
+        struct tm utm;
+        struct tm ctm;
+
+        if (strcmp(LDGetText(uvalue), "") == 0) {
+            return false;
+        }
+
+        if (!strptime(LDGetText(uvalue), "%FT%T%Z", &utm)) {
+            LD_LOG(LD_LOG_ERROR, "failed to parse date uvalue");
+
+            return false;
+        }
+
+        if (!strptime(LDGetText(cvalue), "%FT%T%Z", &ctm)) {
+            LD_LOG(LD_LOG_ERROR, "failed to parse date cvalue");
+
+            return false;
+        }
+
+        utime = mktime(&utm);
+        ctime = mktime(&ctm);
+
+        return op(difftime(utime, ctime), 0);
+    } else {
+        return false;
+    }
+}
+
+static bool
+fnLT(const double l, const double r)
+{
+    return l < r;
+}
+
+static bool
+fnGT(const double l, const double r)
+{
+    return l > r;
+}
+
+static bool
+operatorBefore(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue)
+{
+    return compareTime(uvalue, cvalue, fnLT);
+}
+
+static bool
+operatorAfter(const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue)
+{
+    return compareTime(uvalue, cvalue, fnGT);
+}
+
 OpFn
 lookupOperation(const char *const operation)
 {
@@ -163,6 +233,10 @@ lookupOperation(const char *const operation)
         return operatorGreaterThanFn;
     } else if (strcmp(operation, "greaterThanOrEqual") == 0) {
         return operatorGreaterThanOrEqualFn;
+    } else if (strcmp(operation, "before") == 0) {
+        return operatorBefore;
+    } else if (strcmp(operation, "after") == 0) {
+        return operatorAfter;
     }
 
     return NULL;

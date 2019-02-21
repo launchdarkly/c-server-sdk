@@ -67,15 +67,6 @@ main()
     addTest("greaterThanOrEqual", LDNewText("99"), LDNewNumber(99), false);
     addTest("greaterThanOrEqual", LDNewNumber(99), LDNewText("99"), false);
 
-    /* regex */
-    addTest("matches", LDNewText("hello world"), LDNewText("hello.*rld"), true);
-    addTest("matches", LDNewText("hello world"), LDNewText("hello.*orl"), true);
-    addTest("matches", LDNewText("hello world"), LDNewText("l+"), true);
-    addTest("matches", LDNewText("hello world"),
-        LDNewText("(world|planet)"), true);
-    addTest("matches", LDNewText("hello world"), LDNewText("aloha"), false);
-    addTest("matches", LDNewText("hello world"), LDNewText("***bad rg"), false);
-
     /* date operators */
     addTest("before", LDNewText(dateStr1), LDNewText(dateStr2), true);
     addTest("before", LDNewNumber(dateMs1), LDNewNumber(dateMs2), true);
@@ -93,6 +84,15 @@ main()
     addTest("after", LDNewNumber(dateMs1), LDNewNumber(dateMs1), false);
     addTest("after", LDNewText(""), LDNewText(dateStr1), false);
     addTest("after", LDNewText(dateStr1), LDNewText(invalidDate), false);
+
+    /* regex */
+    addTest("matches", LDNewText("hello world"), LDNewText("hello.*rld"), true);
+    addTest("matches", LDNewText("hello world"), LDNewText("hello.*orl"), true);
+    addTest("matches", LDNewText("hello world"), LDNewText("l+"), true);
+    addTest("matches", LDNewText("hello world"),
+        LDNewText("(world|planet)"), true);
+    addTest("matches", LDNewText("hello world"), LDNewText("aloha"), false);
+    addTest("matches", LDNewText("hello world"), LDNewText("***bad rg"), false);
 
     /* semver operators */
     addTest("semVerEqual", LDNewText("2.0.0"), LDNewText("2.0.0"), true);
