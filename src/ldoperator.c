@@ -232,6 +232,8 @@ compareSemVer(const struct LDJSON *const uvalue,
     if (semver_parse(LDGetText(cvalue), &csem)) {
         LD_LOG(LD_LOG_ERROR, "failed to parse cvalue");
 
+        semver_free(&usem);
+
         return false;
     }
 
