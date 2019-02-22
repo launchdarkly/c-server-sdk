@@ -23,7 +23,6 @@ struct PollContext {
     char *memory;
     size_t size;
     struct curl_slist *headers;
-    int count;
     bool active;
     unsigned int lastpoll;
 };
@@ -75,7 +74,6 @@ done(struct LDClient *const client, void *const rawcontext)
 
     LD_ASSERT(updateStore(client->config->store, context->memory));
 
-    context->count++;
     context->active = false;
 
     LD_ASSERT(LDi_wrlock(&client->lock));
@@ -111,7 +109,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     LD_ASSERT(context);
 
-    if (context->active || context->count > 2) {
+    if (context->active) {
         return NULL;
     }
 
@@ -187,7 +185,6 @@ constructPolling(struct LDClient *const client)
 
     context->memory   = NULL;
     context->size     = 0;
-    context->count    = 0;
     context->headers  = NULL;
     context->active   = false;
     context->lastpoll = 0;
