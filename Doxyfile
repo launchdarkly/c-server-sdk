@@ -1,5 +1,6 @@
-INPUT                = include/ src/
-
-OUTPUT_DIRECTORY     = docs
-
-ENUM_VALUES_PER_LINE = 10
+PROJECT_NAME          = "C Client Server-Side"
+PROJECT_BRIEF         = "LaunchDarkly SDK"
+INPUT                 = include/ src/
+OUTPUT_DIRECTORY      = docs
+ENUM_VALUES_PER_LINE  = 10
+OPTIMIZE_OUTPUT_FOR_C = YES
