@@ -260,6 +260,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     struct LDJSON *flag1;
     struct LDJSON *flag2;
     struct LDJSON *result = NULL;
+    struct LDJSON *reason;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -290,12 +291,11 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     /* validate */
     LD_ASSERT(strcmp("off", LDGetText(LDObjectLookup(result, "value"))) == 0);
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 1);
+    LD_ASSERT(reason = LDObjectLookup(result, "reason"));
     LD_ASSERT(strcmp("PREREQUISITE_FAILED", LDGetText(
-        LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
-
-    /*
-        prerequisiteKey: "key"
-    */
+        LDObjectLookup(reason, "kind"))) == 0);
+    LD_ASSERT(strcmp("feature1", LDGetText(
+        LDObjectLookup(reason, "prerequisiteKey"))) == 0);
 
     LDJSONFree(flag1);
     LDJSONFree(result);

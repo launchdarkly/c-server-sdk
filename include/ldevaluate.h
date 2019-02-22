@@ -32,7 +32,8 @@ EvalStatus evaluate(const struct LDJSON *const flag,
     struct LDJSON **const result);
 
 EvalStatus checkPrerequisites(const struct LDJSON *const flag,
-    const struct LDUser *const user, struct LDStore *const store);
+    const struct LDUser *const user, struct LDStore *const store,
+    const char **const failedKey);
 
 EvalStatus ruleMatchesUser(const struct LDJSON *const rule,
     const struct LDUser *const user, struct LDStore *const store);

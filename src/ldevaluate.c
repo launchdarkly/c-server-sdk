@@ -178,6 +178,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     const struct LDJSON *targets;
     const struct LDJSON *on;
     const struct LDJSON *fallthrough;
+    const char *failedKey;
 
     LD_ASSERT(flag);
     LD_ASSERT(user);
@@ -223,15 +224,32 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     }
 
     /* prerequisites */
-    if (isEvalError(substatus = checkPrerequisites(flag, user, store))) {
+    if (isEvalError(substatus =
+        checkPrerequisites(flag, user, store, &failedKey)))
+    {
         LD_LOG(LD_LOG_ERROR, "sub error error");
 
         return substatus;
     }
 
     if (substatus == EVAL_MISS) {
-        if (!addReason(result, "PREREQUISITE_FAILED")) {
+        struct LDJSON *key;
+        struct LDJSON *reason;
+
+        if (!(reason = addReason(result, "PREREQUISITE_FAILED"))) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
+
+            return EVAL_MEM;
+        }
+
+        if (!(key = LDNewText(failedKey))) {
+            LD_LOG(LD_LOG_ERROR, "memory error");
+
+            return EVAL_MEM;
+        }
+
+        if (!LDObjectSetKey(reason, "prerequisiteKey", key)) {
+            LD_LOG(LD_LOG_ERROR, "memory error");
 
             return EVAL_MEM;
         }
@@ -402,7 +420,8 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
 EvalStatus
 checkPrerequisites(const struct LDJSON *const flag,
-    const struct LDUser *const user, struct LDStore *const store)
+    const struct LDUser *const user, struct LDStore *const store,
+    const char **const failedKey)
 {
     struct LDJSON *prerequisites = NULL;
     struct LDJSON *iter = NULL;
@@ -410,6 +429,7 @@ checkPrerequisites(const struct LDJSON *const flag,
     LD_ASSERT(flag);
     LD_ASSERT(user);
     LD_ASSERT(store);
+    LD_ASSERT(failedKey);
 
     if (LDJSONGetType(flag) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
@@ -452,6 +472,8 @@ checkPrerequisites(const struct LDJSON *const flag,
 
             return EVAL_SCHEMA;
         }
+
+        *failedKey = LDGetText(key);
 
         if (!(variation = LDObjectLookup(iter, "variation"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
