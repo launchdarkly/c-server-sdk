@@ -79,6 +79,7 @@ testBoolVariation()
         LDObjectLookup(reason, "kind"))) == 0);
 
     LDUserFree(user);
+    LDJSONFree(reason);
     LDClientClose(client);
 }
 
@@ -117,6 +118,7 @@ testIntVariation()
         LDObjectLookup(reason, "kind"))) == 0);
 
     LDUserFree(user);
+    LDJSONFree(reason);
     LDClientClose(client);
 }
 
@@ -155,6 +157,7 @@ testDoubleVariation()
         LDObjectLookup(reason, "kind"))) == 0);
 
     LDUserFree(user);
+    LDJSONFree(reason);
     LDClientClose(client);
 }
 
@@ -194,6 +197,7 @@ testStringVariation()
 
     free(actual);
     LDUserFree(user);
+    LDJSONFree(reason);
     LDClientClose(client);
 }
 
@@ -248,6 +252,7 @@ testJSONVariation()
     LDJSONFree(def);
     LDJSONFree(actual);
     LDUserFree(user);
+    LDJSONFree(reason);
     LDClientClose(client);
 }
 

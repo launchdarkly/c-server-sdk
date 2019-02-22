@@ -8,7 +8,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     const LDJSONType type, struct LDJSON **const reason)
 {
     EvalStatus status;
-    struct LDJSON *flag;
+    struct LDJSON *flag = NULL;
     struct LDJSON *value;
     struct LDStore *store;
     struct LDJSON *details = NULL;
@@ -109,12 +109,20 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     LDJSONFree(details);
     LDJSONFree(fallback);
 
+    if (flag) {
+        LDJSONFree(flag);
+    }
+
     return value;
 
   fallback:
     if (reason) {
         *reason = LDObjectLookup(details, "reason");
         *reason = LDJSONDuplicate(*reason);
+    }
+
+    if (flag) {
+        LDJSONFree(flag);
     }
 
     LDJSONFree(details);
@@ -124,6 +132,10 @@ variation(struct LDClient *const client, const struct LDUser *const user,
   error:
     LDJSONFree(details);
     LDJSONFree(fallback);
+
+    if (flag) {
+        LDJSONFree(flag);
+    }
 
     return NULL;
 }
