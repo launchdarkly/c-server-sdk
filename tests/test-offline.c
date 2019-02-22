@@ -37,6 +37,8 @@ testBoolVariationDefaultValueOffline()
     LD_ASSERT(strcmp("CLIENT_NOT_READY",
         LDGetText(LDObjectLookup(details, "errorKind"))) == 0);
 
+    LDJSONFree(details);
+    LDUserFree(user);
     LDClientClose(client);
 }
 
@@ -59,6 +61,8 @@ testIntVariationDefaultValueOffline()
     LD_ASSERT(strcmp("CLIENT_NOT_READY",
         LDGetText(LDObjectLookup(details, "errorKind"))) == 0);
 
+    LDJSONFree(details);
+    LDUserFree(user);
     LDClientClose(client);
 }
 
@@ -81,6 +85,8 @@ testDoubleVariationDefaultValueOffline()
     LD_ASSERT(strcmp("CLIENT_NOT_READY",
         LDGetText(LDObjectLookup(details, "errorKind"))) == 0);
 
+    LDJSONFree(details);
+    LDUserFree(user);
     LDClientClose(client);
 }
 
@@ -103,7 +109,9 @@ testStringVariationDefaultValueOffline()
     LD_ASSERT(strcmp("CLIENT_NOT_READY",
         LDGetText(LDObjectLookup(details, "errorKind"))) == 0);
 
+    LDJSONFree(details);
     free(value);
+    LDUserFree(user);
     LDClientClose(client);
 }
 
@@ -131,7 +139,10 @@ testJSONVariationDefaultValueOffline()
     LD_ASSERT(strcmp("CLIENT_NOT_READY",
         LDGetText(LDObjectLookup(details, "errorKind"))) == 0);
 
+    LDJSONFree(details);
     LDJSONFree(actual);
+    LDJSONFree(expected);
+    LDUserFree(user);
     LDClientClose(client);
 }
 

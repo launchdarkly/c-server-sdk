@@ -297,7 +297,7 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
         } else {
             return NULL;
         }
-    }
+    } 
 
     return result;
 }
