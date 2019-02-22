@@ -296,6 +296,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     }
 
     if (rules && LDArrayGetSize(rules) != 0) {
+        unsigned int index = 0;
         for (iter = LDGetIter(rules); iter; iter = LDIterNext(iter)) {
             EvalStatus substatus;
 
@@ -313,10 +314,13 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
             if (substatus == EVAL_MATCH) {
                 const struct LDJSON *variation = NULL;
+                struct LDJSON *reason;
+                struct LDJSON *tmp;
+                struct LDJSON *ruleid;
 
                 variation = LDObjectLookup(iter, "variation");
 
-                if (!addReason(result, "RULE_MATCH")) {
+                if (!(reason = addReason(result, "RULE_MATCH"))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
                     return EVAL_MEM;
@@ -328,8 +332,47 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
                     return EVAL_MEM;
                 }
 
+                if (!(tmp = LDNewNumber(index))) {
+                    LD_LOG(LD_LOG_ERROR, "memory error");
+
+                    return EVAL_MEM;
+                }
+
+                if (!LDObjectSetKey(reason, "ruleIndex", tmp)) {
+                    LD_LOG(LD_LOG_ERROR, "memory error");
+
+                    return EVAL_MEM;
+                }
+
+                if (!(ruleid = LDObjectLookup(iter, "id"))) {
+                    LD_LOG(LD_LOG_ERROR, "schema error");
+
+                    return EVAL_SCHEMA;
+                }
+
+                if (LDJSONGetType(ruleid) != LDText) {
+                    LD_LOG(LD_LOG_ERROR, "schema error");
+
+                    return EVAL_SCHEMA;
+                }
+
+                if (!(tmp = LDNewText(LDGetText(ruleid)))) {
+                    LD_LOG(LD_LOG_ERROR, "memory error");
+
+                    return EVAL_MEM;
+                }
+
+                if (!LDObjectSetKey(reason, "ruleId", tmp)) {
+                    LD_LOG(LD_LOG_ERROR, "memory error");
+
+                    return EVAL_MEM;
+                }
+
+
                 return EVAL_MATCH;
             }
+
+            index++;
         }
     }
 

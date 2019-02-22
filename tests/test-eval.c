@@ -138,6 +138,7 @@ booleanFlagWithClause(struct LDJSON *const clause)
     LD_ASSERT(LDArrayAppend(clauses, clause));
 
     LD_ASSERT(rule = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(rule, "id", LDNewText("rule-id")));
     LD_ASSERT(LDObjectSetKey(rule, "clauses", clauses));
     LD_ASSERT(LDObjectSetKey(rule, "variation", LDNewNumber(1)));
 
@@ -291,6 +292,10 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 1);
     LD_ASSERT(strcmp("PREREQUISITE_FAILED", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+
+    /*
+        prerequisiteKey: "key"
+    */
 
     LDJSONFree(flag1);
     LDJSONFree(result);
@@ -450,6 +455,7 @@ testFlagMatchesUserFromRules()
     struct LDJSON *flag;
     struct LDJSON *result = NULL;
     struct LDJSON *variation;
+    struct LDJSON *reason;
 
     LD_ASSERT(user = LDUserNew("userkey"));
 
@@ -463,9 +469,13 @@ testFlagMatchesUserFromRules()
 
     /* validate */
     LD_ASSERT(strcmp("on", LDGetText(LDObjectLookup(result, "value"))) == 0);
+    LD_ASSERT(reason = LDObjectLookup(result, "reason"));
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 2);
-    LD_ASSERT(strcmp("RULE_MATCH", LDGetText(
-        LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+    LD_ASSERT(strcmp("RULE_MATCH",
+        LDGetText(LDObjectLookup(reason, "kind"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(reason, "ruleIndex")) == 0);
+    LD_ASSERT(strcmp("rule-id",
+        LDGetText(LDObjectLookup(reason, "ruleId"))) == 0);
 
     LDJSONFree(flag);
     LDJSONFree(result);
