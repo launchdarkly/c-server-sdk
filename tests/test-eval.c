@@ -513,6 +513,7 @@ testClauseCanMatchBuiltInAttribute()
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
 
     LDJSONFree(flag);
+    LDJSONFree(result);
     LDUserFree(user);
 }
 
@@ -550,6 +551,7 @@ testClauseCanMatchCustomAttribute()
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
 
     LDJSONFree(flag);
+    LDJSONFree(result);
     LDUserFree(user);
 }
 
@@ -584,6 +586,7 @@ testClauseReturnsFalseForMissingAttribute()
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
 
     LDJSONFree(flag);
+    LDJSONFree(result);
     LDUserFree(user);
 }
 
@@ -619,6 +622,7 @@ testClauseCanBeNegated()
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
 
     LDJSONFree(flag);
+    LDJSONFree(result);
     LDUserFree(user);
 }
 
@@ -654,6 +658,7 @@ testClauseForMissingAttributeIsFalseEvenIfNegate()
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
 
     LDJSONFree(flag);
+    LDJSONFree(result);
     LDUserFree(user);
 }
 
@@ -688,6 +693,7 @@ testClauseWithUnknownOperatorDoesNotMatch()
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
 
     LDJSONFree(flag);
+    LDJSONFree(result);
     LDUserFree(user);
 }
 
