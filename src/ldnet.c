@@ -132,7 +132,7 @@ LDi_networkthread(void* const clientref)
                 {
                     LD_LOG(LD_LOG_ERROR, "failed to associate context");
 
-                    return THREAD_RETURN_DEFAULT;
+                    goto cleanup;
                 }
 
                 if (curl_multi_add_handle(
@@ -140,7 +140,7 @@ LDi_networkthread(void* const clientref)
                 {
                     LD_LOG(LD_LOG_ERROR, "failed to add handle");
 
-                    return THREAD_RETURN_DEFAULT;
+                    goto cleanup;
                 }
             }
         }
@@ -160,7 +160,7 @@ LDi_networkthread(void* const clientref)
                 {
                     LD_LOG(LD_LOG_ERROR, "failed to get response code");
 
-                    return THREAD_RETURN_DEFAULT;
+                    goto cleanup;
                 }
 
                 LD_LOG(LD_LOG_INFO, "message done code %d %d",
@@ -171,7 +171,7 @@ LDi_networkthread(void* const clientref)
                 {
                     LD_LOG(LD_LOG_ERROR, "failed to get context");
 
-                    return THREAD_RETURN_DEFAULT;
+                    goto cleanup;
                 }
 
                 LD_ASSERT(interface);
@@ -182,7 +182,9 @@ LDi_networkthread(void* const clientref)
 
                 interface->current = NULL;
 
-                curl_multi_remove_handle(client->multihandle, easy);
+                LD_ASSERT(curl_multi_remove_handle(
+                    client->multihandle, easy) == CURLM_OK);
+
                 curl_easy_cleanup(easy);
             }
         } while (info);
@@ -192,7 +194,7 @@ LDi_networkthread(void* const clientref)
         {
             LD_LOG(LD_LOG_ERROR, "failed to wait on handles");
 
-            return THREAD_RETURN_DEFAULT;
+            goto cleanup;
         }
 
         if (!active_events) {
@@ -201,11 +203,14 @@ LDi_networkthread(void* const clientref)
         }
     }
 
+  cleanup:
     for (unsigned int i = 0; i < interfacecount; i++) {
         struct NetworkInterface *const interface = interfaces[i];
 
         if (interface->current) {
-            curl_multi_remove_handle(client->multihandle, interface->current);
+            LD_ASSERT(curl_multi_remove_handle(
+                client->multihandle, interface->current) == CURLM_OK);
+
             curl_easy_cleanup(interface->current);
         }
 
