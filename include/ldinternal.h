@@ -24,10 +24,6 @@
 #include "ldstore.h"
 #include "ldjson.h"
 
-/* **** Forward Declarations **** */
-
-struct LDHashSet;
-
 /* **** LDPlatformSpecific **** */
 
 #ifdef _WIN32
