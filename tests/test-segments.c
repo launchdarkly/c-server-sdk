@@ -42,6 +42,7 @@ testExplicitIncludeUser()
     /* run */
     LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MATCH);
 
+    LDJSONFree(segment);
     LDUserFree(user);
 }
 
@@ -69,6 +70,7 @@ testExplicitExcludeUser()
     /* run */
     LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MISS);
 
+    LDJSONFree(segment);
     LDUserFree(user);
 }
 
@@ -100,6 +102,7 @@ testExplicitIncludeHasPrecedence()
     /* run */
     LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MATCH);
 
+    LDJSONFree(segment);
     LDUserFree(user);
 }
 
@@ -143,6 +146,7 @@ testMatchingRuleWithFullRollout()
     /* run */
     LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MATCH);
 
+    LDJSONFree(segment);
     LDUserFree(user);
 }
 
@@ -186,6 +190,7 @@ testMatchingRuleWithZeroRollout()
     /* run */
     LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MISS);
 
+    LDJSONFree(segment);
     LDUserFree(user);
 }
 
@@ -241,6 +246,7 @@ testMatchingRuleWithMultipleClauses()
     /* run */
     LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MATCH);
 
+    LDJSONFree(segment);
     LDUserFree(user);
 }
 
@@ -296,6 +302,7 @@ testNonMatchingRuleWithMultipleClauses()
     /* run */
     LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MISS);
 
+    LDJSONFree(segment);
     LDUserFree(user);
 }
 
