@@ -1,3 +1,9 @@
+/*!
+ * @file ldnetwork.h
+ * @brief Internal API Interface for Networking
+ */
+
+
 #pragma once
 
 #include <curl/curl.h>

@@ -1,3 +1,9 @@
+/*!
+ * @file ldinternal.h
+ * @brief Internal Miscellaneous Implementation Details
+ */
+
+
 #pragma once
 
 #include <stdio.h>

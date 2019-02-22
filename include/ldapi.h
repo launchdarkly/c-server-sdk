@@ -1,3 +1,8 @@
+/*!
+ * @file ldapi.h
+ * @brief Public API. Include this for every public operation.
+ */
+
 #pragma once
 
 #include <stdbool.h>
