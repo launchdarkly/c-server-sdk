@@ -197,6 +197,7 @@ constructPolling(struct LDClient *const client)
     interface->context = context;
     interface->destroy = destroy;
     interface->context = context;
+    interface->current = NULL;
 
     return interface;
 

@@ -125,6 +125,8 @@ LDi_networkthread(void* const clientref)
                 interfaces[i]->poll(client, interfaces[i]->context);
 
             if (handle) {
+                interfaces[i]->current = handle;
+
                 if (curl_easy_setopt(
                     handle, CURLOPT_PRIVATE, interfaces[i]) != CURLE_OK)
                 {
@@ -178,6 +180,8 @@ LDi_networkthread(void* const clientref)
 
                 interface->done(client, interface->context);
 
+                interface->current = NULL;
+
                 curl_multi_remove_handle(client->multihandle, easy);
                 curl_easy_cleanup(easy);
             }
@@ -197,10 +201,19 @@ LDi_networkthread(void* const clientref)
         }
     }
 
-    LD_ASSERT(curl_multi_cleanup(client->multihandle) == CURLM_OK);
+    for (unsigned int i = 0; i < interfacecount; i++) {
+        struct NetworkInterface *const interface = interfaces[i];
 
-    interfaces[0]->destroy(interfaces[0]->context);
-    free(interfaces[0]);
+        if (interface->current) {
+            curl_multi_remove_handle(client->multihandle, interface->current);
+            curl_easy_cleanup(interface->current);
+        }
+
+        interface->destroy(interface->context);
+        free(interface);
+    }
+
+    LD_ASSERT(curl_multi_cleanup(client->multihandle) == CURLM_OK);
 
     return THREAD_RETURN_DEFAULT;
 }

@@ -13,6 +13,8 @@ struct NetworkInterface {
     void (*destroy)(void *context);
     /* stores any private implementation data */
     void *context;
+    /* active handle */
+    CURL *current;
 };
 
 bool prepareShared(const struct LDConfig *const config, const char *const url,
