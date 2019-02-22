@@ -667,7 +667,7 @@ clauseMatchesUser(const struct LDJSON *const clause,
         for (iter = LDGetIter(values); iter; iter = LDIterNext(iter)) {
             if (LDJSONGetType(iter) == LDText) {
                 EvalStatus evalstatus;
-                const struct LDJSON *segment;
+                struct LDJSON *segment;
 
                 segment = LDStoreGet(store, "segments", LDGetText(iter));
 
@@ -684,8 +684,12 @@ clauseMatchesUser(const struct LDJSON *const clause,
                 {
                     LD_LOG(LD_LOG_ERROR, "sub error");
 
+                    LDJSONFree(segment);
+
                     return evalstatus;
                 }
+
+                LDJSONFree(segment);
 
                 if (evalstatus == EVAL_MATCH) {
                     if (!negate) {
