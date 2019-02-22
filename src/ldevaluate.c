@@ -77,7 +77,7 @@ addErrorReason(struct LDJSON **const result, const char *const kind)
         return NULL;
     }
 
-    if (!(LDObjectSetKey(tmpcollection, "kind", tmp))) {
+    if (!(LDObjectSetKey(tmpcollection, "errorKind", tmp))) {
         LDJSONFree(tmpcollection);
 
         LD_LOG(LD_LOG_ERROR, "failed to set key");

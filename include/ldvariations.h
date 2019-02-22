@@ -8,6 +8,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "lduser.h"
+#include "ldjson.h"
+
 bool LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const bool fallback,
     struct LDJSON **const details);
