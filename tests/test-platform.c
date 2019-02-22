@@ -28,11 +28,11 @@ testSleepMinimum()
 
     LD_ASSERT(getMonotonicMilliseconds(&past));
 
-    LD_ASSERT(sleepMilliseconds(250));
+    LD_ASSERT(sleepMilliseconds(25));
 
     LD_ASSERT(getMonotonicMilliseconds(&present));
 
-    LD_ASSERT(present - past >= 250);
+    LD_ASSERT(present - past >= 25);
 }
 
 static void
