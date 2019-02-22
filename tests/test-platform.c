@@ -78,6 +78,8 @@ threadGoAwait(void *const rawcontext)
             break;
         }
         LD_ASSERT(LDi_wrunlock(&context->lock));
+
+        LD_ASSERT(sleepMilliseconds(1));
     }
 
     return THREAD_RETURN_DEFAULT;
@@ -109,6 +111,8 @@ testConcurrency()
         if (!status) {
             break;
         }
+
+        LD_ASSERT(sleepMilliseconds(1));
     }
 
     LD_ASSERT(LDi_jointhread(thread));
