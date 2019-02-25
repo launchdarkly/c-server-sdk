@@ -9,12 +9,81 @@ struct StreamContext {
     size_t size;
     bool active;
     struct curl_slist *headers;
+    char eventName[256];
+    char *dataBuffer;
 };
 
-void
-onSSE()
+bool
+onSSE(struct StreamContext *const context, const char *line)
 {
+    if (!line) {
+        /* should not happen from the networking side but is not fatal */
+        LD_LOG(LD_LOG_ERROR, "streamcallback got NULL line");
+    } else if (line[0] == ':') {
+        /* skip comment */
+    } else if (line[0] == 0) {
+        if (context->eventName[0] == 0) {
+            LD_LOG(LD_LOG_WARNING,
+                "streamcallback got dispatch but type was never set");
+        } else if (strcmp(context->eventName, "ping") == 0) {
+            onstreameventping(client);
+        } else if (context->dataBuffer == NULL) {
+            LD_LOG(LD_LOG_WARNING,
+                "streamcallback got dispatch but data was never set");
+        } else if (strcmp(context->eventName, "put") == 0) {
+            LDi_onstreameventput(client, client->databuffer);
+        } else if (strcmp(context->eventName, "patch") == 0) {
+            LDi_onstreameventpatch(client, client->databuffer);
+        } else if (strcmp(context->eventName, "delete") == 0) {
+            LDi_onstreameventdelete(client, client->databuffer);
+        } else {
+            LD_LOG(LD_LOG_WARNING,
+                "streamcallback unknown event name: %s", client->eventname);
+        }
 
+        free(context->dataBuffer);
+        context->dataBuffer = NULL;
+        context->eventName[0] = 0;
+    } else if (strncmp(line, "data:", 5) == 0) {
+        bool nempty;
+        size_t linesize;
+        size_t currentsize = 0;
+
+        line += 5;
+        line += line[0] == ' ';
+
+        nempty = context->dataBuffer != NULL;
+        linesize = strlen(line);
+
+        if (nempty) {
+            currentsize = strlen(client->databuffer);
+        }
+
+        client->databuffer = realloc(
+            client->databuffer, linesize + currentsize + nempty + 1);
+
+        if (nempty) {
+            client->databuffer[currentsize] = '\n';
+        }
+
+        memcpy(client->databuffer + currentsize + nempty, line, linesize);
+
+        client->databuffer[currentsize + nempty + linesize] = 0;
+    } else if (strncmp(line, "event:", 6) == 0) {
+        line += 6;
+        line += line[0] == ' ';
+
+        if (snprintf(context->eventName,
+            sizeof(context->eventName), "%s", line) < 0)
+        {
+            LD_LOG(LD_LOG_CRITICAL,
+                "snprintf failed in streamcallback type processing");
+
+            return false;
+        }
+    }
+
+    return true;
 }
 
 static size_t
@@ -40,7 +109,7 @@ writeCallback(void *contents, size_t size, size_t nmemb, void *userp)
         size_t eaten = 0;
         while (nl) {
             *nl = 0;
-            /* streamdata->callback(streamdata->client, mem->memory + eaten); */
+            onSSE(mem, mem->memory + eaten);
             eaten = nl - mem->memory + 1;
             nl = memchr(mem->memory + eaten, '\n', mem->size - eaten);
         }
@@ -54,6 +123,9 @@ static void
 resetMemory(struct StreamContext *const context)
 {
     LD_ASSERT(context);
+
+    context->eventName[0] = 0;
+    context->dataBuffer = NULL;
 
     free(context->memory);
     context->memory = NULL;
@@ -161,10 +233,12 @@ constructStreaming(struct LDClient *const client)
         goto error;
     }
 
-    context->memory  = NULL;
-    context->size    = 0;
-    context->active  = false;
-    context->headers = NULL;
+    context->memory       = NULL;
+    context->size         = 0;
+    context->active       = false;
+    context->headers      = NULL;
+    context->eventName[0] = 0;
+    context->dataBuffer   = NULL;
 
     interface->done    = done;
     interface->poll    = poll;
