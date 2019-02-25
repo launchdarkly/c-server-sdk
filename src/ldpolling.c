@@ -9,7 +9,8 @@ updateStore(struct LDStore *const store, const char *const rawupdate)
 {
     struct LDJSON *update = NULL;
 
-    LD_ASSERT(store); LD_ASSERT(rawupdate);
+    LD_ASSERT(store);
+    LD_ASSERT(rawupdate);
 
     if (!(update = LDJSONDeserialize(rawupdate))) {
         return false;
@@ -28,7 +29,7 @@ struct PollContext {
 };
 
 size_t
-WriteMemoryCallback(void *const contents, const size_t size,
+writeCallback(void *const contents, const size_t size,
     const size_t nmemb, void *const userp)
 {
     const size_t realsize = size * nmemb;
@@ -54,9 +55,11 @@ resetMemory(struct PollContext *const context)
 {
     LD_ASSERT(context);
 
-    free(context->memory); context->memory = NULL;
+    free(context->memory);
+    context->memory = NULL;
 
-    curl_slist_free_all(context->headers); context->headers = NULL;
+    curl_slist_free_all(context->headers);
+    context->headers = NULL;
 
     context->size = 0;
 }
@@ -110,7 +113,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     LD_ASSERT(context);
 
-    if (context->active) {
+    if (context->active || client->config->stream) {
         return NULL;
     }
 
@@ -125,12 +128,10 @@ poll(struct LDClient *const client, void *const rawcontext)
         }
     }
 
-    LD_LOG(LD_LOG_INFO, "poll!");
-
     if (snprintf(url, sizeof(url), "%s/sdk/latest-all",
         client->config->baseURI) < 0)
     {
-        LD_LOG(LD_LOG_CRITICAL, "snprintf usereport failed");
+        LD_LOG(LD_LOG_CRITICAL, "snprintf URL failed");
 
         return false;
     }
@@ -141,7 +142,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         goto error;
     }
 
-    if (curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback)
+    if (curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback)
         != CURLE_OK)
     {
         LD_LOG(LD_LOG_CRITICAL,
