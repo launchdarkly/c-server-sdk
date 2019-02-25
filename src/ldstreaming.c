@@ -11,7 +11,35 @@ struct StreamContext {
     struct curl_slist *headers;
     char eventName[256];
     char *dataBuffer;
+    struct LDClient *client;
 };
+
+void
+onPut(struct LDClient *const client, struct LDJSON *const data)
+{
+    LD_ASSERT(client);
+    LD_ASSERT(data);
+
+    LDJSONFree(data);
+}
+
+void
+onPatch(struct LDClient *const client, struct LDJSON *const data)
+{
+    LD_ASSERT(client);
+    LD_ASSERT(data);
+
+    LDJSONFree(data);
+}
+
+void
+onDelete(struct LDClient *const client, struct LDJSON *const data)
+{
+    LD_ASSERT(client);
+    LD_ASSERT(data);
+
+    LDJSONFree(data);
+}
 
 bool
 onSSE(struct StreamContext *const context, const char *line)
@@ -22,23 +50,25 @@ onSSE(struct StreamContext *const context, const char *line)
     } else if (line[0] == ':') {
         /* skip comment */
     } else if (line[0] == 0) {
+        struct LDJSON *json;
+
         if (context->eventName[0] == 0) {
             LD_LOG(LD_LOG_WARNING,
                 "streamcallback got dispatch but type was never set");
-        } else if (strcmp(context->eventName, "ping") == 0) {
-            onstreameventping(client);
         } else if (context->dataBuffer == NULL) {
             LD_LOG(LD_LOG_WARNING,
                 "streamcallback got dispatch but data was never set");
-        } else if (strcmp(context->eventName, "put") == 0) {
-            LDi_onstreameventput(client, client->databuffer);
-        } else if (strcmp(context->eventName, "patch") == 0) {
-            LDi_onstreameventpatch(client, client->databuffer);
-        } else if (strcmp(context->eventName, "delete") == 0) {
-            LDi_onstreameventdelete(client, client->databuffer);
-        } else {
-            LD_LOG(LD_LOG_WARNING,
-                "streamcallback unknown event name: %s", client->eventname);
+        } else if ((json = LDJSONDeserialize(context->dataBuffer))) {
+            if (strcmp(context->eventName, "put") == 0) {
+                onPut(context->client, json);
+            } else if (strcmp(context->eventName, "patch") == 0) {
+                onPatch(context->client, json);
+            } else if (strcmp(context->eventName, "delete") == 0) {
+                onDelete(context->client, json);
+            } else {
+                LD_LOG(LD_LOG_WARNING,
+                    "streamcallback unknown event name: %s", context->eventName);
+            }
         }
 
         free(context->dataBuffer);
@@ -56,19 +86,19 @@ onSSE(struct StreamContext *const context, const char *line)
         linesize = strlen(line);
 
         if (nempty) {
-            currentsize = strlen(client->databuffer);
+            currentsize = strlen(context->dataBuffer);
         }
 
-        client->databuffer = realloc(
-            client->databuffer, linesize + currentsize + nempty + 1);
+        context->dataBuffer = realloc(
+            context->dataBuffer, linesize + currentsize + nempty + 1);
 
         if (nempty) {
-            client->databuffer[currentsize] = '\n';
+            context->dataBuffer[currentsize] = '\n';
         }
 
-        memcpy(client->databuffer + currentsize + nempty, line, linesize);
+        memcpy(context->dataBuffer + currentsize + nempty, line, linesize);
 
-        client->databuffer[currentsize + nempty + linesize] = 0;
+        context->dataBuffer[currentsize + nempty + linesize] = 0;
     } else if (strncmp(line, "event:", 6) == 0) {
         line += 6;
         line += line[0] == ' ';
@@ -239,6 +269,7 @@ constructStreaming(struct LDClient *const client)
     context->headers      = NULL;
     context->eventName[0] = 0;
     context->dataBuffer   = NULL;
+    context->client       = client;
 
     interface->done    = done;
     interface->poll    = poll;
