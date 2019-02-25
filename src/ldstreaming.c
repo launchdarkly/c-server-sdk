@@ -3,6 +3,7 @@
 
 #include "ldnetwork.h"
 #include "ldinternal.h"
+#include "ldstore.h"
 
 struct StreamContext {
     char *memory;
@@ -14,34 +15,89 @@ struct StreamContext {
     struct LDClient *client;
 };
 
-void
+bool
+parsePath(const char *path, char **const kind, char **const key)
+{
+    const char *const segments = "/segments/";
+    size_t segmentlen;
+
+    const char *const flags = "/flags/";
+    size_t flagslen;
+
+    LD_ASSERT(path);
+    LD_ASSERT(kind);
+    LD_ASSERT(key);
+
+    segmentlen = strlen(segments);
+    flagslen = strlen(flags);
+
+    if (strncmp(path, segments, segmentlen) == 0) {
+        if (!(*key = strdup(path + segmentlen))) {
+            return false;
+        }
+
+        if (!(*kind = strndup(path + 1, segmentlen - 2))) {
+            free(*key);
+
+            return false;
+        }
+    } else if(strncmp(path, flags, flagslen) == 0) {
+        if (!(*key = strdup(path + flagslen))) {
+            return false;
+        }
+
+        if (!(*kind = strndup(path + 1, flagslen - 2))) {
+            free(*key);
+
+            return false;
+        }
+    } else {
+        LD_LOG(LD_LOG_ERROR, "failed to parse prefix %s", path);
+
+        return false;
+    }
+
+    return true;
+}
+
+static bool
 onPut(struct LDClient *const client, struct LDJSON *const data)
 {
+    bool status;
+
     LD_ASSERT(client);
     LD_ASSERT(data);
 
+    status = LDStoreInit(client->config->store, data);
+
     LDJSONFree(data);
+
+    return status;
 }
 
-void
+static bool
 onPatch(struct LDClient *const client, struct LDJSON *const data)
 {
     LD_ASSERT(client);
     LD_ASSERT(data);
 
     LDJSONFree(data);
+
+    return true;
 }
 
-void
+static bool
 onDelete(struct LDClient *const client, struct LDJSON *const data)
 {
     LD_ASSERT(client);
     LD_ASSERT(data);
 
     LDJSONFree(data);
+
+    return true;
 }
 
-bool
+static bool
 onSSE(struct StreamContext *const context, const char *line)
 {
     if (!line) {
@@ -50,6 +106,7 @@ onSSE(struct StreamContext *const context, const char *line)
     } else if (line[0] == ':') {
         /* skip comment */
     } else if (line[0] == 0) {
+        bool status = true;
         struct LDJSON *json;
 
         if (context->eventName[0] == 0) {
@@ -60,11 +117,11 @@ onSSE(struct StreamContext *const context, const char *line)
                 "streamcallback got dispatch but data was never set");
         } else if ((json = LDJSONDeserialize(context->dataBuffer))) {
             if (strcmp(context->eventName, "put") == 0) {
-                onPut(context->client, json);
+                status = onPut(context->client, json);
             } else if (strcmp(context->eventName, "patch") == 0) {
-                onPatch(context->client, json);
+                status = onPatch(context->client, json);
             } else if (strcmp(context->eventName, "delete") == 0) {
-                onDelete(context->client, json);
+                status = onDelete(context->client, json);
             } else {
                 LD_LOG(LD_LOG_WARNING,
                     "streamcallback unknown event name: %s", context->eventName);
@@ -74,6 +131,10 @@ onSSE(struct StreamContext *const context, const char *line)
         free(context->dataBuffer);
         context->dataBuffer = NULL;
         context->eventName[0] = 0;
+
+        if (!status) {
+            return false;
+        }
     } else if (strncmp(line, "data:", 5) == 0) {
         bool nempty;
         size_t linesize;

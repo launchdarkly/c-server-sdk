@@ -29,3 +29,6 @@ bool prepareShared(const struct LDConfig *const config, const char *const url,
 struct NetworkInterface *constructPolling(struct LDClient *const client);
 
 struct NetworkInterface *constructStreaming(struct LDClient *const client);
+
+/* exposed for testing */
+bool parsePath(const char *path, char **const kind, char **const key);
