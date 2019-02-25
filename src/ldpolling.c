@@ -92,7 +92,7 @@ destroy(void *const rawcontext)
 
     LD_ASSERT(context);
 
-    LD_LOG(LD_LOG_INFO, "destroy!");
+    LD_LOG(LD_LOG_INFO, "polling destroyed");
 
     resetMemory(context);
 

@@ -92,7 +92,7 @@ LDi_networkthread(void* const clientref)
 {
     struct LDClient *const client = clientref;
 
-    struct NetworkInterface *interfaces[1];
+    struct NetworkInterface *interfaces[2];
 
     const size_t interfacecount =
         sizeof(interfaces) / sizeof(struct NetworkInterface *);
@@ -101,6 +101,12 @@ LDi_networkthread(void* const clientref)
 
     if (!(interfaces[0] = constructPolling(client))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct polling");
+
+        return THREAD_RETURN_DEFAULT;
+    }
+
+    if (!(interfaces[1] = constructStreaming(client))) {
+        LD_LOG(LD_LOG_ERROR, "failed to construct streaming");
 
         return THREAD_RETURN_DEFAULT;
     }
