@@ -66,7 +66,8 @@ done(struct LDClient *const client, void *const rawcontext)
 {
     struct PollContext *const context = rawcontext;
 
-    LD_ASSERT(client); LD_ASSERT(context);
+    LD_ASSERT(client);
+    LD_ASSERT(context);
 
     LD_LOG(LD_LOG_INFO, "done!");
 
