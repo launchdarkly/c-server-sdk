@@ -31,6 +31,18 @@ testParsePathSegments()
     free(key);
 }
 
+void
+testParsePathUnknownKind()
+{
+    char *kind = NULL;
+    char *key = NULL;
+
+    LD_ASSERT(!parsePath("/unknown/123", &kind, &key));
+
+    LD_ASSERT(!kind);
+    LD_ASSERT(!key);
+}
+
 int
 main()
 {
@@ -38,6 +50,7 @@ main()
 
     testParsePathFlags();
     testParsePathSegments();
+    testParsePathUnknownKind();
 
     return 0;
 }
