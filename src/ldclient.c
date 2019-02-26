@@ -33,10 +33,6 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     client->shuttingdown = false;
     client->config       = config;
 
-    if (!LDi_networkinit(client)) {
-        goto error;
-    }
-
     if (!LDi_rwlockinit(&client->lock)) {
         goto error;
     }

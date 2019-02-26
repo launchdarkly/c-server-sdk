@@ -77,16 +77,6 @@ prepareShared(const struct LDConfig *const config, const char *const url,
     return false;
 }
 
-bool
-LDi_networkinit(struct LDClient *const client)
-{
-    LD_ASSERT(client);
-
-    client->multihandle = curl_multi_init();
-
-    return client->multihandle != NULL;
-}
-
 THREAD_RETURN
 LDi_networkthread(void* const clientref)
 {
@@ -97,7 +87,15 @@ LDi_networkthread(void* const clientref)
     const size_t interfacecount =
         sizeof(interfaces) / sizeof(struct NetworkInterface *);
 
+    CURLM *multihandle;
+
     LD_ASSERT(client);
+
+    if (!(multihandle = curl_multi_init())) {
+        LD_LOG(LD_LOG_ERROR, "failed to construct multihandle");
+
+        return THREAD_RETURN_DEFAULT;
+    }
 
     if (!(interfaces[0] = constructPolling(client))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct polling");
@@ -124,7 +122,7 @@ LDi_networkthread(void* const clientref)
         }
         LD_ASSERT(LDi_rdunlock(&client->lock));
 
-        curl_multi_perform(client->multihandle, &running_handles);
+        curl_multi_perform(multihandle, &running_handles);
 
         for (unsigned int i = 0; i < interfacecount; i++) {
             CURL *const handle =
@@ -142,7 +140,7 @@ LDi_networkthread(void* const clientref)
                 }
 
                 if (curl_multi_add_handle(
-                    client->multihandle, handle) != CURLM_OK)
+                    multihandle, handle) != CURLM_OK)
                 {
                     LD_LOG(LD_LOG_ERROR, "failed to add handle");
 
@@ -154,7 +152,7 @@ LDi_networkthread(void* const clientref)
         do {
             int inqueue = 0;
 
-            info = curl_multi_info_read(client->multihandle, &inqueue);
+            info = curl_multi_info_read(multihandle, &inqueue);
 
             if (info && (info->msg == CURLMSG_DONE)) {
                 long responsecode;
@@ -189,14 +187,14 @@ LDi_networkthread(void* const clientref)
                 interface->current = NULL;
 
                 LD_ASSERT(curl_multi_remove_handle(
-                    client->multihandle, easy) == CURLM_OK);
+                    multihandle, easy) == CURLM_OK);
 
                 curl_easy_cleanup(easy);
             }
         } while (info);
 
         if (curl_multi_wait(
-            client->multihandle, NULL, 0, 5, &active_events) != CURLM_OK)
+            multihandle, NULL, 0, 5, &active_events) != CURLM_OK)
         {
             LD_LOG(LD_LOG_ERROR, "failed to wait on handles");
 
@@ -215,7 +213,7 @@ LDi_networkthread(void* const clientref)
 
         if (interface->current) {
             LD_ASSERT(curl_multi_remove_handle(
-                client->multihandle, interface->current) == CURLM_OK);
+                multihandle, interface->current) == CURLM_OK);
 
             curl_easy_cleanup(interface->current);
         }
@@ -224,7 +222,7 @@ LDi_networkthread(void* const clientref)
         free(interface);
     }
 
-    LD_ASSERT(curl_multi_cleanup(client->multihandle) == CURLM_OK);
+    LD_ASSERT(curl_multi_cleanup(multihandle) == CURLM_OK);
 
     return THREAD_RETURN_DEFAULT;
 }

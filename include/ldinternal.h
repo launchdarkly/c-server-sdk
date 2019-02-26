@@ -100,19 +100,14 @@ struct LDJSON *LDUserToJSON(struct LDClient *const client,
 /* **** LDClient **** */
 
 struct LDClient {
-    /* LDClientInit */
     bool initialized;
     bool shuttingdown;
     struct LDConfig *config;
     ld_thread_t thread;
     ld_rwlock_t lock;
-    /* LDNetInit */
-    CURLM *multihandle;
 };
 
 /* **** LDNetwork **** */
-
-bool LDi_networkinit(struct LDClient *const client);
 
 THREAD_RETURN LDi_networkthread(void *const clientref);
 
