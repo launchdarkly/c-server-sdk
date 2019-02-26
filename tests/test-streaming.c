@@ -119,6 +119,48 @@ testDeleteFlag(struct StreamContext *const context)
 }
 
 static void
+testPatchSegment(struct StreamContext *const context)
+{
+    struct LDJSON *segment;
+
+    const char *const event = "event: patch";
+
+    const char *const body =
+        "data: {\"path\": \"/segments/my-segment\", \"data\": "
+        "{\"key\": \"my-segment\", \"version\": 7}}";
+
+    LD_ASSERT(context);
+
+    LD_ASSERT(onSSE(context, event));
+    LD_ASSERT(onSSE(context, body));
+    LD_ASSERT(onSSE(context, ""));
+
+    LD_ASSERT(segment = LDStoreGet(
+        context->client->config->store, "segments", "my-segment"));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(segment, "version")) == 7);
+
+    LDJSONFree(segment);
+}
+
+static void
+testDeleteSegment(struct StreamContext *const context)
+{
+    const char *const event = "event: delete";
+
+    const char *const body =
+        "data: {\"path\": \"/segments/my-segment\", \"version\": 8}";
+
+    LD_ASSERT(context);
+
+    LD_ASSERT(onSSE(context, event));
+    LD_ASSERT(onSSE(context, body));
+    LD_ASSERT(onSSE(context, ""));
+
+    LD_ASSERT(!LDStoreGet(
+        context->client->config->store, "segments", "my-segment"));
+}
+
+static void
 testStreamOperations()
 {
     struct LDConfig *config;
@@ -134,6 +176,8 @@ testStreamOperations()
     testInitialPut(context);
     testPatchFlag(context);
     testDeleteFlag(context);
+    testPatchSegment(context);
+    testDeleteSegment(context);
 
     free(context->dataBuffer);
     free(context->memory);
