@@ -64,16 +64,42 @@ parsePath(const char *path, char **const kind, char **const key)
 static bool
 onPut(struct LDClient *const client, struct LDJSON *const data)
 {
-    bool status;
+    struct LDJSON *tmp;
+    bool success = false;
 
     LD_ASSERT(client);
     LD_ASSERT(data);
 
-    status = LDStoreInit(client->config->store, data);
+    if (!(tmp = LDObjectLookup(data, "data"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
 
+        goto cleanup;
+    }
+
+    if (LDJSONGetType(tmp) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        goto cleanup;
+    }
+
+    if (!(tmp = LDJSONDuplicate(tmp))) {
+        LD_LOG(LD_LOG_ERROR, "memory error");
+
+        goto cleanup;
+    }
+
+     if (!(success = LDStoreInit(client->config->store, data))) {
+         LD_LOG(LD_LOG_ERROR, "store error");
+
+         goto cleanup;
+     }
+
+     success = true;
+
+  cleanup:
     LDJSONFree(data);
 
-    return status;
+    return success;
 }
 
 static bool
