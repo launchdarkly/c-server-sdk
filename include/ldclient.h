@@ -20,3 +20,6 @@ bool LDClientIsInitialized(struct LDClient *const client);
 
 bool LDClientTrack(struct LDClient *const client,
     const struct LDUser *const user, struct LDJSON *const data);
+
+bool LDClientIdentify(struct LDClient *const client,
+    const struct LDUser *const user);

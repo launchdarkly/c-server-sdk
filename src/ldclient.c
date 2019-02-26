@@ -132,3 +132,20 @@ LDClientTrack(struct LDClient *const client, const struct LDUser *const user,
 
     return addEvent(client, event);
 }
+
+bool
+LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
+{
+    struct LDJSON *event;
+
+    LD_ASSERT(client);
+    LD_ASSERT(user);
+
+    if (!(event = newIdentifyEvent(user))) {
+        LD_LOG(LD_LOG_ERROR, "failed to construct identify event");
+
+        return false;
+    }
+
+    return addEvent(client, event);
+}
