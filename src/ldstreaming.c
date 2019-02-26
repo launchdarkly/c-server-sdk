@@ -4,6 +4,7 @@
 #include "ldnetwork.h"
 #include "ldinternal.h"
 #include "ldstore.h"
+#include "ldjson.h"
 
 struct StreamContext {
     char *memory;
@@ -89,12 +90,61 @@ onPatch(struct LDClient *const client, struct LDJSON *const data)
 static bool
 onDelete(struct LDClient *const client, struct LDJSON *const data)
 {
+    struct LDJSON *tmp;
+    char *kind = NULL;
+    char *key = NULL;
+
     LD_ASSERT(client);
     LD_ASSERT(data);
 
+    if (!(tmp = LDObjectLookup(data, "path"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        goto error;
+    }
+
+    if (LDJSONGetType(tmp) != LDText) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        goto error;
+    }
+
+    if (!parsePath(LDGetText(tmp), &kind, &key)) {
+        LD_LOG(LD_LOG_ERROR, "failed to parse path");
+
+        goto error;
+    }
+
+    if (!(tmp = LDObjectLookup(data, "version"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        goto error;
+    }
+
+    if (LDJSONGetType(tmp) != LDNumber) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        goto error;
+    }
+
+    if (!LDStoreDelete(client->config->store, kind, key, LDGetNumber(tmp))) {
+        LD_LOG(LD_LOG_ERROR, "store error");
+
+        goto error;
+    }
+
+    free(kind);
+    free(key);
     LDJSONFree(data);
 
     return true;
+
+  error:
+    free(kind);
+    free(key);
+    LDJSONFree(data);
+
+    return false;
 }
 
 static bool
