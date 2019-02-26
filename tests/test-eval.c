@@ -442,6 +442,90 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
 }
 
 static void
+testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
+{
+    struct LDUser *user;
+    struct LDStore *store;
+    struct LDJSON *flag1;
+    struct LDJSON *flag2;
+    struct LDJSON *flag3;
+    struct LDJSON *result = NULL;
+    struct LDJSON *events;
+
+    LD_ASSERT(user = LDUserNew("userKeyA"));
+
+    /* flag1 */
+    LD_ASSERT(flag1 = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("feature0")));
+    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag1, "offVariation", LDNewNumber(1)));
+    addPrerequisite(flag1, "feature1", 1);
+    setFallthrough(flag1, 0);
+    addVariations1(flag1);
+
+    /* flag2 */
+    LD_ASSERT(flag2 = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag2, "key", LDNewText("feature1")));
+    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(3)));
+    LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
+    addPrerequisite(flag2, "feature2", 1);
+    setFallthrough(flag2, 1);
+    addVariations2(flag2);
+
+    /* flag3 */
+    LD_ASSERT(flag3 = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag3, "key", LDNewText("feature2")));
+    LD_ASSERT(LDObjectSetKey(flag3, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag3, "version", LDNewNumber(3)));
+    LD_ASSERT(LDObjectSetKey(flag3, "offVariation", LDNewNumber(1)));
+    setFallthrough(flag3, 1);
+    addVariations2(flag3);
+
+    /* store */
+    LD_ASSERT(store = prepareEmptyStore());
+    LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
+    LD_ASSERT(LDStoreUpsert(store, "flags", flag3));
+
+    /* run */
+    LD_ASSERT(evaluate(flag1, user, store, &result));
+
+    /* validate */
+    LD_ASSERT(strcmp("fall", LDGetText(LDObjectLookup(result, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 0);
+    LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
+        LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+
+    LD_ASSERT(events = LDObjectLookup(result, "events"));
+    LD_ASSERT(LDArrayGetSize(events) == 2);
+
+    LD_ASSERT(events = LDGetIter(events));
+    LD_ASSERT(strcmp("feature2",
+        LDGetText(LDObjectLookup(events, "key"))) == 0);
+    LD_ASSERT(strcmp("go",
+        LDGetText(LDObjectLookup(events, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "version")) == 3);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "variation")) == 1);
+    LD_ASSERT(strcmp("feature0",
+        LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
+
+    LD_ASSERT(events = LDIterNext(events));
+    LD_ASSERT(strcmp("feature1",
+        LDGetText(LDObjectLookup(events, "key"))) == 0);
+    LD_ASSERT(strcmp("go",
+        LDGetText(LDObjectLookup(events, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "version")) == 3);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "variation")) == 1);
+    LD_ASSERT(strcmp("feature0",
+        LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
+
+    LDJSONFree(flag1);
+    LDJSONFree(result);
+    LDStoreDestroy(store);
+    LDUserFree(user);
+}
+
+static void
 testFlagMatchesUserFromTarget()
 {
     struct LDUser *user;
@@ -926,6 +1010,7 @@ main()
     testFlagReturnsOffVariationIfPrerequisiteIsOff();
     testFlagReturnsOffVariationIfPrerequisiteIsNotMet();
     testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules();
+    testMultipleLevelsOfPrerequisiteProduceMultipleEvents();
     testFlagMatchesUserFromTarget();
     testFlagMatchesUserFromRules();
     testClauseCanMatchBuiltInAttribute();
