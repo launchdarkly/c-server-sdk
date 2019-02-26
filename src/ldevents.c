@@ -148,76 +148,64 @@ newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
     }
 
     if (flag) {
-        if (!(tmp = LDObjectLookup(flag, "version"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
+        if ((tmp = LDObjectLookup(flag, "version"))) {
+            if (LDJSONGetType(tmp) != LDNumber) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
 
-            goto error;
+                goto error;
+            }
+
+            if (!(tmp = LDJSONDuplicate(tmp))) {
+                LD_LOG(LD_LOG_ERROR, "memory error");
+
+                goto error;
+            }
+
+            if (!LDObjectSetKey(event, "version", tmp)) {
+                LD_LOG(LD_LOG_ERROR, "memory error");
+
+                goto error;
+            }
         }
 
-        if (LDJSONGetType(tmp) != LDText) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
+        if ((tmp = LDObjectLookup(flag, "trackEvents"))) {
+            if (LDJSONGetType(tmp) != LDBool) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
 
-            goto error;
+                goto error;
+            }
+
+            if (!(tmp = LDJSONDuplicate(tmp))) {
+                LD_LOG(LD_LOG_ERROR, "memory error");
+
+                goto error;
+            }
+
+            if (!LDObjectSetKey(event, "trackEvents", tmp)) {
+                LD_LOG(LD_LOG_ERROR, "memory error");
+
+                goto error;
+            }
         }
 
-        if (!(tmp = LDJSONDuplicate(tmp))) {
-            LD_LOG(LD_LOG_ERROR, "memory error");
+        if ((tmp = LDObjectLookup(flag, "debugEventsUntilDate"))) {
+            if (LDJSONGetType(tmp) != LDNumber) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
 
-            goto error;
-        }
+                goto error;
+            }
 
-        if (!LDObjectSetKey(event, "version", tmp)) {
-            LD_LOG(LD_LOG_ERROR, "memory error");
+            if (!(tmp = LDJSONDuplicate(tmp))) {
+                LD_LOG(LD_LOG_ERROR, "memory error");
 
-            goto error;
-        }
+                goto error;
+            }
 
-        if (!(tmp = LDObjectLookup(flag, "trackEvents"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
+            if (!LDObjectSetKey(event, "debugEventsUntilDate", tmp)) {
+                LD_LOG(LD_LOG_ERROR, "memory error");
 
-            goto error;
-        }
-
-        if (LDJSONGetType(tmp) != LDBool) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            goto error;
-        }
-
-        if (!(tmp = LDJSONDuplicate(tmp))) {
-            LD_LOG(LD_LOG_ERROR, "memory error");
-
-            goto error;
-        }
-
-        if (!LDObjectSetKey(event, "trackEvents", tmp)) {
-            LD_LOG(LD_LOG_ERROR, "memory error");
-
-            goto error;
-        }
-
-        if (!(tmp = LDObjectLookup(flag, "debugEventsUntilDate"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            goto error;
-        }
-
-        if (LDJSONGetType(tmp) != LDNumber) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            goto error;
-        }
-
-        if (!(tmp = LDJSONDuplicate(tmp))) {
-            LD_LOG(LD_LOG_ERROR, "memory error");
-
-            goto error;
-        }
-
-        if (!LDObjectSetKey(event, "debugEventsUntilDate", tmp)) {
-            LD_LOG(LD_LOG_ERROR, "memory error");
-
-            goto error;
+                goto error;
+            }
         }
     }
 

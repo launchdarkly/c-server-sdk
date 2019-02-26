@@ -300,7 +300,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
         LDObjectLookup(reason, "kind"))) == 0);
     LD_ASSERT(strcmp("feature1", LDGetText(
         LDObjectLookup(reason, "prerequisiteKey"))) == 0);
-    LD_ASSERT(events = LDObjectLookup(reason, "events"));
+    LD_ASSERT(events = LDObjectLookup(result, "events"));
     LD_ASSERT(LDArrayGetSize(events) == 1);
     LD_ASSERT(events = LDGetIter(events));
     LD_ASSERT(strcmp("feature1",

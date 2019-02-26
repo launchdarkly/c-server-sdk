@@ -13,7 +13,8 @@ isEvalError(const EvalStatus status)
 }
 
 struct LDJSON *
-addReason(struct LDJSON **const result, const char *const reason)
+addReason(struct LDJSON **const result, const char *const reason,
+    struct LDJSON *const events)
 {
     struct LDJSON *tmpcollection;
     struct LDJSON *tmp;
@@ -40,16 +41,24 @@ addReason(struct LDJSON **const result, const char *const reason)
         return NULL;
     }
 
-    if (!(LDObjectSetKey(tmpcollection, "kind", tmp))) {
+    if (!LDObjectSetKey(tmpcollection, "kind", tmp)) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
         return NULL;
     }
 
-    if (!(LDObjectSetKey(*result, "reason", tmpcollection))) {
+    if (!LDObjectSetKey(*result, "reason", tmpcollection)) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
         return NULL;
+    }
+
+    if (events) {
+        if (!LDObjectSetKey(*result, "events", events)) {
+            LD_LOG(LD_LOG_ERROR, "events");
+
+            return NULL;
+        }
     }
 
     return tmpcollection;
@@ -64,7 +73,7 @@ addErrorReason(struct LDJSON **const result, const char *const kind)
     LD_ASSERT(result);
     LD_ASSERT(kind);
 
-    if (!(tmpcollection = addReason(result, "ERROR"))) {
+    if (!(tmpcollection = addReason(result, "ERROR", NULL))) {
         LD_LOG(LD_LOG_ERROR, "addReason failed");
 
         return NULL;
@@ -180,6 +189,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     const struct LDJSON *on;
     const struct LDJSON *fallthrough;
     const char *failedKey;
+    struct LDJSON *events = NULL;
 
     LD_ASSERT(flag);
     LD_ASSERT(user);
@@ -209,7 +219,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
         const struct LDJSON *offVariation =
             LDObjectLookup(flag, "offVariation");
 
-        if (!addReason(result, "OFF")) {
+        if (!addReason(result, "OFF", NULL)) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
             return EVAL_MEM;
@@ -226,7 +236,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
     /* prerequisites */
     if (isEvalError(substatus =
-        checkPrerequisites(flag, user, store, &failedKey)))
+        checkPrerequisites(flag, user, store, &failedKey, &events)))
     {
         LD_LOG(LD_LOG_ERROR, "sub error error");
 
@@ -237,7 +247,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
         struct LDJSON *key;
         struct LDJSON *reason;
 
-        if (!(reason = addReason(result, "PREREQUISITE_FAILED"))) {
+        if (!(reason = addReason(result, "PREREQUISITE_FAILED", events))) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
             return EVAL_MEM;
@@ -288,7 +298,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
                 variation = LDObjectLookup(iter, "variation");
 
-                if (!addReason(result, "TARGET_MATCH")) {
+                if (!addReason(result, "TARGET_MATCH", events)) {
                     LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
                     return EVAL_MEM;
@@ -339,7 +349,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
                 variation = LDObjectLookup(iter, "variation");
 
-                if (!(reason = addReason(result, "RULE_MATCH"))) {
+                if (!(reason = addReason(result, "RULE_MATCH", events))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
                     return EVAL_MEM;
@@ -404,7 +414,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
     fallthrough = LDObjectLookup(fallthrough, "variation");
 
-    if (!addReason(result, "FALLTHROUGH")) {
+    if (!addReason(result, "FALLTHROUGH", events)) {
         LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
         return EVAL_MEM;
@@ -422,7 +432,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 EvalStatus
 checkPrerequisites(const struct LDJSON *const flag,
     const struct LDUser *const user, struct LDStore *const store,
-    const char **const failedKey)
+    const char **const failedKey, struct LDJSON **const events)
 {
     struct LDJSON *prerequisites = NULL;
     struct LDJSON *iter = NULL;
@@ -431,6 +441,7 @@ checkPrerequisites(const struct LDJSON *const flag,
     LD_ASSERT(user);
     LD_ASSERT(store);
     LD_ASSERT(failedKey);
+    LD_ASSERT(events);
 
     if (LDJSONGetType(flag) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
@@ -455,6 +466,8 @@ checkPrerequisites(const struct LDJSON *const flag,
         struct LDJSON *preflag = NULL;
         const struct LDJSON *key = NULL;
         const struct LDJSON *variation = NULL;
+        unsigned int variationNum;
+        struct LDJSON *event = NULL;
 
         if (LDJSONGetType(iter) != LDObject) {
             LD_LOG(LD_LOG_ERROR, "schema error");
@@ -504,6 +517,42 @@ checkPrerequisites(const struct LDJSON *const flag,
             LDJSONFree(preflag);
 
             LD_LOG(LD_LOG_ERROR, "sub error with result");
+        }
+
+        if (!(*events)) {
+            if (!(*events = LDNewArray())) {
+                LDJSONFree(preflag);
+                LDJSONFree(result);
+
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                return EVAL_MEM;
+            }
+        }
+
+        variationNum = LDGetNumber(variation);
+
+        event = newFeatureRequestEvent(LDGetText(key), user, &variationNum,
+            LDObjectLookup(result, "value"), NULL,
+            LDGetText(LDObjectLookup(flag, "key")), preflag,
+            LDObjectLookup(result, "reason"));
+
+        if (!event) {
+            LDJSONFree(preflag);
+            LDJSONFree(result);
+
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            return EVAL_MEM;
+        }
+
+        if (!LDArrayAppend(*events, event)) {
+            LDJSONFree(preflag);
+            LDJSONFree(result);
+
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            return EVAL_MEM;
         }
 
         {
