@@ -1,6 +1,7 @@
 #include "ldinternal.h"
 #include "ldevaluate.h"
 #include "ldvariations.h"
+#include "ldevents.h"
 
 static struct LDJSON *
 variation(struct LDClient *const client, const struct LDUser *const user,
@@ -12,6 +13,9 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     struct LDJSON *value;
     struct LDStore *store;
     struct LDJSON *details = NULL;
+    struct LDJSON *events;
+    struct LDJSON *event;
+    unsigned int variationNum;
 
     if (!client) {
         if (!addErrorReason(&details, "NULL_CLIENT")) {
@@ -104,6 +108,39 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     if (reason) {
         *reason = LDObjectLookup(details, "reason");
         *reason = LDJSONDuplicate(*reason);
+    }
+
+    if ((events = LDObjectLookup(details, "events"))) {
+        struct LDJSON *iter;
+        /* local only sanity */
+        LD_ASSERT(LDJSONGetType(events) == LDArray);
+
+        for (iter = LDGetIter(events); iter; iter = LDIterNext(iter)) {
+            if (!addEvent(client, iter)) {
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                goto error;
+            }
+        }
+    }
+
+    variationNum = LDGetNumber(LDObjectLookup(details, "variationIndex"));
+
+    event = newFeatureRequestEvent(key, user, &variationNum,
+        LDObjectLookup(details, "value"), NULL,
+        LDGetText(LDObjectLookup(flag, "key")), flag,
+        LDObjectLookup(details, "reason"));
+
+    if (!event) {
+        LD_LOG(LD_LOG_ERROR, "failed to build feature request event");
+
+        goto error;
+    }
+
+    if (!addEvent(client, event)) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        goto error;
     }
 
     LDJSONFree(details);
@@ -297,7 +334,7 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
         } else {
             return NULL;
         }
-    } 
+    }
 
     return result;
 }

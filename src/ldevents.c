@@ -309,7 +309,7 @@ addEvent(struct LDClient *const client, const struct LDJSON *const event)
             return false;
         }
 
-        LDArrayAppend(client->events, dupe);
+        LDArrayPush(client->events, dupe);
 
         LD_ASSERT(LDi_wrunlock(&client->lock));
 
