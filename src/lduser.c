@@ -161,7 +161,7 @@ textInArray(const struct LDJSON *const array, const char *const text)
 }
 
 static bool
-isPrivateAttr(struct LDClient *const client, struct LDUser *const user,
+isPrivateAttr(struct LDClient *const client, const struct LDUser *const user,
     const char *const key)
 {
     bool global = false;
@@ -196,7 +196,7 @@ addHidden(struct LDJSON **ref, const char *const value){
 }
 
 struct LDJSON *
-LDUserToJSON(struct LDClient *const client, struct LDUser *const lduser,
+LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
     const bool redact)
 {
     struct LDJSON *hidden = NULL, *json = NULL, *temp = NULL;
