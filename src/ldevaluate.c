@@ -468,6 +468,7 @@ checkPrerequisites(const struct LDJSON *const flag,
         const struct LDJSON *variation = NULL;
         unsigned int variationNum;
         struct LDJSON *event = NULL;
+        struct LDJSON *subevents;
 
         if (LDJSONGetType(iter) != LDObject) {
             LD_LOG(LD_LOG_ERROR, "schema error");
@@ -537,6 +538,17 @@ checkPrerequisites(const struct LDJSON *const flag,
 
         if (!(*events)) {
             if (!(*events = LDNewArray())) {
+                LDJSONFree(preflag);
+                LDJSONFree(result);
+
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                return EVAL_MEM;
+            }
+        }
+
+        if ((subevents = LDObjectLookup(result, "events"))) {
+            if (!LDArrayAppend(*events, subevents)) {
                 LDJSONFree(preflag);
                 LDJSONFree(result);
 

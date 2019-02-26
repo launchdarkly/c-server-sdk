@@ -506,7 +506,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
         LDGetText(LDObjectLookup(events, "value"))) == 0);
     LD_ASSERT(LDGetNumber(LDObjectLookup(events, "version")) == 3);
     LD_ASSERT(LDGetNumber(LDObjectLookup(events, "variation")) == 1);
-    LD_ASSERT(strcmp("feature0",
+    LD_ASSERT(strcmp("feature1",
         LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
 
     LD_ASSERT(events = LDIterNext(events));
