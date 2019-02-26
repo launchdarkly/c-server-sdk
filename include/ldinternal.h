@@ -120,6 +120,7 @@ THREAD_RETURN LDi_networkthread(void *const clientref);
 
 bool sleepMilliseconds(const unsigned int milliseconds);
 bool getMonotonicMilliseconds(unsigned int *const resultMilliseconds);
+bool getUnixMilliseconds(unsigned int *const resultMilliseconds);
 
 bool LDSetString(char **const target, const char *const value);
 

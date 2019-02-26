@@ -23,14 +23,14 @@ sleepMilliseconds(const unsigned int milliseconds)
     return true;
 }
 
-bool
-getMonotonicMilliseconds(unsigned int *const resultMilliseconds)
+static bool
+getTime(unsigned int *const resultMilliseconds, clockid_t clockid)
 {
     int status; struct timespec spec;
 
     LD_ASSERT(resultMilliseconds);
 
-    if ((status = clock_gettime(CLOCK_MONOTONIC, &spec)) != 0) {
+    if ((status = clock_gettime(clockid, &spec)) != 0) {
         LD_LOG(LD_LOG_CRITICAL, "clock_gettime failed with: %s",
             strerror(status));
 
@@ -40,6 +40,18 @@ getMonotonicMilliseconds(unsigned int *const resultMilliseconds)
     *resultMilliseconds = (spec.tv_sec * 1000) + (spec.tv_nsec / 1000000);
 
     return true;
+}
+
+bool
+getMonotonicMilliseconds(unsigned int *const resultMilliseconds)
+{
+    return getTime(resultMilliseconds, CLOCK_MONOTONIC);
+}
+
+bool
+getUnixMilliseconds(unsigned int *const resultMilliseconds)
+{
+    return getTime(resultMilliseconds, CLOCK_REALTIME);
 }
 
 bool
