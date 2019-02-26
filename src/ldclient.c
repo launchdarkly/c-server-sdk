@@ -4,6 +4,7 @@
 #include "ldinternal.h"
 #include "ldstore.h"
 #include "ldclient.h"
+#include "ldevents.h"
 
 struct LDClient *
 LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
@@ -34,6 +35,10 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     client->config       = config;
 
     if (!LDi_rwlockinit(&client->lock)) {
+        goto error;
+    }
+
+    if (!(client->events = LDNewArray())) {
         goto error;
     }
 
@@ -68,6 +73,8 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         LDStoreDestroy(config->store);
     }
 
+    LDJSONFree(client->events);
+
     free(client);
 
     return NULL;
@@ -87,6 +94,7 @@ LDClientClose(struct LDClient *const client)
 
         /* cleanup resources */
         LD_ASSERT(LDi_rwlockdestroy(&client->lock));
+        LDJSONFree(client->events);
 
         if (client->config->defaultStore) {
             LDStoreDestroy(client->config->store);
@@ -104,4 +112,23 @@ LDClientIsInitialized(struct LDClient *const client)
     LD_ASSERT(client);
 
     return LDStoreInitialized(client->config->store);
+}
+
+
+bool
+LDClientTrack(struct LDClient *const client, const struct LDUser *const user,
+    struct LDJSON *const data)
+{
+    struct LDJSON *event;
+
+    LD_ASSERT(client);
+    LD_ASSERT(user);
+
+    if (!(event = newCustomEvent(user, user->key, data))) {
+        LD_LOG(LD_LOG_ERROR, "failed to construct custom event");
+
+        return false;
+    }
+
+    return addEvent(client, event);
 }

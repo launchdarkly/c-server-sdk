@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+/* event construction */
 struct LDJSON *newBaseEvent(const struct LDUser *const user);
 
 struct LDJSON *newFeatureRequestEvent(const char *const key,
@@ -20,3 +21,6 @@ struct LDJSON *newCustomEvent(const struct LDUser *const user,
     const char *const key, struct LDJSON *const data);
 
 struct LDJSON *newIdentifyEvent(const struct LDUser *const user);
+
+/* event recording */
+bool addEvent(struct LDClient *const client, const struct LDJSON *const event);

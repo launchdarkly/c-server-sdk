@@ -280,3 +280,39 @@ newIdentifyEvent(const struct LDUser *const user)
 {
     return newBaseEvent(user);
 }
+
+bool
+addEvent(struct LDClient *const client, const struct LDJSON *const event)
+{
+    LD_ASSERT(client);
+    LD_ASSERT(event);
+
+    LD_ASSERT(LDi_wrlock(&client->lock));
+
+    /* sanity check */
+    LD_ASSERT(LDJSONGetType(client->events) == LDArray);
+
+    if (LDArrayGetSize(client->events) > client->config->eventsCapacity) {
+        LD_LOG(LD_LOG_WARNING, "event capacity exceeded, dropping event");
+
+        LD_ASSERT(LDi_wrunlock(&client->lock));
+
+        return true;
+    } else {
+        struct LDJSON *dupe;
+
+        if (!(dupe = LDJSONDuplicate(event))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            return false;
+        }
+
+        LDArrayAppend(client->events, dupe);
+
+        LD_ASSERT(LDi_wrunlock(&client->lock));
+
+        return true;
+    }
+}
