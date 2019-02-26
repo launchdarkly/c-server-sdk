@@ -3,7 +3,7 @@
 #include "ldstreaming.h"
 #include "ldstore.h"
 
-void
+static void
 testParsePathFlags()
 {
     char *kind;
@@ -18,7 +18,7 @@ testParsePathFlags()
     free(key);
 }
 
-void
+static void
 testParsePathSegments()
 {
     char *kind;
@@ -33,7 +33,7 @@ testParsePathSegments()
     free(key);
 }
 
-void
+static void
 testParsePathUnknownKind()
 {
     char *kind = NULL;
@@ -45,7 +45,7 @@ testParsePathUnknownKind()
     LD_ASSERT(!key);
 }
 
-void
+static void
 testInitialPut(struct StreamContext *const context)
 {
     struct LDJSON *flag;
@@ -76,7 +76,31 @@ testInitialPut(struct StreamContext *const context)
     LDJSONFree(segment);
 }
 
-void
+static void
+testPatchFlag(struct StreamContext *const context)
+{
+    struct LDJSON *flag;
+
+    const char *const event = "event: patch";
+
+    const char *const body =
+        "data: {\"path\": \"/flags/my-flag\", \"data\": "
+        "{\"key\": \"my-flag\", \"version\": 3}}";
+
+    LD_ASSERT(context);
+
+    LD_ASSERT(onSSE(context, event));
+    LD_ASSERT(onSSE(context, body));
+    LD_ASSERT(onSSE(context, ""));
+
+    LD_ASSERT(flag = LDStoreGet(
+        context->client->config->store, "flags", "my-flag"));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(flag, "version")) == 3);
+
+    LDJSONFree(flag);
+}
+
+static void
 testStreamOperations()
 {
     struct LDConfig *config;
@@ -90,6 +114,7 @@ testStreamOperations()
     context->client = client;
 
     testInitialPut(context);
+    testPatchFlag(context);
 
     free(context->dataBuffer);
     free(context->memory);
