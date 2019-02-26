@@ -201,11 +201,20 @@ struct LDJSON *LDArrayLookup(const struct LDJSON *const array,
 
 /**
  * @brief Adds an item to the end of an existing array.
- * @param[in] array Must be of type `LDJSONArrayt` (assert).
+ * @param[in] array Must be of type `LDJSONArray` (assert).
  * @param[in] item The value to append to the array. This item is consumed.
  * @return True on success, False on failure.
  */
 bool LDArrayPush(struct LDJSON *const array, struct LDJSON *const item);
+
+/**
+ * @brief Appends the array on the right to the array on the left
+ * @param[in] prefix Must be of type `LDJSONArray` (assert).
+ * @param[in] suffix Must be of type `LDJSONArray` (assert).
+ * @return True on success, False on failure.
+ */
+bool LDArrayAppend(struct LDJSON *const prefix,
+    const struct LDJSON *const suffix);
 
 /***************************************************************************//**
  * @name Object Operations

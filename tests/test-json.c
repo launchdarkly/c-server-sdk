@@ -142,6 +142,30 @@ testMerge()
     LDJSONFree(right);
 }
 
+static void
+testAppend()
+{
+    struct LDJSON *iter;
+    struct LDJSON *left;
+    struct LDJSON *right;
+
+    LD_ASSERT(left = LDNewArray());
+    LD_ASSERT(LDArrayPush(left, LDNewNumber(1)));
+
+    LD_ASSERT(right = LDNewArray());
+    LD_ASSERT(LDArrayPush(right, LDNewNumber(2)));
+    LD_ASSERT(LDArrayPush(right, LDNewNumber(3)));
+
+    LD_ASSERT(LDArrayAppend(left, right));
+
+    LD_ASSERT(LDGetNumber(iter = LDGetIter(left)) == 1);
+    LD_ASSERT(LDGetNumber(iter = LDIterNext(iter)) == 2);
+    LD_ASSERT(LDGetNumber(LDIterNext(iter)) == 3);
+
+    LDJSONFree(left);
+    LDJSONFree(right);
+}
+
 int
 main()
 {
@@ -154,6 +178,7 @@ main()
     testArray();
     testObject();
     testMerge();
+    testAppend();
 
     return 0;
 }

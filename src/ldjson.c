@@ -186,6 +186,32 @@ LDArrayPush(struct LDJSON *const rawarray, struct LDJSON *const item)
     return true;
 }
 
+bool
+LDArrayAppend(struct LDJSON *const rawprefix,
+    const struct LDJSON *const rawsuffix)
+{
+    cJSON *iter;
+    cJSON *const prefix = (cJSON *const)rawprefix;
+    const cJSON *const suffix = (const cJSON *const)rawsuffix;
+
+    LD_ASSERT(prefix);
+    LD_ASSERT(cJSON_IsArray(prefix));
+    LD_ASSERT(suffix);
+    LD_ASSERT(cJSON_IsArray(suffix));
+
+    for (iter = suffix->child; iter; iter = iter->next) {
+        cJSON *dupe;
+
+        if (!(dupe = cJSON_Duplicate(iter, true))) {
+            return false;
+        }
+
+        cJSON_AddItemToArray(prefix, dupe);
+    }
+
+    return true;
+}
+
 struct LDJSON *
 LDObjectLookup(const struct LDJSON *const rawobject, const char *const key)
 {
