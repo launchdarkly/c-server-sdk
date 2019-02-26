@@ -388,6 +388,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     struct LDJSON *flag1;
     struct LDJSON *flag2;
     struct LDJSON *result = NULL;
+    struct LDJSON *events;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -421,6 +422,18 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 0);
     LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+
+    LD_ASSERT(events = LDObjectLookup(result, "events"));
+    LD_ASSERT(LDArrayGetSize(events) == 1);
+    LD_ASSERT(events = LDGetIter(events));
+    LD_ASSERT(strcmp("feature1",
+        LDGetText(LDObjectLookup(events, "key"))) == 0);
+    LD_ASSERT(strcmp("go",
+        LDGetText(LDObjectLookup(events, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "version")) == 3);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "variation")) == 1);
+    LD_ASSERT(strcmp("feature0",
+        LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
 
     LDJSONFree(flag1);
     LDJSONFree(result);
@@ -471,6 +484,7 @@ testFlagMatchesUserFromTarget()
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 2);
     LD_ASSERT(strcmp("TARGET_MATCH", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -505,6 +519,7 @@ testFlagMatchesUserFromRules()
     LD_ASSERT(LDGetNumber(LDObjectLookup(reason, "ruleIndex")) == 0);
     LD_ASSERT(strcmp("rule-id",
         LDGetText(LDObjectLookup(reason, "ruleId"))) == 0);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -540,6 +555,7 @@ testClauseCanMatchBuiltInAttribute()
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -578,6 +594,7 @@ testClauseCanMatchCustomAttribute()
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -610,6 +627,7 @@ testClauseReturnsFalseForMissingAttribute()
 
     /* run */
     LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result));
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
@@ -649,6 +667,7 @@ testClauseCanBeNegated()
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -685,6 +704,7 @@ testClauseForMissingAttributeIsFalseEvenIfNegate()
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -720,6 +740,7 @@ testClauseWithUnknownOperatorDoesNotMatch()
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -768,6 +789,7 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -806,6 +828,7 @@ testSegmentMatchClauseFallsThroughIfSegmentNotFound()
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -856,6 +879,7 @@ testCanMatchJustOneSegmentFromList()
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
