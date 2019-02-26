@@ -149,3 +149,11 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
 
     return addEvent(client, event);
 }
+
+bool
+LDClientIsOffline(struct LDClient *const client)
+{
+    LD_ASSERT(client);
+
+    return client->config->offline;
+}
