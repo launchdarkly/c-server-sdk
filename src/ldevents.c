@@ -6,6 +6,7 @@
 #include "ldapi.h"
 #include "ldinternal.h"
 #include "ldjson.h"
+#include "ldevents.h"
 
 struct LDJSON *
 newBaseEvent(const struct LDUser *const user)

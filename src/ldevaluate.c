@@ -4,6 +4,7 @@
 #include "ldinternal.h"
 #include "ldevaluate.h"
 #include "ldoperators.h"
+#include "ldevents.h"
 
 bool
 isEvalError(const EvalStatus status)
