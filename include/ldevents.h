@@ -13,7 +13,8 @@ struct LDJSON *newBaseEvent(const struct LDUser *const user);
 struct LDJSON *newFeatureRequestEvent(const char *const key,
     const struct LDUser *const user, const unsigned int *const variation,
     const struct LDJSON *const value, const struct LDJSON *const defaultValue,
-    const char *const prereqOf, const struct LDJSON *const flag);
+    const char *const prereqOf, const struct LDJSON *const flag,
+    const struct LDJSON *const reason);
 
 struct LDJSON *newCustomEvent(const struct LDUser *const user,
     const char *const key, struct LDJSON *const data);

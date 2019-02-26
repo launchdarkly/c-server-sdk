@@ -66,7 +66,7 @@ struct LDJSON *
 newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
     const unsigned int *const variation, const struct LDJSON *const value,
     const struct LDJSON *const defaultValue, const char *const prereqOf,
-    const struct LDJSON *const flag)
+    const struct LDJSON *const flag, const struct LDJSON *const reason)
 {
     struct LDJSON *tmp;
     struct LDJSON *event;
@@ -215,6 +215,20 @@ newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
         }
 
         if (!LDObjectSetKey(event, "debugEventsUntilDate", tmp)) {
+            LD_LOG(LD_LOG_ERROR, "memory error");
+
+            goto error;
+        }
+    }
+
+    if (reason) {
+        if (!(tmp = LDJSONDuplicate(reason))) {
+            LD_LOG(LD_LOG_ERROR, "memory error");
+
+            goto error;
+        }
+
+        if (!LDObjectSetKey(event, "reason", tmp)) {
             LD_LOG(LD_LOG_ERROR, "memory error");
 
             goto error;
