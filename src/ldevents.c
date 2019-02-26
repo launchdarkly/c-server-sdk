@@ -8,7 +8,7 @@
 #include "ldjson.h"
 
 struct LDJSON *
-baseEvent(const struct LDUser *const user)
+newBaseEvent(const struct LDUser *const user)
 {
     struct LDJSON *tmp;
     struct LDJSON *event;
@@ -56,7 +56,7 @@ baseEvent(const struct LDUser *const user)
 }
 
 struct LDJSON *
-featureRequestEvent(const char *const key, const struct LDUser *const user,
+newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
     const unsigned int *const variation, const struct LDJSON *const value,
     const struct LDJSON *const defaultValue, const char *const prereqOf,
     const struct LDJSON *const flag)
@@ -68,7 +68,7 @@ featureRequestEvent(const char *const key, const struct LDUser *const user,
     LD_ASSERT(user);
     LD_ASSERT(value);
 
-    if (!(event = baseEvent(user))) {
+    if (!(event = newBaseEvent(user))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         goto error;
@@ -220,4 +220,54 @@ featureRequestEvent(const char *const key, const struct LDUser *const user,
     LDJSONFree(event);
 
     return NULL;
+}
+
+struct LDJSON *
+newCustomEvent(const struct LDUser *const user, const char *const key,
+    struct LDJSON *const data)
+{
+    struct LDJSON *tmp;
+    struct LDJSON *event;
+
+    LD_ASSERT(user);
+    LD_ASSERT(key);
+
+    if (!(event = newBaseEvent(user))) {
+        LD_LOG(LD_LOG_ERROR, "memory error");
+
+        goto error;
+    }
+
+    if (!(tmp = LDNewText(key))) {
+        LD_LOG(LD_LOG_ERROR, "memory error");
+
+        goto error;
+    }
+
+    if (!LDObjectSetKey(event, "key", tmp)) {
+        LD_LOG(LD_LOG_ERROR, "memory error");
+
+        goto error;
+    }
+
+    if (data) {
+        if (!LDObjectSetKey(event, "data", data)) {
+            LD_LOG(LD_LOG_ERROR, "memory error");
+
+            goto error;
+        }
+    }
+
+    return event;
+
+  error:
+    LDJSONFree(event);
+
+    return NULL;
+}
+
+struct LDJSON *
+newIdentifyEvent(const struct LDUser *const user)
+{
+    return newBaseEvent(user);
 }
