@@ -5,16 +5,7 @@
 #include "ldinternal.h"
 #include "ldstore.h"
 #include "ldjson.h"
-
-struct StreamContext {
-    char *memory;
-    size_t size;
-    bool active;
-    struct curl_slist *headers;
-    char eventName[256];
-    char *dataBuffer;
-    struct LDClient *client;
-};
+#include "ldstreaming.h"
 
 bool
 parsePath(const char *path, char **const kind, char **const key)
@@ -88,10 +79,10 @@ onPut(struct LDClient *const client, struct LDJSON *const data)
         goto cleanup;
     }
 
-     if (!(success = LDStoreInit(client->config->store, data))) {
-         LD_LOG(LD_LOG_ERROR, "store error");
+    if (!(success = LDStoreInit(client->config->store, tmp))) {
+        LD_LOG(LD_LOG_ERROR, "store error");
 
-         goto cleanup;
+        goto cleanup;
      }
 
      success = true;
@@ -222,7 +213,7 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
     return success;
 }
 
-static bool
+bool
 onSSE(struct StreamContext *const context, const char *line)
 {
     if (!line) {
@@ -298,6 +289,8 @@ onSSE(struct StreamContext *const context, const char *line)
 
             return false;
         }
+
+        LD_LOG(LD_LOG_INFO, "got event type %s", context->eventName);
     }
 
     return true;

@@ -1,5 +1,7 @@
 #include "ldnetwork.h"
 #include "ldinternal.h"
+#include "ldstreaming.h"
+#include "ldstore.h"
 
 void
 testParsePathFlags()
@@ -43,6 +45,58 @@ testParsePathUnknownKind()
     LD_ASSERT(!key);
 }
 
+void
+testInitialPut(struct StreamContext *const context)
+{
+    struct LDJSON *flag;
+    struct LDJSON *segment;
+
+    const char *const event = "event: put";
+
+    const char *const body =
+        "data: {\"path\": \"/\", \"data\": {\"flags\": {\"my-flag\":"
+        "{\"key\": \"my-flag\", \"version\": 2}},\"segments\": "
+        "{\"my-segment\": {\"key\": \"my-segment\", \"version\": 5}}}}";
+
+    LD_ASSERT(context);
+
+    LD_ASSERT(onSSE(context, event));
+    LD_ASSERT(onSSE(context, body));
+    LD_ASSERT(onSSE(context, ""));
+
+    LD_ASSERT(flag = LDStoreGet(
+        context->client->config->store, "flags", "my-flag"));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(flag, "version")) == 2);
+
+    LD_ASSERT(segment = LDStoreGet(
+        context->client->config->store, "segments", "my-segment"));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(segment, "version")) == 5);
+
+    LDJSONFree(flag);
+    LDJSONFree(segment);
+}
+
+void
+testStreamOperations()
+{
+    struct LDConfig *config;
+    struct LDClient *client;
+    struct StreamContext *context;
+
+    LD_ASSERT(config = LDConfigNew("key"));
+    LD_ASSERT(client = LDClientInit(config, 0));
+    LD_ASSERT(context = malloc(sizeof(struct StreamContext)));
+    memset(context, 0, sizeof(struct StreamContext));
+    context->client = client;
+
+    testInitialPut(context);
+
+    free(context->dataBuffer);
+    free(context->memory);
+    free(context);
+    LDClientClose(client);
+}
+
 int
 main()
 {
@@ -51,6 +105,7 @@ main()
     testParsePathFlags();
     testParsePathSegments();
     testParsePathUnknownKind();
+    testStreamOperations();
 
     return 0;
 }
