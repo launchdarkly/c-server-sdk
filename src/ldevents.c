@@ -12,6 +12,7 @@ newBaseEvent(const struct LDUser *const user)
 {
     struct LDJSON *tmp;
     struct LDJSON *event;
+    unsigned int milliseconds;
 
     LD_ASSERT(user);
 
@@ -34,8 +35,13 @@ newBaseEvent(const struct LDUser *const user)
         goto error;
     }
 
-    /* TODO: use actual time */
-    if (!(tmp = LDNewNumber(0))) {
+    if (!getUnixMilliseconds(&milliseconds)) {
+        LD_LOG(LD_LOG_ERROR, "failed to get time");
+
+        goto error;
+    }
+
+    if (!(tmp = LDNewNumber(milliseconds))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         goto error;
