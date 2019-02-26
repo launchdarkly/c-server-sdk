@@ -101,6 +101,24 @@ testPatchFlag(struct StreamContext *const context)
 }
 
 static void
+testDeleteFlag(struct StreamContext *const context)
+{
+    const char *const event = "event: delete";
+
+    const char *const body =
+        "data: {\"path\": \"/flags/my-flag\", \"version\": 4}";
+
+    LD_ASSERT(context);
+
+    LD_ASSERT(onSSE(context, event));
+    LD_ASSERT(onSSE(context, body));
+    LD_ASSERT(onSSE(context, ""));
+
+    LD_ASSERT(!LDStoreGet(
+        context->client->config->store, "flags", "my-flag"));
+}
+
+static void
 testStreamOperations()
 {
     struct LDConfig *config;
@@ -115,6 +133,7 @@ testStreamOperations()
 
     testInitialPut(context);
     testPatchFlag(context);
+    testDeleteFlag(context);
 
     free(context->dataBuffer);
     free(context->memory);
