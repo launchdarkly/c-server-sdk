@@ -36,7 +36,7 @@ testExplicitIncludeUser()
     LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
 
     LD_ASSERT(tmp = LDNewArray());
-    LD_ASSERT(LDArrayAppend(tmp, LDNewText("foo")));
+    LD_ASSERT(LDArrayPush(tmp, LDNewText("foo")));
     LD_ASSERT(LDObjectSetKey(segment, "included", tmp));
 
     /* run */
@@ -64,7 +64,7 @@ testExplicitExcludeUser()
     LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
 
     LD_ASSERT(tmp = LDNewArray());
-    LD_ASSERT(LDArrayAppend(tmp, LDNewText("foo")));
+    LD_ASSERT(LDArrayPush(tmp, LDNewText("foo")));
     LD_ASSERT(LDObjectSetKey(segment, "excluded", tmp));
 
     /* run */
@@ -92,11 +92,11 @@ testExplicitIncludeHasPrecedence()
     LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
 
     LD_ASSERT(tmp = LDNewArray());
-    LD_ASSERT(LDArrayAppend(tmp, LDNewText("foo")));
+    LD_ASSERT(LDArrayPush(tmp, LDNewText("foo")));
     LD_ASSERT(LDObjectSetKey(segment, "excluded", tmp));
 
     LD_ASSERT(tmp = LDNewArray());
-    LD_ASSERT(LDArrayAppend(tmp, LDNewText("foo")));
+    LD_ASSERT(LDArrayPush(tmp, LDNewText("foo")));
     LD_ASSERT(LDObjectSetKey(segment, "included", tmp));
 
     /* run */
@@ -123,7 +123,7 @@ testMatchingRuleWithFullRollout()
 
     /* segment */
     LD_ASSERT(values = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values, LDNewText("test@example.com")));
+    LD_ASSERT(LDArrayPush(values, LDNewText("test@example.com")));
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("email")));
@@ -132,14 +132,14 @@ testMatchingRuleWithFullRollout()
     LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(false)));
 
     LD_ASSERT(clauses = LDNewArray());
-    LD_ASSERT(LDArrayAppend(clauses, clause));
+    LD_ASSERT(LDArrayPush(clauses, clause));
 
     LD_ASSERT(rule = LDNewObject());
     LD_ASSERT(LDObjectSetKey(rule, "clauses", clauses));
     LD_ASSERT(LDObjectSetKey(rule, "weight", LDNewNumber(100000)));
 
     LD_ASSERT(rules = LDNewArray());
-    LD_ASSERT(LDArrayAppend(rules, rule));
+    LD_ASSERT(LDArrayPush(rules, rule));
 
     LD_ASSERT(segment = makeTestSegment(rules));
 
@@ -167,7 +167,7 @@ testMatchingRuleWithZeroRollout()
 
     /* segment */
     LD_ASSERT(values = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values, LDNewText("test@example.com")));
+    LD_ASSERT(LDArrayPush(values, LDNewText("test@example.com")));
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("email")));
@@ -176,14 +176,14 @@ testMatchingRuleWithZeroRollout()
     LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(false)));
 
     LD_ASSERT(clauses = LDNewArray());
-    LD_ASSERT(LDArrayAppend(clauses, clause));
+    LD_ASSERT(LDArrayPush(clauses, clause));
 
     LD_ASSERT(rule = LDNewObject());
     LD_ASSERT(LDObjectSetKey(rule, "clauses", clauses));
     LD_ASSERT(LDObjectSetKey(rule, "weight", LDNewNumber(0)));
 
     LD_ASSERT(rules = LDNewArray());
-    LD_ASSERT(LDArrayAppend(rules, rule));
+    LD_ASSERT(LDArrayPush(rules, rule));
 
     LD_ASSERT(segment = makeTestSegment(rules));
 
@@ -214,7 +214,7 @@ testMatchingRuleWithMultipleClauses()
 
     /* segment */
     LD_ASSERT(values1 = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values1, LDNewText("test@example.com")));
+    LD_ASSERT(LDArrayPush(values1, LDNewText("test@example.com")));
 
     LD_ASSERT(clause1 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause1, "attribute", LDNewText("email")));
@@ -223,7 +223,7 @@ testMatchingRuleWithMultipleClauses()
     LD_ASSERT(LDObjectSetKey(clause1, "negate", LDNewBool(false)));
 
     LD_ASSERT(values2 = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values2, LDNewText("bob")));
+    LD_ASSERT(LDArrayPush(values2, LDNewText("bob")));
 
     LD_ASSERT(clause2 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause2, "attribute", LDNewText("name")));
@@ -232,14 +232,14 @@ testMatchingRuleWithMultipleClauses()
     LD_ASSERT(LDObjectSetKey(clause2, "negate", LDNewBool(false)));
 
     LD_ASSERT(clauses = LDNewArray());
-    LD_ASSERT(LDArrayAppend(clauses, clause1));
-    LD_ASSERT(LDArrayAppend(clauses, clause2));
+    LD_ASSERT(LDArrayPush(clauses, clause1));
+    LD_ASSERT(LDArrayPush(clauses, clause2));
 
     LD_ASSERT(rule = LDNewObject());
     LD_ASSERT(LDObjectSetKey(rule, "clauses", clauses));
 
     LD_ASSERT(rules = LDNewArray());
-    LD_ASSERT(LDArrayAppend(rules, rule));
+    LD_ASSERT(LDArrayPush(rules, rule));
 
     LD_ASSERT(segment = makeTestSegment(rules));
 
@@ -270,7 +270,7 @@ testNonMatchingRuleWithMultipleClauses()
 
     /* segment */
     LD_ASSERT(values1 = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values1, LDNewText("test@example.com")));
+    LD_ASSERT(LDArrayPush(values1, LDNewText("test@example.com")));
 
     LD_ASSERT(clause1 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause1, "attribute", LDNewText("email")));
@@ -279,7 +279,7 @@ testNonMatchingRuleWithMultipleClauses()
     LD_ASSERT(LDObjectSetKey(clause1, "negate", LDNewBool(false)));
 
     LD_ASSERT(values2 = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values2, LDNewText("bill")));
+    LD_ASSERT(LDArrayPush(values2, LDNewText("bill")));
 
     LD_ASSERT(clause2 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause2, "attribute", LDNewText("name")));
@@ -288,14 +288,14 @@ testNonMatchingRuleWithMultipleClauses()
     LD_ASSERT(LDObjectSetKey(clause2, "negate", LDNewBool(false)));
 
     LD_ASSERT(clauses = LDNewArray());
-    LD_ASSERT(LDArrayAppend(clauses, clause1));
-    LD_ASSERT(LDArrayAppend(clauses, clause2));
+    LD_ASSERT(LDArrayPush(clauses, clause1));
+    LD_ASSERT(LDArrayPush(clauses, clause2));
 
     LD_ASSERT(rule = LDNewObject());
     LD_ASSERT(LDObjectSetKey(rule, "clauses", clauses));
 
     LD_ASSERT(rules = LDNewArray());
-    LD_ASSERT(LDArrayAppend(rules, rule));
+    LD_ASSERT(LDArrayPush(rules, rule));
 
     LD_ASSERT(segment = makeTestSegment(rules));
 

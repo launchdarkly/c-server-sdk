@@ -71,10 +71,10 @@ testArray()
     LD_ASSERT(json = LDNewArray());
 
     LD_ASSERT(tmp = LDNewBool(true));
-    LD_ASSERT(LDArrayAppend(json, tmp));
+    LD_ASSERT(LDArrayPush(json, tmp));
 
     LD_ASSERT(tmp = LDNewBool(false));
-    LD_ASSERT(LDArrayAppend(json, tmp));
+    LD_ASSERT(LDArrayPush(json, tmp));
 
     LD_ASSERT(iter = LDGetIter(json));
     LD_ASSERT(LDGetBool(iter) == true);

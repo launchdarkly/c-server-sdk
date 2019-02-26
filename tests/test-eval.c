@@ -51,7 +51,7 @@ addVariation(struct LDJSON *const flag, struct LDJSON *const variation)
         LDObjectSetKey(flag, "variations", variations);
     }
 
-    LD_ASSERT(LDArrayAppend(variations, variation));
+    LD_ASSERT(LDArrayPush(variations, variation));
 }
 
 static void
@@ -70,7 +70,7 @@ addPrerequisite(struct LDJSON *const flag, const char *const key,
     LD_ASSERT(LDObjectSetKey(tmp, "key", LDNewText(key)));
     LD_ASSERT(LDObjectSetKey(tmp, "variation", LDNewNumber(variation)));
 
-    LD_ASSERT(LDArrayAppend(prerequisites, tmp));
+    LD_ASSERT(LDArrayPush(prerequisites, tmp));
 }
 
 static void
@@ -101,14 +101,14 @@ makeFlagToMatchUser(const char *const key,
     LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("key")));
     LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
     LD_ASSERT(tmp = LDNewArray());
-    LD_ASSERT(LDArrayAppend(tmp, LDNewText(key)));
+    LD_ASSERT(LDArrayPush(tmp, LDNewText(key)));
     LD_ASSERT(LDObjectSetKey(clause, "values", tmp));
 
     LD_ASSERT(rule = LDNewObject());
     LD_ASSERT(LDObjectSetKey(rule, "id", LDNewText("rule-id")));
     LD_ASSERT(LDObjectMerge(rule, variationOrRollout));
     LD_ASSERT(tmp = LDNewArray());
-    LD_ASSERT(LDArrayAppend(tmp, clause));
+    LD_ASSERT(LDArrayPush(tmp, clause));
     LD_ASSERT(LDObjectSetKey(rule, "clauses", tmp));
 
     LD_ASSERT(flag = LDNewObject());
@@ -118,7 +118,7 @@ makeFlagToMatchUser(const char *const key,
     addVariations1(flag);
     setFallthrough(flag, 0);
     LD_ASSERT(tmp = LDNewArray());
-    LD_ASSERT(LDArrayAppend(tmp, rule));
+    LD_ASSERT(LDArrayPush(tmp, rule));
     LD_ASSERT(LDObjectSetKey(flag, "rules", tmp));
 
     LDJSONFree(variationOrRollout);
@@ -135,7 +135,7 @@ booleanFlagWithClause(struct LDJSON *const clause)
     struct LDJSON *rules;
 
     LD_ASSERT(clauses = LDNewArray());
-    LD_ASSERT(LDArrayAppend(clauses, clause));
+    LD_ASSERT(LDArrayPush(clauses, clause));
 
     LD_ASSERT(rule = LDNewObject());
     LD_ASSERT(LDObjectSetKey(rule, "id", LDNewText("rule-id")));
@@ -143,7 +143,7 @@ booleanFlagWithClause(struct LDJSON *const clause)
     LD_ASSERT(LDObjectSetKey(rule, "variation", LDNewNumber(1)));
 
     LD_ASSERT(rules = LDNewArray());
-    LD_ASSERT(LDArrayAppend(rules, rule));
+    LD_ASSERT(LDArrayPush(rules, rule));
 
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
@@ -464,15 +464,15 @@ testFlagMatchesUserFromTarget()
         struct LDJSON *list;
 
         LD_ASSERT(list = LDNewArray());
-        LD_ASSERT(LDArrayAppend(list, LDNewText("whoever")));
-        LD_ASSERT(LDArrayAppend(list, LDNewText("userkey")));
+        LD_ASSERT(LDArrayPush(list, LDNewText("whoever")));
+        LD_ASSERT(LDArrayPush(list, LDNewText("userkey")));
 
         LD_ASSERT(targetset = LDNewObject());
         LD_ASSERT(LDObjectSetKey(targetset, "values", list));
         LD_ASSERT(LDObjectSetKey(targetset, "variation", LDNewNumber(2)));
 
         LD_ASSERT(targetsets = LDNewArray());
-        LD_ASSERT(LDArrayAppend(targetsets, targetset));
+        LD_ASSERT(LDArrayPush(targetsets, targetset));
         LD_ASSERT(LDObjectSetKey(flag, "targets", targetsets));
     }
 
@@ -541,7 +541,7 @@ testClauseCanMatchBuiltInAttribute()
 
     /* flag */
     LD_ASSERT(values = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values, LDNewText("Bob")));
+    LD_ASSERT(LDArrayPush(values, LDNewText("Bob")));
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
@@ -580,7 +580,7 @@ testClauseCanMatchCustomAttribute()
 
     /* flag */
     LD_ASSERT(values = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values, LDNewNumber(4)));
+    LD_ASSERT(LDArrayPush(values, LDNewNumber(4)));
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
@@ -616,7 +616,7 @@ testClauseReturnsFalseForMissingAttribute()
 
     /* flag */
     LD_ASSERT(values = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values, LDNewNumber(4)));
+    LD_ASSERT(LDArrayPush(values, LDNewNumber(4)));
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
@@ -652,7 +652,7 @@ testClauseCanBeNegated()
 
     /* flag */
     LD_ASSERT(values = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values, LDNewText("Bob")));
+    LD_ASSERT(LDArrayPush(values, LDNewText("Bob")));
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
@@ -689,7 +689,7 @@ testClauseForMissingAttributeIsFalseEvenIfNegate()
 
     /* flag */
     LD_ASSERT(values = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values, LDNewNumber(4)));
+    LD_ASSERT(LDArrayPush(values, LDNewNumber(4)));
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
@@ -726,7 +726,7 @@ testClauseWithUnknownOperatorDoesNotMatch()
 
     /* flag */
     LD_ASSERT(values = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values, LDNewText("Bob")));
+    LD_ASSERT(LDArrayPush(values, LDNewText("Bob")));
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("unsupported")));
@@ -763,7 +763,7 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
 
     /* segment */
     LD_ASSERT(included = LDNewArray());
-    LD_ASSERT(LDArrayAppend(included, LDNewText("foo")));
+    LD_ASSERT(LDArrayPush(included, LDNewText("foo")));
 
     LD_ASSERT(segment = LDNewObject());
     LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("segkey")));
@@ -771,7 +771,7 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
 
     /* flag */
     LD_ASSERT(values = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values, LDNewText("segkey")));
+    LD_ASSERT(LDArrayPush(values, LDNewText("segkey")));
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("")));
@@ -811,7 +811,7 @@ testSegmentMatchClauseFallsThroughIfSegmentNotFound()
 
     /* flag */
     LD_ASSERT(values = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values, LDNewText("segkey")));
+    LD_ASSERT(LDArrayPush(values, LDNewText("segkey")));
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("")));
@@ -852,7 +852,7 @@ testCanMatchJustOneSegmentFromList()
 
     /* segment */
     LD_ASSERT(included = LDNewArray());
-    LD_ASSERT(LDArrayAppend(included, LDNewText("foo")));
+    LD_ASSERT(LDArrayPush(included, LDNewText("foo")));
 
     LD_ASSERT(segment = LDNewObject());
     LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("segkey")));
@@ -860,8 +860,8 @@ testCanMatchJustOneSegmentFromList()
 
     /* flag */
     LD_ASSERT(values = LDNewArray());
-    LD_ASSERT(LDArrayAppend(values, LDNewText("unknownsegkey")));
-    LD_ASSERT(LDArrayAppend(values, LDNewText("segkey")));
+    LD_ASSERT(LDArrayPush(values, LDNewText("unknownsegkey")));
+    LD_ASSERT(LDArrayPush(values, LDNewText("segkey")));
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("")));

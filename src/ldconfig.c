@@ -203,7 +203,7 @@ LDConfigAddPrivateAttribute(struct LDConfig *const config,
     LD_ASSERT(attribute);
 
     if ((temp = LDNewText(attribute))) {
-        return LDArrayAppend(config->privateAttributeNames, temp);
+        return LDArrayPush(config->privateAttributeNames, temp);
     } else {
         return false;
     }

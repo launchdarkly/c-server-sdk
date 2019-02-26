@@ -173,7 +173,7 @@ LDArrayLookup(const struct LDJSON *const rawarray, const unsigned int index)
 }
 
 bool
-LDArrayAppend(struct LDJSON *const rawarray, struct LDJSON *const item)
+LDArrayPush(struct LDJSON *const rawarray, struct LDJSON *const item)
 {
     cJSON *const array = (cJSON *const)rawarray;
 

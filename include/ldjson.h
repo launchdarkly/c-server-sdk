@@ -205,7 +205,7 @@ struct LDJSON *LDArrayLookup(const struct LDJSON *const array,
  * @param[in] item The value to append to the array. This item is consumed.
  * @return True on success, False on failure.
  */
-bool LDArrayAppend(struct LDJSON *const array, struct LDJSON *const item);
+bool LDArrayPush(struct LDJSON *const array, struct LDJSON *const item);
 
 /***************************************************************************//**
  * @name Object Operations

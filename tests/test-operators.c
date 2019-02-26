@@ -22,7 +22,7 @@ addTest(const char *const op, struct LDJSON *const uvalue,
     LD_ASSERT(LDObjectSetKey(test, "cvalue", cvalue));
     LD_ASSERT(LDObjectSetKey(test, "expect", LDNewBool(expect)));
 
-    LD_ASSERT(LDArrayAppend(tests, test));
+    LD_ASSERT(LDArrayPush(tests, test));
 }
 
 int

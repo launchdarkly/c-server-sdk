@@ -29,7 +29,7 @@ addVariation(struct LDJSON *const flag, struct LDJSON *const variation)
         LDObjectSetKey(flag, "variations", variations);
     }
 
-    LD_ASSERT(LDArrayAppend(variations, variation));
+    LD_ASSERT(LDArrayPush(variations, variation));
 }
 
 static struct LDClient *

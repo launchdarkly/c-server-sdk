@@ -519,17 +519,6 @@ checkPrerequisites(const struct LDJSON *const flag,
             LD_LOG(LD_LOG_ERROR, "sub error with result");
         }
 
-        if (!(*events)) {
-            if (!(*events = LDNewArray())) {
-                LDJSONFree(preflag);
-                LDJSONFree(result);
-
-                LD_LOG(LD_LOG_ERROR, "alloc error");
-
-                return EVAL_MEM;
-            }
-        }
-
         variationNum = LDGetNumber(LDObjectLookup(result, "variationIndex"));
 
         event = newFeatureRequestEvent(LDGetText(key), user, &variationNum,
@@ -546,7 +535,18 @@ checkPrerequisites(const struct LDJSON *const flag,
             return EVAL_MEM;
         }
 
-        if (!LDArrayAppend(*events, event)) {
+        if (!(*events)) {
+            if (!(*events = LDNewArray())) {
+                LDJSONFree(preflag);
+                LDJSONFree(result);
+
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                return EVAL_MEM;
+            }
+        }
+
+        if (!LDArrayPush(*events, event)) {
             LDJSONFree(preflag);
             LDJSONFree(result);
 

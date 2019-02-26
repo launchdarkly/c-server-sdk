@@ -140,7 +140,7 @@ LDUserAddPrivateAttribute(struct LDUser *const user,
     LD_ASSERT(attribute);
 
     if ((temp = LDNewText(attribute))) {
-        return LDArrayAppend(user->privateAttributeNames, temp);
+        return LDArrayPush(user->privateAttributeNames, temp);
     } else {
         return false;
     }
@@ -190,7 +190,7 @@ addHidden(struct LDJSON **ref, const char *const value){
         return false;
     }
 
-    LDArrayAppend(*ref, text);
+    LDArrayPush(*ref, text);
 
     return true;
 }
