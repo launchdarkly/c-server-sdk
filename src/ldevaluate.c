@@ -530,7 +530,7 @@ checkPrerequisites(const struct LDJSON *const flag,
             }
         }
 
-        variationNum = LDGetNumber(variation);
+        variationNum = LDGetNumber(LDObjectLookup(result, "variationIndex"));
 
         event = newFeatureRequestEvent(LDGetText(key), user, &variationNum,
             LDObjectLookup(result, "value"), NULL,

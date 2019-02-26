@@ -300,6 +300,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
         LDObjectLookup(reason, "kind"))) == 0);
     LD_ASSERT(strcmp("feature1", LDGetText(
         LDObjectLookup(reason, "prerequisiteKey"))) == 0);
+
     LD_ASSERT(events = LDObjectLookup(result, "events"));
     LD_ASSERT(LDArrayGetSize(events) == 1);
     LD_ASSERT(events = LDGetIter(events));
@@ -326,6 +327,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     struct LDJSON *flag1;
     struct LDJSON *flag2;
     struct LDJSON *result = NULL;
+    struct LDJSON *events;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -342,7 +344,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     LD_ASSERT(flag2 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag2, "key", LDNewText("feature1")));
     LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(true)));
-    LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(3)));
+    LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(2)));
     LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
     addVariations2(flag2);
     setFallthrough(flag2, 0);
@@ -359,6 +361,18 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 1);
     LD_ASSERT(strcmp("PREREQUISITE_FAILED", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+
+    LD_ASSERT(events = LDObjectLookup(result, "events"));
+    LD_ASSERT(LDArrayGetSize(events) == 1);
+    LD_ASSERT(events = LDGetIter(events));
+    LD_ASSERT(strcmp("feature1",
+        LDGetText(LDObjectLookup(events, "key"))) == 0);
+    LD_ASSERT(strcmp("nogo",
+        LDGetText(LDObjectLookup(events, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "version")) == 2);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "variation")) == 0);
+    LD_ASSERT(strcmp("feature0",
+        LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
 
     LDJSONFree(flag1);
     LDJSONFree(result);
