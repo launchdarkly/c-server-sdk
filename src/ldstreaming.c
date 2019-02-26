@@ -79,12 +79,64 @@ onPut(struct LDClient *const client, struct LDJSON *const data)
 static bool
 onPatch(struct LDClient *const client, struct LDJSON *const data)
 {
+    struct LDJSON *tmp;
+    char *kind = NULL;
+    char *key = NULL;
+    bool success = false;
+
     LD_ASSERT(client);
     LD_ASSERT(data);
 
+    if (!(tmp = LDObjectLookup(data, "path"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        goto cleanup;
+    }
+
+    if (LDJSONGetType(tmp) != LDText) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        goto cleanup;
+    }
+
+    if (!parsePath(LDGetText(tmp), &kind, &key)) {
+        LD_LOG(LD_LOG_ERROR, "failed to parse path");
+
+        goto cleanup;
+    }
+
+    if (!(tmp = LDObjectLookup(data, "data"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        goto cleanup;
+    }
+
+    if (LDJSONGetType(tmp) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        goto cleanup;
+    }
+
+    if (!(tmp = LDJSONDuplicate(tmp))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        goto cleanup;
+    }
+
+    if (!LDStoreUpsert(client->config->store, kind, tmp)) {
+        LD_LOG(LD_LOG_ERROR, "store error");
+
+        goto cleanup;
+    }
+
+    success = true;
+
+  cleanup:
+    free(kind);
+    free(key);
     LDJSONFree(data);
 
-    return true;
+    return success;
 }
 
 static bool
@@ -93,6 +145,7 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
     struct LDJSON *tmp;
     char *kind = NULL;
     char *key = NULL;
+    bool success = false;
 
     LD_ASSERT(client);
     LD_ASSERT(data);
@@ -100,51 +153,47 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
     if (!(tmp = LDObjectLookup(data, "path"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        goto error;
+        goto cleanup;
     }
 
     if (LDJSONGetType(tmp) != LDText) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        goto error;
+        goto cleanup;
     }
 
     if (!parsePath(LDGetText(tmp), &kind, &key)) {
         LD_LOG(LD_LOG_ERROR, "failed to parse path");
 
-        goto error;
+        goto cleanup;
     }
 
     if (!(tmp = LDObjectLookup(data, "version"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        goto error;
+        goto cleanup;
     }
 
     if (LDJSONGetType(tmp) != LDNumber) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        goto error;
+        goto cleanup;
     }
 
     if (!LDStoreDelete(client->config->store, kind, key, LDGetNumber(tmp))) {
         LD_LOG(LD_LOG_ERROR, "store error");
 
-        goto error;
+        goto cleanup;
     }
 
+    success = true;
+
+  cleanup:
     free(kind);
     free(key);
     LDJSONFree(data);
 
-    return true;
-
-  error:
-    free(kind);
-    free(key);
-    LDJSONFree(data);
-
-    return false;
+    return success;
 }
 
 static bool
@@ -174,7 +223,8 @@ onSSE(struct StreamContext *const context, const char *line)
                 status = onDelete(context->client, json);
             } else {
                 LD_LOG(LD_LOG_WARNING,
-                    "streamcallback unknown event name: %s", context->eventName);
+                    "streamcallback unknown event name: %s",
+                    context->eventName);
             }
         }
 
