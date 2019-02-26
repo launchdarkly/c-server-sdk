@@ -182,6 +182,7 @@ returnsOffVariationIfFlagIsOff()
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 1);
     LD_ASSERT(strcmp("OFF", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -214,6 +215,7 @@ testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
         LDObjectLookup(result, "variationIndex")) == LDNull);
     LD_ASSERT(strcmp("OFF", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -246,6 +248,7 @@ testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 0);
     LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
+    LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -261,6 +264,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     struct LDJSON *flag2;
     struct LDJSON *result = NULL;
     struct LDJSON *reason;
+    struct LDJSON *events;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -296,6 +300,17 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
         LDObjectLookup(reason, "kind"))) == 0);
     LD_ASSERT(strcmp("feature1", LDGetText(
         LDObjectLookup(reason, "prerequisiteKey"))) == 0);
+    LD_ASSERT(events = LDObjectLookup(reason, "events"));
+    LD_ASSERT(LDArrayGetSize(events) == 1);
+    LD_ASSERT(events = LDGetIter(events));
+    LD_ASSERT(strcmp("feature1",
+        LDGetText(LDObjectLookup(events, "key"))) == 0);
+    LD_ASSERT(strcmp("go",
+        LDGetText(LDObjectLookup(events, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "version")) == 3);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "variation")) == 1);
+    LD_ASSERT(strcmp("feature0",
+        LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
 
     LDJSONFree(flag1);
     LDJSONFree(result);
