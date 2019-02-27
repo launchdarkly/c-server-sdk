@@ -321,16 +321,92 @@ addEvent(struct LDClient *const client, const struct LDJSON *const event)
 bool
 summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
 {
-    char *key = "";
+    char *keytext = "";
+    struct LDJSON *key;
     struct LDJSON *tmp;
     struct LDJSON *entry;
 
     LD_ASSERT(client);
     LD_ASSERT(event);
 
+    if (!(key = LDNewObject())) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        return false;
+    }
+
+    LD_ASSERT(tmp = LDObjectLookup(event, "key"));
+    LD_ASSERT(LDJSONGetType(tmp) == LDNumber);
+
+    if (!(tmp = LDJSONDuplicate(tmp))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(key);
+
+        return false;
+    }
+
+    if (!LDObjectSetKey(key, "key", tmp)) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(key);
+
+        return false;
+    }
+
+    if ((tmp = LDObjectLookup(event, "variation"))) {
+        LD_ASSERT(LDJSONGetType(tmp) == LDNumber);
+
+        if (!(tmp = LDJSONDuplicate(tmp))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(key);
+
+            return false;
+        }
+
+        if (!LDObjectSetKey(key, "variation", tmp)) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(key);
+
+            return false;
+        }
+    }
+
+    if ((tmp = LDObjectLookup(event, "version"))) {
+        LD_ASSERT(LDJSONGetType(tmp) == LDNumber);
+
+        if (!(tmp = LDJSONDuplicate(tmp))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(key);
+
+            return false;
+        }
+
+        if (!LDObjectSetKey(key, "version", tmp)) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(key);
+
+            return false;
+        }
+    }
+
+    if (!(keytext = LDJSONSerialize(key))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(key);
+
+        return false;
+    }
+
+    LDJSONFree(key);
+
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
-    if (!(entry = LDObjectLookup(client->summary, key))) {
+    if (!(entry = LDObjectLookup(client->summary, keytext))) {
         if (!(entry = LDNewObject())) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -407,7 +483,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
             goto error;
         }
 
-        if (!LDObjectSetKey(client->summary, key, entry)) {
+        if (!LDObjectSetKey(client->summary, keytext, entry)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
             goto error;
@@ -447,10 +523,14 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
 
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
+    free(keytext);
+
     return true;
 
   error:
     LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    free(keytext);
 
     return false;
 }
