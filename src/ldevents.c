@@ -378,7 +378,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
         }
 
         if (!(tmp = LDObjectLookup(event, "creationDate"))) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
+            LD_LOG(LD_LOG_ERROR, "schema error");
 
             goto error;
         }
@@ -413,8 +413,36 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
             goto error;
         }
     } else {
+        struct LDJSON *date;
+
         LD_ASSERT(tmp = LDObjectLookup(entry, "count"));
-        LDSetNumber(tmp, LDGetNumber(tmp) + 1);
+        LD_ASSERT(LDSetNumber(tmp, LDGetNumber(tmp) + 1));
+
+        if (!(tmp = LDObjectLookup(event, "creationDate"))) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            goto error;
+        }
+
+        if (!(date = LDObjectLookup(event, "startDate"))) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            goto error;
+        }
+
+        if (LDGetNumber(date) < LDGetNumber(tmp)) {
+            LD_ASSERT(LDSetNumber(date, LDGetNumber(tmp)));
+        }
+
+        if (!(date = LDObjectLookup(event, "endDate"))) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            goto error;
+        }
+
+        if (LDGetNumber(date) > LDGetNumber(tmp)) {
+            LD_ASSERT(LDSetNumber(date, LDGetNumber(tmp)));
+        }
     }
 
     LD_ASSERT(LDi_wrunlock(&client->lock));
