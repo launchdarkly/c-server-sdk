@@ -14,7 +14,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     struct LDStore *store;
     struct LDJSON *details = NULL;
     struct LDJSON *events;
-    struct LDJSON *event;
+    struct LDJSON *event = NULL;
     unsigned int variationNum;
 
     if (!client) {
@@ -143,6 +143,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto error;
     }
 
+    LDJSONFree(event);
     LDJSONFree(details);
     LDJSONFree(fallback);
 
@@ -158,15 +159,14 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         *reason = LDJSONDuplicate(*reason);
     }
 
-    if (flag) {
-        LDJSONFree(flag);
-    }
-
+    LDJSONFree(flag);
+    LDJSONFree(event);
     LDJSONFree(details);
 
     return fallback;
 
   error:
+    LDJSONFree(event);
     LDJSONFree(details);
     LDJSONFree(fallback);
 
