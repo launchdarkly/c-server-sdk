@@ -375,6 +375,9 @@ poll(struct LDClient *const client, void *const rawcontext)
     CURL *curl = NULL;
     char url[4096];
 
+    const char *const mime = "Content-Type: application/json";
+    const char *const schema = "X-LaunchDarkly-Event-Schema: 3";
+
     struct AnalyticsContext *const context = rawcontext;
 
     LD_ASSERT(context);
@@ -394,8 +397,8 @@ poll(struct LDClient *const client, void *const rawcontext)
         }
     }
 
-    if (snprintf(url, sizeof(url), "%s/sdk/latest-all",
-        client->config->baseURI) < 0)
+    if (snprintf(url, sizeof(url), "%s/bulk",
+        client->config->eventsURI) < 0)
     {
         LD_LOG(LD_LOG_CRITICAL, "snprintf URL failed");
 
@@ -405,6 +408,21 @@ poll(struct LDClient *const client, void *const rawcontext)
     LD_LOG(LD_LOG_INFO, "connecting to url: %s", url);
 
     if (!prepareShared(client->config, url, &curl, &context->headers)) {
+        goto error;
+    }
+
+
+    if (!(context->headers = curl_slist_append(context->headers, mime))) {
+        goto error;
+    }
+
+    if (!(context->headers = curl_slist_append(context->headers, schema))) {
+        goto error;
+    }
+
+    if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, context->headers)
+        != CURLE_OK)
+    {
         goto error;
     }
 
