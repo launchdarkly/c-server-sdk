@@ -46,6 +46,9 @@ LDSetNumber(struct LDJSON *const rawnode, const double number)
 {
     struct cJSON *const node = (struct cJSON *const)rawnode;
 
+    LD_ASSERT(node);
+    LD_ASSERT(cJSON_IsNumber(node));
+
     node->valuedouble = number;
 
     return true;
