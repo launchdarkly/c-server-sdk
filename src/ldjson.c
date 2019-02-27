@@ -41,6 +41,16 @@ LDNewArray()
     return (struct LDJSON *)cJSON_CreateArray();
 }
 
+bool
+LDSetNumber(struct LDJSON *const rawnode, const double number)
+{
+    struct cJSON *const node = (struct cJSON *const)rawnode;
+
+    node->valuedouble = number;
+
+    return true;
+}
+
 void
 LDJSONFree(struct LDJSON *const json)
 {
@@ -58,7 +68,7 @@ LDJSONDuplicate(const struct LDJSON *const input)
 LDJSONType
 LDJSONGetType(const struct LDJSON *const inputraw)
 {
-    const struct cJSON *const input = (const struct cJSON *const) inputraw;
+    const struct cJSON *const input = (const struct cJSON *const)inputraw;
 
     LD_ASSERT(input);
 

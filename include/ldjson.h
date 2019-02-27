@@ -76,6 +76,16 @@ struct LDJSON *LDNewArray();
 /*@}*/
 
 /***************************************************************************//**
+ * @name Setting values
+ * Routines for setting values of existing nodes
+ * @{
+ ******************************************************************************/
+
+bool LDSetNumber(struct LDJSON *const node, const double number);
+
+/*@}*/
+
+/***************************************************************************//**
  * @name Cleanup and Utility
  * Miscellaneous Operations
  * @{
