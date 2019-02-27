@@ -7,6 +7,7 @@
 #include "ldinternal.h"
 #include "ldjson.h"
 #include "ldevents.h"
+#include "ldnetwork.h"
 
 struct LDJSON *
 newBaseEvent(const struct LDUser *const user)
@@ -315,4 +316,144 @@ addEvent(struct LDClient *const client, const struct LDJSON *const event)
 
         return true;
     }
+}
+
+struct AnalyticsContext {
+    bool active;
+    unsigned int lastFlush;
+    struct curl_slist *headers;
+    struct LDClient *client;
+};
+
+static void
+resetMemory(struct AnalyticsContext *const context)
+{
+    LD_ASSERT(context);
+
+    curl_slist_free_all(context->headers);
+    context->headers = NULL;
+}
+
+static void
+done(struct LDClient *const client, void *const rawcontext)
+{
+    struct AnalyticsContext *const context = rawcontext;
+
+    LD_ASSERT(client);
+    LD_ASSERT(context);
+
+    LD_LOG(LD_LOG_INFO, "done!");
+
+    context->active = false;
+
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    client->initialized = true;
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    LD_ASSERT(getMonotonicMilliseconds(&context->lastFlush));
+
+    resetMemory(context);
+}
+
+static void
+destroy(void *const rawcontext)
+{
+    struct AnalyticsContext *const context = rawcontext;
+
+    LD_ASSERT(context);
+
+    LD_LOG(LD_LOG_INFO, "analytics destroyed");
+
+    resetMemory(context);
+
+    free(context);
+}
+
+static CURL *
+poll(struct LDClient *const client, void *const rawcontext)
+{
+    CURL *curl = NULL;
+    char url[4096];
+
+    struct AnalyticsContext *const context = rawcontext;
+
+    LD_ASSERT(context);
+
+    if (context->active) {
+        return NULL;
+    }
+
+    {
+        unsigned int now;
+
+        LD_ASSERT(getMonotonicMilliseconds(&now));
+        LD_ASSERT(now >= context->lastFlush);
+
+        if (now - context->lastFlush < client->config->flushInterval * 1000) {
+            return NULL;
+        }
+    }
+
+    if (snprintf(url, sizeof(url), "%s/sdk/latest-all",
+        client->config->baseURI) < 0)
+    {
+        LD_LOG(LD_LOG_CRITICAL, "snprintf URL failed");
+
+        return false;
+    }
+
+    LD_LOG(LD_LOG_INFO, "connecting to url: %s", url);
+
+    if (!prepareShared(client->config, url, &curl, &context->headers)) {
+        goto error;
+    }
+
+    context->active = true;
+
+    return curl;
+
+  error:
+    curl_slist_free_all(context->headers);
+
+    curl_easy_cleanup(curl);
+
+    return NULL;
+}
+
+struct NetworkInterface *
+constructAnalytics(struct LDClient *const client)
+{
+    struct NetworkInterface *interface = NULL;
+    struct AnalyticsContext *context = NULL;
+
+    LD_ASSERT(client);
+
+    if (!(interface = malloc(sizeof(struct NetworkInterface)))) {
+        goto error;
+    }
+
+    if (!(context = malloc(sizeof(struct AnalyticsContext)))) {
+        goto error;
+    }
+
+    context->active    = false;
+    context->lastFlush = 0;
+    context->headers   = NULL;
+    context->client    = client;
+
+    interface->done    = done;
+    interface->poll    = poll;
+    interface->context = context;
+    interface->destroy = destroy;
+    interface->context = context;
+    interface->current = NULL;
+
+    return interface;
+
+  error:
+    free(context);
+
+    free(interface);
+
+    return NULL;
 }
