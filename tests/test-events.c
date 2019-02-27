@@ -42,17 +42,20 @@ testSummarizeEventIncrementsCounters()
     struct LDJSON *event2;
     struct LDJSON *event3;
     struct LDJSON *event4;
+    struct LDJSON *event5;
     const unsigned int variation1 = 1;
     const unsigned int variation2 = 2;
     char *summarykey1;
     char *summarykey2;
     char *summarykey3;
+    char *summarykey4;
     struct LDJSON *summary;
     struct LDJSON *value1;
     struct LDJSON *value2;
     struct LDJSON *value99;
     struct LDJSON *default1;
     struct LDJSON *default2;
+    struct LDJSON *default3;
 
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(client = makeOfflineClient());
@@ -64,6 +67,7 @@ testSummarizeEventIncrementsCounters()
     LD_ASSERT(value99 = LDNewText("value88"));
     LD_ASSERT(default1 = LDNewText("default1"));
     LD_ASSERT(default2 = LDNewText("default2"));
+    LD_ASSERT(default3 = LDNewText("default3"));
 
     LD_ASSERT(event1 = newFeatureRequestEvent("key1", user, &variation1,
         value1, default1, NULL, flag1, NULL));
@@ -73,15 +77,19 @@ testSummarizeEventIncrementsCounters()
         value99, default2, NULL, flag2, NULL));
     LD_ASSERT(event4 = newFeatureRequestEvent("key1", user, &variation1,
         value1, default1, NULL, flag1, NULL));
+    LD_ASSERT(event5 = newFeatureRequestEvent("badkey", user, NULL,
+        default3, default3, NULL, NULL, NULL));
 
     LD_ASSERT(summarizeEvent(client, event1));
     LD_ASSERT(summarizeEvent(client, event2));
     LD_ASSERT(summarizeEvent(client, event3));
     LD_ASSERT(summarizeEvent(client, event4));
+    LD_ASSERT(summarizeEvent(client, event5));
 
     LD_ASSERT(summarykey1 = makeSummaryKey(event1));
     LD_ASSERT(summarykey2 = makeSummaryKey(event2));
     LD_ASSERT(summarykey3 = makeSummaryKey(event3));
+    LD_ASSERT(summarykey4 = makeSummaryKey(event5));
 
     LD_ASSERT(summary = LDObjectLookup(client->summary, summarykey1));
     LD_ASSERT(LDJSONCompare(value1, LDObjectLookup(summary, "value")));
@@ -98,9 +106,15 @@ testSummarizeEventIncrementsCounters()
     LD_ASSERT(LDJSONCompare(default2, LDObjectLookup(summary, "default")));
     LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
 
+    LD_ASSERT(summary = LDObjectLookup(client->summary, summarykey4));
+    LD_ASSERT(LDJSONCompare(default3, LDObjectLookup(summary, "value")));
+    LD_ASSERT(LDJSONCompare(default3, LDObjectLookup(summary, "default")));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
+
     free(summarykey1);
     free(summarykey2);
     free(summarykey3);
+    free(summarykey4);
     LDJSONFree(flag1);
     LDJSONFree(flag2);
     LDJSONFree(event1);
@@ -112,6 +126,7 @@ testSummarizeEventIncrementsCounters()
     LDJSONFree(value99);
     LDJSONFree(default1);
     LDJSONFree(default2);
+    LDJSONFree(default3);
     LDUserFree(user);
     LDClientClose(client);
 }
