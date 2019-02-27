@@ -27,3 +27,5 @@ bool addEvent(struct LDClient *const client, const struct LDJSON *const event);
 
 bool summarizeEvent(struct LDClient *const client,
     const struct LDJSON *const event);
+
+char *makeSummaryKey(const struct LDJSON *const event);

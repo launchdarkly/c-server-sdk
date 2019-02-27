@@ -318,15 +318,13 @@ addEvent(struct LDClient *const client, const struct LDJSON *const event)
     }
 }
 
-bool
-summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
+char *
+makeSummaryKey(const struct LDJSON *const event)
 {
-    char *keytext = "";
+    char *keytext;
     struct LDJSON *key;
     struct LDJSON *tmp;
-    struct LDJSON *entry;
 
-    LD_ASSERT(client);
     LD_ASSERT(event);
 
     if (!(key = LDNewObject())) {
@@ -403,6 +401,25 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
     }
 
     LDJSONFree(key);
+
+    return keytext;
+}
+
+bool
+summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
+{
+    char *keytext;
+    struct LDJSON *tmp;
+    struct LDJSON *entry;
+
+    LD_ASSERT(client);
+    LD_ASSERT(event);
+
+    if (!(keytext = makeSummaryKey(event))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        return false;
+    }
 
     LD_ASSERT(LDi_wrlock(&client->lock));
 
