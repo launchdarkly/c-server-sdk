@@ -336,7 +336,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
     }
 
     LD_ASSERT(tmp = LDObjectLookup(event, "key"));
-    LD_ASSERT(LDJSONGetType(tmp) == LDNumber);
+    LD_ASSERT(LDJSONGetType(tmp) == LDText);
 
     if (!(tmp = LDJSONDuplicate(tmp))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -404,7 +404,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
 
     LDJSONFree(key);
 
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_wrlock(&client->lock));
 
     if (!(entry = LDObjectLookup(client->summary, keytext))) {
         if (!(entry = LDNewObject())) {
@@ -500,7 +500,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
             goto error;
         }
 
-        if (!(date = LDObjectLookup(event, "startDate"))) {
+        if (!(date = LDObjectLookup(entry, "startDate"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
             goto error;
@@ -510,7 +510,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
             LD_ASSERT(LDSetNumber(date, LDGetNumber(tmp)));
         }
 
-        if (!(date = LDObjectLookup(event, "endDate"))) {
+        if (!(date = LDObjectLookup(entry, "endDate"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
             goto error;
