@@ -318,6 +318,115 @@ addEvent(struct LDClient *const client, const struct LDJSON *const event)
     }
 }
 
+bool
+summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
+{
+    char *key = "";
+    struct LDJSON *tmp;
+    struct LDJSON *entry;
+
+    LD_ASSERT(client);
+    LD_ASSERT(event);
+
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    if (!(entry = LDObjectLookup(client->summary, key))) {
+        if (!(entry = LDNewObject())) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+
+        if (!(tmp = LDNewNumber(1))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+
+        if (!LDObjectSetKey(entry, "count", tmp)) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+
+        if ((tmp = LDObjectLookup(event, "value"))) {
+            if (!(tmp = LDJSONDuplicate(tmp))) {
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                goto error;
+            }
+
+            if (!LDObjectSetKey(entry, "value", tmp)) {
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                goto error;
+            }
+        }
+
+        if ((tmp = LDObjectLookup(event, "default"))) {
+            if (!(tmp = LDJSONDuplicate(tmp))) {
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                goto error;
+            }
+
+            if (!LDObjectSetKey(entry, "default", tmp)) {
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                goto error;
+            }
+        }
+
+        if (!(tmp = LDObjectLookup(event, "creationDate"))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+
+        if (!(tmp = LDJSONDuplicate(tmp))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+
+        if (!LDObjectSetKey(entry, "startDate", tmp)) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+
+        if (!(tmp = LDJSONDuplicate(tmp))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+
+        if (!LDObjectSetKey(entry, "endDate", tmp)) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+
+        if (!LDObjectSetKey(client->summary, key, entry)) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+    } else {
+        LD_ASSERT(tmp = LDObjectLookup(entry, "count"));
+        LDSetNumber(tmp, LDGetNumber(tmp) + 1);
+    }
+
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    return true;
+
+  error:
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    return false;
+}
+
 struct AnalyticsContext {
     bool active;
     unsigned int lastFlush;

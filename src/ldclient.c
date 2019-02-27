@@ -42,6 +42,10 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         goto error;
     }
 
+    if (!(client->summary = LDNewObject())) {
+        goto error;
+    }
+
     if (!LDi_createthread(&client->thread, LDi_networkthread, client)) {
         goto error;
     }
@@ -74,6 +78,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     }
 
     LDJSONFree(client->events);
+    LDJSONFree(client->summary);
 
     free(client);
 
@@ -95,6 +100,7 @@ LDClientClose(struct LDClient *const client)
         /* cleanup resources */
         LD_ASSERT(LDi_rwlockdestroy(&client->lock));
         LDJSONFree(client->events);
+        LDJSONFree(client->summary);
 
         if (client->config->defaultStore) {
             LDStoreDestroy(client->config->store);

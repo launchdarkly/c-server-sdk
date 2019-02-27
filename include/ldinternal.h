@@ -106,6 +106,7 @@ struct LDClient {
     ld_thread_t thread;
     ld_rwlock_t lock;
     struct LDJSON *events; /* Array of Objects */
+    struct LDJSON *summary; /* Object */
 };
 
 /* **** LDNetwork **** */
