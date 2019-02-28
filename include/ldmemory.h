@@ -16,3 +16,5 @@ void LDSetMemoryRoutines(void *(*const newMalloc)(const size_t),
     void *(*const newRealloc)(void *const, const size_t),
     char *(*const newStrDup)(const char *const),
     void *(*const newCalloc)(const size_t, const size_t));
+
+void LDGlobalInit();

@@ -120,6 +120,7 @@ main()
     setbuf(stdout, NULL);
 
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDGlobalInit();
 
     constructNoSettings();
     constructAllSettings();

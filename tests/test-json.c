@@ -170,6 +170,7 @@ int
 main()
 {
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDGlobalInit();
 
     testNull();
     testBool();

@@ -31,6 +31,7 @@ main()
     struct LDJSON *iter;
 
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDGlobalInit();
 
     LD_ASSERT(tests = LDNewArray());
 

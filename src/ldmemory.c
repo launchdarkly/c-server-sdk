@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cJSON.h"
+
 #include "ldmemory.h"
 #include "ldinternal.h"
 
@@ -62,4 +64,25 @@ LDSetMemoryRoutines(void *(*const newMalloc)(const size_t),
     customRealloc = newRealloc;
     customStrDup  = newStrDup;
     customCalloc  = newCalloc;
+
+}
+
+void
+LDGlobalInit()
+{
+    static bool first = true;
+
+    if (first) {
+        struct cJSON_Hooks hooks;
+
+        first = false;
+
+        LD_ASSERT(!curl_global_init_mem(CURL_GLOBAL_DEFAULT, LDAlloc, LDFree,
+            LDRealloc, LDStrDup, LDCalloc));
+
+        hooks.malloc_fn = LDAlloc;
+        hooks.free_fn   = LDFree;
+
+        cJSON_InitHooks(&hooks);
+    }
 }
