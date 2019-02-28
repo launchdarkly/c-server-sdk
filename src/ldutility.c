@@ -7,14 +7,22 @@ bool
 LDSetString(char **const target, const char *const value)
 {
     if (value) {
-        char *const tmp = strdup(value);
+        char *const tmp = LDStrDup(value);
 
         if (tmp) {
-            free(*target); *target = tmp; return true;
+            LDFree(*target);
+
+            *target = tmp;
+
+            return true;
         } else {
             return false;
         }
     } else {
-        free(*target); *target = NULL; return true;
+        LDFree(*target);
+
+        *target = NULL;
+
+        return true;
     }
 }

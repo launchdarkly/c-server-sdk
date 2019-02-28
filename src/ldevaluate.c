@@ -1158,7 +1158,7 @@ bucketUser(const struct LDUser *const user, const char *const segmentKey,
 
             *bucket = (float)strtoll(encoded, NULL, 16) / longScale;
 
-            free(bucketable);
+            LDFree(bucketable);
 
             return true;
         }
@@ -1173,14 +1173,14 @@ bucketableStringValue(const struct LDJSON *const node)
     LD_ASSERT(node);
 
     if (LDJSONGetType(node) == LDText) {
-        return strdup(LDGetText(node));
+        return LDStrDup(LDGetText(node));
     } else if (LDJSONGetType(node) == LDNumber) {
         char buffer[256];
 
         if (snprintf(buffer, sizeof(buffer), "%f", LDGetNumber(node)) < 0) {
             return NULL;
         } else {
-            return strdup(buffer);
+            return LDStrDup(buffer);
         }
     } else {
         return NULL;

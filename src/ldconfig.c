@@ -11,25 +11,25 @@ LDConfigNew(const char *const key)
 
     LD_ASSERT(key);
 
-    if (!(config = malloc(sizeof(struct LDConfig)))) {
+    if (!(config = LDAlloc(sizeof(struct LDConfig)))) {
         return NULL;
     }
 
     memset(config, 0, sizeof(struct LDConfig));
 
-    if (!(config->key = strdup(key))) {
+    if (!(config->key = LDStrDup(key))) {
         goto error;
     }
 
-    if (!(config->baseURI = strdup("https://app.launchdarkly.com"))) {
+    if (!(config->baseURI = LDStrDup("https://app.launchdarkly.com"))) {
         goto error;
     }
 
-    if (!(config->streamURI = strdup("https://stream.launchdarkly.com"))) {
+    if (!(config->streamURI = LDStrDup("https://stream.launchdarkly.com"))) {
         goto error;
     }
 
-    if (!(config->eventsURI = strdup("https://events.launchdarkly.com"))) {
+    if (!(config->eventsURI = LDStrDup("https://events.launchdarkly.com"))) {
         goto error;
     }
 
@@ -62,12 +62,12 @@ void
 LDConfigFree(struct LDConfig *const config)
 {
     if (config) {
-        free(       config->key                   );
-        free(       config->baseURI               );
-        free(       config->streamURI             );
-        free(       config->eventsURI             );
+        LDFree(     config->key                   );
+        LDFree(     config->baseURI               );
+        LDFree(     config->streamURI             );
+        LDFree(     config->eventsURI             );
         LDJSONFree( config->privateAttributeNames );
-        free(       config                        );
+        LDFree(     config                        );
     }
 }
 

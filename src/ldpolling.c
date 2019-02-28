@@ -37,7 +37,7 @@ writeCallback(void *const contents, const size_t size,
 
     LD_ASSERT(mem);
 
-    if (!(mem->memory = realloc(mem->memory, mem->size + realsize + 1))) {
+    if (!(mem->memory = LDRealloc(mem->memory, mem->size + realsize + 1))) {
         LD_LOG(LD_LOG_CRITICAL, "not enough memory (realloc returned NULL)");
 
         return 0;
@@ -55,7 +55,7 @@ resetMemory(struct PollContext *const context)
 {
     LD_ASSERT(context);
 
-    free(context->memory);
+    LDFree(context->memory);
     context->memory = NULL;
 
     curl_slist_free_all(context->headers);
@@ -177,11 +177,11 @@ constructPolling(struct LDClient *const client)
 
     LD_ASSERT(client);
 
-    if (!(interface = malloc(sizeof(struct NetworkInterface)))) {
+    if (!(interface = LDAlloc(sizeof(struct NetworkInterface)))) {
         goto error;
     }
 
-    if (!(context = malloc(sizeof(struct PollContext)))) {
+    if (!(context = LDAlloc(sizeof(struct PollContext)))) {
         goto error;
     }
 
@@ -201,9 +201,9 @@ constructPolling(struct LDClient *const client)
     return interface;
 
   error:
-    free(context);
+    LDFree(context);
 
-    free(interface);
+    LDFree(interface);
 
     return NULL;
 }

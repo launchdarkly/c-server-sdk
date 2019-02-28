@@ -46,12 +46,21 @@ LDCalloc(const size_t nmemb, const size_t size)
     return customCalloc(nmemb, size);
 }
 
+static char *(*customStrNDup)(const char *const str, const size_t n) = strndup;
+
+char *
+LDStrNDup(const char *const str, const size_t n)
+{
+    return customStrNDup(str, n);
+}
+
 void
 LDSetMemoryRoutines(void *(*const newMalloc)(const size_t),
     void (*const newFree)(void *const),
     void *(*const newRealloc)(void *const, const size_t),
     char *(*const newStrDup)(const char *const),
-    void *(*const newCalloc)(const size_t, const size_t))
+    void *(*const newCalloc)(const size_t, const size_t),
+    char *(*const newStrNDup)(const char *const, const size_t))
 {
     LD_ASSERT(newMalloc);
     LD_ASSERT(newFree);
@@ -64,7 +73,7 @@ LDSetMemoryRoutines(void *(*const newMalloc)(const size_t),
     customRealloc = newRealloc;
     customStrDup  = newStrDup;
     customCalloc  = newCalloc;
-
+    customStrNDup = newStrNDup;
 }
 
 void

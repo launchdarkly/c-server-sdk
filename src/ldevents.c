@@ -544,7 +544,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
   cleanup:
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
-    free(keytext);
+    LDFree(keytext);
 
     return success;
 }
@@ -565,7 +565,7 @@ resetMemory(struct AnalyticsContext *const context)
     curl_slist_free_all(context->headers);
     context->headers = NULL;
 
-    free(context->buffer);
+    LDFree(context->buffer);
     context->buffer = NULL;
 }
 
@@ -601,7 +601,7 @@ destroy(void *const rawcontext)
 
     resetMemory(context);
 
-    free(context);
+    LDFree(context);
 }
 
 static CURL *
@@ -737,11 +737,11 @@ constructAnalytics(struct LDClient *const client)
 
     LD_ASSERT(client);
 
-    if (!(interface = malloc(sizeof(struct NetworkInterface)))) {
+    if (!(interface = LDAlloc(sizeof(struct NetworkInterface)))) {
         goto error;
     }
 
-    if (!(context = malloc(sizeof(struct AnalyticsContext)))) {
+    if (!(context = LDAlloc(sizeof(struct AnalyticsContext)))) {
         goto error;
     }
 
@@ -761,9 +761,9 @@ constructAnalytics(struct LDClient *const client)
     return interface;
 
   error:
-    free(context);
+    LDFree(context);
 
-    free(interface);
+    LDFree(interface);
 
     return NULL;
 }

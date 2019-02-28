@@ -14,8 +14,8 @@ testParsePathFlags()
     LD_ASSERT(strcmp(kind, "flags") == 0);
     LD_ASSERT(strcmp(key, "abcd") == 0);
 
-    free(kind);
-    free(key);
+    LDFree(kind);
+    LDFree(key);
 }
 
 static void
@@ -29,8 +29,8 @@ testParsePathSegments()
     LD_ASSERT(strcmp(kind, "segments") == 0);
     LD_ASSERT(strcmp(key, "xyz") == 0);
 
-    free(kind);
-    free(key);
+    LDFree(kind);
+    LDFree(key);
 }
 
 static void
@@ -179,9 +179,9 @@ testStreamOperations()
     testPatchSegment(context);
     testDeleteSegment(context);
 
-    free(context->dataBuffer);
-    free(context->memory);
-    free(context);
+    LDFree(context->dataBuffer);
+    LDFree(context->memory);
+    LDFree(context);
     LDClientClose(client);
 }
 

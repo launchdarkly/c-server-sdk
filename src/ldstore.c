@@ -276,29 +276,29 @@ memoryDestructor(void *const rawcontext)
 
     LDi_rwlockdestroy(&context->lock);
 
-    free(context);
+    LDFree(context);
 }
 
 struct LDStore *
 makeInMemoryStore()
 {
     struct MemoryContext *context = NULL;
-    struct LDStore *const store = malloc(sizeof(struct LDStore));
+    struct LDStore *const store = LDAlloc(sizeof(struct LDStore));
 
     if (!store) {
         return NULL;
     }
 
-    if (!(context = malloc(sizeof(struct MemoryContext)))) {
+    if (!(context = LDAlloc(sizeof(struct MemoryContext)))) {
         free(store);
 
         return NULL;
     }
 
     if (!LDi_rwlockinit(&context->lock)) {
-        free(store);
+        LDFree(store);
 
-        free(context);
+        LDFree(context);
 
         return NULL;
     }

@@ -24,21 +24,21 @@ parsePath(const char *path, char **const kind, char **const key)
     flagslen = strlen(flags);
 
     if (strncmp(path, segments, segmentlen) == 0) {
-        if (!(*key = strdup(path + segmentlen))) {
+        if (!(*key = LDStrDup(path + segmentlen))) {
             return false;
         }
 
-        if (!(*kind = strndup(path + 1, segmentlen - 2))) {
+        if (!(*kind = LDStrNDup(path + 1, segmentlen - 2))) {
             free(*key);
 
             return false;
         }
     } else if(strncmp(path, flags, flagslen) == 0) {
-        if (!(*key = strdup(path + flagslen))) {
+        if (!(*key = LDStrDup(path + flagslen))) {
             return false;
         }
 
-        if (!(*kind = strndup(path + 1, flagslen - 2))) {
+        if (!(*kind = LDStrNDup(path + 1, flagslen - 2))) {
             free(*key);
 
             return false;
@@ -149,8 +149,8 @@ onPatch(struct LDClient *const client, struct LDJSON *const data)
     success = true;
 
   cleanup:
-    free(kind);
-    free(key);
+    LDFree(kind);
+    LDFree(key);
     LDJSONFree(data);
 
     return success;
@@ -206,8 +206,8 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
     success = true;
 
   cleanup:
-    free(kind);
-    free(key);
+    LDFree(kind);
+    LDFree(key);
     LDJSONFree(data);
 
     return success;
@@ -245,7 +245,7 @@ onSSE(struct StreamContext *const context, const char *line)
             }
         }
 
-        free(context->dataBuffer);
+        LDFree(context->dataBuffer);
         context->dataBuffer = NULL;
         context->eventName[0] = 0;
 
@@ -267,7 +267,7 @@ onSSE(struct StreamContext *const context, const char *line)
             currentsize = strlen(context->dataBuffer);
         }
 
-        context->dataBuffer = realloc(
+        context->dataBuffer = LDRealloc(
             context->dataBuffer, linesize + currentsize + nempty + 1);
 
         if (nempty) {
@@ -303,7 +303,7 @@ writeCallback(void *contents, size_t size, size_t nmemb, void *userp)
     size_t realsize = size * nmemb;
     struct StreamContext *mem = userp;
 
-    mem->memory = realloc(mem->memory, mem->size + realsize + 1);
+    mem->memory = LDRealloc(mem->memory, mem->size + realsize + 1);
     if (mem->memory == NULL) {
         /* out of memory! */
         LDi_log(LD_LOG_CRITICAL, "not enough memory (realloc returned NULL)");
@@ -337,7 +337,7 @@ resetMemory(struct StreamContext *const context)
     context->eventName[0] = 0;
     context->dataBuffer = NULL;
 
-    free(context->memory);
+    LDFree(context->memory);
     context->memory = NULL;
 
     curl_slist_free_all(context->headers);
@@ -370,7 +370,7 @@ destroy(void *const rawcontext)
 
     resetMemory(context);
 
-    free(context);
+    LDFree(context);
 }
 
 static CURL *
@@ -435,11 +435,11 @@ constructStreaming(struct LDClient *const client)
 
     LD_ASSERT(client);
 
-    if (!(interface = malloc(sizeof(struct NetworkInterface)))) {
+    if (!(interface = LDAlloc(sizeof(struct NetworkInterface)))) {
         goto error;
     }
 
-    if (!(context = malloc(sizeof(struct StreamContext)))) {
+    if (!(context = LDAlloc(sizeof(struct StreamContext)))) {
         goto error;
     }
 
@@ -460,7 +460,7 @@ constructStreaming(struct LDClient *const client)
     return interface;
 
   error:
-    free(context);
-    free(interface);
+    LDFree(context);
+    LDFree(interface);
     return NULL;
 }

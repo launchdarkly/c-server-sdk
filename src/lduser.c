@@ -7,7 +7,7 @@
 struct LDUser *
 LDUserNew(const char *const key)
 {
-    struct LDUser *const user = malloc(sizeof(struct LDUser));
+    struct LDUser *const user = LDAlloc(sizeof(struct LDUser));
 
     if (!user) {
         return NULL;
@@ -44,17 +44,17 @@ void
 LDUserFree(struct LDUser *const user)
 {
     if (user) {
-        free(       user->key                   );
-        free(       user->secondary             );
-        free(       user->ip                    );
-        free(       user->firstName             );
-        free(       user->lastName              );
-        free(       user->email                 );
-        free(       user->name                  );
-        free(       user->avatar                );
-        LDJSONFree( user->custom                );
-        LDJSONFree( user->privateAttributeNames );
-        free(       user                        );
+        LDFree(       user->key                   );
+        LDFree(       user->secondary             );
+        LDFree(       user->ip                    );
+        LDFree(       user->firstName             );
+        LDFree(       user->lastName              );
+        LDFree(       user->email                 );
+        LDFree(       user->name                  );
+        LDFree(       user->avatar                );
+        LDJSONFree(   user->custom                );
+        LDJSONFree(   user->privateAttributeNames );
+        LDFree(       user                        );
     }
 }
 

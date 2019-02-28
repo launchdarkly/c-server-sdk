@@ -62,7 +62,7 @@ serializeEmpty()
     LD_ASSERT(strcmp(serialized, "{\"key\":\"abc\"}") == 0);
 
     LDUserFree(user);
-    free(serialized);
+    LDFree(serialized);
     LDJSONFree(json);
 }
 
@@ -91,7 +91,7 @@ serializeRedacted()
     LD_ASSERT(strcmp(serialized, "{\"key\":\"123\",\"custom\":{\"notsecret\":52},\"privateAttrs\":[\"secret\"]}") == 0);
 
     LDUserFree(user);
-    free(serialized);
+    LDFree(serialized);
     LDJSONFree(json);
 }
 
@@ -110,7 +110,7 @@ serializeAll()
     LD_ASSERT(strcmp(serialized, "{\"key\":\"abc\",\"secondary\":\"unknown202\",\"ip\":\"127.0.0.1\",\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"email\":\"janedoe@launchdarkly.com\",\"name\":\"Jane\",\"avatar\":\"unknown101\",\"custom\":{}}") == 0);
 
     LDUserFree(user);
-    free(serialized);
+    LDFree(serialized);
     LDJSONFree(json);
 }
 

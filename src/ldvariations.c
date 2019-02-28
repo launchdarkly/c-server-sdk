@@ -285,7 +285,7 @@ LDStringVariation(struct LDClient *const client, struct LDUser *const user,
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
         if (fallback) {
-            return strdup(fallback);
+            return LDStrDup(fallback);
         } else {
             return NULL;
         }
@@ -297,7 +297,7 @@ LDStringVariation(struct LDClient *const client, struct LDUser *const user,
         LD_LOG(LD_LOG_ERROR, "LDVariation internal failure");
 
         if (fallback) {
-            strdup(fallback);
+            LDStrDup(fallback);
         } else {
             return NULL;
         }
@@ -307,7 +307,7 @@ LDStringVariation(struct LDClient *const client, struct LDUser *const user,
     value = (char *)LDGetText(result);
 
     if (value) {
-        value = strdup(value);
+        value = LDStrDup(value);
     }
 
     LDJSONFree(result);

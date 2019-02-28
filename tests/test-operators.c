@@ -144,8 +144,8 @@ main()
 
         LD_ASSERT(opfn(uvalue, cvalue) == LDGetBool(expect));
 
-        free(serializeduvalue);
-        free(serializedcvalue);
+        LDFree(serializeduvalue);
+        LDFree(serializedcvalue);
     }
 
     LDJSONFree(tests);

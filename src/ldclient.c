@@ -13,7 +13,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     LD_ASSERT(config);
 
-    if (!(client = malloc(sizeof(struct LDClient)))) {
+    if (!(client = LDAlloc(sizeof(struct LDClient)))) {
         return NULL;
     }
 
@@ -23,7 +23,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         config->defaultStore = false;
     } else {
         if (!(config->store = makeInMemoryStore())) {
-            free(client);
+            LDFree(client);
 
             return NULL;
         }
@@ -108,7 +108,7 @@ LDClientClose(struct LDClient *const client)
 
         LDConfigFree(client->config);
 
-        free(client);
+        LDFree(client);
     }
 }
 

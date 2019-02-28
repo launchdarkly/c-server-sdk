@@ -111,10 +111,10 @@ testSummarizeEventIncrementsCounters()
     LD_ASSERT(LDJSONCompare(default3, LDObjectLookup(summary, "default")));
     LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
 
-    free(summarykey1);
-    free(summarykey2);
-    free(summarykey3);
-    free(summarykey4);
+    LDFree(summarykey1);
+    LDFree(summarykey2);
+    LDFree(summarykey3);
+    LDFree(summarykey4);
     LDJSONFree(flag1);
     LDJSONFree(flag2);
     LDJSONFree(event1);
@@ -189,9 +189,9 @@ testCounterForNilVariationIsDistinctFromOthers()
     LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summary, "default")));
     LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
 
-    free(summarykey1);
-    free(summarykey2);
-    free(summarykey3);
+    LDFree(summarykey1);
+    LDFree(summarykey2);
+    LDFree(summarykey3);
     LDJSONFree(flag);
     LDJSONFree(event1);
     LDJSONFree(event2);
