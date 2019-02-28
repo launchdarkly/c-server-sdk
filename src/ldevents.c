@@ -411,6 +411,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
     char *keytext;
     struct LDJSON *tmp;
     struct LDJSON *entry;
+    bool success = false;
 
     LD_ASSERT(client);
     LD_ASSERT(event);
@@ -427,32 +428,32 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
         if (!(entry = LDNewObject())) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            goto error;
+            goto cleanup;
         }
 
         if (!(tmp = LDNewNumber(1))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            goto error;
+            goto cleanup;
         }
 
         if (!LDObjectSetKey(entry, "count", tmp)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            goto error;
+            goto cleanup;
         }
 
         if ((tmp = LDObjectLookup(event, "value"))) {
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
-                goto error;
+                goto cleanup;
             }
 
             if (!LDObjectSetKey(entry, "value", tmp)) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
-                goto error;
+                goto cleanup;
             }
         }
 
@@ -460,50 +461,50 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
-                goto error;
+                goto cleanup;
             }
 
             if (!LDObjectSetKey(entry, "default", tmp)) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
-                goto error;
+                goto cleanup;
             }
         }
 
         if (!(tmp = LDObjectLookup(event, "creationDate"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            goto error;
+            goto cleanup;
         }
 
         if (!(tmp = LDJSONDuplicate(tmp))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            goto error;
+            goto cleanup;
         }
 
         if (!LDObjectSetKey(entry, "startDate", tmp)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            goto error;
+            goto cleanup;
         }
 
         if (!(tmp = LDJSONDuplicate(tmp))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            goto error;
+            goto cleanup;
         }
 
         if (!LDObjectSetKey(entry, "endDate", tmp)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            goto error;
+            goto cleanup;
         }
 
         if (!LDObjectSetKey(client->summary, keytext, entry)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            goto error;
+            goto cleanup;
         }
     } else {
         struct LDJSON *date;
@@ -514,13 +515,13 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
         if (!(tmp = LDObjectLookup(event, "creationDate"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            goto error;
+            goto cleanup;
         }
 
         if (!(date = LDObjectLookup(entry, "startDate"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            goto error;
+            goto cleanup;
         }
 
         if (LDGetNumber(date) < LDGetNumber(tmp)) {
@@ -530,7 +531,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
         if (!(date = LDObjectLookup(entry, "endDate"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            goto error;
+            goto cleanup;
         }
 
         if (LDGetNumber(date) > LDGetNumber(tmp)) {
@@ -538,18 +539,14 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
         }
     }
 
+    success = true;
+
+  cleanup:
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
     free(keytext);
 
-    return true;
-
-  error:
-    LD_ASSERT(LDi_wrunlock(&client->lock));
-
-    free(keytext);
-
-    return false;
+    return success;
 }
 
 struct AnalyticsContext {
