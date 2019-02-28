@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "ldmemory.h"
+#include "ldinternal.h"
 
 static void *(*customAlloc)(const size_t bytes) = malloc;
 
@@ -9,12 +10,6 @@ void *
 LDAlloc(const size_t bytes)
 {
     return customAlloc(bytes);
-}
-
-void
-LDSetAlloc(void *(*f)(const size_t))
-{
-    customAlloc = f;
 }
 
 static void (*customFree)(void *const buffer) = free;
@@ -25,24 +20,12 @@ LDFree(void *const buffer)
     customFree(buffer);
 }
 
-void
-LDSetFree(void (*f)(void *const))
-{
-    customFree = f;
-}
-
 static char *(*customStrDup)(const char *const string) = strdup;
 
 char *
 LDStrDup(const char *const string)
 {
     return customStrDup(string);
-}
-
-void
-LDSetStrDup(char *(*f)(const char *const))
-{
-    customStrDup = f;
 }
 
 static void *(*customRealloc)(void *const buffer, const size_t bytes) = realloc;
@@ -53,8 +36,30 @@ LDRealloc(void *const buffer, const size_t bytes)
     return customRealloc(buffer, bytes);
 }
 
-void
-LDSetRealloc(void *(*f)(void *const, const size_t))
+static void *(*customCalloc)(const size_t nmemb, const size_t size) = calloc;
+
+void *
+LDCalloc(const size_t nmemb, const size_t size)
 {
-    customRealloc = f;
+    return customCalloc(nmemb, size);
+}
+
+void
+LDSetMemoryRoutines(void *(*const newMalloc)(const size_t),
+    void (*const newFree)(void *const),
+    void *(*const newRealloc)(void *const, const size_t),
+    char *(*const newStrDup)(const char *const),
+    void *(*const newCalloc)(const size_t, const size_t))
+{
+    LD_ASSERT(newMalloc);
+    LD_ASSERT(newFree);
+    LD_ASSERT(newRealloc);
+    LD_ASSERT(newStrDup);
+    LD_ASSERT(newCalloc);
+
+    customAlloc   = newMalloc;
+    customFree    = newFree;
+    customRealloc = newRealloc;
+    customStrDup  = newStrDup;
+    customCalloc  = newCalloc;
 }

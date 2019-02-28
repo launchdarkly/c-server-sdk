@@ -9,8 +9,10 @@ void *LDAlloc(const size_t bytes);
 void LDFree(void *const buffer);
 char *LDStrDup(const char *const string);
 void *LDRealloc(void *const buffer, const size_t bytes);
+void *LDCalloc(const size_t nmemb, const size_t size);
 
-void LDSetAlloc(void *(*f)(const size_t));
-void LDSetFree(void (*f)(void *const));
-void LDSetStrDup(char *(*f)(const char *const));
-void LDSetRealloc(void *(*f)(void *const, const size_t));
+void LDSetMemoryRoutines(void *(*const newMalloc)(const size_t),
+    void (*const newFree)(void *const),
+    void *(*const newRealloc)(void *const, const size_t),
+    char *(*const newStrDup)(const char *const),
+    void *(*const newCalloc)(const size_t, const size_t));
