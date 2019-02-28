@@ -620,6 +620,8 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     LD_ASSERT(context);
 
+    /* decide if events should be sent */
+
     if (context->active) {
         return NULL;
     }
@@ -646,6 +648,8 @@ poll(struct LDClient *const client, void *const rawcontext)
 
         LD_ASSERT(LDi_wrunlock(&client->lock));
     }
+
+    /* prepare request */
 
     if (snprintf(url, sizeof(url), "%s/bulk",
         client->config->eventsURI) < 0)
