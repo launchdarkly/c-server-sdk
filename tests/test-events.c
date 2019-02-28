@@ -121,6 +121,7 @@ testSummarizeEventIncrementsCounters()
     LDJSONFree(event2);
     LDJSONFree(event3);
     LDJSONFree(event4);
+    LDJSONFree(event5);
     LDJSONFree(value1);
     LDJSONFree(value2);
     LDJSONFree(value99);
@@ -131,12 +132,84 @@ testSummarizeEventIncrementsCounters()
     LDClientClose(client);
 }
 
+void
+testCounterForNilVariationIsDistinctFromOthers()
+{
+    struct LDUser *user;
+    struct LDClient *client;
+    struct LDJSON *flag;
+    struct LDJSON *event1;
+    struct LDJSON *event2;
+    struct LDJSON *event3;
+    const unsigned int variation1 = 1;
+    const unsigned int variation2 = 2;
+    struct LDJSON *value1;
+    struct LDJSON *value2;
+    struct LDJSON *default1;
+    struct LDJSON *summary;
+    char *summarykey1;
+    char *summarykey2;
+    char *summarykey3;
+
+    LD_ASSERT(user = LDUserNew("abc"));
+    LD_ASSERT(client = makeOfflineClient());
+    LD_ASSERT(flag = makeMinimalFlag("key1", 11));
+
+    LD_ASSERT(value1 = LDNewText("value1"));
+    LD_ASSERT(value2 = LDNewText("value2"));
+    LD_ASSERT(default1 = LDNewText("default1"));
+
+    LD_ASSERT(event1 = newFeatureRequestEvent("key1", user, &variation1,
+        value1, default1, NULL, flag, NULL));
+    LD_ASSERT(event2 = newFeatureRequestEvent("key1", user, &variation2,
+        value2, default1, NULL, flag, NULL));
+    LD_ASSERT(event3 = newFeatureRequestEvent("key1", user, NULL,
+        default1, default1, NULL, flag, NULL));
+
+    LD_ASSERT(summarykey1 = makeSummaryKey(event1));
+    LD_ASSERT(summarykey2 = makeSummaryKey(event2));
+    LD_ASSERT(summarykey3 = makeSummaryKey(event3));
+
+    LD_ASSERT(summarizeEvent(client, event1));
+    LD_ASSERT(summarizeEvent(client, event2));
+    LD_ASSERT(summarizeEvent(client, event3));
+
+    LD_ASSERT(summary = LDObjectLookup(client->summary, summarykey1));
+    LD_ASSERT(LDJSONCompare(value1, LDObjectLookup(summary, "value")));
+    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summary, "default")));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
+
+    LD_ASSERT(summary = LDObjectLookup(client->summary, summarykey2));
+    LD_ASSERT(LDJSONCompare(value2, LDObjectLookup(summary, "value")));
+    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summary, "default")));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
+
+    LD_ASSERT(summary = LDObjectLookup(client->summary, summarykey3));
+    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summary, "value")));
+    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summary, "default")));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
+
+    free(summarykey1);
+    free(summarykey2);
+    free(summarykey3);
+    LDJSONFree(flag);
+    LDJSONFree(event1);
+    LDJSONFree(event2);
+    LDJSONFree(event3);
+    LDJSONFree(value1);
+    LDJSONFree(value2);
+    LDJSONFree(default1);
+    LDUserFree(user);
+    LDClientClose(client);
+}
+
 int
 main()
 {
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
     testSummarizeEventIncrementsCounters();
+    testCounterForNilVariationIsDistinctFromOthers();
 
     return 0;
 }
