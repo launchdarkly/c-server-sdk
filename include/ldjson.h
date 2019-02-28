@@ -197,7 +197,7 @@ const char *LDIterKey(const struct LDJSON *const iter);
  * must be of type `LDJSONArray` (assert).
  * @return The size of the array
  */
-unsigned int LDArrayGetSize(const struct LDJSON *const array);
+unsigned int LDCollectionGetSize(const struct LDJSON *const array);
 
 /**
  * @brief Lookup up the value of an index for a given array

@@ -165,7 +165,7 @@ LDIterKey(const struct LDJSON *const rawiter)
 }
 
 unsigned int
-LDArrayGetSize(const struct LDJSON *const rawarray)
+LDCollectionGetSize(const struct LDJSON *const rawarray)
 {
     cJSON *const array = (cJSON *const)rawarray;
 

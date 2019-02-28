@@ -324,7 +324,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
         return EVAL_SCHEMA;
     }
 
-    if (rules && LDArrayGetSize(rules) != 0) {
+    if (rules && LDCollectionGetSize(rules) != 0) {
         unsigned int index = 0;
         for (iter = LDGetIter(rules); iter; iter = LDIterNext(iter)) {
             EvalStatus substatus;

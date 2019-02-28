@@ -302,7 +302,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
         LDObjectLookup(reason, "prerequisiteKey"))) == 0);
 
     LD_ASSERT(events = LDObjectLookup(result, "events"));
-    LD_ASSERT(LDArrayGetSize(events) == 1);
+    LD_ASSERT(LDCollectionGetSize(events) == 1);
     LD_ASSERT(events = LDGetIter(events));
     LD_ASSERT(strcmp("feature1",
         LDGetText(LDObjectLookup(events, "key"))) == 0);
@@ -363,7 +363,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
 
     LD_ASSERT(events = LDObjectLookup(result, "events"));
-    LD_ASSERT(LDArrayGetSize(events) == 1);
+    LD_ASSERT(LDCollectionGetSize(events) == 1);
     LD_ASSERT(events = LDGetIter(events));
     LD_ASSERT(strcmp("feature1",
         LDGetText(LDObjectLookup(events, "key"))) == 0);
@@ -424,7 +424,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
 
     LD_ASSERT(events = LDObjectLookup(result, "events"));
-    LD_ASSERT(LDArrayGetSize(events) == 1);
+    LD_ASSERT(LDCollectionGetSize(events) == 1);
     LD_ASSERT(events = LDGetIter(events));
     LD_ASSERT(strcmp("feature1",
         LDGetText(LDObjectLookup(events, "key"))) == 0);
@@ -497,7 +497,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
 
     LD_ASSERT(events = LDObjectLookup(result, "events"));
-    LD_ASSERT(LDArrayGetSize(events) == 2);
+    LD_ASSERT(LDCollectionGetSize(events) == 2);
 
     LD_ASSERT(events = LDGetIter(events));
     LD_ASSERT(strcmp("feature2",

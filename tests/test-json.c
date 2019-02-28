@@ -82,7 +82,7 @@ testArray()
     LD_ASSERT(iter = LDIterNext(iter));
     LD_ASSERT(LDGetBool(iter) == false);
 
-    LD_ASSERT(LDArrayGetSize(json) == 2);
+    LD_ASSERT(LDCollectionGetSize(json) == 2);
 
     LDJSONFree(json);
 }

@@ -293,7 +293,7 @@ addEvent(struct LDClient *const client, const struct LDJSON *const event)
     /* sanity check */
     LD_ASSERT(LDJSONGetType(client->events) == LDArray);
 
-    if (LDArrayGetSize(client->events) > client->config->eventsCapacity) {
+    if (LDCollectionGetSize(client->events) > client->config->eventsCapacity) {
         LD_LOG(LD_LOG_WARNING, "event capacity exceeded, dropping event");
 
         LD_ASSERT(LDi_wrunlock(&client->lock));
@@ -636,8 +636,8 @@ poll(struct LDClient *const client, void *const rawcontext)
 
         LD_ASSERT(LDi_wrlock(&client->lock));
 
-        if (LDArrayGetSize(client->events) == 0 &&
-            LDArrayGetSize(client->summary))
+        if (LDCollectionGetSize(client->events) == 0 &&
+            LDCollectionGetSize(client->summary))
         {
             LD_ASSERT(LDi_wrunlock(&client->lock));
 
