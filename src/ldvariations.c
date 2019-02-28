@@ -121,6 +121,12 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
                 goto error;
             }
+
+            if (!summarizeEvent(client, iter)) {
+                LD_LOG(LD_LOG_ERROR, "summary failed");
+
+                goto error;
+            }
         }
     }
 
@@ -139,6 +145,12 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     if (!addEvent(client, event)) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        goto error;
+    }
+
+    if (!summarizeEvent(client, event)) {
+        LD_LOG(LD_LOG_ERROR, "summary failed");
 
         goto error;
     }
