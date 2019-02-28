@@ -637,7 +637,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         LD_ASSERT(LDi_wrlock(&client->lock));
 
         if (LDCollectionGetSize(client->events) == 0 &&
-            LDCollectionGetSize(client->summary))
+            LDCollectionGetSize(client->summary) == 0)
         {
             LD_ASSERT(LDi_wrunlock(&client->lock));
 
