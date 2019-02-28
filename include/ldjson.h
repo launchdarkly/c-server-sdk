@@ -264,6 +264,17 @@ bool LDObjectSetKey(struct LDJSON *const object, const char *const key,
 void LDObjectDeleteKey(struct LDJSON *const object, const char *const key);
 
 /**
+ * @brief Detach the provided key from the given object. The returned value is
+ * no longer owned by the object and must be manually deleted.
+ * @param[in] object May not be NULL (assert),
+ * must be of type `LDJSONObject` (assert).
+ * @param[in] key The key to detach from the object. May not be NULL (assert),
+ * @return The value associated, or NULL if it does not exit
+ */
+struct LDJSON *LDObjectDetachKey(struct LDJSON *const object,
+    const char *const key);
+
+/**
  * @brief Copy keys from one object to another. If a key already exists it is
  * overwritten by the new value.
  * @param[in] to Object to assign to. May not be NULL (assert).
