@@ -14,3 +14,4 @@
 #include "ldlogging.h"
 #include "ldclient.h"
 #include "ldvariations.h"
+#include "ldmemory.h"
