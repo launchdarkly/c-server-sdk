@@ -557,6 +557,7 @@ struct AnalyticsContext {
     unsigned int lastFlush;
     struct curl_slist *headers;
     struct LDClient *client;
+    char *buffer;
 };
 
 static void
@@ -566,6 +567,9 @@ resetMemory(struct AnalyticsContext *const context)
 
     curl_slist_free_all(context->headers);
     context->headers = NULL;
+
+    free(context->buffer);
+    context->buffer = NULL;
 }
 
 static void
@@ -629,6 +633,18 @@ poll(struct LDClient *const client, void *const rawcontext)
         if (now - context->lastFlush < client->config->flushInterval * 1000) {
             return NULL;
         }
+
+        LD_ASSERT(LDi_wrlock(&client->lock));
+
+        if (LDArrayGetSize(client->events) == 0 &&
+            LDArrayGetSize(client->summary))
+        {
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            return NULL;
+        }
+
+        LD_ASSERT(LDi_wrunlock(&client->lock));
     }
 
     if (snprintf(url, sizeof(url), "%s/bulk",
@@ -655,6 +671,46 @@ poll(struct LDClient *const client, void *const rawcontext)
     }
 
     if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, context->headers)
+        != CURLE_OK)
+    {
+        goto error;
+    }
+
+    /* serialize events */
+
+    LD_ASSERT(LDi_wrlock(&client->lock));
+
+    LDArrayPush(client->events, client->summary);
+
+    if (!(context->buffer = LDJSONSerialize(client->events))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        goto error;
+    }
+
+    LDJSONFree(client->events);
+
+    if (!(client->events = LDNewArray())) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LD_ASSERT(LDi_wrunlock(&client->lock));
+
+        goto error;
+    }
+
+    if (!(client->summary = LDNewObject())) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LD_ASSERT(LDi_wrunlock(&client->lock));
+
+        goto error;
+    }
+
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    /* add outgoing buffer */
+
+    if (curl_easy_setopt(curl, CURLOPT_POSTFIELDS, context->buffer)
         != CURLE_OK)
     {
         goto error;
@@ -692,6 +748,7 @@ constructAnalytics(struct LDClient *const client)
     context->lastFlush = 0;
     context->headers   = NULL;
     context->client    = client;
+    context->buffer    = NULL;
 
     interface->done    = done;
     interface->poll    = poll;
