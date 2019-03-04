@@ -5,6 +5,11 @@
 
 #pragma once
 
+#ifdef __cplusplus
+
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -15,3 +20,7 @@
 #include "ldclient.h"
 #include "ldvariations.h"
 #include "ldmemory.h"
+
+#ifdef __cplusplus
+}
+#endif
