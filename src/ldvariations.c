@@ -105,10 +105,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     value = LDJSONDuplicate(value);
 
-    if (reason) {
-        *reason = LDObjectLookup(details, "reason");
-        *reason = LDJSONDuplicate(*reason);
-    }
+    *reason = LDJSONDuplicate(details);
 
     if ((events = LDObjectLookup(details, "events"))) {
         struct LDJSON *iter;
