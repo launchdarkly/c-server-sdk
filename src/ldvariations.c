@@ -105,7 +105,9 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     value = LDJSONDuplicate(value);
 
-    *reason = LDJSONDuplicate(details);
+    if (reason) {
+        *reason = LDJSONDuplicate(details);
+    }
 
     if ((events = LDObjectLookup(details, "events"))) {
         struct LDJSON *iter;
@@ -161,7 +163,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
   fallback:
     if (reason) {
-        *reason = LDObjectDetachKey(details, "reason");
+        *reason = LDJSONDuplicate(details);
     }
 
     LDJSONFree(flag);
