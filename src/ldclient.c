@@ -31,6 +31,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         config->defaultStore = true;
     }
 
+    client->shouldFlush  = false;
     client->shuttingdown = false;
     client->config       = config;
 
@@ -162,4 +163,13 @@ LDClientIsOffline(struct LDClient *const client)
     LD_ASSERT(client);
 
     return client->config->offline;
+}
+
+void
+LDClientFlush(struct LDClient *const client)
+{
+    LD_ASSERT(client);
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    client->shouldFlush = true;
+    LD_ASSERT(LDi_wrunlock(&client->lock));
 }

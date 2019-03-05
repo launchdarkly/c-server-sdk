@@ -582,6 +582,7 @@ done(struct LDClient *const client, void *const rawcontext)
     context->active = false;
 
     LD_ASSERT(LDi_wrlock(&client->lock));
+    client->shouldFlush = false;
     client->initialized = true;
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
@@ -609,6 +610,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 {
     CURL *curl = NULL;
     char url[4096];
+    bool shouldFlush;
 
     const char *const mime = "Content-Type: application/json";
     const char *const schema = "X-LaunchDarkly-Event-Schema: 3";
@@ -623,7 +625,20 @@ poll(struct LDClient *const client, void *const rawcontext)
         return NULL;
     }
 
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    if (LDCollectionGetSize(client->events) == 0 &&
+        LDCollectionGetSize(client->summary) == 0)
     {
+        LD_ASSERT(LDi_wrunlock(&client->lock));
+
+        client->shouldFlush = false;
+
+        return NULL;
+    }
+    shouldFlush = client->shouldFlush;
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    if (!shouldFlush) {
         unsigned int now;
 
         LD_ASSERT(getMonotonicMilliseconds(&now));
@@ -632,18 +647,6 @@ poll(struct LDClient *const client, void *const rawcontext)
         if (now - context->lastFlush < client->config->flushInterval * 1000) {
             return NULL;
         }
-
-        LD_ASSERT(LDi_wrlock(&client->lock));
-
-        if (LDCollectionGetSize(client->events) == 0 &&
-            LDCollectionGetSize(client->summary) == 0)
-        {
-            LD_ASSERT(LDi_wrunlock(&client->lock));
-
-            return NULL;
-        }
-
-        LD_ASSERT(LDi_wrunlock(&client->lock));
     }
 
     /* prepare request */

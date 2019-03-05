@@ -25,3 +25,5 @@ bool LDClientIdentify(struct LDClient *const client,
     const struct LDUser *const user);
 
 bool LDClientIsOffline(struct LDClient *const client);
+
+void LDClientFlush(struct LDClient *const client);
