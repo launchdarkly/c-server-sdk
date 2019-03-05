@@ -63,7 +63,7 @@ newBaseEvent(const struct LDUser *const user)
     return NULL;
 }
 
-static bool
+bool
 notNull(const struct LDJSON *const json)
 {
     if (json) {

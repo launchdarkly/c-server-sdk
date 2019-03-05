@@ -109,7 +109,7 @@ addValue(const struct LDJSON *const flag, struct LDJSON *result,
     LD_ASSERT(flag);
     LD_ASSERT(result);
 
-    if (index) {
+    if (notNull(index)) {
         if (LDJSONGetType(index) != LDNumber) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -135,7 +135,7 @@ addValue(const struct LDJSON *const flag, struct LDJSON *result,
         return false;
     }
 
-    if (index) {
+    if (notNull(index)) {
         if (!(variations = LDObjectLookup(flag, "variations"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -793,7 +793,9 @@ segmentMatchesUser(const struct LDJSON *const segment,
     LD_ASSERT(segment);
     LD_ASSERT(user);
 
-    if ((included = LDObjectLookup(segment, "included"))) {
+    included = LDObjectLookup(segment, "included");
+
+    if (notNull(included)) {
         if (LDJSONGetType(included) != LDArray) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -805,7 +807,9 @@ segmentMatchesUser(const struct LDJSON *const segment,
         }
     }
 
-    if ((excluded = LDObjectLookup(segment, "excluded"))) {
+    excluded = LDObjectLookup(segment, "excluded");
+
+    if (notNull(excluded)) {
         if (LDJSONGetType(excluded) != LDArray) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -1031,7 +1035,9 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
         return EVAL_MEM;
     }
 
-    if ((negateJSON = LDObjectLookup(clause, "negate"))) {
+    negateJSON = LDObjectLookup(clause, "negate");
+
+    if (notNull(negateJSON)) {
         if (LDJSONGetType(negateJSON) != LDBool) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 

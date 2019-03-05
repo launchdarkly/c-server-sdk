@@ -122,6 +122,8 @@ bool getUnixMilliseconds(unsigned int *const resultMilliseconds);
 
 bool LDSetString(char **const target, const char *const value);
 
+bool notNull(const struct LDJSON *const json);
+
 #define ASSERT_FMT \
     "LD_ASSERT failed: expected condition '%s' in function '%s' aborting\n"
 
