@@ -63,6 +63,18 @@ newBaseEvent(const struct LDUser *const user)
     return NULL;
 }
 
+static bool
+notNull(const struct LDJSON *const json)
+{
+    if (json) {
+        if (LDJSONGetType(json) != LDNull) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 struct LDJSON *
 newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
     const unsigned int *const variation, const struct LDJSON *const value,
@@ -149,7 +161,9 @@ newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
     }
 
     if (flag) {
-        if ((tmp = LDObjectLookup(flag, "version"))) {
+        tmp = LDObjectLookup(flag, "version");
+
+        if (notNull(tmp)) {
             if (LDJSONGetType(tmp) != LDNumber) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -169,7 +183,9 @@ newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
             }
         }
 
-        if ((tmp = LDObjectLookup(flag, "trackEvents"))) {
+        tmp = LDObjectLookup(flag, "trackEvents");
+
+        if (notNull(tmp)) {
             if (LDJSONGetType(tmp) != LDBool) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -189,7 +205,9 @@ newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
             }
         }
 
-        if ((tmp = LDObjectLookup(flag, "debugEventsUntilDate"))) {
+        tmp = LDObjectLookup(flag, "debugEventsUntilDate");
+
+        if (notNull(tmp)) {
             if (LDJSONGetType(tmp) != LDNumber) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -352,7 +370,9 @@ makeSummaryKey(const struct LDJSON *const event)
         return false;
     }
 
-    if ((tmp = LDObjectLookup(event, "variation"))) {
+    tmp = LDObjectLookup(event, "variation");
+
+    if (notNull(tmp)) {
         LD_ASSERT(LDJSONGetType(tmp) == LDNumber);
 
         if (!(tmp = LDJSONDuplicate(tmp))) {
@@ -372,7 +392,9 @@ makeSummaryKey(const struct LDJSON *const event)
         }
     }
 
-    if ((tmp = LDObjectLookup(event, "version"))) {
+    tmp = LDObjectLookup(event, "version");
+
+    if (notNull(tmp)) {
         LD_ASSERT(LDJSONGetType(tmp) == LDNumber);
 
         if (!(tmp = LDJSONDuplicate(tmp))) {
@@ -443,7 +465,9 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
             goto cleanup;
         }
 
-        if ((tmp = LDObjectLookup(event, "value"))) {
+        tmp = LDObjectLookup(event, "value");
+
+        if (notNull(tmp)) {
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -457,7 +481,9 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
             }
         }
 
-        if ((tmp = LDObjectLookup(event, "default"))) {
+        tmp = LDObjectLookup(event, "default");
+
+        if (notNull(tmp)) {
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
