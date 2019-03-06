@@ -346,6 +346,10 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
 struct LDJSON *
 LDAllFlags(struct LDClient *const client, struct LDUser *const user)
 {
+    struct LDJSON *flag;
+    struct LDJSON *rawFlags;
+    struct LDJSON *evaluatedFlags;
+
     LD_ASSERT(client);
 
     if (client->config->offline) {
@@ -369,6 +373,57 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
             return NULL;
         }
     }
+
+    if (!(rawFlags = LDStoreAll(client->config->store, "flags"))) {
+        LD_LOG(LD_LOG_ERROR, "LDAllFlags failed to fetch flags");
+
+        return NULL;
+    }
+
+    if (!(evaluatedFlags = LDNewObject())) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(rawFlags);
+
+        return NULL;
+    }
+
+    /* locally ensured sanity check */
+    LD_ASSERT(LDJSONGetType(rawFlags) == LDObject);
+
+    for (flag = LDGetIter(rawFlags); flag; flag = LDIterNext(flag)) {
+        struct LDJSON *value;
+        struct LDJSON *details = NULL;
+
+        EvalStatus status = evaluate(flag, user,
+            client->config->store, &details);
+
+        if (status == EVAL_MEM || status == EVAL_SCHEMA) {
+            goto error;
+        }
+
+        LD_ASSERT(value = LDObjectLookup(details, "value"));
+
+        if (!(value = LDJSONDuplicate(value))) {
+            LDJSONFree(details);
+
+            goto error;
+        }
+
+        LDJSONFree(details);
+
+        if (!LDObjectSetKey(evaluatedFlags, LDIterKey(flag), value)) {
+            goto error;
+        }
+    }
+
+    LDJSONFree(rawFlags);
+
+    return evaluatedFlags;
+
+  error:
+    LDJSONFree(rawFlags);
+    LDJSONFree(evaluatedFlags);
 
     return NULL;
 }
