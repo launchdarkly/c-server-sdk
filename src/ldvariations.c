@@ -175,7 +175,6 @@ variation(struct LDClient *const client, const struct LDUser *const user,
   error:
     LDJSONFree(event);
     LDJSONFree(details);
-    LDJSONFree(fallback);
     LDJSONFree(flag);
 
     return fallback;
