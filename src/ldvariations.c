@@ -87,28 +87,6 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto fallback;
     }
 
-    value = LDObjectLookup(details, "value");
-
-    if (!notNull(value)) {
-        goto fallback;
-    }
-
-    if (LDJSONGetType(value) != type) {
-        if (!addErrorReason(&details, "WRONG_TYPE")) {
-            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
-
-            goto error;
-        }
-
-        goto fallback;
-    }
-
-    value = LDJSONDuplicate(value);
-
-    if (reason) {
-        *reason = LDJSONDuplicate(details);
-    }
-
     if ((events = LDObjectLookup(details, "events"))) {
         struct LDJSON *iter;
         /* local only sanity */
@@ -152,6 +130,28 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         LD_LOG(LD_LOG_ERROR, "summary failed");
 
         goto error;
+    }
+
+    value = LDObjectLookup(details, "value");
+
+    if (!notNull(value)) {
+        goto fallback;
+    }
+
+    if (LDJSONGetType(value) != type) {
+        if (!addErrorReason(&details, "WRONG_TYPE")) {
+            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
+
+            goto error;
+        }
+
+        goto fallback;
+    }
+
+    value = LDJSONDuplicate(value);
+
+    if (reason) {
+        *reason = LDJSONDuplicate(details);
     }
 
     LDJSONFree(event);
