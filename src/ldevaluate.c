@@ -231,7 +231,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
             return EVAL_MEM;
         }
 
-        return EVAL_MATCH;
+        return EVAL_MISS;
     }
 
     /* prerequisites */
