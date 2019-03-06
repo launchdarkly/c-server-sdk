@@ -16,7 +16,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     struct LDJSON *events;
     struct LDJSON *event = NULL;
     unsigned int variationNum;
-    unsigned int *variationNumRef;
+    unsigned int *variationNumRef = NULL;
     const struct LDJSON *variationNumJSON;
 
     if (!client) {
