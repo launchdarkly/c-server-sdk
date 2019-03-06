@@ -30,3 +30,6 @@ char *LDStringVariation(struct LDClient *const client,
 struct LDJSON *LDJSONVariation(struct LDClient *const client,
     struct LDUser *const user, const char *const key,
     const struct LDJSON *const fallback, struct LDJSON **const details);
+
+struct LDJSON *LDAllFlags(struct LDClient *const client,
+    struct LDUser *const user);

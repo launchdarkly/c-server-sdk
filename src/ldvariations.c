@@ -342,3 +342,33 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
 
     return result;
 }
+
+struct LDJSON *
+LDAllFlags(struct LDClient *const client, struct LDUser *const user)
+{
+    LD_ASSERT(client);
+
+    if (client->config->offline) {
+        LD_LOG(LD_LOG_WARNING, "LDAllFlags called when offline returning NULL");
+
+        return NULL;
+    }
+
+    if (!user) {
+        LD_LOG(LD_LOG_WARNING, "LDAllFlags NULL user returning NULL");
+
+        return NULL;
+    }
+
+    if (!client->initialized) {
+        if (LDStoreInitialized(client->config->store)) {
+            LD_LOG(LD_LOG_WARNING, "LDAllFlags using stale values");
+        } else {
+            LD_LOG(LD_LOG_WARNING, "LDAllFlags not initialized returning NULL");
+
+            return NULL;
+        }
+    }
+
+    return NULL;
+}
