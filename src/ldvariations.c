@@ -16,6 +16,8 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     struct LDJSON *events;
     struct LDJSON *event = NULL;
     unsigned int variationNum;
+    unsigned int *variationNumRef;
+    const struct LDJSON *variationNumJSON;
 
     if (!client) {
         if (!addErrorReason(&details, "NULL_CLIENT")) {
@@ -107,9 +109,21 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         }
     }
 
-    variationNum = LDGetNumber(LDObjectLookup(details, "variationIndex"));
+    variationNumJSON = LDObjectLookup(details, "variationIndex");
 
-    event = newFeatureRequestEvent(key, user, &variationNum,
+    if (notNull(variationNumJSON)) {
+        if (LDJSONGetType(variationNumJSON) != LDNumber) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            goto fallback;
+        }
+
+        variationNum = LDGetNumber(variationNumJSON);
+
+        variationNumRef = &variationNum;
+    }
+
+    event = newFeatureRequestEvent(key, user, variationNumRef,
         LDObjectLookup(details, "value"), NULL,
         LDGetText(LDObjectLookup(flag, "key")), flag,
         LDObjectLookup(details, "reason"));
