@@ -89,6 +89,10 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     value = LDObjectLookup(details, "value");
 
+    if (!notNull(value)) {
+        goto fallback;
+    }
+
     if (LDJSONGetType(value) != type) {
         if (!addErrorReason(&details, "WRONG_TYPE")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
