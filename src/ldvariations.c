@@ -87,10 +87,6 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto fallback;
     }
 
-    if (status != EVAL_MATCH) {
-        goto fallback;
-    }
-
     value = LDObjectLookup(details, "value");
 
     if (LDJSONGetType(value) != type) {
