@@ -467,6 +467,8 @@ checkPrerequisites(const struct LDJSON *const flag,
         const struct LDJSON *key = NULL;
         const struct LDJSON *variation = NULL;
         unsigned int variationNum;
+        unsigned int *variationNumRef = NULL;
+        const struct LDJSON *variationNumJSON;
         struct LDJSON *event = NULL;
         struct LDJSON *subevents;
 
@@ -520,9 +522,24 @@ checkPrerequisites(const struct LDJSON *const flag,
             LD_LOG(LD_LOG_ERROR, "sub error with result");
         }
 
-        variationNum = LDGetNumber(LDObjectLookup(result, "variationIndex"));
+        variationNumJSON = LDObjectLookup(result, "variationIndex");
 
-        event = newFeatureRequestEvent(LDGetText(key), user, &variationNum,
+        if (notNull(variationNumJSON)) {
+            if (LDJSONGetType(variationNumJSON) != LDNumber) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
+
+                LDJSONFree(preflag);
+                LDJSONFree(result);
+
+                return EVAL_SCHEMA;
+            }
+
+            variationNum = LDGetNumber(variationNumJSON);
+
+            variationNumRef = &variationNum;
+        }
+
+        event = newFeatureRequestEvent(LDGetText(key), user, variationNumRef,
             LDObjectLookup(result, "value"), NULL,
             LDGetText(LDObjectLookup(flag, "key")), preflag,
             LDObjectLookup(result, "reason"));
