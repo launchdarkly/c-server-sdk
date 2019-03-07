@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <curl/curl.h>
 
@@ -117,8 +118,8 @@ THREAD_RETURN LDi_networkthread(void *const clientref);
 /* **** LDUtility **** */
 
 bool sleepMilliseconds(const unsigned int milliseconds);
-bool getMonotonicMilliseconds(unsigned int *const resultMilliseconds);
-bool getUnixMilliseconds(unsigned int *const resultMilliseconds);
+bool getMonotonicMilliseconds(unsigned long *const resultMilliseconds);
+bool getUnixMilliseconds(unsigned long *const resultMilliseconds);
 
 bool LDSetString(char **const target, const char *const value);
 

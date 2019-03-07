@@ -3,8 +3,8 @@
 static void
 testMonotonic()
 {
-    unsigned int past;
-    unsigned int present;
+    unsigned long past;
+    unsigned long present;
 
     LD_ASSERT(getMonotonicMilliseconds(&past));
     LD_ASSERT(getMonotonicMilliseconds(&present));
@@ -15,8 +15,8 @@ testMonotonic()
 static void
 testSleepMinimum()
 {
-    unsigned int past;
-    unsigned int present;
+    unsigned long past;
+    unsigned long present;
 
     LD_ASSERT(getMonotonicMilliseconds(&past));
 
@@ -123,7 +123,6 @@ int
 main()
 {
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
-    LDGlobalInit();
 
     testMonotonic();
     testSleepMinimum();

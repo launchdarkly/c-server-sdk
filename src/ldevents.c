@@ -14,7 +14,7 @@ newBaseEvent(const struct LDUser *const user, const char *const kind)
 {
     struct LDJSON *tmp;
     struct LDJSON *event;
-    unsigned int milliseconds;
+    unsigned long milliseconds;
 
     LD_ASSERT(user);
 
@@ -589,7 +589,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
 
 struct AnalyticsContext {
     bool active;
-    unsigned int lastFlush;
+    unsigned long lastFlush;
     struct curl_slist *headers;
     struct LDClient *client;
     char *buffer;
@@ -677,7 +677,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
     if (!shouldFlush) {
-        unsigned int now;
+        unsigned long now;
 
         LD_ASSERT(getMonotonicMilliseconds(&now));
         LD_ASSERT(now >= context->lastFlush);

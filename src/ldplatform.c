@@ -24,7 +24,7 @@ sleepMilliseconds(const unsigned int milliseconds)
 }
 
 static bool
-getTime(unsigned int *const resultMilliseconds, clockid_t clockid)
+getTime(unsigned long *const resultMilliseconds, clockid_t clockid)
 {
     int status; struct timespec spec;
 
@@ -43,16 +43,15 @@ getTime(unsigned int *const resultMilliseconds, clockid_t clockid)
 }
 
 bool
-getMonotonicMilliseconds(unsigned int *const resultMilliseconds)
+getMonotonicMilliseconds(unsigned long *const resultMilliseconds)
 {
     return getTime(resultMilliseconds, CLOCK_MONOTONIC);
 }
 
 bool
-getUnixMilliseconds(unsigned int *const resultMilliseconds)
+getUnixMilliseconds(unsigned long *const resultMilliseconds)
 {
-    *resultMilliseconds = time(NULL) * 1000.0;
-    return true;
+    return getTime(resultMilliseconds, CLOCK_REALTIME);
 }
 
 bool
