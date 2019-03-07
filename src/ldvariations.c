@@ -124,7 +124,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     event = newFeatureRequestEvent(key, user, variationNumRef,
-        LDObjectLookup(details, "value"), NULL,
+        LDObjectLookup(details, "value"), fallback,
         LDGetText(LDObjectLookup(flag, "key")), flag,
         LDObjectLookup(details, "reason"));
 
