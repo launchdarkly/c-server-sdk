@@ -18,6 +18,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     unsigned int variationNum;
     unsigned int *variationNumRef = NULL;
     const struct LDJSON *variationNumJSON;
+    struct LDJSON *evalue;
 
     if (!client) {
         if (!addErrorReason(&details, "NULL_CLIENT")) {
@@ -123,9 +124,12 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         variationNumRef = &variationNum;
     }
 
+    if (!notNull(evalue = LDObjectLookup(details, "value"))) {
+        evalue = fallback;
+    }
+
     event = newFeatureRequestEvent(key, user, variationNumRef,
-        LDObjectLookup(details, "value"), fallback,
-        LDGetText(LDObjectLookup(flag, "key")), flag,
+        evalue, fallback, LDGetText(LDObjectLookup(flag, "key")), flag,
         LDObjectLookup(details, "reason"));
 
     if (!event) {
