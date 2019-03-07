@@ -517,6 +517,22 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
             }
         }
 
+        tmp = LDObjectLookup(event, "key");
+
+        if (notNull(tmp)) {
+            if (!(tmp = LDJSONDuplicate(tmp))) {
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                goto cleanup;
+            }
+
+            if (!LDObjectSetKey(entry, "key", tmp)) {
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                goto cleanup;
+            }
+        }
+
         if (!LDObjectSetKey(client->summaryCounters, keytext, entry)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
