@@ -138,10 +138,16 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto error;
     }
 
-    if (!addEvent(client, event)) {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
+    {
+        struct LDJSON *const track = LDObjectLookup(flag, "trackEvents");
 
-        goto error;
+        if (notNull(track) && LDGetBool(track)) {
+            if (!addEvent(client, event)) {
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                goto error;
+            }
+        }
     }
 
     if (!summarizeEvent(client, event)) {
