@@ -16,8 +16,6 @@ newBaseEvent(const struct LDUser *const user, const char *const kind)
     struct LDJSON *event;
     unsigned long milliseconds;
 
-    LD_ASSERT(user);
-
     if (!(event = LDNewObject())) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -25,16 +23,18 @@ newBaseEvent(const struct LDUser *const user, const char *const kind)
     }
 
     /* TODO: look at client / redaction context */
-    if (!(tmp = LDUserToJSON(NULL, user, false))) {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
+    if (user) {
+        if (!(tmp = LDUserToJSON(NULL, user, false))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
 
-        goto error;
-    }
+            goto error;
+        }
 
-    if (!(LDObjectSetKey(event, "user", tmp))) {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
+        if (!(LDObjectSetKey(event, "user", tmp))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
 
-        goto error;
+            goto error;
+        }
     }
 
     if (!getUnixMilliseconds(&milliseconds)) {
@@ -97,7 +97,6 @@ newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
     struct LDJSON *event;
 
     LD_ASSERT(key);
-    LD_ASSERT(user);
     LD_ASSERT(value);
 
     if (!(event = newBaseEvent(user, "feature"))) {
