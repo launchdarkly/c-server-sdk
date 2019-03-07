@@ -34,6 +34,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     client->shouldFlush  = false;
     client->shuttingdown = false;
     client->config       = config;
+    client->summaryStart = 0;
 
     if (!LDi_rwlockinit(&client->lock)) {
         goto error;
@@ -43,7 +44,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         goto error;
     }
 
-    if (!(client->summary = LDNewObject())) {
+    if (!(client->summaryCounters = LDNewObject())) {
         goto error;
     }
 
@@ -79,7 +80,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     }
 
     LDJSONFree(client->events);
-    LDJSONFree(client->summary);
+    LDJSONFree(client->summaryCounters);
 
     free(client);
 
@@ -101,7 +102,7 @@ LDClientClose(struct LDClient *const client)
         /* cleanup resources */
         LD_ASSERT(LDi_rwlockdestroy(&client->lock));
         LDJSONFree(client->events);
-        LDJSONFree(client->summary);
+        LDJSONFree(client->summaryCounters);
 
         if (client->config->defaultStore) {
             LDStoreDestroy(client->config->store);

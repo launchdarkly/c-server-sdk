@@ -458,7 +458,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
 
     LD_ASSERT(LDi_wrlock(&client->lock));
 
-    if (!(entry = LDObjectLookup(client->summary, keytext))) {
+    if (!(entry = LDObjectLookup(client->summaryCounters, keytext))) {
         if (!(entry = LDNewObject())) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -509,37 +509,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
             }
         }
 
-        if (!(tmp = LDObjectLookup(event, "creationDate"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            goto cleanup;
-        }
-
-        if (!(tmp = LDJSONDuplicate(tmp))) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            goto cleanup;
-        }
-
-        if (!LDObjectSetKey(entry, "startDate", tmp)) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            goto cleanup;
-        }
-
-        if (!(tmp = LDJSONDuplicate(tmp))) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            goto cleanup;
-        }
-
-        if (!LDObjectSetKey(entry, "endDate", tmp)) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            goto cleanup;
-        }
-
-        if (!LDObjectSetKey(client->summary, keytext, entry)) {
+        if (!LDObjectSetKey(client->summaryCounters, keytext, entry)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
             goto cleanup;
@@ -665,7 +635,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     LD_ASSERT(LDi_wrlock(&client->lock));
     if (LDCollectionGetSize(client->events) == 0 &&
-        LDCollectionGetSize(client->summary) == 0)
+        LDCollectionGetSize(client->summaryCounters) == 0)
     {
         LD_ASSERT(LDi_wrunlock(&client->lock));
 
@@ -722,22 +692,100 @@ poll(struct LDClient *const client, void *const rawcontext)
     LD_ASSERT(LDi_wrlock(&client->lock));
 
     {
+        struct LDJSON *summary;
         struct LDJSON *tmp;
+        unsigned long now;
+
+        if (!(summary = LDNewObject())) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            goto error;
+        }
 
         if (!(tmp = LDNewText("summary"))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            LDFree(summary);
+
             goto error;
         }
 
-        if (!(LDObjectSetKey(client->summary, "kind", tmp))) {
+        if (!(LDObjectSetKey(summary, "kind", tmp))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            LDFree(summary);
+
             goto error;
         }
-    }
 
-    LDArrayPush(client->events, client->summary);
+        if (!(tmp = LDNewNumber(client->summaryStart))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            LDFree(summary);
+
+            goto error;
+        }
+
+        if (!(LDObjectSetKey(summary, "startDate", tmp))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            LDFree(summary);
+
+            goto error;
+        }
+
+        if (!getUnixMilliseconds(&now)) {
+            LD_LOG(LD_LOG_ERROR, "failed to get time");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            LDFree(summary);
+
+            goto error;
+        }
+
+        if (!(tmp = LDNewNumber(now))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            LDFree(summary);
+
+            goto error;
+        }
+
+        if (!(LDObjectSetKey(summary, "endDate", tmp))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            LDFree(summary);
+
+            goto error;
+        }
+
+        if (!LDObjectSetKey(summary, "features", client->summaryCounters)) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            LDFree(summary);
+
+            goto error;
+        }
+
+        LDArrayPush(client->events, summary);
+    }
 
     if (!(context->buffer = LDJSONSerialize(client->events))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -755,7 +803,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         goto error;
     }
 
-    if (!(client->summary = LDNewObject())) {
+    if (!(client->summaryCounters = LDNewObject())) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         LD_ASSERT(LDi_wrunlock(&client->lock));
