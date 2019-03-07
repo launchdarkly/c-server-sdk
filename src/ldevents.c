@@ -661,7 +661,7 @@ objectToArray(const struct LDJSON *const object)
     struct LDJSON *array;
 
     LD_ASSERT(object);
-    LD_ASSERT(LDJSONGetType(object) == LDArray);
+    LD_ASSERT(LDJSONGetType(object) == LDObject);
 
     if (!(array = LDNewArray())) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
