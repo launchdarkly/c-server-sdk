@@ -572,36 +572,8 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
             goto cleanup;
         }
     } else {
-        struct LDJSON *date;
-
         LD_ASSERT(tmp = LDObjectLookup(entry, "count"));
         LD_ASSERT(LDSetNumber(tmp, LDGetNumber(tmp) + 1));
-
-        if (!(tmp = LDObjectLookup(event, "creationDate"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            goto cleanup;
-        }
-
-        if (!(date = LDObjectLookup(entry, "startDate"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            goto cleanup;
-        }
-
-        if (LDGetNumber(date) < LDGetNumber(tmp)) {
-            LD_ASSERT(LDSetNumber(date, LDGetNumber(tmp)));
-        }
-
-        if (!(date = LDObjectLookup(entry, "endDate"))) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            goto cleanup;
-        }
-
-        if (LDGetNumber(date) > LDGetNumber(tmp)) {
-            LD_ASSERT(LDSetNumber(date, LDGetNumber(tmp)));
-        }
     }
 
     success = true;
