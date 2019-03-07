@@ -10,7 +10,7 @@
 #include "ldnetwork.h"
 
 struct LDJSON *
-newBaseEvent(const struct LDUser *const user)
+newBaseEvent(const struct LDUser *const user, const char *const kind)
 {
     struct LDJSON *tmp;
     struct LDJSON *event;
@@ -55,6 +55,18 @@ newBaseEvent(const struct LDUser *const user)
         goto error;
     }
 
+    if (!(tmp = LDNewText(kind))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        goto error;
+    }
+
+    if (!(LDObjectSetKey(event, "kind", tmp))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        goto error;
+    }
+
     return event;
 
   error:
@@ -88,7 +100,7 @@ newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
     LD_ASSERT(user);
     LD_ASSERT(value);
 
-    if (!(event = newBaseEvent(user))) {
+    if (!(event = newBaseEvent(user, "feature"))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         goto error;
@@ -260,7 +272,7 @@ newCustomEvent(const struct LDUser *const user, const char *const key,
     LD_ASSERT(user);
     LD_ASSERT(key);
 
-    if (!(event = newBaseEvent(user))) {
+    if (!(event = newBaseEvent(user, "custom"))) {
         LD_LOG(LD_LOG_ERROR, "memory error");
 
         goto error;
@@ -297,7 +309,7 @@ newCustomEvent(const struct LDUser *const user, const char *const key,
 struct LDJSON *
 newIdentifyEvent(const struct LDUser *const user)
 {
-    return newBaseEvent(user);
+    return newBaseEvent(user, "identify");
 }
 
 bool

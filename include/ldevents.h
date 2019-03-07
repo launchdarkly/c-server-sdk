@@ -9,7 +9,8 @@
 #include <stddef.h>
 
 /* event construction */
-struct LDJSON *newBaseEvent(const struct LDUser *const user);
+struct LDJSON *newBaseEvent(const struct LDUser *const user,
+    const char *const kind);
 
 struct LDJSON *newFeatureRequestEvent(const char *const key,
     const struct LDUser *const user, const unsigned int *const variation,
