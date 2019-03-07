@@ -51,7 +51,8 @@ getMonotonicMilliseconds(unsigned int *const resultMilliseconds)
 bool
 getUnixMilliseconds(unsigned int *const resultMilliseconds)
 {
-    return getTime(resultMilliseconds, CLOCK_REALTIME);
+    *resultMilliseconds = time(NULL) * 1000.0;
+    return true;
 }
 
 bool
