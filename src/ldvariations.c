@@ -50,6 +50,8 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto fallback;
     }
 
+    LD_ASSERT(store = client->config->store);
+
     if (!user) {
         if (!addErrorReason(&details, "USER_NOT_SPECIFIED")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
@@ -57,24 +59,18 @@ variation(struct LDClient *const client, const struct LDUser *const user,
             goto error;
         }
 
-        goto fallback;
-    }
-
-    LD_ASSERT(store = client->config->store);
-
-    flag = LDStoreGet(store, "flags", key);
-
-    if (!flag) {
+        status = EVAL_MISS;
+    } else if (!(flag = LDStoreGet(store, "flags", key))) {
         if (!addErrorReason(&details, "FLAG_NOT_FOUND")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
         }
 
-        goto fallback;
+        status = EVAL_MISS;
+    } else {
+        status = evaluate(flag, user, store, &details);
     }
-
-    status = evaluate(flag, user, store, &details);
 
     if (status == EVAL_MEM) {
         goto error;
