@@ -52,16 +52,16 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     LD_ASSERT(store = client->config->store);
 
-    if (!user) {
-        if (!addErrorReason(&details, "USER_NOT_SPECIFIED")) {
+    if (!(flag = LDStoreGet(store, "flags", key))) {
+        if (!addErrorReason(&details, "FLAG_NOT_FOUND")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
         }
 
         status = EVAL_MISS;
-    } else if (!(flag = LDStoreGet(store, "flags", key))) {
-        if (!addErrorReason(&details, "FLAG_NOT_FOUND")) {
+    } else if (!user) {
+        if (!addErrorReason(&details, "USER_NOT_SPECIFIED")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
