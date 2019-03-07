@@ -703,7 +703,6 @@ poll(struct LDClient *const client, void *const rawcontext)
         goto error;
     }
 
-
     if (!(context->headers = curl_slist_append(context->headers, mime))) {
         goto error;
     }
@@ -721,6 +720,22 @@ poll(struct LDClient *const client, void *const rawcontext)
     /* serialize events */
 
     LD_ASSERT(LDi_wrlock(&client->lock));
+
+    {
+        struct LDJSON *tmp;
+
+        if (!(tmp = LDNewText("summary"))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+
+        if (!(LDObjectSetKey(client->summary, "kind", tmp))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+    }
 
     LDArrayPush(client->events, client->summary);
 
