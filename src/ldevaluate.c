@@ -471,6 +471,7 @@ checkPrerequisites(const struct LDJSON *const flag,
         const struct LDJSON *variationNumJSON;
         struct LDJSON *event = NULL;
         struct LDJSON *subevents;
+        EvalStatus status;
 
         if (LDJSONGetType(iter) != LDObject) {
             LD_LOG(LD_LOG_ERROR, "schema error");
@@ -509,13 +510,13 @@ checkPrerequisites(const struct LDJSON *const flag,
         {
             LD_LOG(LD_LOG_ERROR, "store lookup error");
 
-            return EVAL_MISS;
+            return EVAL_STORE;
         }
 
-        if (evaluate(preflag, user, store, &result) != EVAL_MATCH) {
+        if ((status = evaluate(preflag, user, store, &result)) != EVAL_MATCH) {
             LDJSONFree(preflag);
 
-            return false;
+            return status;
         }
 
         if (!result) {
