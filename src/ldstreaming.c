@@ -20,6 +20,8 @@ parsePath(const char *path, char **const kind, char **const key)
     LD_ASSERT(kind);
     LD_ASSERT(key);
 
+    LD_LOG(LD_LOG_TRACE, "parsing path: %s", path);
+
     segmentlen = strlen(segments);
     flagslen = strlen(flags);
 
