@@ -458,6 +458,14 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
 
     LD_ASSERT(LDi_wrlock(&client->lock));
 
+    if (client->summaryStart == 0) {
+        unsigned long now;
+
+        LD_ASSERT(getUnixMilliseconds(&now));
+
+        client->summaryStart = now;
+    }
+
     if (!(entry = LDObjectLookup(client->summaryCounters, keytext))) {
         if (!(entry = LDNewObject())) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -794,6 +802,8 @@ poll(struct LDClient *const client, void *const rawcontext)
     }
 
     LDJSONFree(client->events);
+
+    client->summaryStart = 0;
 
     if (!(client->events = LDNewArray())) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
