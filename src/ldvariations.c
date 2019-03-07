@@ -124,8 +124,16 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         evalue = fallback;
     }
 
-    event = newFeatureRequestEvent(key, user, variationNumRef,
-        evalue, fallback, key, flag, LDObjectLookup(details, "reason"));
+    {
+        struct LDJSON *reasonref = NULL;
+
+        if (reason) {
+            reasonref = LDObjectLookup(details, "reason");
+        }
+
+        event = newFeatureRequestEvent(key, user, variationNumRef,
+            evalue, fallback, key, flag, reasonref);
+    }
 
     if (!event) {
         LD_LOG(LD_LOG_ERROR, "failed to build feature request event");
