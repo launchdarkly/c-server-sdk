@@ -420,7 +420,8 @@ makeSummaryKey(const struct LDJSON *const event)
 }
 
 bool
-summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
+summarizeEvent(struct LDClient *const client, const struct LDJSON *const event,
+    const bool unknown)
 {
     char *keytext;
     const char *flagKey;
@@ -559,6 +560,20 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event)
             }
 
             if (!LDObjectSetKey(entry, "variation", tmp)) {
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                goto cleanup;
+            }
+        }
+
+        if (unknown) {
+            if (!(tmp = LDNewBool(true))) {
+                LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                goto cleanup;
+            }
+
+            if (!LDObjectSetKey(entry, "unknown", tmp)) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
                 goto cleanup;

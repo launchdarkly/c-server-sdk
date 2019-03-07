@@ -80,11 +80,11 @@ testSummarizeEventIncrementsCounters()
     LD_ASSERT(event5 = newFeatureRequestEvent("badkey", user, NULL,
         default3, default3, NULL, NULL, NULL));
 
-    LD_ASSERT(summarizeEvent(client, event1));
-    LD_ASSERT(summarizeEvent(client, event2));
-    LD_ASSERT(summarizeEvent(client, event3));
-    LD_ASSERT(summarizeEvent(client, event4));
-    LD_ASSERT(summarizeEvent(client, event5));
+    LD_ASSERT(summarizeEvent(client, event1, false));
+    LD_ASSERT(summarizeEvent(client, event2, false));
+    LD_ASSERT(summarizeEvent(client, event3, false));
+    LD_ASSERT(summarizeEvent(client, event4, false));
+    LD_ASSERT(summarizeEvent(client, event5, false));
 
     LD_ASSERT(summarykey1 = makeSummaryKey(event1));
     LD_ASSERT(summarykey2 = makeSummaryKey(event2));
@@ -170,9 +170,9 @@ testCounterForNilVariationIsDistinctFromOthers()
     LD_ASSERT(summarykey2 = makeSummaryKey(event2));
     LD_ASSERT(summarykey3 = makeSummaryKey(event3));
 
-    LD_ASSERT(summarizeEvent(client, event1));
-    LD_ASSERT(summarizeEvent(client, event2));
-    LD_ASSERT(summarizeEvent(client, event3));
+    LD_ASSERT(summarizeEvent(client, event1, false));
+    LD_ASSERT(summarizeEvent(client, event2, false));
+    LD_ASSERT(summarizeEvent(client, event3, false));
 
     LD_ASSERT(summary = LDObjectLookup(client->summaryCounters, summarykey1));
     LD_ASSERT(LDJSONCompare(value1, LDObjectLookup(summary, "value")));

@@ -98,7 +98,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
                 goto error;
             }
 
-            if (!summarizeEvent(client, iter)) {
+            if (!summarizeEvent(client, iter, false)) {
                 LD_LOG(LD_LOG_ERROR, "summary failed");
 
                 goto error;
@@ -145,7 +145,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         }
     }
 
-    if (!summarizeEvent(client, event)) {
+    if (!summarizeEvent(client, event, (!flag) || isDeleted(flag))) {
         LD_LOG(LD_LOG_ERROR, "summary failed");
 
         goto error;
