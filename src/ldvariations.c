@@ -125,8 +125,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     event = newFeatureRequestEvent(key, user, variationNumRef,
-        evalue, fallback, LDGetText(LDObjectLookup(flag, "key")), flag,
-        LDObjectLookup(details, "reason"));
+        evalue, fallback, key, flag, LDObjectLookup(details, "reason"));
 
     if (!event) {
         LD_LOG(LD_LOG_ERROR, "failed to build feature request event");
