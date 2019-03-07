@@ -133,7 +133,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto error;
     }
 
-    {
+    if (flag) {
         struct LDJSON *const track = LDObjectLookup(flag, "trackEvents");
 
         if (notNull(track) && LDGetBool(track)) {
