@@ -19,7 +19,8 @@ void LDClientClose(struct LDClient *const client);
 bool LDClientIsInitialized(struct LDClient *const client);
 
 bool LDClientTrack(struct LDClient *const client,
-    const struct LDUser *const user, struct LDJSON *const data);
+    const struct LDUser *const user, const char *const key,
+    struct LDJSON *const data);
 
 bool LDClientIdentify(struct LDClient *const client,
     const struct LDUser *const user);

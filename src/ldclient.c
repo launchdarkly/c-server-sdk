@@ -125,14 +125,15 @@ LDClientIsInitialized(struct LDClient *const client)
 
 bool
 LDClientTrack(struct LDClient *const client, const struct LDUser *const user,
-    struct LDJSON *const data)
+    const char *const key, struct LDJSON *const data)
 {
     struct LDJSON *event;
 
     LD_ASSERT(client);
     LD_ASSERT(user);
+    LD_ASSERT(key);
 
-    if (!(event = newCustomEvent(user, user->key, data))) {
+    if (!(event = newCustomEvent(user, key, data))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct custom event");
 
         return false;
