@@ -135,3 +135,5 @@ void LDStoreDestroy(struct LDStore *const store);
 struct LDStore *makeInMemoryStore();
 
 /*@}*/
+
+bool isDeleted(const struct LDJSON *const feature);

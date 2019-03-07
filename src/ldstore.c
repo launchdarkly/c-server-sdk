@@ -52,7 +52,7 @@ memoryInit(void *const rawcontext, struct LDJSON *const sets)
     return true;
 }
 
-static bool
+bool
 isDeleted(const struct LDJSON *const feature)
 {
     struct LDJSON *deleted = NULL;
@@ -83,17 +83,11 @@ memoryGet(void *const rawcontext, const char *const kind, const char *const key)
     }
 
     if ((current = LDObjectLookup(set, key))) {
-        if (isDeleted(current)) {
-            LD_ASSERT(LDi_rdunlock(&context->lock));
+        struct LDJSON *const copy = LDJSONDuplicate(current);
 
-            return NULL;
-        } else {
-            struct LDJSON *const copy = LDJSONDuplicate(current);
+        LD_ASSERT(LDi_rdunlock(&context->lock));
 
-            LD_ASSERT(LDi_rdunlock(&context->lock));
-
-            return copy;
-        }
+        return copy;
     } else {
         LD_ASSERT(LDi_rdunlock(&context->lock));
 

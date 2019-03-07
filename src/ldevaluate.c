@@ -504,7 +504,9 @@ checkPrerequisites(const struct LDJSON *const flag,
             return EVAL_SCHEMA;
         }
 
-        if (!(preflag = LDStoreGet(store, "flags", LDGetText(key)))) {
+        if (!(preflag = LDStoreGet(store, "flags", LDGetText(key)))
+            || isDeleted(preflag))
+        {
             LD_LOG(LD_LOG_ERROR, "store lookup error");
 
             return EVAL_STORE;
@@ -750,7 +752,7 @@ clauseMatchesUser(const struct LDJSON *const clause,
 
                 segment = LDStoreGet(store, "segments", LDGetText(iter));
 
-                if (!segment) {
+                if (!segment || isDeleted(segment)) {
                     LD_LOG(LD_LOG_WARNING, "store lookup error");
 
                     continue;

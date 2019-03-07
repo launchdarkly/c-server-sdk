@@ -52,7 +52,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     LD_ASSERT(store = client->config->store);
 
-    if (!(flag = LDStoreGet(store, "flags", key))) {
+    if (!(flag = LDStoreGet(store, "flags", key)) || isDeleted(flag)) {
         if (!addErrorReason(&details, "FLAG_NOT_FOUND")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
