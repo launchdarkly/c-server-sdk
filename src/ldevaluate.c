@@ -509,7 +509,7 @@ checkPrerequisites(const struct LDJSON *const flag,
         {
             LD_LOG(LD_LOG_ERROR, "store lookup error");
 
-            return EVAL_STORE;
+            return EVAL_MISS;
         }
 
         if (evaluate(preflag, user, store, &result) != EVAL_MATCH) {
