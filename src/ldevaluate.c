@@ -621,7 +621,9 @@ checkPrerequisites(const struct LDJSON *const flag,
                 return EVAL_SCHEMA;
             }
 
-            if ((variationIndex = LDObjectLookup(result, "variationIndex"))) {
+            variationIndex = LDObjectLookup(result, "variationIndex");
+
+            if (notNull(variationIndex)) {
                 if (LDJSONGetType(variationIndex) != LDNumber) {
                     LDJSONFree(preflag);
                     LDJSONFree(result);
