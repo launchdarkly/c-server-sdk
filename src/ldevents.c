@@ -264,7 +264,34 @@ newCustomEvent(const struct LDUser *const user, const char *const key,
 struct LDJSON *
 newIdentifyEvent(const struct LDUser *const user)
 {
-    return newBaseEvent(user, "identify");
+    struct LDJSON *event;
+    struct LDJSON *tmp;
+
+    if (!(event = newBaseEvent(user, "identify"))) {
+        LD_LOG(LD_LOG_ERROR, "failed to construct base event");
+
+        return NULL;
+    }
+
+    if (user->key) {
+        if (!(tmp = LDNewText(user->key))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(event);
+
+            return NULL;
+        }
+
+        if (!LDObjectSetKey(event, "key", tmp)) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(event);
+
+            return NULL;
+        }
+    }
+
+    return event;
 }
 
 bool
