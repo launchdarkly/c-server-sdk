@@ -638,7 +638,7 @@ checkPrerequisites(const struct LDJSON *const flag,
                 return EVAL_SCHEMA;
             }
 
-            if (!LDGetBool(on) ||
+            if (status == EVAL_MISS || !LDGetBool(on) ||
                 LDGetNumber(variationIndex) != LDGetNumber(variation))
             {
                 LDJSONFree(preflag);
