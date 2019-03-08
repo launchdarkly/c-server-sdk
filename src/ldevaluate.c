@@ -524,7 +524,7 @@ checkPrerequisites(const struct LDJSON *const flag,
             return EVAL_MISS;
         }
 
-        if ((status = evaluate(preflag, user, store, &result)) != EVAL_MATCH) {
+        if (isEvalError(status = evaluate(preflag, user, store, &result))) {
             LDJSONFree(preflag);
 
             return status;
