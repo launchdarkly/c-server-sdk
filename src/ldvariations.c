@@ -384,7 +384,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         return NULL;
     }
 
-    if (!user) {
+    if (!user || !user->key) {
         LD_LOG(LD_LOG_WARNING, "LDAllFlags NULL user returning NULL");
 
         return NULL;
