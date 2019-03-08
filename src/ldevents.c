@@ -193,50 +193,6 @@ newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
                 goto error;
             }
         }
-
-        tmp = LDObjectLookup(flag, "trackEvents");
-
-        if (notNull(tmp)) {
-            if (LDJSONGetType(tmp) != LDBool) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
-
-                goto error;
-            }
-
-            if (!(tmp = LDJSONDuplicate(tmp))) {
-                LD_LOG(LD_LOG_ERROR, "memory error");
-
-                goto error;
-            }
-
-            if (!LDObjectSetKey(event, "trackEvents", tmp)) {
-                LD_LOG(LD_LOG_ERROR, "memory error");
-
-                goto error;
-            }
-        }
-
-        tmp = LDObjectLookup(flag, "debugEventsUntilDate");
-
-        if (notNull(tmp)) {
-            if (LDJSONGetType(tmp) != LDNumber) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
-
-                goto error;
-            }
-
-            if (!(tmp = LDJSONDuplicate(tmp))) {
-                LD_LOG(LD_LOG_ERROR, "memory error");
-
-                goto error;
-            }
-
-            if (!LDObjectSetKey(event, "debugEventsUntilDate", tmp)) {
-                LD_LOG(LD_LOG_ERROR, "memory error");
-
-                goto error;
-            }
-        }
     }
 
     if (reason) {
