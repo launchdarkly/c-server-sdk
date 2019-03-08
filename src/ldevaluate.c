@@ -601,6 +601,7 @@ checkPrerequisites(const struct LDJSON *const flag,
         {
             struct LDJSON *on;
             struct LDJSON *variationIndex;
+            bool variationMatch = false;
 
             if (!(on = LDObjectLookup(preflag, "on"))) {
                 LDJSONFree(preflag);
@@ -620,26 +621,21 @@ checkPrerequisites(const struct LDJSON *const flag,
                 return EVAL_SCHEMA;
             }
 
-            if (!(variationIndex = LDObjectLookup(result, "variationIndex"))) {
-                LDJSONFree(preflag);
-                LDJSONFree(result);
+            if ((variationIndex = LDObjectLookup(result, "variationIndex"))) {
+                if (LDJSONGetType(variationIndex) != LDNumber) {
+                    LDJSONFree(preflag);
+                    LDJSONFree(result);
 
-                LD_LOG(LD_LOG_ERROR, "schema error");
+                    LD_LOG(LD_LOG_ERROR, "schema error");
 
-                return EVAL_SCHEMA;
+                    return EVAL_SCHEMA;
+                }
+
+                variationMatch = LDGetNumber(variationIndex) ==
+                    LDGetNumber(variation);
             }
 
-            if (LDJSONGetType(variationIndex) != LDNumber) {
-                LDJSONFree(preflag);
-                LDJSONFree(result);
-
-                LD_LOG(LD_LOG_ERROR, "schema error");
-
-                return EVAL_SCHEMA;
-            }
-
-            if (status == EVAL_MISS || !LDGetBool(on) ||
-                LDGetNumber(variationIndex) != LDGetNumber(variation))
+            if (status == EVAL_MISS || !LDGetBool(on) || !variationMatch)
             {
                 LDJSONFree(preflag);
                 LDJSONFree(result);
