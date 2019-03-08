@@ -45,11 +45,9 @@ testSummarizeEventIncrementsCounters()
     struct LDJSON *event5;
     const unsigned int variation1 = 1;
     const unsigned int variation2 = 2;
-    char *summarykey1;
-    char *summarykey2;
-    char *summarykey3;
-    char *summarykey4;
     struct LDJSON *summary;
+    struct LDJSON *summaryEntry;
+    struct LDJSON *counterEntry;
     struct LDJSON *value1;
     struct LDJSON *value2;
     struct LDJSON *value99;
@@ -86,35 +84,43 @@ testSummarizeEventIncrementsCounters()
     LD_ASSERT(summarizeEvent(client, event4, false));
     LD_ASSERT(summarizeEvent(client, event5, false));
 
-    LD_ASSERT(summarykey1 = makeSummaryKey(event1));
-    LD_ASSERT(summarykey2 = makeSummaryKey(event2));
-    LD_ASSERT(summarykey3 = makeSummaryKey(event3));
-    LD_ASSERT(summarykey4 = makeSummaryKey(event5));
+    LD_ASSERT(summary = prepareSummaryEvent(client));
+    LD_ASSERT(summary = LDObjectLookup(summary, "features"))
 
-    LD_ASSERT(summary = LDObjectLookup(client->summaryCounters, summarykey1));
-    LD_ASSERT(LDJSONCompare(value1, LDObjectLookup(summary, "value")));
-    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summary, "default")));
-    LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 2);
+    LD_ASSERT(summaryEntry = LDObjectLookup(summary, "key1"))
+    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summaryEntry, "default")));
+    LD_ASSERT(counterEntry = LDObjectLookup(summaryEntry, "counters"));
 
-    LD_ASSERT(summary = LDObjectLookup(client->summaryCounters, summarykey2));
-    LD_ASSERT(LDJSONCompare(value2, LDObjectLookup(summary, "value")));
-    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summary, "default")));
-    LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
+    LD_ASSERT(counterEntry = LDGetIter(counterEntry));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "count")) == 2);
+    LD_ASSERT(LDJSONCompare(value1, LDObjectLookup(counterEntry, "value")));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "variation")) == 1);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "version")) == 11);
 
-    LD_ASSERT(summary = LDObjectLookup(client->summaryCounters, summarykey3));
-    LD_ASSERT(LDJSONCompare(value99, LDObjectLookup(summary, "value")));
-    LD_ASSERT(LDJSONCompare(default2, LDObjectLookup(summary, "default")));
-    LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
+    LD_ASSERT(counterEntry = LDIterNext(counterEntry));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "count")) == 1);
+    LD_ASSERT(LDJSONCompare(value2, LDObjectLookup(counterEntry, "value")));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "variation")) == 2);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "version")) == 11);
 
-    LD_ASSERT(summary = LDObjectLookup(client->summaryCounters, summarykey4));
-    LD_ASSERT(LDJSONCompare(default3, LDObjectLookup(summary, "value")));
-    LD_ASSERT(LDJSONCompare(default3, LDObjectLookup(summary, "default")));
-    LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
+    LD_ASSERT(summaryEntry = LDObjectLookup(summary, "key2"))
+    LD_ASSERT(LDJSONCompare(default2, LDObjectLookup(summaryEntry, "default")));
+    LD_ASSERT(counterEntry = LDObjectLookup(summaryEntry, "counters"));
 
-    LDFree(summarykey1);
-    LDFree(summarykey2);
-    LDFree(summarykey3);
-    LDFree(summarykey4);
+    LD_ASSERT(counterEntry = LDGetIter(counterEntry));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "count")) == 1);
+    LD_ASSERT(LDJSONCompare(value99, LDObjectLookup(counterEntry, "value")));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "variation")) == 1);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "version")) == 22);
+
+    LD_ASSERT(summaryEntry = LDObjectLookup(summary, "badkey"))
+    LD_ASSERT(LDJSONCompare(default3, LDObjectLookup(summaryEntry, "default")));
+    LD_ASSERT(counterEntry = LDObjectLookup(summaryEntry, "counters"));
+
+    LD_ASSERT(counterEntry = LDGetIter(counterEntry));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "count")) == 1);
+    LD_ASSERT(LDJSONCompare(default3, LDObjectLookup(counterEntry, "value")));
+
     LDJSONFree(flag1);
     LDJSONFree(flag2);
     LDJSONFree(event1);
@@ -128,6 +134,7 @@ testSummarizeEventIncrementsCounters()
     LDJSONFree(default1);
     LDJSONFree(default2);
     LDJSONFree(default3);
+    LDJSONFree(summary);
     LDUserFree(user);
     LDClientClose(client);
 }
@@ -147,9 +154,8 @@ testCounterForNilVariationIsDistinctFromOthers()
     struct LDJSON *value2;
     struct LDJSON *default1;
     struct LDJSON *summary;
-    char *summarykey1;
-    char *summarykey2;
-    char *summarykey3;
+    struct LDJSON *summaryEntry;
+    struct LDJSON *counterEntry;
 
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(client = makeOfflineClient());
@@ -166,32 +172,33 @@ testCounterForNilVariationIsDistinctFromOthers()
     LD_ASSERT(event3 = newFeatureRequestEvent("key1", user, NULL,
         default1, default1, NULL, flag, NULL));
 
-    LD_ASSERT(summarykey1 = makeSummaryKey(event1));
-    LD_ASSERT(summarykey2 = makeSummaryKey(event2));
-    LD_ASSERT(summarykey3 = makeSummaryKey(event3));
-
     LD_ASSERT(summarizeEvent(client, event1, false));
     LD_ASSERT(summarizeEvent(client, event2, false));
     LD_ASSERT(summarizeEvent(client, event3, false));
 
-    LD_ASSERT(summary = LDObjectLookup(client->summaryCounters, summarykey1));
-    LD_ASSERT(LDJSONCompare(value1, LDObjectLookup(summary, "value")));
-    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summary, "default")));
-    LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
+    LD_ASSERT(summary = prepareSummaryEvent(client));
+    LD_ASSERT(summary = LDObjectLookup(summary, "features"))
 
-    LD_ASSERT(summary = LDObjectLookup(client->summaryCounters, summarykey2));
-    LD_ASSERT(LDJSONCompare(value2, LDObjectLookup(summary, "value")));
-    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summary, "default")));
-    LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
+    LD_ASSERT(summaryEntry = LDObjectLookup(summary, "key1"))
+    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summaryEntry, "default")));
+    LD_ASSERT(counterEntry = LDObjectLookup(summaryEntry, "counters"));
 
-    LD_ASSERT(summary = LDObjectLookup(client->summaryCounters, summarykey3));
-    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summary, "value")));
-    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summary, "default")));
-    LD_ASSERT(LDGetNumber(LDObjectLookup(summary, "count")) == 1);
+    LD_ASSERT(counterEntry = LDGetIter(counterEntry));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "count")) == 1);
+    LD_ASSERT(LDJSONCompare(value1, LDObjectLookup(counterEntry, "value")));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "variation")) == 1);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "version")) == 11);
 
-    LDFree(summarykey1);
-    LDFree(summarykey2);
-    LDFree(summarykey3);
+    LD_ASSERT(counterEntry = LDIterNext(counterEntry));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "count")) == 1);
+    LD_ASSERT(LDJSONCompare(value2, LDObjectLookup(counterEntry, "value")));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "variation")) == 2);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "version")) == 11);
+
+    LD_ASSERT(counterEntry = LDIterNext(counterEntry));
+    LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "count")) == 1);
+    LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(counterEntry, "value")));
+
     LDJSONFree(flag);
     LDJSONFree(event1);
     LDJSONFree(event2);
@@ -199,6 +206,7 @@ testCounterForNilVariationIsDistinctFromOthers()
     LDJSONFree(value1);
     LDJSONFree(value2);
     LDJSONFree(default1);
+    LDJSONFree(summary);
     LDUserFree(user);
     LDClientClose(client);
 }
