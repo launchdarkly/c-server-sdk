@@ -132,7 +132,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         }
 
         event = newFeatureRequestEvent(key, user, variationNumRef,
-            evalue, fallback, key, flag, reasonref);
+            evalue, fallback, NULL, flag, reasonref);
     }
 
     if (!event) {
