@@ -238,7 +238,15 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
     if (isEvalError(substatus =
         checkPrerequisites(flag, user, store, &failedKey, &events)))
     {
+        struct LDJSON *reason;
+
         LD_LOG(LD_LOG_ERROR, "sub error error");
+
+        if (!(reason = addReason(result, "PREREQUISITE_FAILED", events))) {
+            LD_LOG(LD_LOG_ERROR, "failed to add reason");
+
+            return EVAL_MEM;
+        }
 
         return substatus;
     }
