@@ -822,6 +822,10 @@ segmentMatchesUser(const struct LDJSON *const segment,
     LD_ASSERT(segment);
     LD_ASSERT(user);
 
+    if (!user->key) {
+        return EVAL_MISS;
+    }
+
     included = LDObjectLookup(segment, "included");
 
     if (notNull(included)) {
@@ -831,7 +835,7 @@ segmentMatchesUser(const struct LDJSON *const segment,
             return EVAL_SCHEMA;
         }
 
-        if (user->key && textInArray(included, user->key)) {
+        if (textInArray(included, user->key)) {
             return EVAL_MATCH;
         }
     }
@@ -845,7 +849,7 @@ segmentMatchesUser(const struct LDJSON *const segment,
             return EVAL_SCHEMA;
         }
 
-        if (user->key && textInArray(excluded, user->key)) {
+        if (textInArray(excluded, user->key)) {
             return EVAL_MISS;
         }
     }
