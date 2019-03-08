@@ -103,6 +103,8 @@ testPatchFlag(struct StreamContext *const context)
 static void
 testDeleteFlag(struct StreamContext *const context)
 {
+    struct LDJSON *lookup;
+
     const char *const event = "event: delete";
 
     const char *const body =
@@ -114,8 +116,11 @@ testDeleteFlag(struct StreamContext *const context)
     LD_ASSERT(onSSE(context, body));
     LD_ASSERT(onSSE(context, ""));
 
-    LD_ASSERT(!LDStoreGet(
+    LD_ASSERT(lookup = LDStoreGet(
         context->client->config->store, "flags", "my-flag"));
+    LD_ASSERT(isDeleted(lookup));
+
+    LDJSONFree(lookup);
 }
 
 static void
@@ -145,6 +150,8 @@ testPatchSegment(struct StreamContext *const context)
 static void
 testDeleteSegment(struct StreamContext *const context)
 {
+    struct LDJSON* lookup;
+
     const char *const event = "event: delete";
 
     const char *const body =
@@ -156,8 +163,11 @@ testDeleteSegment(struct StreamContext *const context)
     LD_ASSERT(onSSE(context, body));
     LD_ASSERT(onSSE(context, ""));
 
-    LD_ASSERT(!LDStoreGet(
+    LD_ASSERT(lookup = LDStoreGet(
         context->client->config->store, "segments", "my-segment"));
+    LD_ASSERT(isDeleted(lookup));
+
+    LDJSONFree(lookup);
 }
 
 static void
