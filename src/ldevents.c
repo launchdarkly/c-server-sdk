@@ -671,13 +671,14 @@ objectToArray(const struct LDJSON *const object)
     return array;
 }
 
-static struct LDJSON *
+struct LDJSON *
 prepareSummaryEvent(struct LDClient *const client)
 {
     struct LDJSON *tmp;
     unsigned long now;
     struct LDJSON *summary = NULL;
     struct LDJSON *iter;
+    struct LDJSON *counters = NULL;
 
     if (!(summary = LDNewObject())) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -727,9 +728,13 @@ prepareSummaryEvent(struct LDClient *const client)
         goto error;
     }
 
-    iter = LDGetIter(client->summaryCounters);
+    if (!(counters = LDJSONDuplicate(client->summaryCounters))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
 
-    for (; iter; iter = LDIterNext(iter)) {
+        goto error;
+    }
+
+    for (iter = LDGetIter(counters); iter; iter = LDIterNext(iter)) {
         struct LDJSON *countersObject;
         struct LDJSON *countersArray;
 
@@ -748,7 +753,7 @@ prepareSummaryEvent(struct LDClient *const client)
         }
     }
 
-    if (!LDObjectSetKey(summary, "features", client->summaryCounters)) {
+    if (!LDObjectSetKey(summary, "features", counters)) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         goto error;
@@ -758,6 +763,7 @@ prepareSummaryEvent(struct LDClient *const client)
 
   error:
     LDJSONFree(summary);
+    LDJSONFree(counters);
 
     return NULL;
 }
