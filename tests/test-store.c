@@ -80,7 +80,8 @@ deletedOnly()
 
     LD_ASSERT(LDStoreUpsert(store, "flags", feature));
 
-    LD_ASSERT(!(lookup = LDStoreGet(store, "flags", "abc")));
+    LD_ASSERT(lookup = LDStoreGet(store, "flags", "abc"));
+    LD_ASSERT(isDeleted(lookup));
 
     LDStoreDestroy(store);
 }
@@ -111,11 +112,10 @@ static void
 basicDoesNotExist()
 {
     struct LDStore *store;
-    struct LDJSON *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
-    LD_ASSERT(!(lookup = LDStoreGet(store, "flags", "abc")));
+    LD_ASSERT(!LDStoreGet(store, "flags", "abc"));
 
     LDStoreDestroy(store);
 }
@@ -184,7 +184,8 @@ upsertDelete()
     LD_ASSERT(feature = makeDeleted("my-heap-key", 5))
     LD_ASSERT(LDStoreUpsert(store, "segments", feature));
 
-    LD_ASSERT(!(lookup = LDStoreGet(store, "segments", "my-heap-key")));
+    LD_ASSERT((lookup = LDStoreGet(store, "segments", "my-heap-key")));
+    LD_ASSERT(isDeleted(lookup));
 
     LDStoreDestroy(store);
 }
