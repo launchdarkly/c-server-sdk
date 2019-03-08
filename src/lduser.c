@@ -207,11 +207,13 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
         return NULL;
     }
 
-    if (!(temp = LDNewText(lduser->key))) {
-        return NULL;
-    }
+    if (lduser->key) {
+        if (!(temp = LDNewText(lduser->key))) {
+            return NULL;
+        }
 
-    LDObjectSetKey(json, "key", temp);
+        LDObjectSetKey(json, "key", temp);
+    }
 
     if (lduser->anonymous) {
         if (!(temp = LDNewBool(lduser->anonymous))) {
