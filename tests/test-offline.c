@@ -25,18 +25,20 @@ testBoolVariationDefaultValueOffline()
     struct LDUser *user;
     struct LDClient *client;
     struct LDJSON *details;
-
+    struct LDJSON *reason;
+    /* prep */
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(client = makeOfflineClient());
-
+    /* test */
     value = LDBoolVariation(client, user, "featureKey", true, &details);
-
+    /* validate */
     LD_ASSERT(value == true);
-
-    LD_ASSERT(strcmp("ERROR", LDGetText(LDObjectLookup(details, "kind"))) == 0);
+    LD_ASSERT(reason = LDObjectLookup(details, "reason"));
+    LD_ASSERT(LDJSONGetType(reason) == LDObject);
+    LD_ASSERT(strcmp("ERROR", LDGetText(LDObjectLookup(reason, "kind"))) == 0);
     LD_ASSERT(strcmp("CLIENT_NOT_READY",
-        LDGetText(LDObjectLookup(details, "errorKind"))) == 0);
-
+        LDGetText(LDObjectLookup(reason, "errorKind"))) == 0);
+    /* cleanup */
     LDJSONFree(details);
     LDUserFree(user);
     LDClientClose(client);
@@ -49,18 +51,20 @@ testIntVariationDefaultValueOffline()
     struct LDUser *user;
     struct LDClient *client;
     struct LDJSON *details;
-
+    struct LDJSON *reason;
+    /* prep */
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(client = makeOfflineClient());
-
+    /* test */
     value = LDIntVariation(client, user, "featureKey", 100, &details);
-
+    /* validate */
     LD_ASSERT(value == 100);
-
-    LD_ASSERT(strcmp("ERROR", LDGetText(LDObjectLookup(details, "kind"))) == 0);
+    LD_ASSERT(reason = LDObjectLookup(details, "reason"));
+    LD_ASSERT(LDJSONGetType(reason) == LDObject);
+    LD_ASSERT(strcmp("ERROR", LDGetText(LDObjectLookup(reason, "kind"))) == 0);
     LD_ASSERT(strcmp("CLIENT_NOT_READY",
-        LDGetText(LDObjectLookup(details, "errorKind"))) == 0);
-
+        LDGetText(LDObjectLookup(reason, "errorKind"))) == 0);
+    /* cleanup */
     LDJSONFree(details);
     LDUserFree(user);
     LDClientClose(client);
@@ -73,18 +77,20 @@ testDoubleVariationDefaultValueOffline()
     struct LDUser *user;
     struct LDClient *client;
     struct LDJSON *details;
-
+    struct LDJSON *reason;
+    /* prep */
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(client = makeOfflineClient());
-
+    /* test */
     value = LDDoubleVariation(client, user, "featureKey", 102.1, &details);
-
+    /* validate */
     LD_ASSERT(value == 102.1);
-
-    LD_ASSERT(strcmp("ERROR", LDGetText(LDObjectLookup(details, "kind"))) == 0);
+    LD_ASSERT(reason = LDObjectLookup(details, "reason"));
+    LD_ASSERT(LDJSONGetType(reason) == LDObject);
+    LD_ASSERT(strcmp("ERROR", LDGetText(LDObjectLookup(reason, "kind"))) == 0);
     LD_ASSERT(strcmp("CLIENT_NOT_READY",
-        LDGetText(LDObjectLookup(details, "errorKind"))) == 0);
-
+        LDGetText(LDObjectLookup(reason, "errorKind"))) == 0);
+    /* cleanup */
     LDJSONFree(details);
     LDUserFree(user);
     LDClientClose(client);
@@ -97,18 +103,20 @@ testStringVariationDefaultValueOffline()
     struct LDUser *user;
     struct LDClient *client;
     struct LDJSON *details;
-
+    struct LDJSON *reason;
+    /* prep */
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(client = makeOfflineClient());
-
+    /* test */
     value = LDStringVariation(client, user, "featureKey", "default", &details);
-
+    /* validate */
     LD_ASSERT(strcmp(value, "default") == 0);
-
-    LD_ASSERT(strcmp("ERROR", LDGetText(LDObjectLookup(details, "kind"))) == 0);
+    LD_ASSERT(reason = LDObjectLookup(details, "reason"));
+    LD_ASSERT(LDJSONGetType(reason) == LDObject);
+    LD_ASSERT(strcmp("ERROR", LDGetText(LDObjectLookup(reason, "kind"))) == 0);
     LD_ASSERT(strcmp("CLIENT_NOT_READY",
-        LDGetText(LDObjectLookup(details, "errorKind"))) == 0);
-
+        LDGetText(LDObjectLookup(reason, "errorKind"))) == 0);
+    /* cleanup */
     LDJSONFree(details);
     free(value);
     LDUserFree(user);
@@ -123,22 +131,23 @@ testJSONVariationDefaultValueOffline()
     struct LDUser *user;
     struct LDClient *client;
     struct LDJSON *details;
-
+    struct LDJSON *reason;
+    /* prep */
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(client = makeOfflineClient());
-
     LD_ASSERT(expected = LDNewObject());
     LD_ASSERT(LDObjectSetKey(expected, "key1", LDNewNumber(3)));
     LD_ASSERT(LDObjectSetKey(expected, "key2", LDNewNumber(5)));
-
+    /* test */
     actual = LDJSONVariation(client, user, "featureKey", expected, &details);
-
+    /* validate */
     LD_ASSERT(LDJSONCompare(actual, expected));
-
-    LD_ASSERT(strcmp("ERROR", LDGetText(LDObjectLookup(details, "kind"))) == 0);
+    LD_ASSERT(reason = LDObjectLookup(details, "reason"));
+    LD_ASSERT(LDJSONGetType(reason) == LDObject);
+    LD_ASSERT(strcmp("ERROR", LDGetText(LDObjectLookup(reason, "kind"))) == 0);
     LD_ASSERT(strcmp("CLIENT_NOT_READY",
-        LDGetText(LDObjectLookup(details, "errorKind"))) == 0);
-
+        LDGetText(LDObjectLookup(reason, "errorKind"))) == 0);
+    /* cleanup */
     LDJSONFree(details);
     LDJSONFree(actual);
     LDJSONFree(expected);
