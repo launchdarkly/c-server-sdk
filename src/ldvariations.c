@@ -428,19 +428,20 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
             goto error;
         }
 
-        LD_ASSERT(value = LDObjectLookup(details, "value"));
+        if ((value = LDObjectLookup(details, "value"))) {
+            if (!(value = LDJSONDuplicate(value))) {
+                LDJSONFree(details);
 
-        if (!(value = LDJSONDuplicate(value))) {
-            LDJSONFree(details);
+                goto error;
+            }
 
-            goto error;
+
+            if (!LDObjectSetKey(evaluatedFlags, LDIterKey(flag), value)) {
+                goto error;
+            }
         }
 
         LDJSONFree(details);
-
-        if (!LDObjectSetKey(evaluatedFlags, LDIterKey(flag), value)) {
-            goto error;
-        }
     }
 
     LDJSONFree(rawFlags);
