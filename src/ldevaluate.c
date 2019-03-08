@@ -293,7 +293,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
             LD_ASSERT(values); LD_ASSERT(LDJSONGetType(values) == LDArray);
 
-            if (textInArray(values, user->key)) {
+            if (user->key && textInArray(values, user->key)) {
                 const struct LDJSON *variation = NULL;
 
                 variation = LDObjectLookup(iter, "variation");
