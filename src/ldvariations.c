@@ -60,7 +60,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         }
 
         status = EVAL_MISS;
-    } else if (!user) {
+    } else if (!user || !user->key) {
         if (!addErrorReason(&details, "USER_NOT_SPECIFIED")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
