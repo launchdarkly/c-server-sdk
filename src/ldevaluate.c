@@ -822,7 +822,7 @@ segmentMatchesUser(const struct LDJSON *const segment,
             return EVAL_SCHEMA;
         }
 
-        if (textInArray(included, user->key)) {
+        if (user->key && textInArray(included, user->key)) {
             return EVAL_MATCH;
         }
     }
@@ -836,7 +836,7 @@ segmentMatchesUser(const struct LDJSON *const segment,
             return EVAL_SCHEMA;
         }
 
-        if (textInArray(excluded, user->key)) {
+        if (user->key && textInArray(excluded, user->key)) {
             return EVAL_MISS;
         }
     }
