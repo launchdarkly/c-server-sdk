@@ -299,7 +299,8 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
             values = LDObjectLookup(iter, "values");
 
-            LD_ASSERT(values); LD_ASSERT(LDJSONGetType(values) == LDArray);
+            LD_ASSERT(values);
+            LD_ASSERT(LDJSONGetType(values) == LDArray);
 
             if (user->key && textInArray(values, user->key)) {
                 const struct LDJSON *variation = NULL;
@@ -518,7 +519,9 @@ checkPrerequisites(const struct LDJSON *const flag,
         {
             LD_LOG(LD_LOG_ERROR, "store lookup error");
 
-            return EVAL_STORE;
+            LDJSONFree(preflag);
+
+            return EVAL_MISS;
         }
 
         if ((status = evaluate(preflag, user, store, &result)) != EVAL_MATCH) {
