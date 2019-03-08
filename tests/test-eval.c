@@ -175,7 +175,7 @@ returnsOffVariationIfFlagIsOff()
     setFallthrough(flag, 0);
 
     /* run */
-    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result) == EVAL_MATCH);
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result) == EVAL_MISS);
 
     /* validation */
     LD_ASSERT(strcmp("off", LDGetText(LDObjectLookup(result, "value"))) == 0);
@@ -207,7 +207,7 @@ testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
     addVariations1(flag);
 
     /* run */
-    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result) == EVAL_MATCH);
+    LD_ASSERT(evaluate(flag, user, (struct LDStore *)1, &result) == EVAL_MISS);
 
     /* validation */
     LD_ASSERT(LDJSONGetType(LDObjectLookup(result, "value")) == LDNull);
