@@ -95,6 +95,9 @@ operatorMatchesFn(const struct LDJSON *const uvalue,
 
     regfree(&context);
 
+    LD_LOG(LD_LOG_TRACE, "regex status (%s) (%s) %d",
+        LDGetText(cvalue), LDGetText(uvalue), matches);
+
     return matches;
 }
 
