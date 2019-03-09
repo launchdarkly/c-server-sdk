@@ -4,7 +4,7 @@
 #include "semver.h"
 
 #include <time.h>
-#include <regex.h>
+#include <pcre.h>
 
 typedef bool (*OpFn)(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue);
@@ -81,22 +81,32 @@ operatorMatchesFn(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue)
 {
     bool matches;
-    regex_t context;
+    pcre *context;
+    const char *subject;
+    const char *error;
+    const char *regex;
+    int errorOffset;
 
     CHECKSTRING(uvalue, cvalue);
 
-    if (regcomp(&context, LDGetText(cvalue), REG_EXTENDED) != 0) {
-        LD_LOG(LD_LOG_ERROR, "failed to compile regex");
+    LD_ASSERT(subject = LDGetText(uvalue));
+    LD_ASSERT(regex = LDGetText(cvalue));
+
+    context = pcre_compile(
+        regex, PCRE_JAVASCRIPT_COMPAT, &error, &errorOffset, NULL);
+
+    if (!context) {
+        LD_LOG(LD_LOG_ERROR,
+            "failed to compile regex '%s' got error '%s' with offset %d",
+            regex, error, errorOffset);
 
         return false;
     }
 
-    matches = regexec(&context, LDGetText(uvalue), 0, NULL, 0) == 0;
+    matches = pcre_exec(
+        context, NULL, subject, strlen(subject), 0, 0, NULL, 0) >= 0;
 
-    regfree(&context);
-
-    LD_LOG(LD_LOG_TRACE, "regex status (%s) (%s) %d",
-        LDGetText(cvalue), LDGetText(uvalue), matches);
+    pcre_free(context);
 
     return matches;
 }

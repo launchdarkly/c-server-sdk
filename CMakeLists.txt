@@ -8,8 +8,11 @@ set(CMAKE_C_FLAGS "-D__USE_XOPEN -D_GNU_SOURCE -Wall -Wextra -Werror -g3 -fno-om
 include_directories("include" "third-party/include" ${CURL_INCLUDE_DIR})
 file(GLOB SOURCES "src/*" "third-party/src/*")
 
-add_library(sdk ${SOURCES})
-target_link_libraries(sdk ${CURL_LIBRARIES} pthread)
+add_library(sdk STATIC ${SOURCES})
+target_link_libraries(sdk ${CURL_LIBRARIES} pthread pcre)
+
+add_library(sdkdynamic SHARED ${SOURCES})
+target_link_libraries(sdkdynamic ${CURL_LIBRARIES} pthread pcre)
 
 add_executable(main "src/main.c")
 target_link_libraries(main sdk)
