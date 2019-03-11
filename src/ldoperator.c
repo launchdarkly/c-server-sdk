@@ -178,6 +178,9 @@ compareTime(const struct LDJSON *const uvalue,
             return false;
         }
 
+        LD_LOG(LD_LOG_TRACE, "compareTime (%s) (%s)",
+            LDGetText(uvalue), LDGetText(cvalue));
+
         if (!strptime(LDGetText(uvalue), "%FT%T%Z", &utm)) {
             LD_LOG(LD_LOG_ERROR, "failed to parse date uvalue");
 
