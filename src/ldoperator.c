@@ -5,6 +5,7 @@
 
 #include <time.h>
 #include <pcre.h>
+#include <math.h>
 
 typedef bool (*OpFn)(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue);
@@ -156,58 +157,55 @@ operatorGreaterThanOrEqualFn(const struct LDJSON *const uvalue,
     return LDGetNumber(uvalue) >= LDGetNumber(cvalue);
 }
 
+bool
+parseTime(const struct LDJSON *const json, timestamp_t *result)
+{
+    LD_ASSERT(json);
+    LD_ASSERT(result);
+
+    if (LDJSONGetType(json) == LDNumber) {
+        const double num = LDGetNumber(json) / 1000;
+
+        result->sec = floor(num);
+        /* resolution hack */
+        result->nsec = (num - floor(num)) * 1000;
+        LD_LOG(LD_LOG_TRACE, "A %f %ld, %ld", LDGetNumber(json), result->sec, result->nsec);
+        result->offset = 0;
+
+        return true;
+    } else if (LDJSONGetType(json) == LDText) {
+        const char *const text = LDGetText(json);
+
+        if (timestamp_parse(text, strlen(text), result)) {
+            LD_LOG(LD_LOG_ERROR, "failed to parse date uvalue");
+
+            return false;
+        }
+        /* resolution hack */
+        result->nsec /= 1000000;
+
+        LD_LOG(LD_LOG_TRACE, "B %s %ld, %ld", text, result->sec, result->nsec);
+
+        return true;
+    }
+
+    return false;
+}
 
 static bool
 compareTime(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue, bool (*op) (double, double))
 {
-    char *us;
-    char *cs;
+    timestamp_t ustamp;
+    timestamp_t cstamp;
 
-    LD_ASSERT(us = LDJSONSerialize(uvalue));
-    LD_ASSERT(cs = LDJSONSerialize(cvalue));
-
-    LD_LOG(LD_LOG_TRACE, "compareTime (%s) (%s)", us, cs);
-
-    LDFree(us);
-    LDFree(cs);
-
-    if (LDJSONGetType(uvalue) == LDNumber &&
-        LDJSONGetType(cvalue) == LDNumber)
-    {
-        return op(LDGetNumber(uvalue), LDGetNumber(cvalue));
-    } else if (LDJSONGetType(uvalue) == LDText &&
-        LDJSONGetType(cvalue) == LDText)
-    {
-        time_t utime;
-        time_t ctime;
-
-        struct tm utm;
-        struct tm ctm;
-
-        if (strcmp(LDGetText(uvalue), "") == 0) {
-            return false;
+    if (parseTime(uvalue, &ustamp)) {
+        if (parseTime(cvalue, &cstamp)) {
+            return op(timestamp_compare(&ustamp, &cstamp), 0);
         }
-
-        if (!strptime(LDGetText(uvalue), "%FT%T%Z", &utm)) {
-            LD_LOG(LD_LOG_ERROR, "failed to parse date uvalue");
-
-            return false;
-        }
-
-        if (!strptime(LDGetText(cvalue), "%FT%T%Z", &ctm)) {
-            LD_LOG(LD_LOG_ERROR, "failed to parse date cvalue");
-
-            return false;
-        }
-
-        utime = mktime(&utm);
-        ctime = mktime(&ctm);
-
-        return op(difftime(utime, ctime), 0);
-    } else {
-        return false;
     }
+
+    return false;
 }
 
 static bool

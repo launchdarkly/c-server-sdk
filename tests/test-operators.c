@@ -25,6 +25,116 @@ addTest(const char *const op, struct LDJSON *const uvalue,
     LD_ASSERT(LDArrayPush(tests, test));
 }
 
+void
+testParseDateZero()
+{
+    struct LDJSON *jtimestamp;
+    timestamp_t ttimestamp;
+    struct LDJSON *jexpected;
+    timestamp_t texpected;
+
+    LD_ASSERT(jexpected = LDNewNumber(0.0));
+    LD_ASSERT(parseTime(jexpected, &texpected));
+
+    LD_ASSERT(jtimestamp = LDNewText("1970-01-01T00:00:00Z"));
+    LD_ASSERT(parseTime(jtimestamp, &ttimestamp));
+
+    LD_ASSERT(timestamp_compare(&ttimestamp, &texpected) == 0);
+
+    LDJSONFree(jtimestamp);
+    LDJSONFree(jexpected);
+}
+
+void
+testParseUTCTimestamp()
+{
+    struct LDJSON *jtimestamp;
+    timestamp_t ttimestamp;
+    struct LDJSON *jexpected;
+    timestamp_t texpected;
+
+    LD_ASSERT(jexpected = LDNewNumber(1460847451684));
+    LD_ASSERT(parseTime(jexpected, &texpected));
+
+    LD_ASSERT(jtimestamp = LDNewText("2016-04-16T22:57:31.684Z"));
+    LD_ASSERT(parseTime(jtimestamp, &ttimestamp));
+
+    LD_LOG(LD_LOG_TRACE, "dec %d", timestamp_compare(&ttimestamp, &texpected));
+
+    LD_ASSERT(timestamp_compare(&ttimestamp, &texpected) == 0);
+
+    LDJSONFree(jtimestamp);
+    LDJSONFree(jexpected);
+}
+
+void
+testParseTimezone()
+{
+    struct LDJSON *jtimestamp;
+    timestamp_t ttimestamp;
+    struct LDJSON *jexpected;
+    timestamp_t texpected;
+
+    LD_ASSERT(jexpected = LDNewNumber(1460851752759));
+    LD_ASSERT(parseTime(jexpected, &texpected));
+
+    LD_ASSERT(jtimestamp = LDNewText("2016-04-16T17:09:12.759-07:00"));
+    LD_ASSERT(parseTime(jtimestamp, &ttimestamp));
+
+    LD_LOG(LD_LOG_TRACE, "dec %d", timestamp_compare(&ttimestamp, &texpected));
+
+    LD_ASSERT(timestamp_compare(&ttimestamp, &texpected) == 0);
+
+    LDJSONFree(jtimestamp);
+    LDJSONFree(jexpected);
+}
+
+void
+testParseTimezoneNoMillis()
+{
+    struct LDJSON *jtimestamp;
+    timestamp_t ttimestamp;
+    struct LDJSON *jexpected;
+    timestamp_t texpected;
+
+    LD_ASSERT(jexpected = LDNewNumber(1460851752000));
+    LD_ASSERT(parseTime(jexpected, &texpected));
+
+    LD_ASSERT(jtimestamp = LDNewText("2016-04-16T17:09:12-07:00"));
+    LD_ASSERT(parseTime(jtimestamp, &ttimestamp));
+
+    LD_LOG(LD_LOG_TRACE, "dec %d", timestamp_compare(&ttimestamp, &texpected));
+
+    LD_ASSERT(timestamp_compare(&ttimestamp, &texpected) == 0);
+
+    LDJSONFree(jtimestamp);
+    LDJSONFree(jexpected);
+}
+
+/*
+void
+testParseTimestampBeforeEpoch()
+{
+    struct LDJSON *jtimestamp;
+    timestamp_t ttimestamp;
+    struct LDJSON *jexpected;
+    timestamp_t texpected;
+
+    LD_ASSERT(jexpected = LDNewNumber(-123456));
+    LD_ASSERT(parseTime(jexpected, &texpected));
+
+    LD_ASSERT(jtimestamp = LDNewText("1969-12-31T23:57:56.544-00:00"));
+    LD_ASSERT(parseTime(jtimestamp, &ttimestamp));
+
+    LD_LOG(LD_LOG_TRACE, "dec %d", timestamp_compare(&ttimestamp, &texpected));
+
+    LD_ASSERT(timestamp_compare(&ttimestamp, &texpected) == 0);
+
+    LDJSONFree(jtimestamp);
+    LDJSONFree(jexpected);
+}
+*/
+
 int
 main()
 {
@@ -147,6 +257,12 @@ main()
         LDFree(serializeduvalue);
         LDFree(serializedcvalue);
     }
+
+    testParseDateZero();
+    testParseUTCTimestamp();
+    testParseTimezone();
+    testParseTimezoneNoMillis();
+    /* testParseTimestampBeforeEpoch(); */
 
     LDJSONFree(tests);
 
