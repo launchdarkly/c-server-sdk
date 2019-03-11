@@ -1228,3 +1228,120 @@ bucketableStringValue(const struct LDJSON *const node)
         return NULL;
     }
 }
+
+bool
+variationIndexForUser(const struct LDJSON *const varOrRoll,
+    const struct LDUser *const user, const char *const key,
+    const char *const salt, unsigned int *const index)
+{
+    struct LDJSON *variation;
+    struct LDJSON *rollout;
+    struct LDJSON *variations;
+    float userBucket;
+    float sum = 0;
+
+    LD_ASSERT(varOrRoll);
+    LD_ASSERT(user);
+    LD_ASSERT(salt);
+    LD_ASSERT(index);
+
+    variation = LDObjectLookup(varOrRoll, "variation");
+
+    if (notNull(variation)) {
+        if (LDJSONGetType(variation) != LDNumber) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        *index = LDGetNumber(variation);
+
+        return true;
+    }
+
+    rollout = LDObjectLookup(varOrRoll, "rollout");
+
+    if (!notNull(rollout)) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if (LDJSONGetType(rollout) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    variations = LDObjectLookup(rollout, "variations");
+
+    if (!notNull(variations)) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if (LDJSONGetType(variations) != LDArray) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if (LDCollectionGetSize(variations) == 0) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    LD_ASSERT(variation = LDGetIter(variations));
+
+    if (!bucketUser(user, key, "key", salt, &userBucket)) {
+        LD_LOG(LD_LOG_ERROR, "failed to bucket user");
+
+        return false;
+    }
+
+    for (; variation; variation = LDIterNext(variation)) {
+        struct LDJSON *weight;
+
+        weight = LDObjectLookup(variation, "weight");
+
+        if (!notNull(weight)) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (LDJSONGetType(weight) != LDNumber) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        sum += LDGetNumber(weight) / 100000.0;
+
+        if (userBucket < sum) {
+            struct LDJSON *subvariation;
+
+            subvariation = LDObjectLookup(variation, "variation");
+
+            if (!notNull(subvariation)) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            if (LDJSONGetType(subvariation) != LDNumber) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
+
+                return false;
+            }
+
+            *index = LDGetNumber(subvariation);
+
+            return true;
+        }
+    }
+
+    return false;
+}
