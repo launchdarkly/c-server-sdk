@@ -179,8 +179,9 @@ addValue(const struct LDJSON *const flag, struct LDJSON *result,
 }
 
 EvalStatus
-evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
-    struct LDStore *const store, struct LDJSON **const result)
+evaluate(struct LDClient *const client, const struct LDJSON *const flag,
+    const struct LDUser *const user, struct LDStore *const store,
+    struct LDJSON **const result)
 {
     EvalStatus substatus;
     const struct LDJSON *iter;
@@ -236,7 +237,7 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 
     /* prerequisites */
     if (isEvalError(substatus =
-        checkPrerequisites(flag, user, store, &failedKey, &events)))
+        checkPrerequisites(client, flag, user, store, &failedKey, &events)))
     {
         struct LDJSON *reason;
 
@@ -439,7 +440,8 @@ evaluate(const struct LDJSON *const flag, const struct LDUser *const user,
 }
 
 EvalStatus
-checkPrerequisites(const struct LDJSON *const flag,
+checkPrerequisites(struct LDClient *const client,
+    const struct LDJSON *const flag,
     const struct LDUser *const user, struct LDStore *const store,
     const char **const failedKey, struct LDJSON **const events)
 {
@@ -524,7 +526,7 @@ checkPrerequisites(const struct LDJSON *const flag,
             return EVAL_MISS;
         }
 
-        if (isEvalError(status = evaluate(preflag, user, store, &result))) {
+        if (isEvalError(status = evaluate(client, preflag, user, store, &result))) {
             LDJSONFree(preflag);
 
             return status;
@@ -553,7 +555,8 @@ checkPrerequisites(const struct LDJSON *const flag,
             variationNumRef = &variationNum;
         }
 
-        event = newFeatureRequestEvent(LDGetText(key), user, variationNumRef,
+        event = newFeatureRequestEvent(client,
+            LDGetText(key), user, variationNumRef,
             LDObjectLookup(result, "value"), NULL,
             LDGetText(LDObjectLookup(flag, "key")), preflag,
             LDObjectLookup(result, "reason"));

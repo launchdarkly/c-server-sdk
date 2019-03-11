@@ -69,7 +69,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
         status = EVAL_MISS;
     } else {
-        status = evaluate(flag, user, store, &details);
+        status = evaluate(client, flag, user, store, &details);
     }
 
     if (status == EVAL_MEM) {
@@ -131,7 +131,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
             reasonref = LDObjectLookup(details, "reason");
         }
 
-        event = newFeatureRequestEvent(key, user, variationNumRef,
+        event = newFeatureRequestEvent(client, key, user, variationNumRef,
             evalue, fallback, NULL, flag, reasonref);
     }
 
@@ -421,7 +421,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         struct LDJSON *value;
         struct LDJSON *details = NULL;
 
-        EvalStatus status = evaluate(flag, user,
+        EvalStatus status = evaluate(client, flag, user,
             client->config->store, &details);
 
         if (status == EVAL_MEM || status == EVAL_SCHEMA) {

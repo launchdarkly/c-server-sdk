@@ -10,7 +10,8 @@
 #include "ldnetwork.h"
 
 struct LDJSON *
-newBaseEvent(const struct LDUser *const user, const char *const kind)
+newBaseEvent(struct LDClient *const client,
+    const struct LDUser *const user, const char *const kind)
 {
     struct LDJSON *tmp;
     struct LDJSON *event;
@@ -22,9 +23,8 @@ newBaseEvent(const struct LDUser *const user, const char *const kind)
         goto error;
     }
 
-    /* TODO: look at client / redaction context */
     if (user) {
-        if (!(tmp = LDUserToJSON(NULL, user, false))) {
+        if (!(tmp = LDUserToJSON(client, user, true))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
             goto error;
@@ -88,7 +88,8 @@ notNull(const struct LDJSON *const json)
 }
 
 struct LDJSON *
-newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
+newFeatureRequestEvent(struct LDClient *client,
+    const char *const key, const struct LDUser *const user,
     const unsigned int *const variation, const struct LDJSON *const value,
     const struct LDJSON *const defaultValue, const char *const prereqOf,
     const struct LDJSON *const flag, const struct LDJSON *const reason)
@@ -99,7 +100,7 @@ newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
     LD_ASSERT(key);
     LD_ASSERT(value);
 
-    if (!(event = newBaseEvent(user, "feature"))) {
+    if (!(event = newBaseEvent(client, user, "feature"))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         goto error;
@@ -218,8 +219,8 @@ newFeatureRequestEvent(const char *const key, const struct LDUser *const user,
 }
 
 struct LDJSON *
-newCustomEvent(const struct LDUser *const user, const char *const key,
-    struct LDJSON *const data)
+newCustomEvent(struct LDClient *const client, const struct LDUser *const user,
+    const char *const key, struct LDJSON *const data)
 {
     struct LDJSON *tmp;
     struct LDJSON *event;
@@ -227,7 +228,7 @@ newCustomEvent(const struct LDUser *const user, const char *const key,
     LD_ASSERT(user);
     LD_ASSERT(key);
 
-    if (!(event = newBaseEvent(user, "custom"))) {
+    if (!(event = newBaseEvent(client, user, "custom"))) {
         LD_LOG(LD_LOG_ERROR, "memory error");
 
         goto error;
@@ -262,12 +263,12 @@ newCustomEvent(const struct LDUser *const user, const char *const key,
 }
 
 struct LDJSON *
-newIdentifyEvent(const struct LDUser *const user)
+newIdentifyEvent(struct LDClient *const client, const struct LDUser *const user)
 {
     struct LDJSON *event;
     struct LDJSON *tmp;
 
-    if (!(event = newBaseEvent(user, "identify"))) {
+    if (!(event = newBaseEvent(client, user, "identify"))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct base event");
 
         return NULL;

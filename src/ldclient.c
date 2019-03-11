@@ -133,7 +133,7 @@ LDClientTrack(struct LDClient *const client, const struct LDUser *const user,
     LD_ASSERT(user);
     LD_ASSERT(key);
 
-    if (!(event = newCustomEvent(user, key, data))) {
+    if (!(event = newCustomEvent(client, user, key, data))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct custom event");
 
         return false;
@@ -150,7 +150,7 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
     LD_ASSERT(client);
     LD_ASSERT(user);
 
-    if (!(event = newIdentifyEvent(user))) {
+    if (!(event = newIdentifyEvent(client, user))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct identify event");
 
         return false;

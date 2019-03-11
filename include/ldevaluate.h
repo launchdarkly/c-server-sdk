@@ -27,13 +27,14 @@ struct LDJSON *addReason(struct LDJSON **const result,
 struct LDJSON *addErrorReason(struct LDJSON **const result,
     const char *const kind);
 
-EvalStatus evaluate(const struct LDJSON *const flag,
-    const struct LDUser *const user, struct LDStore *const store,
-    struct LDJSON **const result);
+EvalStatus evaluate(struct LDClient *const client,
+    const struct LDJSON *const flag, const struct LDUser *const user,
+    struct LDStore *const store, struct LDJSON **const result);
 
-EvalStatus checkPrerequisites(const struct LDJSON *const flag,
-    const struct LDUser *const user, struct LDStore *const store,
-    const char **const failedKey, struct LDJSON **const events);
+EvalStatus checkPrerequisites(struct LDClient *const client,
+    const struct LDJSON *const flag, const struct LDUser *const user,
+    struct LDStore *const store, const char **const failedKey,
+    struct LDJSON **const events);
 
 EvalStatus ruleMatchesUser(const struct LDJSON *const rule,
     const struct LDUser *const user, struct LDStore *const store);

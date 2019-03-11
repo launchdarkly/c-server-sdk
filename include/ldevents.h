@@ -9,19 +9,21 @@
 #include <stddef.h>
 
 /* event construction */
-struct LDJSON *newBaseEvent(const struct LDUser *const user,
-    const char *const kind);
+struct LDJSON *newBaseEvent(struct LDClient *const client,
+    const struct LDUser *const user, const char *const kind);
 
-struct LDJSON *newFeatureRequestEvent(const char *const key,
-    const struct LDUser *const user, const unsigned int *const variation,
-    const struct LDJSON *const value, const struct LDJSON *const defaultValue,
-    const char *const prereqOf, const struct LDJSON *const flag,
-    const struct LDJSON *const reason);
+struct LDJSON *newFeatureRequestEvent(struct LDClient *const client,
+    const char *const key, const struct LDUser *const user,
+    const unsigned int *const variation, const struct LDJSON *const value,
+    const struct LDJSON *const defaultValue, const char *const prereqOf,
+    const struct LDJSON *const flag, const struct LDJSON *const reason);
 
-struct LDJSON *newCustomEvent(const struct LDUser *const user,
-    const char *const key, struct LDJSON *const data);
+struct LDJSON *newCustomEvent(struct LDClient *const client,
+    const struct LDUser *const user, const char *const key,
+    struct LDJSON *const data);
 
-struct LDJSON *newIdentifyEvent(const struct LDUser *const user);
+struct LDJSON *newIdentifyEvent(struct LDClient *const client,
+    const struct LDUser *const user);
 
 /* event recording */
 bool addEvent(struct LDClient *const client, const struct LDJSON *const event);

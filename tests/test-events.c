@@ -67,15 +67,15 @@ testSummarizeEventIncrementsCounters()
     LD_ASSERT(default2 = LDNewText("default2"));
     LD_ASSERT(default3 = LDNewText("default3"));
 
-    LD_ASSERT(event1 = newFeatureRequestEvent("key1", user, &variation1,
+    LD_ASSERT(event1 = newFeatureRequestEvent(client, "key1", user, &variation1,
         value1, default1, NULL, flag1, NULL));
-    LD_ASSERT(event2 = newFeatureRequestEvent("key1", user, &variation2,
+    LD_ASSERT(event2 = newFeatureRequestEvent(client, "key1", user, &variation2,
         value2, default1, NULL, flag1, NULL));
-    LD_ASSERT(event3 = newFeatureRequestEvent("key2", user, &variation1,
+    LD_ASSERT(event3 = newFeatureRequestEvent(client, "key2", user, &variation1,
         value99, default2, NULL, flag2, NULL));
-    LD_ASSERT(event4 = newFeatureRequestEvent("key1", user, &variation1,
+    LD_ASSERT(event4 = newFeatureRequestEvent(client, "key1", user, &variation1,
         value1, default1, NULL, flag1, NULL));
-    LD_ASSERT(event5 = newFeatureRequestEvent("badkey", user, NULL,
+    LD_ASSERT(event5 = newFeatureRequestEvent(client, "badkey", user, NULL,
         default3, default3, NULL, NULL, NULL));
 
     LD_ASSERT(summarizeEvent(client, event1, false));
@@ -165,11 +165,11 @@ testCounterForNilVariationIsDistinctFromOthers()
     LD_ASSERT(value2 = LDNewText("value2"));
     LD_ASSERT(default1 = LDNewText("default1"));
 
-    LD_ASSERT(event1 = newFeatureRequestEvent("key1", user, &variation1,
+    LD_ASSERT(event1 = newFeatureRequestEvent(client, "key1", user, &variation1,
         value1, default1, NULL, flag, NULL));
-    LD_ASSERT(event2 = newFeatureRequestEvent("key1", user, &variation2,
+    LD_ASSERT(event2 = newFeatureRequestEvent(client, "key1", user, &variation2,
         value2, default1, NULL, flag, NULL));
-    LD_ASSERT(event3 = newFeatureRequestEvent("key1", user, NULL,
+    LD_ASSERT(event3 = newFeatureRequestEvent(client, "key1", user, NULL,
         default1, default1, NULL, flag, NULL));
 
     LD_ASSERT(summarizeEvent(client, event1, false));
