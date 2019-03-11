@@ -958,7 +958,7 @@ segmentRuleMatchUser(const struct LDJSON *const segmentRule,
     {
         const struct LDJSON *weight = LDObjectLookup(segmentRule, "weight");
 
-        if (!weight) {
+        if (!notNull(weight)) {
             return EVAL_MATCH;
         }
 
