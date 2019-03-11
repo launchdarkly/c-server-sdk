@@ -161,6 +161,17 @@ static bool
 compareTime(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue, bool (*op) (double, double))
 {
+    char *us;
+    char *cs;
+
+    LD_ASSERT(us = LDJSONSerialize(uvalue));
+    LD_ASSERT(cs = LDJSONSerialize(cvalue));
+
+    LD_LOG(LD_LOG_TRACE, "compareTime (%s) (%s)", us, cs);
+
+    LDFree(us);
+    LDFree(cs);
+
     if (LDJSONGetType(uvalue) == LDNumber &&
         LDJSONGetType(cvalue) == LDNumber)
     {
@@ -177,9 +188,6 @@ compareTime(const struct LDJSON *const uvalue,
         if (strcmp(LDGetText(uvalue), "") == 0) {
             return false;
         }
-
-        LD_LOG(LD_LOG_TRACE, "compareTime (%s) (%s)",
-            LDGetText(uvalue), LDGetText(cvalue));
 
         if (!strptime(LDGetText(uvalue), "%FT%T%Z", &utm)) {
             LD_LOG(LD_LOG_ERROR, "failed to parse date uvalue");
