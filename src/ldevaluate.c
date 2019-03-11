@@ -357,7 +357,7 @@ evaluate(struct LDClient *const client, const struct LDJSON *const flag,
                 struct LDJSON *tmp;
                 struct LDJSON *ruleid;
 
-                variation = LDObjectLookup(iter, "variation");
+                variation = getIndexForVariationOrRollout(flag, iter, user);
 
                 if (!(reason = addReason(result, "RULE_MATCH", events))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add reason");
@@ -416,7 +416,8 @@ evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     }
 
     /* fallthrough */
-    fallthrough = getIndexForVariationOrRollout(flag, user);
+    fallthrough = getIndexForVariationOrRollout(flag,
+        LDObjectLookup(flag, "fallthrough"), user);
 
     if (!addReason(result, "FALLTHROUGH", events)) {
         LD_LOG(LD_LOG_ERROR, "failed to add reason");
@@ -1343,12 +1344,12 @@ variationIndexForUser(const struct LDJSON *const varOrRoll,
 
 struct LDJSON *
 getIndexForVariationOrRollout(const struct LDJSON *const flag,
+    const struct LDJSON *const varOrRoll,
     const struct LDUser *const user)
 {
     unsigned int cindex;
     const struct LDJSON *jkey;
     const struct LDJSON *jsalt;
-    const struct LDJSON *fallthrough;
     const char *key;
     const char *salt;
 
@@ -1372,9 +1373,7 @@ getIndexForVariationOrRollout(const struct LDJSON *const flag,
         salt = LDGetText(jsalt);
     }
 
-    fallthrough = LDObjectLookup(flag, "fallthrough");
-
-    if (!variationIndexForUser(fallthrough, user, key, salt, &cindex)) {
+    if (!variationIndexForUser(varOrRoll, user, key, salt, &cindex)) {
         LD_LOG(LD_LOG_ERROR, "failed to get variation index");
 
         return NULL;
