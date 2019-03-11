@@ -416,13 +416,7 @@ evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     }
 
     /* fallthrough */
-    if (!(fallthrough = LDObjectLookup(flag, "fallthrough"))) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        return EVAL_SCHEMA;
-    }
-
-    fallthrough = LDObjectLookup(fallthrough, "variation");
+    fallthrough = getIndexForVariationOrRollout(flag, user);
 
     if (!addReason(result, "FALLTHROUGH", events)) {
         LD_LOG(LD_LOG_ERROR, "failed to add reason");
@@ -1241,8 +1235,6 @@ variationIndexForUser(const struct LDJSON *const varOrRoll,
     float sum = 0;
 
     LD_ASSERT(varOrRoll);
-    LD_ASSERT(user);
-    LD_ASSERT(salt);
     LD_ASSERT(index);
 
     variation = LDObjectLookup(varOrRoll, "variation");
@@ -1258,6 +1250,9 @@ variationIndexForUser(const struct LDJSON *const varOrRoll,
 
         return true;
     }
+
+    LD_ASSERT(user);
+    LD_ASSERT(salt);
 
     rollout = LDObjectLookup(varOrRoll, "rollout");
 
@@ -1344,4 +1339,46 @@ variationIndexForUser(const struct LDJSON *const varOrRoll,
     }
 
     return false;
+}
+
+struct LDJSON *
+getIndexForVariationOrRollout(const struct LDJSON *const flag,
+    const struct LDUser *const user)
+{
+    unsigned int cindex;
+    const struct LDJSON *jkey;
+    const struct LDJSON *jsalt;
+    const struct LDJSON *fallthrough;
+    const char *key;
+    const char *salt;
+
+    if (notNull(jkey = LDObjectLookup(flag, "key"))) {
+        if (LDJSONGetType(jkey) != LDText) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return NULL;
+        }
+
+        key = LDGetText(jkey);
+    }
+
+    if (notNull(jsalt = LDObjectLookup(flag, "salt"))) {
+        if (LDJSONGetType(jsalt) != LDText) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return NULL;
+        }
+
+        salt = LDGetText(jsalt);
+    }
+
+    fallthrough = LDObjectLookup(flag, "fallthrough");
+
+    if (!variationIndexForUser(fallthrough, user, key, salt, &cindex)) {
+        LD_LOG(LD_LOG_ERROR, "failed to get variation index");
+
+        return NULL;
+    }
+
+    return LDNewNumber(cindex);
 }
