@@ -244,6 +244,8 @@ main()
         LDNewText("2.0.0-rc.0"), true);
     addTest("semVerEqual", LDNewText("02.0.0"), LDNewText("2.0.0"), false);
     addTest("semVerEqual", LDNewText("v2.0.0"), LDNewText("2.0.0"), false);
+    addTest("semVerEqual", LDNewText("2.01.0"), LDNewText("2.1.0"), false);
+    addTest("semVerEqual", LDNewText("2.0.01"), LDNewText("2.0.1"), false);
 
     for (iter = LDGetIter(tests); iter; iter = LDIterNext(iter)) {
         OpFn opfn;
