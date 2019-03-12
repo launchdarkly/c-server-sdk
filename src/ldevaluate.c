@@ -1119,7 +1119,7 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
             if (substatus == EVAL_MATCH) {
                 LDJSONFree(attributeValue);
 
-                if (!negate) {
+                if (negate) {
                     return EVAL_MATCH;
                 } else {
                     return EVAL_MISS;
@@ -1129,10 +1129,10 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
 
         LDJSONFree(attributeValue);
 
-        if (!negate) {
-            return EVAL_MATCH;
-        } else {
+        if (negate) {
             return EVAL_MISS;
+        } else {
+            return EVAL_MATCH;
         }
     } else {
         EvalStatus substatus;
