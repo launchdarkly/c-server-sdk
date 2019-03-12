@@ -31,6 +31,7 @@ LDUserNew(const char *const key)
     user->name      = NULL;
     user->avatar    = NULL;
     user->custom    = NULL;
+    user->country   = NULL;
 
     return user;
 
@@ -52,6 +53,7 @@ LDUserFree(struct LDUser *const user)
         LDFree(       user->email                 );
         LDFree(       user->name                  );
         LDFree(       user->avatar                );
+        LDFree(       user->country               );
         LDJSONFree(   user->custom                );
         LDJSONFree(   user->privateAttributeNames );
         LDFree(       user                        );
