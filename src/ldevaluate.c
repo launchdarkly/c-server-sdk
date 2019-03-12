@@ -714,6 +714,13 @@ ruleMatchesUser(const struct LDJSON *const rule,
             return substatus;
         }
 
+        {
+            char *trace;
+            LD_ASSERT(trace = LDJSONSerialize(iter));
+            LD_LOG(LD_LOG_TRACE, "clausetrace %s %d", trace, substatus);
+            LDFree(trace);
+        }
+
         if (substatus == EVAL_MISS) {
             return EVAL_MISS;
         }
