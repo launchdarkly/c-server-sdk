@@ -195,6 +195,8 @@ semver_parse_version (const char *str, semver_t *ver) {
       case 3: ver->patch = value; break;
     }
 
+    if (index == 3 && next) return -1;
+
     /* Continue with the next slice */
     if (next == NULL)
       slice = NULL;
