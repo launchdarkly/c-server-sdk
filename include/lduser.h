@@ -79,6 +79,14 @@ bool LDUserSetName(struct LDUser *const user, const char *const name);
 bool LDUserSetAvatar(struct LDUser *const user, const char *const avatar);
 
 /**
+ * @brief Set the user's country
+ * @param[in] user The user to mutate, may not be NULL (assert).
+ * @param[in] avatar The users avatar, may be NULL.
+ * @return True on success, False on failure.
+ */
+bool LDUserSetCountry(struct LDUser *const user, const char *const country);
+
+/**
  * @brief Set the user's secondary key.
  * @param[in] user The user to mutate, may not be NULL (assert).
  * @param[in] secondary The users secondary key, may be NULL.

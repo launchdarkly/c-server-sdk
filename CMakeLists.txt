@@ -9,10 +9,10 @@ include_directories("include" "third-party/include" ${CURL_INCLUDE_DIR})
 file(GLOB SOURCES "src/*" "third-party/src/*")
 
 add_library(sdk STATIC ${SOURCES})
-target_link_libraries(sdk ${CURL_LIBRARIES} pthread pcre m)
+target_link_libraries(sdk ${CURL_LIBRARIES} pthread pcre m gmp)
 
 add_library(sdkdynamic SHARED ${SOURCES})
-target_link_libraries(sdkdynamic ${CURL_LIBRARIES} pthread pcre m)
+target_link_libraries(sdkdynamic ${CURL_LIBRARIES} pthread pcre m gmp)
 
 add_executable(main "src/main.c")
 target_link_libraries(main sdk)

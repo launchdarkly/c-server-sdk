@@ -59,8 +59,6 @@ testParseUTCTimestamp()
     LD_ASSERT(jtimestamp = LDNewText("2016-04-16T22:57:31.684Z"));
     LD_ASSERT(parseTime(jtimestamp, &ttimestamp));
 
-    LD_LOG(LD_LOG_TRACE, "dec %d", timestamp_compare(&ttimestamp, &texpected));
-
     LD_ASSERT(timestamp_compare(&ttimestamp, &texpected) == 0);
 
     LDJSONFree(jtimestamp);
@@ -80,8 +78,6 @@ testParseTimezone()
 
     LD_ASSERT(jtimestamp = LDNewText("2016-04-16T17:09:12.759-07:00"));
     LD_ASSERT(parseTime(jtimestamp, &ttimestamp));
-
-    LD_LOG(LD_LOG_TRACE, "dec %d", timestamp_compare(&ttimestamp, &texpected));
 
     LD_ASSERT(timestamp_compare(&ttimestamp, &texpected) == 0);
 
@@ -103,12 +99,30 @@ testParseTimezoneNoMillis()
     LD_ASSERT(jtimestamp = LDNewText("2016-04-16T17:09:12-07:00"));
     LD_ASSERT(parseTime(jtimestamp, &ttimestamp));
 
-    LD_LOG(LD_LOG_TRACE, "dec %d", timestamp_compare(&ttimestamp, &texpected));
-
     LD_ASSERT(timestamp_compare(&ttimestamp, &texpected) == 0);
 
     LDJSONFree(jtimestamp);
     LDJSONFree(jexpected);
+}
+
+void
+testTimeCompareSimilar()
+{
+    struct LDJSON *jtimestamp1;
+    timestamp_t ttimestamp1;
+    struct LDJSON *jtimestamp2;
+    timestamp_t ttimestamp2;
+
+    LD_ASSERT(jtimestamp1 = LDNewNumber(1000));
+    LD_ASSERT(parseTime(jtimestamp1, &ttimestamp1));
+
+    LD_ASSERT(jtimestamp2 = LDNewNumber(1001));
+    LD_ASSERT(parseTime(jtimestamp2, &ttimestamp2));
+
+    LD_ASSERT(timestamp_compare(&ttimestamp1, &ttimestamp2) == -1);
+
+    LDJSONFree(jtimestamp1);
+    LDJSONFree(jtimestamp2);
 }
 
 /*
@@ -262,6 +276,7 @@ main()
     testParseUTCTimestamp();
     testParseTimezone();
     testParseTimezoneNoMillis();
+    testTimeCompareSimilar();
     /* testParseTimestampBeforeEpoch(); */
 
     LDJSONFree(tests);
