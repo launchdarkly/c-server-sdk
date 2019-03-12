@@ -12,6 +12,32 @@ isEvalError(const EvalStatus status)
     return status == EVAL_MEM || status == EVAL_SCHEMA || status == EVAL_STORE;
 }
 
+static EvalStatus
+maybeNegate(const struct LDJSON *const object, const EvalStatus status)
+{
+    const struct LDJSON *negate = NULL;
+
+    if (isEvalError(status)) {
+        return status;
+    }
+
+    if (notNull(negate = LDObjectLookup(object, "negate"))) {
+        if (LDJSONGetType(negate) != LDBool) {
+            return EVAL_SCHEMA;
+        }
+
+        if (LDGetBool(negate)) {
+            if (status == EVAL_MATCH) {
+                return EVAL_MISS;
+            } else if (status == EVAL_MISS) {
+                return EVAL_MATCH;
+            }
+        }
+    }
+
+    return status;
+}
+
 struct LDJSON *
 addReason(struct LDJSON **const result, const char *const reason,
     struct LDJSON *const events)
@@ -724,10 +750,8 @@ clauseMatchesUser(const struct LDJSON *const clause,
     }
 
     if (strcmp(LDGetText(op), "segmentMatch") == 0) {
-        bool negate = false;
         const struct LDJSON *values = NULL;
         const struct LDJSON *iter = NULL;
-        const struct LDJSON *negateJSON = NULL;
 
         if (!(values = LDObjectLookup(clause, "values"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
@@ -739,16 +763,6 @@ clauseMatchesUser(const struct LDJSON *const clause,
             LD_LOG(LD_LOG_ERROR, "schema error");
 
             return EVAL_SCHEMA;
-        }
-
-        if ((negateJSON = LDObjectLookup(clause, "negate"))) {
-            if (LDJSONGetType(negateJSON) != LDBool) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
-
-                return EVAL_SCHEMA;
-            }
-
-            negate = LDGetBool(negateJSON);
         }
 
         bool anysuccess = false;
@@ -781,11 +795,7 @@ clauseMatchesUser(const struct LDJSON *const clause,
                 LDJSONFree(segment);
 
                 if (evalstatus == EVAL_MATCH) {
-                    if (!negate) {
-                        return EVAL_MATCH;
-                    } else {
-                        return EVAL_MISS;
-                    }
+                    return maybeNegate(clause, EVAL_MATCH);
                 }
             }
         }
@@ -794,11 +804,7 @@ clauseMatchesUser(const struct LDJSON *const clause,
             return EVAL_MISS;
         }
 
-        if (!negate) {
-            return EVAL_MATCH;
-        } else {
-            return EVAL_MISS;
-        }
+        return maybeNegate(clause, EVAL_MISS);
     }
 
     return clauseMatchesUserNoSegments(clause, user);
@@ -1017,8 +1023,6 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     struct LDJSON *attributeValue;
     struct LDJSON *attribute;
     const struct LDJSON *values;
-    bool negate;
-    struct LDJSON *negateJSON;
     LDJSONType type;
 
     LD_ASSERT(clause);
@@ -1066,20 +1070,6 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
         return EVAL_MEM;
     }
 
-    negateJSON = LDObjectLookup(clause, "negate");
-
-    if (notNull(negateJSON)) {
-        if (LDJSONGetType(negateJSON) != LDBool) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            return EVAL_SCHEMA;
-        }
-
-        negate = LDGetBool(negateJSON);
-    } else {
-        negate = false;
-    }
-
     if (!(fn = lookupOperation(operatorText))) {
         LD_LOG(LD_LOG_WARNING, "unknown operator");
 
@@ -1119,21 +1109,13 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
             if (substatus == EVAL_MATCH) {
                 LDJSONFree(attributeValue);
 
-                if (negate) {
-                    return EVAL_MISS;
-                } else {
-                    return EVAL_MATCH;
-                }
+                return maybeNegate(clause, EVAL_MATCH);
             }
         }
 
         LDJSONFree(attributeValue);
 
-        if (negate) {
-            return EVAL_MATCH;
-        } else {
-            return EVAL_MISS;
-        }
+        return maybeNegate(clause, EVAL_MISS);
     } else {
         EvalStatus substatus;
 
@@ -1147,11 +1129,7 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
 
         LDJSONFree(attributeValue);
 
-        if (negate ? !(substatus == EVAL_MATCH) : (substatus == EVAL_MATCH)) {
-            return EVAL_MATCH;
-        } else {
-            return EVAL_MISS;
-        }
+        return maybeNegate(clause, substatus);
     }
 }
 
