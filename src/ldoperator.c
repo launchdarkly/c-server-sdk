@@ -184,7 +184,7 @@ parseTime(const struct LDJSON *const json, timestamp_t *result)
         mpq_set_ui(sec, result->sec, 1);
         mpq_sub(nsec, num, sec);
         mpq_mul(nsec, nsec, thousand);
-        // resolution hack
+        /* resolution hack */
         result->nsec = mpq_get_d(nsec);
         LD_LOG(LD_LOG_TRACE, "A orig %.32f sec %ld, nsec %ld", LDGetNumber(json), result->sec, result->nsec);
         result->offset = 0;
@@ -203,7 +203,7 @@ parseTime(const struct LDJSON *const json, timestamp_t *result)
 
             return false;
         }
-        // resolution hack
+        /* resolution hack */
         result->nsec /= 1000000;
 
         LD_LOG(LD_LOG_TRACE, "B %s %ld, %ld", text, result->sec, result->nsec);
@@ -213,49 +213,6 @@ parseTime(const struct LDJSON *const json, timestamp_t *result)
 
     return false;
 }
-
-/*
-bool
-parseTime(const struct LDJSON *const json, timestamp_t *result)
-{
-    LD_ASSERT(json);
-    LD_ASSERT(result);
-
-    if (LDJSONGetType(json) == LDNumber) {
-        const long double num = LDGetNumber(json) / 1000.0d;
-        long double n;
-
-        n = 0;
-
-        LD_LOG(LD_LOG_TRACE, "top %.32LG", num);
-
-        result->sec = floorl(num);
-        // resolution hack
-        result->nsec = 0;
-        n = num - floorl(num);
-        LD_LOG(LD_LOG_TRACE, "orig %.32f sec %ld, nsec %ld sanity %.32LG", LDGetNumber(json), result->sec, result->nsec, n);
-        result->offset = 0;
-
-        return true;
-    } else if (LDJSONGetType(json) == LDText) {
-        const char *const text = LDGetText(json);
-
-        if (timestamp_parse(text, strlen(text), result)) {
-            LD_LOG(LD_LOG_ERROR, "failed to parse date uvalue");
-
-            return false;
-        }
-        // resolution hack
-        result->nsec /= 1000000;
-
-        LD_LOG(LD_LOG_TRACE, "B %s %ld, %ld", text, result->sec, result->nsec);
-
-        return true;
-    }
-
-    return false;
-}
-*/
 
 static bool
 compareTime(const struct LDJSON *const uvalue,
