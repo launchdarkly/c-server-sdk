@@ -1083,11 +1083,25 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
         return EVAL_MISS;
     }
 
+    LD_LOG(LD_LOG_TRACE, "attributeTextTrace %s", attributeText);
+
     if (!(attributeValue = valueOfAttribute(user, attributeText))) {
+        LD_LOG(LD_LOG_TRACE, "attribute does not exist");
+
         return EVAL_MISS;
     }
 
     type = LDJSONGetType(attributeValue);
+
+    {
+        char *trace1;
+        char *trace2;
+        LD_ASSERT(trace1 = LDJSONSerialize(attributeValue));
+        LD_ASSERT(trace2 = LDJSONSerialize(values));
+        LD_LOG(LD_LOG_TRACE, "clausetrace %s %s", trace1, trace2);
+        LDFree(trace1);
+        LDFree(trace2);
+    }
 
     if (type == LDArray || type == LDObject) {
         struct LDJSON *iter = LDGetIter(attributeValue);
