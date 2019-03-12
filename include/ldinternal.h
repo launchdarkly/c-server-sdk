@@ -88,6 +88,7 @@ struct LDUser {
     char *email;
     char *name;
     char *avatar;
+    char *country;
     struct LDJSON *privateAttributeNames; /* Array of Text */
     struct LDJSON *custom; /* Object, may be NULL */
 };

@@ -115,6 +115,14 @@ LDUserSetAvatar(struct LDUser *const user, const char *const avatar)
 }
 
 bool
+LDUserSetCountry(struct LDUser *const user, const char *const country)
+{
+    LD_ASSERT(user);
+
+    return LDSetString(&user->country, country);
+}
+
+bool
 LDUserSetSecondary(struct LDUser *const user, const char *const secondary)
 {
     LD_ASSERT(user);
@@ -250,6 +258,7 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
     addstring(email);
     addstring(name);
     addstring(avatar);
+    addstring(country);
 
     if (lduser->custom) {
         struct LDJSON *const custom = LDJSONDuplicate(lduser->custom);
@@ -322,6 +331,10 @@ valueOfAttribute(const struct LDUser *const user, const char *const attribute)
     } else if (strcmp(attribute, "avatar") == 0) {
         if (user->avatar) {
             return LDNewText(user->avatar);
+        }
+    } else if (strcmp(attribute, "country") == 0) {
+        if (user->country) {
+            return LDNewText(user->country);
         }
     } else if (strcmp(attribute, "name") == 0) {
         if (user->name) {
