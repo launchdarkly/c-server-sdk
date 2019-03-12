@@ -187,6 +187,8 @@ semver_parse_version (const char *str, semver_t *ver) {
     value = strtol(slice, &endptr, 10);
     if (endptr != next && *endptr != '\0') return -1;
 
+    if (*slice == '0' && endptr - slice > 1) return -1;
+
     switch (index) {
       case 1: ver->major = value; break;
       case 2: ver->minor = value; break;
