@@ -286,6 +286,9 @@ compareSemVer(const struct LDJSON *const uvalue,
     semver_free(&usem);
     semver_free(&csem);
 
+    LD_LOG(LD_LOG_TRACE, "semver %s %s %d",
+        LDGetText(uvalue), LDGetText(cvalue), result);
+
     return result;
 }
 
