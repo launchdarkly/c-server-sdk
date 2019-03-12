@@ -242,6 +242,8 @@ main()
         LDNewText("xbad%ver"), false);
     addTest("semVerGreaterThan", LDNewText("2.0.0-rc.1"),
         LDNewText("2.0.0-rc.0"), true);
+    addTest("semVerEqual", LDNewText("02.0.0"), LDNewText("2.0.0"), false);
+    addTest("semVerEqual", LDNewText("v2.0.0"), LDNewText("2.0.0"), false);
 
     for (iter = LDGetIter(tests); iter; iter = LDIterNext(iter)) {
         OpFn opfn;
