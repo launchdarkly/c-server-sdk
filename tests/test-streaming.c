@@ -64,12 +64,14 @@ testInitialPut(struct StreamContext *const context)
     LD_ASSERT(onSSE(context, body));
     LD_ASSERT(onSSE(context, ""));
 
-    LD_ASSERT(flag = LDStoreGet(
-        context->client->config->store, "flags", "my-flag"));
+    LD_ASSERT(LDStoreGet(
+        context->client->config->store, "flags", "my-flag", &flag));
+    LD_ASSERT(flag);
     LD_ASSERT(LDGetNumber(LDObjectLookup(flag, "version")) == 2);
 
-    LD_ASSERT(segment = LDStoreGet(
-        context->client->config->store, "segments", "my-segment"));
+    LD_ASSERT(LDStoreGet(
+        context->client->config->store, "segments", "my-segment", &segment));
+    LD_ASSERT(segment);
     LD_ASSERT(LDGetNumber(LDObjectLookup(segment, "version")) == 5);
 
     LDJSONFree(flag);
@@ -93,8 +95,9 @@ testPatchFlag(struct StreamContext *const context)
     LD_ASSERT(onSSE(context, body));
     LD_ASSERT(onSSE(context, ""));
 
-    LD_ASSERT(flag = LDStoreGet(
-        context->client->config->store, "flags", "my-flag"));
+    LD_ASSERT(LDStoreGet(
+        context->client->config->store, "flags", "my-flag", &flag));
+    LD_ASSERT(flag);
     LD_ASSERT(LDGetNumber(LDObjectLookup(flag, "version")) == 3);
 
     LDJSONFree(flag);
@@ -116,8 +119,9 @@ testDeleteFlag(struct StreamContext *const context)
     LD_ASSERT(onSSE(context, body));
     LD_ASSERT(onSSE(context, ""));
 
-    LD_ASSERT(lookup = LDStoreGet(
-        context->client->config->store, "flags", "my-flag"));
+    LD_ASSERT(LDStoreGet(
+        context->client->config->store, "flags", "my-flag", &lookup));
+    LD_ASSERT(lookup);
     LD_ASSERT(isDeleted(lookup));
 
     LDJSONFree(lookup);
@@ -140,8 +144,9 @@ testPatchSegment(struct StreamContext *const context)
     LD_ASSERT(onSSE(context, body));
     LD_ASSERT(onSSE(context, ""));
 
-    LD_ASSERT(segment = LDStoreGet(
-        context->client->config->store, "segments", "my-segment"));
+    LD_ASSERT(LDStoreGet(
+        context->client->config->store, "segments", "my-segment", &segment));
+    LD_ASSERT(segment);
     LD_ASSERT(LDGetNumber(LDObjectLookup(segment, "version")) == 7);
 
     LDJSONFree(segment);
@@ -163,8 +168,9 @@ testDeleteSegment(struct StreamContext *const context)
     LD_ASSERT(onSSE(context, body));
     LD_ASSERT(onSSE(context, ""));
 
-    LD_ASSERT(lookup = LDStoreGet(
-        context->client->config->store, "segments", "my-segment"));
+    LD_ASSERT(LDStoreGet(
+        context->client->config->store, "segments", "my-segment", &lookup));
+    LD_ASSERT(lookup);
     LD_ASSERT(isDeleted(lookup));
 
     LDJSONFree(lookup);
