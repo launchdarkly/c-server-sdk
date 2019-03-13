@@ -7,7 +7,7 @@
 struct LDConfig *
 LDConfigNew(const char *const key)
 {
-    struct LDConfig *config = NULL;
+    struct LDConfig *config;
 
     LD_ASSERT(key);
 
@@ -197,7 +197,7 @@ bool
 LDConfigAddPrivateAttribute(struct LDConfig *const config,
     const char *const attribute)
 {
-    struct LDJSON *temp = NULL;
+    struct LDJSON *temp;;
 
     LD_ASSERT(config);
     LD_ASSERT(attribute);

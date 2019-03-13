@@ -9,7 +9,7 @@
 struct LDClient *
 LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 {
-    struct LDClient *client = NULL;
+    struct LDClient *client;
 
     LD_ASSERT(config);
 
