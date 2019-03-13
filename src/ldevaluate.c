@@ -515,16 +515,19 @@ checkPrerequisites(struct LDClient *const client,
     }
 
     for (iter = LDGetIter(prerequisites); iter; iter = LDIterNext(iter)) {
-        struct LDJSON *result = NULL;
-        struct LDJSON *preflag = NULL;
-        const struct LDJSON *key = NULL;
-        const struct LDJSON *variation = NULL;
-        unsigned int variationNum;
-        unsigned int *variationNumRef = NULL;
-        const struct LDJSON *variationNumJSON;
-        struct LDJSON *event = NULL;
-        struct LDJSON *subevents;
+        struct LDJSON *result, *preflag, *event, *subevents;
+        const struct LDJSON *key, *variation, *variationNumJSON;
+        unsigned int variationNum, *variationNumRef ;
         EvalStatus status;
+
+        result           = NULL;
+        preflag          = NULL;
+        key              = NULL;
+        variation        = NULL;
+        variationNumRef  = NULL;
+        variationNumJSON = NULL;
+        event            = NULL;
+        subevents        = NULL;
 
         if (LDJSONGetType(iter) != LDObject) {
             LD_LOG(LD_LOG_ERROR, "schema error");
