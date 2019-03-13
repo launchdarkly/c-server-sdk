@@ -33,11 +33,13 @@ struct MemoryContext {
 static bool
 memoryInit(void *const rawcontext, struct LDJSON *const sets)
 {
-    struct MemoryContext *const context = rawcontext;
+    struct MemoryContext *context;;
 
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
     LD_ASSERT(sets);
     LD_ASSERT(LDJSONGetType(sets) == LDObject);
+
+    context = rawcontext;
 
     LD_ASSERT(LDi_rdlock(&context->lock));
 
@@ -70,19 +72,20 @@ static bool
 memoryGet(void *const rawcontext, const char *const kind, const char *const key,
     struct LDJSON **const result)
 {
-    struct MemoryContext *const context = rawcontext;
+    struct LDJSON *set, *current;
+    struct MemoryContext *context;
 
-    struct LDJSON *set = NULL;
-    struct LDJSON *current = NULL;
-
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
     LD_ASSERT(kind);
     LD_ASSERT(key);
     LD_ASSERT(result);
 
-    LD_ASSERT(LDi_rdlock(&context->lock));
-
+    set     = NULL;
+    current = NULL;
+    context = rawcontext;
     *result = NULL;
+
+    LD_ASSERT(LDi_rdlock(&context->lock));
 
     if (!(set = LDObjectLookup(context->store, kind))) {
         return false;
@@ -111,17 +114,18 @@ static bool
 memoryAll(void *const rawcontext, const char *const kind,
     struct LDJSON **const result)
 {
-    struct MemoryContext *const context = rawcontext;
+    struct MemoryContext *context;
+    struct LDJSON *set, *iter, *object;
 
-    struct LDJSON *set = NULL;
-    struct LDJSON *iter = NULL;
-    struct LDJSON *object;
-
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
     LD_ASSERT(kind);
     LD_ASSERT(result);
 
+    set     = NULL;
+    iter    = NULL;
+    object  = NULL;
     *result = NULL;
+    context = rawcontext;
 
     LD_ASSERT(LDi_rdlock(&context->lock));
 
@@ -162,13 +166,14 @@ static bool
 memoryDelete(void *const rawcontext, const char *const kind,
     const char *const key, const unsigned int version)
 {
-    struct MemoryContext *const context = rawcontext;
+    struct LDJSON *placeholder, *temp;
 
-    struct LDJSON *placeholder = NULL, *temp = NULL;
-
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
     LD_ASSERT(kind);
     LD_ASSERT(key);
+
+    placeholder = NULL;
+    temp        = NULL;
 
     if (!(placeholder = LDNewObject())) {
         return false;
@@ -210,13 +215,17 @@ static bool
 memoryUpsert(void *const rawcontext, const char *const kind,
     struct LDJSON *const replacement)
 {
-    struct MemoryContext *const context = rawcontext;
+    struct MemoryContext *context;
+    struct LDJSON *set, *current, *key;
 
-    struct LDJSON *set = NULL, *current = NULL, *key = NULL;
-
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
     LD_ASSERT(kind);
     LD_ASSERT(replacement);
+
+    set     = NULL;
+    current = NULL;
+    key     = NULL;
+    context = rawcontext;
 
     LD_ASSERT(LDi_wrlock(&context->lock));
 
@@ -229,7 +238,10 @@ memoryUpsert(void *const rawcontext, const char *const kind,
     }
 
     if ((current = LDObjectLookup(set, LDGetText(key)))) {
-        struct LDJSON *currentversion = NULL, *replacementversion = NULL;
+        struct LDJSON *currentversion, *replacementversion;
+
+        currentversion     = NULL;
+        replacementversion = NULL;
 
         if (!(currentversion = LDObjectLookup(current, "version"))) {
             goto error;
@@ -297,25 +309,22 @@ memoryDestructor(void *const rawcontext)
 struct LDStore *
 makeInMemoryStore()
 {
-    struct MemoryContext *context = NULL;
-    struct LDStore *const store = LDAlloc(sizeof(struct LDStore));
+    struct LDStore *store;
+    struct MemoryContext *context;
 
-    if (!store) {
-        return NULL;
+    context = NULL;
+    store   = NULL;
+
+    if (!(store = LDAlloc(sizeof(struct LDStore)))) {
+        goto error;
     }
 
     if (!(context = LDAlloc(sizeof(struct MemoryContext)))) {
-        free(store);
-
-        return NULL;
+        goto error;
     }
 
     if (!LDi_rwlockinit(&context->lock)) {
-        LDFree(store);
-
-        LDFree(context);
-
-        return NULL;
+        goto error;
     }
 
     context->initialized = false;
@@ -331,6 +340,11 @@ makeInMemoryStore()
     store->destructor    = memoryDestructor;
 
     return store;
+
+  error:
+    free(store);
+    free(context);
+    return NULL;
 }
 
 /* **** Covenience Operations **** */
@@ -410,8 +424,12 @@ LDStoreDestroy(struct LDStore *const store)
 bool
 LDStoreInitEmpty(struct LDStore *const store)
 {
-    struct LDJSON *tmp;
-    struct LDJSON *values;
+    struct LDJSON *tmp, *values;
+
+    LD_ASSERT(store);
+
+    tmp    = NULL;
+    values = NULL;
 
     if (!(values = LDNewObject())) {
         return false;
