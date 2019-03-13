@@ -37,8 +37,8 @@ struct LDStore {
      * @param[in] key The key to return the value for. May not be NULL (assert).
      * @return Returns the feature, or NULL if it does not exist.
      */
-    struct LDJSON *(*get)(void *const context, const char *const kind,
-        const char *const key);
+    bool (*get)(void *const context, const char *const kind,
+        const char *const key, struct LDJSON **const result);
     /**
      * @brief Fetch all features in a given namespace
      * @param[in] context Implementation specific context.
@@ -46,7 +46,8 @@ struct LDStore {
      * @param[in] kind The namespace to search in. May not be NULL (assert).
      * @return Returns an object map keys to features, NULL on failure.
      */
-    struct LDJSON *(*all)(void *const context, const char *const kind);
+    bool (*all)(void *const context, const char *const kind,
+        struct LDJSON **const result);
     /**
      * @brief Mark an existing feature as deleted
      * (only virtually deletes to maintain version)
@@ -99,12 +100,12 @@ struct LDStore {
 bool LDStoreInit(const struct LDStore *const store, struct LDJSON *const sets);
 
 /** @brief A convenience wrapper around `store->get`. */
-struct LDJSON *LDStoreGet(const struct LDStore *const store,
-    const char *const kind, const char *const key);
+bool LDStoreGet(const struct LDStore *const store,
+    const char *const kind, const char *const key, struct LDJSON **const result);
 
 /** @brief A convenience wrapper around `store->all`. */
-struct LDJSON *LDStoreAll(const struct LDStore *const store,
-    const char *const kind);
+bool LDStoreAll(const struct LDStore *const store,
+    const char *const kind, struct LDJSON **const result);
 
 /** @brief A convenience wrapper around `store->delete`. */
 bool LDStoreDelete(const struct LDStore *const store, const char *const kind,

@@ -5,10 +5,11 @@
 
 static bool memoryInit(void *const rawcontext, struct LDJSON *const sets);
 
-static struct LDJSON *memoryGet(void *const rawcontext, const char *const kind,
-    const char *const key);
+static void memoryGet(void *const rawcontext, const char *const kind,
+    const char *const key, struct LDJSON **const result);
 
-static struct LDJSON *memoryAll(void *const rawcontext, const char *const kind);
+static void memoryAll(void *const rawcontext, const char *const kind,
+    struct LDJSON **const result);
 
 static bool memoryDelete(void *const rawcontext, const char *const kind,
     const char *const key, const unsigned int version);
@@ -65,21 +66,26 @@ isDeleted(const struct LDJSON *const feature)
     return deleted && LDJSONGetType(deleted) == LDBool && LDGetBool(deleted);
 }
 
-static struct LDJSON *
-memoryGet(void *const rawcontext, const char *const kind, const char *const key)
+static bool
+memoryGet(void *const rawcontext, const char *const kind, const char *const key
+    struct LDJSON **const result)
 {
     struct MemoryContext *const context = rawcontext;
 
-    struct LDJSON *set = NULL, *current = NULL;
+    struct LDJSON *set = NULL
+    struct LDJSON *current = NULL;
 
     LD_ASSERT(context);
     LD_ASSERT(kind);
     LD_ASSERT(key);
+    LD_ASSERT(result);
 
     LD_ASSERT(LDi_rdlock(&context->lock));
 
+    *result = NULL;
+
     if (!(set = LDObjectLookup(context->store, kind))) {
-        return NULL;
+        return false;
     }
 
     if ((current = LDObjectLookup(set, key))) {
@@ -87,35 +93,47 @@ memoryGet(void *const rawcontext, const char *const kind, const char *const key)
 
         LD_ASSERT(LDi_rdunlock(&context->lock));
 
-        return copy;
+        if (copy) {
+            *result = copy;
+
+            return true;
+        } else {
+            return false;
+        }
     } else {
         LD_ASSERT(LDi_rdunlock(&context->lock));
 
-        return NULL;
+        return true;
     }
 }
 
-static struct LDJSON *
-memoryAll(void *const rawcontext, const char *const kind)
+static bool
+memoryAll(void *const rawcontext, const char *const kind,
+    struct LDJSON **const result)
 {
     struct MemoryContext *const context = rawcontext;
 
-    struct LDJSON *set = NULL, *result = NULL, *iter = NULL;
+    struct LDJSON *set = NULL;
+    struct LDSON *iter = NULL;
 
     LD_ASSERT(context);
+    LD_ASSERT(kind);
+    LD_ASSERT(result);
+
+    *result = NULL;
 
     LD_ASSERT(LDi_rdlock(&context->lock));
 
     if (!(set = LDObjectLookup(context->store, kind))) {
         LD_ASSERT(LDi_rdunlock(&context->lock));
 
-        return NULL;
+        return false;
     }
 
-    if (!(result = LDNewObject())) {
+    if (!(object = LDNewObject())) {
         LD_ASSERT(LDi_rdunlock(&context->lock));
 
-        return NULL;
+        return false;
     }
 
     for (iter = LDGetIter(set); iter; iter = LDIterNext(iter)) {
@@ -123,18 +141,20 @@ memoryAll(void *const rawcontext, const char *const kind)
             struct LDJSON *duplicate = NULL;
 
             if (!(duplicate = LDJSONDuplicate(iter))) {
-                LDJSONFree(result);
+                LDJSONFree(object);
 
-                return NULL;
+                return false;
             }
 
-            LDObjectSetKey(result, LDIterKey(iter), duplicate);
+            LDObjectSetKey(object, LDIterKey(iter), duplicate);
         }
     }
 
     LD_ASSERT(LDi_rdunlock(&context->lock));
 
-    return result;
+    *result = object;
+
+    return true;
 }
 
 static bool
