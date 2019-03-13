@@ -17,7 +17,7 @@ maybeNegate(const struct LDJSON *const object, const EvalStatus status)
 {
     const struct LDJSON *negate;
 
-    LD_ASSERT(object)
+    LD_ASSERT(object);
 
     negate = NULL;
 
