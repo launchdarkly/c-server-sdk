@@ -44,8 +44,7 @@ static bool
 operatorStartsWithFn(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue)
 {
-    size_t ulen;
-    size_t clen;
+    size_t ulen, clen;
 
     CHECKSTRING(uvalue, cvalue);
 
@@ -63,8 +62,7 @@ static bool
 operatorEndsWithFn(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue)
 {
-    size_t ulen;
-    size_t clen;
+    size_t ulen, clen;
 
     CHECKSTRING(uvalue, cvalue);
 
@@ -84,12 +82,17 @@ operatorMatchesFn(const struct LDJSON *const uvalue,
 {
     bool matches;
     pcre *context;
-    const char *subject;
-    const char *error;
-    const char *regex;
+    const char *subject, *error, *regex;
     int errorOffset;
 
     CHECKSTRING(uvalue, cvalue);
+
+    matches     = false;
+    context     = NULL;
+    subject     = NULL;
+    error       = NULL;
+    regex       = NULL;
+    errorOffset = 0;
 
     LD_ASSERT(subject = LDGetText(uvalue));
     LD_ASSERT(regex = LDGetText(cvalue));
@@ -165,10 +168,7 @@ parseTime(const struct LDJSON *const json, timestamp_t *result)
     LD_ASSERT(result);
 
     if (LDJSONGetType(json) == LDNumber) {
-        mpq_t num;
-        mpq_t sec;
-        mpq_t nsec;
-        mpq_t thousand;
+        mpq_t num, sec, nsec, thousand;
 
         mpq_init(num);
         mpq_init(sec);
@@ -186,7 +186,6 @@ parseTime(const struct LDJSON *const json, timestamp_t *result)
         mpq_mul(nsec, nsec, thousand);
         /* resolution hack */
         result->nsec = mpq_get_d(nsec);
-        LD_LOG(LD_LOG_TRACE, "A orig %.32f sec %ld, nsec %ld", LDGetNumber(json), result->sec, result->nsec);
         result->offset = 0;
 
         mpq_clear(num);
@@ -196,7 +195,9 @@ parseTime(const struct LDJSON *const json, timestamp_t *result)
 
         return true;
     } else if (LDJSONGetType(json) == LDText) {
-        const char *const text = LDGetText(json);
+        const char *text;
+
+        LD_ASSERT(text = LDGetText(json));
 
         if (timestamp_parse(text, strlen(text), result)) {
             LD_LOG(LD_LOG_ERROR, "failed to parse date uvalue");
@@ -205,8 +206,6 @@ parseTime(const struct LDJSON *const json, timestamp_t *result)
         }
         /* resolution hack */
         result->nsec /= 1000000;
-
-        LD_LOG(LD_LOG_TRACE, "B %s %ld, %ld", text, result->sec, result->nsec);
 
         return true;
     }
@@ -261,9 +260,7 @@ compareSemVer(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue, int (*op)(semver_t, semver_t))
 {
     bool result;
-
-    semver_t usem = {};
-    semver_t csem = {};
+    semver_t usem = {}, csem = {};
 
     CHECKSTRING(uvalue, cvalue);
 
@@ -285,9 +282,6 @@ compareSemVer(const struct LDJSON *const uvalue,
 
     semver_free(&usem);
     semver_free(&csem);
-
-    LD_LOG(LD_LOG_TRACE, "semver %s %s %d",
-        LDGetText(uvalue), LDGetText(cvalue), result);
 
     return result;
 }
