@@ -52,7 +52,17 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     LD_ASSERT(store = client->config->store);
 
-    if (!(flag = LDStoreGet(store, "flags", key)) || isDeleted(flag)) {
+    if (!LDStoreGet(store, "flags", key, &flag)) {
+        if (!addErrorReason(&details, "FLAG_NOT_FOUND")) {
+            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
+
+            goto error;
+        }
+
+        status = EVAL_MISS;
+    }
+
+    if (!flag || isDeleted(flag)) {
         if (!addErrorReason(&details, "FLAG_NOT_FOUND")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
@@ -400,7 +410,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         }
     }
 
-    if (!(rawFlags = LDStoreAll(client->config->store, "flags"))) {
+    if (!LDStoreAll(client->config->store, "flags", &rawFlags)) {
         LD_LOG(LD_LOG_ERROR, "LDAllFlags failed to fetch flags");
 
         return NULL;

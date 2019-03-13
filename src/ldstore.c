@@ -5,10 +5,10 @@
 
 static bool memoryInit(void *const rawcontext, struct LDJSON *const sets);
 
-static void memoryGet(void *const rawcontext, const char *const kind,
+static bool memoryGet(void *const rawcontext, const char *const kind,
     const char *const key, struct LDJSON **const result);
 
-static void memoryAll(void *const rawcontext, const char *const kind,
+static bool memoryAll(void *const rawcontext, const char *const kind,
     struct LDJSON **const result);
 
 static bool memoryDelete(void *const rawcontext, const char *const kind,
@@ -67,12 +67,12 @@ isDeleted(const struct LDJSON *const feature)
 }
 
 static bool
-memoryGet(void *const rawcontext, const char *const kind, const char *const key
+memoryGet(void *const rawcontext, const char *const kind, const char *const key,
     struct LDJSON **const result)
 {
     struct MemoryContext *const context = rawcontext;
 
-    struct LDJSON *set = NULL
+    struct LDJSON *set = NULL;
     struct LDJSON *current = NULL;
 
     LD_ASSERT(context);
@@ -114,7 +114,8 @@ memoryAll(void *const rawcontext, const char *const kind,
     struct MemoryContext *const context = rawcontext;
 
     struct LDJSON *set = NULL;
-    struct LDSON *iter = NULL;
+    struct LDJSON *iter = NULL;
+    struct LDJSON *object;
 
     LD_ASSERT(context);
     LD_ASSERT(kind);
@@ -343,23 +344,26 @@ LDStoreInit(const struct LDStore *const store, struct LDJSON *const sets)
     return store->init(store->context, sets);
 }
 
-struct LDJSON *
+bool
 LDStoreGet(const struct LDStore *const store, const char *const kind,
-    const char *const key)
+    const char *const key, struct LDJSON **const result)
 {
     LD_ASSERT(store);
     LD_ASSERT(key);
+    LD_ASSERT(result);
 
-    return store->get(store->context, kind, key);
+    return store->get(store->context, kind, key, result);
 }
 
-struct LDJSON *
-LDStoreAll(const struct LDStore *const store, const char *const kind)
+bool
+LDStoreAll(const struct LDStore *const store, const char *const kind,
+    struct LDJSON **const result)
 {
     LD_ASSERT(store);
     LD_ASSERT(kind);
+    LD_ASSERT(result);
 
-    return store->all(store->context, kind);
+    return store->all(store->context, kind, result);
 }
 
 bool

@@ -537,8 +537,13 @@ checkPrerequisites(struct LDClient *const client,
             return EVAL_SCHEMA;
         }
 
-        if (!(preflag = LDStoreGet(store, "flags", LDGetText(key)))
-            || isDeleted(preflag))
+        if (!LDStoreGet(store, "flags", LDGetText(key), &preflag)) {
+            LD_LOG(LD_LOG_ERROR, "store lookup error");
+
+            return EVAL_STORE;
+        }
+
+        if (!preflag || isDeleted(preflag))
         {
             LD_LOG(LD_LOG_ERROR, "store lookup error");
 
@@ -779,7 +784,11 @@ clauseMatchesUser(const struct LDJSON *const clause,
                 EvalStatus evalstatus;
                 struct LDJSON *segment;
 
-                segment = LDStoreGet(store, "segments", LDGetText(iter));
+                if (!LDStoreGet(store, "segments", LDGetText(iter), &segment)) {
+                    LD_LOG(LD_LOG_ERROR, "store lookup error");
+
+                    return EVAL_STORE;
+                }
 
                 if (!segment || isDeleted(segment)) {
                     LD_LOG(LD_LOG_WARNING, "store lookup error");
