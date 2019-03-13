@@ -60,10 +60,12 @@ static bool
 onPut(struct LDClient *const client, struct LDJSON *const data)
 {
     struct LDJSON *tmp;
-    bool success = false;
+    bool success;
 
     LD_ASSERT(client);
     LD_ASSERT(data);
+
+    success = false;
 
     if (!(tmp = LDObjectLookup(data, "data"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
@@ -101,12 +103,16 @@ static bool
 onPatch(struct LDClient *const client, struct LDJSON *const data)
 {
     struct LDJSON *tmp;
-    char *kind = NULL;
-    char *key = NULL;
-    bool success = false;
+    char *kind, *key;
+    bool success;
 
     LD_ASSERT(client);
     LD_ASSERT(data);
+
+    tmp     = NULL;
+    kind    = NULL;
+    key     = NULL;
+    success = false;
 
     if (!(tmp = LDObjectLookup(data, "path"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
@@ -164,12 +170,16 @@ static bool
 onDelete(struct LDClient *const client, struct LDJSON *const data)
 {
     struct LDJSON *tmp;
-    char *kind = NULL;
-    char *key = NULL;
-    bool success = false;
+    char *kind, *key;
+    bool success;
 
     LD_ASSERT(client);
     LD_ASSERT(data);
+
+    tmp     = NULL;
+    kind    = NULL;
+    key     = NULL;
+    success = false;
 
     if (!(tmp = LDObjectLookup(data, "path"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
@@ -220,6 +230,8 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
 bool
 onSSE(struct StreamContext *const context, const char *line)
 {
+    LD_ASSERT(context);
+
     if (!line) {
         /* should not happen from the networking side but is not fatal */
         LD_LOG(LD_LOG_ERROR, "streamcallback got NULL line");
@@ -258,8 +270,9 @@ onSSE(struct StreamContext *const context, const char *line)
         }
     } else if (strncmp(line, "data:", 5) == 0) {
         bool nempty;
-        size_t linesize;
-        size_t currentsize = 0;
+        size_t linesize, currentsize;
+
+        currentsize = 0;
 
         line += 5;
         line += line[0] == ' ';
@@ -301,20 +314,26 @@ onSSE(struct StreamContext *const context, const char *line)
 }
 
 static size_t
-writeCallback(void *contents, size_t size, size_t nmemb, void *userp)
+writeCallback(void *contents, size_t size, size_t nmemb, void *rawcontext)
 {
     char *nl;
-    size_t realsize = size * nmemb;
-    struct StreamContext *mem = userp;
+    size_t realsize;
+    struct StreamContext *mem;
 
-    mem->memory = LDRealloc(mem->memory, mem->size + realsize + 1);
-    if (mem->memory == NULL) {
-        /* out of memory! */
-        LDi_log(LD_LOG_CRITICAL, "not enough memory (realloc returned NULL)");
+    LD_ASSERT(rawcontext);
+
+    nl       = NULL;
+    realsize = size * nmemb;
+    mem      = rawcontext;
+
+    if (!(mem->memory = LDRealloc(mem->memory, mem->size + realsize + 1))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
         return 0;
     }
 
     memcpy(&(mem->memory[mem->size]), contents, realsize);
+
     mem->size += realsize;
     mem->memory[mem->size] = 0;
 
@@ -380,13 +399,15 @@ destroy(void *const rawcontext)
 static CURL *
 poll(struct LDClient *const client, void *const rawcontext)
 {
-    CURL *curl = NULL;
+    CURL *curl;
     char url[4096];
 
     struct StreamContext *const context = rawcontext;
 
     LD_ASSERT(client);
     LD_ASSERT(context);
+
+    curl = NULL;
 
     if (context->active || !client->config->stream) {
         return NULL;
@@ -434,10 +455,13 @@ poll(struct LDClient *const client, void *const rawcontext)
 struct NetworkInterface *
 constructStreaming(struct LDClient *const client)
 {
-    struct NetworkInterface *interface = NULL;
-    struct StreamContext *context = NULL;
+    struct NetworkInterface *interface;
+    struct StreamContext *context;
 
     LD_ASSERT(client);
+
+    interface = NULL;
+    context   = NULL;
 
     if (!(interface = LDAlloc(sizeof(struct NetworkInterface)))) {
         goto error;
