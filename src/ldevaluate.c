@@ -1349,8 +1349,8 @@ getIndexForVariationOrRollout(const struct LDJSON *const flag,
     unsigned int cindex;
     const struct LDJSON *jkey;
     const struct LDJSON *jsalt;
-    const char *key;
-    const char *salt;
+    const char *key = NULL;
+    const char *salt = NULL;
 
     if (notNull(jkey = LDObjectLookup(flag, "key"))) {
         if (LDJSONGetType(jkey) != LDText) {
