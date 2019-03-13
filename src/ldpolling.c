@@ -7,10 +7,12 @@
 static bool
 updateStore(struct LDStore *const store, const char *const rawupdate)
 {
-    struct LDJSON *update = NULL;
+    struct LDJSON *update;
 
     LD_ASSERT(store);
     LD_ASSERT(rawupdate);
+
+    update = NULL;
 
     if (!(update = LDJSONDeserialize(rawupdate))) {
         return false;
@@ -30,12 +32,15 @@ struct PollContext {
 
 size_t
 writeCallback(void *const contents, const size_t size,
-    const size_t nmemb, void *const userp)
+    const size_t nmemb, void *const rawmem)
 {
-    const size_t realsize = size * nmemb;
-    struct PollContext *const mem = (struct PollContext *)userp;
+    size_t realsize;
+    struct PollContext *mem;
 
-    LD_ASSERT(mem);
+    LD_ASSERT(rawmem);
+
+    realsize = size * nmemb;
+    mem      = rawmem;
 
     if (!(mem->memory = LDRealloc(mem->memory, mem->size + realsize + 1))) {
         LD_LOG(LD_LOG_CRITICAL, "not enough memory (realloc returned NULL)");
@@ -67,10 +72,12 @@ resetMemory(struct PollContext *const context)
 static void
 done(struct LDClient *const client, void *const rawcontext)
 {
-    struct PollContext *const context = rawcontext;
+    struct PollContext *context;
 
     LD_ASSERT(client);
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
+
+    context = rawcontext;
 
     LD_LOG(LD_LOG_INFO, "done!");
 
@@ -92,9 +99,11 @@ done(struct LDClient *const client, void *const rawcontext)
 static void
 destroy(void *const rawcontext)
 {
-    struct PollContext *const context = rawcontext;
+    struct PollContext *context;
 
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
+
+    context = rawcontext;
 
     LD_LOG(LD_LOG_INFO, "polling destroyed");
 
@@ -106,12 +115,14 @@ destroy(void *const rawcontext)
 static CURL *
 poll(struct LDClient *const client, void *const rawcontext)
 {
-    CURL *curl = NULL;
+    CURL *curl;
     char url[4096];
+    struct PollContext *context;
 
-    struct PollContext *const context = rawcontext;
+    LD_ASSERT(rawcontext);
 
-    LD_ASSERT(context);
+    curl    = NULL;
+    context = rawcontext;
 
     if (context->active || client->config->stream) {
         return NULL;
@@ -172,10 +183,13 @@ poll(struct LDClient *const client, void *const rawcontext)
 struct NetworkInterface *
 constructPolling(struct LDClient *const client)
 {
-    struct NetworkInterface *interface = NULL;
-    struct PollContext *context = NULL;
+    struct NetworkInterface *interface;
+    struct PollContext *context;
 
     LD_ASSERT(client);
+
+    interface = NULL;
+    context   = NULL;
 
     if (!(interface = LDAlloc(sizeof(struct NetworkInterface)))) {
         goto error;

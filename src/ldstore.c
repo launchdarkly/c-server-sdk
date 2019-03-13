@@ -58,7 +58,7 @@ memoryInit(void *const rawcontext, struct LDJSON *const sets)
 bool
 isDeleted(const struct LDJSON *const feature)
 {
-    struct LDJSON *deleted = NULL;
+    struct LDJSON *deleted;
 
     LD_ASSERT(feature);
     LD_ASSERT(LDJSONGetType(feature) == LDObject);

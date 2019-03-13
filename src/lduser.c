@@ -7,9 +7,9 @@
 struct LDUser *
 LDUserNew(const char *const key)
 {
-    struct LDUser *const user = LDAlloc(sizeof(struct LDUser));
+    struct LDUser *user;
 
-    if (!user) {
+    if (!(user = LDAlloc(sizeof(struct LDUser)))) {
         return NULL;
     }
 
@@ -144,7 +144,7 @@ bool
 LDUserAddPrivateAttribute(struct LDUser *const user,
     const char *const attribute)
 {
-    struct LDJSON *temp = NULL;
+    struct LDJSON *temp;
 
     LD_ASSERT(user);
     LD_ASSERT(attribute);
@@ -159,7 +159,10 @@ LDUserAddPrivateAttribute(struct LDUser *const user,
 bool
 textInArray(const struct LDJSON *const array, const char *const text)
 {
-    struct LDJSON *iter = NULL;
+    struct LDJSON *iter;
+
+    LD_ASSERT(array);
+    LD_ASSERT(text);
 
     for (iter = LDGetIter(array); iter; iter = LDIterNext(iter)) {
         if (strcmp(LDGetText(iter), text) == 0) {
@@ -186,7 +189,12 @@ isPrivateAttr(struct LDClient *const client, const struct LDUser *const user,
 
 static bool
 addHidden(struct LDJSON **ref, const char *const value){
-    struct LDJSON *text = NULL;
+    struct LDJSON *text;
+
+    LD_ASSERT(ref);
+    LD_ASSERT(value);
+
+    text = NULL;
 
     if (!(*ref)) {
         *ref = LDNewArray();
@@ -209,9 +217,13 @@ struct LDJSON *
 LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
     const bool redact)
 {
-    struct LDJSON *hidden = NULL, *json = NULL, *temp = NULL;
+    struct LDJSON *hidden, *json, *temp;
 
     LD_ASSERT(lduser);
+
+    hidden = NULL;
+    json   = NULL;
+    temp   = NULL;
 
     if (!(json = LDNewObject())) {
         return NULL;
