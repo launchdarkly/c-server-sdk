@@ -15,7 +15,11 @@ isEvalError(const EvalStatus status)
 static EvalStatus
 maybeNegate(const struct LDJSON *const object, const EvalStatus status)
 {
-    const struct LDJSON *negate = NULL;
+    const struct LDJSON *negate;
+
+    LD_ASSERT(object)
+
+    negate = NULL;
 
     if (isEvalError(status)) {
         return status;
@@ -42,10 +46,12 @@ struct LDJSON *
 addReason(struct LDJSON **const result, const char *const reason,
     struct LDJSON *const events)
 {
-    struct LDJSON *tmpcollection;
-    struct LDJSON *tmp;
+    struct LDJSON *tmpcollection, *tmp;
 
     LD_ASSERT(reason);
+
+    tmpcollection = NULL;
+    tmp           = NULL;
 
     if (!(*result)) {
         if (!(*result = LDNewObject())) {
@@ -93,11 +99,13 @@ addReason(struct LDJSON **const result, const char *const reason,
 struct LDJSON *
 addErrorReason(struct LDJSON **const result, const char *const kind)
 {
-    struct LDJSON *tmpcollection;
-    struct LDJSON *tmp;
+    struct LDJSON *tmpcollection, *tmp;
 
     LD_ASSERT(result);
     LD_ASSERT(kind);
+
+    tmpcollection = NULL;
+    tmp           = NULL;
 
     if (!(tmpcollection = addReason(result, "ERROR", NULL))) {
         LD_LOG(LD_LOG_ERROR, "addReason failed");
@@ -128,12 +136,14 @@ static bool
 addValue(const struct LDJSON *const flag, struct LDJSON *result,
     const struct LDJSON *const index)
 {
-    struct LDJSON *tmp;
-    struct LDJSON *variations;
-    struct LDJSON *variation;
+    struct LDJSON *tmp, *variations, *variation;
 
     LD_ASSERT(flag);
     LD_ASSERT(result);
+
+    tmp        = NULL;
+    variations = NULL;
+    variation  = NULL;
 
     if (notNull(index)) {
         if (LDJSONGetType(index) != LDNumber) {
@@ -210,18 +220,22 @@ evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     struct LDJSON **const result)
 {
     EvalStatus substatus;
-    const struct LDJSON *iter;
-    const struct LDJSON *rules;
-    const struct LDJSON *targets;
-    const struct LDJSON *on;
-    const struct LDJSON *fallthrough;
+    const struct LDJSON *iter, *rules, *targets, *on, *fallthrough;
+    struct LDJSON *events;
     const char *failedKey;
-    struct LDJSON *events = NULL;
 
     LD_ASSERT(flag);
     LD_ASSERT(user);
     LD_ASSERT(store);
     LD_ASSERT(result);
+
+    iter        = NULL;
+    rules       = NULL;
+    targets     = NULL;
+    on          = NULL;
+    fallthrough = NULL;
+    failedKey   = NULL;
+    events      = NULL;
 
     if (LDJSONGetType(flag) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
@@ -279,8 +293,10 @@ evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     }
 
     if (substatus == EVAL_MISS) {
-        struct LDJSON *key;
-        struct LDJSON *reason;
+        struct LDJSON *key, *reason;
+
+        key    = NULL;
+        reason = NULL;
 
         if (!(reason = addReason(result, "PREREQUISITE_FAILED", events))) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
@@ -378,10 +394,13 @@ evaluate(struct LDClient *const client, const struct LDJSON *const flag,
             }
 
             if (substatus == EVAL_MATCH) {
-                const struct LDJSON *variation = NULL;
-                struct LDJSON *reason;
-                struct LDJSON *tmp;
-                struct LDJSON *ruleid;
+                const struct LDJSON *variation;
+                struct LDJSON *reason, *tmp, *ruleid;
+
+                variation = NULL;
+                reason    = NULL;
+                tmp       = NULL;
+                ruleid    = NULL;
 
                 variation = getIndexForVariationOrRollout(flag, iter, user);
 
@@ -466,14 +485,16 @@ checkPrerequisites(struct LDClient *const client,
     const struct LDUser *const user, struct LDStore *const store,
     const char **const failedKey, struct LDJSON **const events)
 {
-    struct LDJSON *prerequisites = NULL;
-    struct LDJSON *iter = NULL;
+    struct LDJSON *prerequisites, *iter;
 
     LD_ASSERT(flag);
     LD_ASSERT(user);
     LD_ASSERT(store);
     LD_ASSERT(failedKey);
     LD_ASSERT(events);
+
+    prerequisites = NULL;
+    iter          = NULL;
 
     if (LDJSONGetType(flag) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
@@ -738,10 +759,12 @@ EvalStatus
 clauseMatchesUser(const struct LDJSON *const clause,
     const struct LDUser *const user, struct LDStore *const store)
 {
-    const struct LDJSON *op = NULL;
+    const struct LDJSON *op;
 
     LD_ASSERT(clause);
     LD_ASSERT(user);
+
+    op = NULL;
 
     if (LDJSONGetType(clause) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
@@ -830,17 +853,17 @@ EvalStatus
 segmentMatchesUser(const struct LDJSON *const segment,
     const struct LDUser *const user)
 {
-    const struct LDJSON *included = NULL;
-    const struct LDJSON *excluded = NULL;
-
-    const struct LDJSON *key = NULL;
-    const struct LDJSON *salt = NULL;
-
-    const struct LDJSON *segmentRules = NULL;
-    const struct LDJSON *iter = NULL;
+    const struct LDJSON *included, *excluded, *iter, *salt, *segmentRules, *key;
 
     LD_ASSERT(segment);
     LD_ASSERT(user);
+
+    included     = NULL;
+    excluded     = NULL;
+    key          = NULL;
+    salt         = NULL;
+    segmentRules = NULL;
+    iter         = NULL;
 
     if (!user->key) {
         return EVAL_MISS;
@@ -938,13 +961,15 @@ segmentRuleMatchUser(const struct LDJSON *const segmentRule,
     const char *const segmentKey, const struct LDUser *const user,
     const char *const salt)
 {
-    const struct LDJSON *clauses = NULL;
-    const struct LDJSON *clause = NULL;
+    const struct LDJSON *clauses, *clause;
 
     LD_ASSERT(segmentRule);
     LD_ASSERT(segmentKey);
     LD_ASSERT(user);
     LD_ASSERT(salt);
+
+    clauses = NULL;
+    clause  = NULL;
 
     if (!(clauses = LDObjectLookup(segmentRule, "clauses"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
@@ -1033,16 +1058,21 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     const struct LDUser *const user)
 {
     OpFn fn;
-    const char *operatorText;
-    struct LDJSON *operator;
-    const char *attributeText;
-    struct LDJSON *attributeValue;
-    struct LDJSON *attribute;
+    const char *operatorText, *attributeText;
+    struct LDJSON *operator,* attributeValue, *attribute;
     const struct LDJSON *values;
     LDJSONType type;
 
     LD_ASSERT(clause);
     LD_ASSERT(user);
+
+    fn             = NULL;
+    operatorText   = NULL;
+    operator       = NULL;
+    attributeText  = NULL;
+    attributeValue = NULL;
+    attribute      = NULL;
+    values         = NULL;
 
     if (!(attribute = LDObjectLookup(clause, "attribute"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
@@ -1102,16 +1132,6 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
 
     type = LDJSONGetType(attributeValue);
 
-    {
-        char *trace1;
-        char *trace2;
-        LD_ASSERT(trace1 = LDJSONSerialize(attributeValue));
-        LD_ASSERT(trace2 = LDJSONSerialize(values));
-        LD_LOG(LD_LOG_TRACE, "clausetrace %s %s", trace1, trace2);
-        LDFree(trace1);
-        LDFree(trace2);
-    }
-
     if (type == LDArray || type == LDObject) {
         struct LDJSON *iter = LDGetIter(attributeValue);
 
@@ -1167,13 +1187,15 @@ bool
 bucketUser(const struct LDUser *const user, const char *const segmentKey,
     const char *const attribute, const char *const salt, float *const bucket)
 {
-    struct LDJSON *attributeValue = NULL;
+    struct LDJSON *attributeValue;
 
     LD_ASSERT(user);
     LD_ASSERT(segmentKey);
     LD_ASSERT(attribute);
     LD_ASSERT(salt);
     LD_ASSERT(bucket);
+
+    attributeValue = NULL;
 
     if ((attributeValue = valueOfAttribute(user, attribute))) {
         char raw[256];
@@ -1189,9 +1211,8 @@ bucketUser(const struct LDUser *const user, const char *const segmentKey,
         if (snprintf(raw, sizeof(raw), "%s.%s.%s", segmentKey,
             salt, bucketable) >= 0)
         {
-            char digest[20];
-            char encoded[17];
-            float longScale = 0xFFFFFFFFFFFFFFF;
+            char digest[20], encoded[17];
+            const float longScale = 0xFFFFFFFFFFFFFFF;
 
             SHA1(digest, raw, strlen(raw));
 
@@ -1237,14 +1258,17 @@ variationIndexForUser(const struct LDJSON *const varOrRoll,
     const struct LDUser *const user, const char *const key,
     const char *const salt, unsigned int *const index)
 {
-    struct LDJSON *variation;
-    struct LDJSON *rollout;
-    struct LDJSON *variations;
-    float userBucket;
-    float sum = 0;
+    struct LDJSON *variation, *rollout, *variations;
+    float userBucket, sum;
 
     LD_ASSERT(varOrRoll);
     LD_ASSERT(index);
+
+    variation  = NULL;
+    rollout    = NULL;
+    variations = NULL;
+    userBucket = 0;
+    sum        = 0;
 
     variation = LDObjectLookup(varOrRoll, "variation");
 
@@ -1356,10 +1380,17 @@ getIndexForVariationOrRollout(const struct LDJSON *const flag,
     const struct LDUser *const user)
 {
     unsigned int cindex;
-    const struct LDJSON *jkey;
-    const struct LDJSON *jsalt;
-    const char *key = NULL;
-    const char *salt = NULL;
+    const struct LDJSON *jkey, *jsalt;
+    const char *key, *salt;
+
+    LD_ASSERT(flag);
+    LD_ASSERT(varOrRoll);
+
+    cindex = 0;
+    jkey   = NULL;
+    jsalt  = NULL;
+    key    = NULL;
+    salt   = NULL;
 
     if (notNull(jkey = LDObjectLookup(flag, "key"))) {
         if (LDJSONGetType(jkey) != LDText) {
