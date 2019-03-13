@@ -10,48 +10,50 @@
 bool
 parsePath(const char *path, char **const kind, char **const key)
 {
-    const char *const segments = "/segments/";
-    size_t segmentlen;
-
-    const char *const flags = "/flags/";
-    size_t flagslen;
+    size_t segmentlen, flagslen;
+    const char *segments, *flags;
 
     LD_ASSERT(path);
     LD_ASSERT(kind);
     LD_ASSERT(key);
 
-    LD_LOG(LD_LOG_TRACE, "parsing path: %s", path);
-
+    *kind      = NULL;
+    *key       = NULL;
+    segments   = "/segments/";
+    flags      = "/flags/";
     segmentlen = strlen(segments);
-    flagslen = strlen(flags);
+    flagslen   = strlen(flags);
 
     if (strncmp(path, segments, segmentlen) == 0) {
         if (!(*key = LDStrDup(path + segmentlen))) {
-            return false;
+            goto error;
         }
 
         if (!(*kind = LDStrNDup(path + 1, segmentlen - 2))) {
-            free(*key);
-
-            return false;
+            goto error;
         }
     } else if(strncmp(path, flags, flagslen) == 0) {
         if (!(*key = LDStrDup(path + flagslen))) {
-            return false;
+            goto error;
         }
 
         if (!(*kind = LDStrNDup(path + 1, flagslen - 2))) {
-            free(*key);
-
-            return false;
+            goto error;
         }
     } else {
-        LD_LOG(LD_LOG_ERROR, "failed to parse prefix %s", path);
-
-        return false;
+        goto error;
     }
 
     return true;
+
+  error:
+    free(*kind);
+    free(*key);
+
+    *kind = NULL;
+    *key  = NULL;
+
+    return false;
 }
 
 static bool
