@@ -7,9 +7,9 @@ bool
 LDSetString(char **const target, const char *const value)
 {
     if (value) {
-        char *const tmp = LDStrDup(value);
+        char *tmp;
 
-        if (tmp) {
+        if ((tmp = LDStrDup(value))) {
             LDFree(*target);
 
             *target = tmp;

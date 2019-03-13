@@ -33,7 +33,7 @@ struct MemoryContext {
 static bool
 memoryInit(void *const rawcontext, struct LDJSON *const sets)
 {
-    struct MemoryContext *context;;
+    struct MemoryContext *context;
 
     LD_ASSERT(rawcontext);
     LD_ASSERT(sets);

@@ -9,16 +9,22 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     const LDJSONType type, struct LDJSON **const reason)
 {
     EvalStatus status;
-    struct LDJSON *flag = NULL;
-    struct LDJSON *value;
+    unsigned int variationNum, *variationNumRef;
     struct LDStore *store;
-    struct LDJSON *details = NULL;
-    struct LDJSON *events;
-    struct LDJSON *event = NULL;
-    unsigned int variationNum;
-    unsigned int *variationNumRef = NULL;
-    const struct LDJSON *variationNumJSON;
-    struct LDJSON *evalue;
+    struct LDJSON *flag, *value, *details, *events, *event,
+        *variationNumJSON, *evalue;
+
+    LD_ASSERT(client);
+
+    flag             = NULL;
+    value            = NULL;
+    store            = NULL;
+    details          = NULL;
+    events           = NULL;
+    event            = NULL;
+    variationNumRef  = NULL;
+    variationNumJSON = NULL;
+    evalue           = NULL;
 
     if (!client) {
         if (!addErrorReason(&details, "NULL_CLIENT")) {
@@ -223,8 +229,10 @@ LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
     struct LDJSON **const details)
 {
     bool value;
-    struct LDJSON *result;
-    struct LDJSON *fallbackJSON;
+    struct LDJSON *result, *fallbackJSON;
+
+    result       = NULL;
+    fallbackJSON = NULL;
 
     if (!(fallbackJSON = LDNewBool(fallback))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
@@ -253,8 +261,10 @@ LDIntVariation(struct LDClient *const client, struct LDUser *const user,
     struct LDJSON **const details)
 {
     int value;
-    struct LDJSON *result;
-    struct LDJSON *fallbackJSON;
+    struct LDJSON *result, *fallbackJSON;
+
+    result       = NULL;
+    fallbackJSON = NULL;
 
     if (!(fallbackJSON = LDNewNumber(fallback))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
@@ -283,8 +293,10 @@ LDDoubleVariation(struct LDClient *const client, struct LDUser *const user,
     struct LDJSON **const details)
 {
     double value;
-    struct LDJSON *result;
-    struct LDJSON *fallbackJSON;
+    struct LDJSON *result, *fallbackJSON;
+
+    result       = NULL;
+    fallbackJSON = NULL;
 
     if (!(fallbackJSON = LDNewNumber(fallback))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
@@ -313,8 +325,11 @@ LDStringVariation(struct LDClient *const client, struct LDUser *const user,
     struct LDJSON **const details)
 {
     char *value;
-    struct LDJSON *result;
-    struct LDJSON *fallbackJSON = NULL;
+    struct LDJSON *result, *fallbackJSON;
+
+    result       = NULL;
+    fallbackJSON = NULL;
+    value        = NULL;
 
     if (fallback && !(fallbackJSON = LDNewText(fallback))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
@@ -355,8 +370,10 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const struct LDJSON *const fallback,
     struct LDJSON **const details)
 {
-    struct LDJSON *result;
-    struct LDJSON *fallbackJSON = NULL;
+    struct LDJSON *result, *fallbackJSON;
+
+    result       = NULL;
+    fallbackJSON = NULL;
 
     if (fallback && !(fallbackJSON = LDJSONDuplicate(fallback))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
@@ -382,11 +399,13 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
 struct LDJSON *
 LDAllFlags(struct LDClient *const client, struct LDUser *const user)
 {
-    struct LDJSON *flag;
-    struct LDJSON *rawFlags;
-    struct LDJSON *evaluatedFlags;
+    struct LDJSON *flag, *rawFlags, *evaluatedFlags;
 
     LD_ASSERT(client);
+
+    flag           = NULL;
+    rawFlags       = NULL;
+    evaluatedFlags = NULL;
 
     if (client->config->offline) {
         LD_LOG(LD_LOG_WARNING, "LDAllFlags called when offline returning NULL");

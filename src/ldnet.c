@@ -12,13 +12,16 @@ bool
 prepareShared(const struct LDConfig *const config, const char *const url,
     CURL **const o_curl, struct curl_slist **const o_headers)
 {
-    CURL *curl = NULL;
-    struct curl_slist *headers = NULL;
+    CURL *curl;
+    struct curl_slist *headers;
 
     LD_ASSERT(config);
     LD_ASSERT(url);
     LD_ASSERT(o_curl);
     LD_ASSERT(o_headers);
+
+    curl    = NULL;
+    headers = NULL;
 
     if (!(curl = curl_easy_init())) {
         LD_LOG(LD_LOG_CRITICAL, "curl_easy_init returned NULL");
@@ -64,7 +67,7 @@ prepareShared(const struct LDConfig *const config, const char *const url,
         goto error;
     }
 
-    *o_curl = curl;
+    *o_curl    = curl;
     *o_headers = headers;
 
     return true;
@@ -116,9 +119,12 @@ LDi_networkthread(void* const clientref)
     }
 
     while (true) {
-        struct CURLMsg *info = NULL;
-        int running_handles = 0;
-        int active_events = 0;
+        struct CURLMsg *info;
+        int running_handles, active_events;
+
+        info            = NULL;
+        running_handles = 0;
+        active_events   = 0;
 
         LD_ASSERT(LDi_rdlock(&client->lock));
         if (client->shuttingdown) {
