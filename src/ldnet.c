@@ -2,7 +2,6 @@
 #include "ldnetwork.h"
 
 #include <stdio.h>
-#include <unistd.h>
 
 #include <curl/curl.h>
 
@@ -215,7 +214,7 @@ LDi_networkthread(void* const clientref)
 
         if (!active_events) {
             /* if curl is not doing anything wait so we don't burn CPU */
-            usleep(1000 * 10);
+            LD_ASSERT(sleepMilliseconds(10));
         }
     }
 
