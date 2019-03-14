@@ -31,14 +31,12 @@
     #define THREAD_RETURN_DEFAULT 0
     #define ld_thread_t HANDLE
 
-    #define LD_RWLOCK_INIT SRWLOCK_INIT
     #define ld_rwlock_t SRWLOCK
 #else
     #define THREAD_RETURN void *
     #define THREAD_RETURN_DEFAULT NULL
     #define ld_thread_t pthread_t
 
-    #define LD_RWLOCK_INIT PTHREAD_RWLOCK_INITIALIZER
     #define ld_rwlock_t pthread_rwlock_t
 #endif
 
