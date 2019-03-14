@@ -91,7 +91,7 @@ notNull(const struct LDJSON *const json)
 }
 
 struct LDJSON *
-newFeatureRequestEvent(struct LDClient *client,
+newFeatureRequestEvent(struct LDClient *const client,
     const char *const key, const struct LDUser *const user,
     const unsigned int *const variation, const struct LDJSON *const value,
     const struct LDJSON *const defaultValue, const char *const prereqOf,
