@@ -255,9 +255,11 @@ onSSE(struct StreamContext *const context, const char *line)
             } else if (strcmp(context->eventName, "delete") == 0) {
                 status = onDelete(context->client, json);
             } else {
+                /*
                 LD_LOG(LD_LOG_WARNING,
                     "streamcallback unknown event name: %s",
                     context->eventName);
+                */
             }
         }
 
@@ -306,8 +308,6 @@ onSSE(struct StreamContext *const context, const char *line)
 
             return false;
         }
-
-        LD_LOG(LD_LOG_INFO, "got event type %s", context->eventName);
     }
 
     return true;
@@ -421,7 +421,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         return false;
     }
 
-    LD_LOG(LD_LOG_INFO, "connecting to url: %s", url);
+    /* LD_LOG(LD_LOG_INFO, "connecting to url: %s", url); */
 
     if (!prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;

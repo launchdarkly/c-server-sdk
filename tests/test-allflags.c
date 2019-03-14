@@ -137,4 +137,4 @@ main()
     testAllFlagsReturnsNilIfUserKeyIsNil();
 
     return 0;
-};
+}

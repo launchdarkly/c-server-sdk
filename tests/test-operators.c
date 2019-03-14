@@ -265,8 +265,10 @@ main()
         LD_ASSERT(serializeduvalue = LDJSONSerialize(uvalue));
         LD_ASSERT(serializedcvalue = LDJSONSerialize(cvalue));
 
+        /*
         LD_LOG(LD_LOG_TRACE, "%s %s %s %u", LDGetText(op),
             serializeduvalue, serializedcvalue, LDGetBool(expect));
+        */
 
         LD_ASSERT(opfn = lookupOperation(LDGetText(op)));
 

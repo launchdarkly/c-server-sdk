@@ -8,9 +8,6 @@
 #include <math.h>
 #include <gmp.h>
 
-typedef bool (*OpFn)(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue);
-
 typedef bool (*StringOpFn)(const char *const uvalue, const char *const cvalue);
 
 typedef bool (*NumberOpFn)(const float uvalue, const float cvalue);
@@ -101,10 +98,11 @@ operatorMatchesFn(const struct LDJSON *const uvalue,
         regex, PCRE_JAVASCRIPT_COMPAT, &error, &errorOffset, NULL);
 
     if (!context) {
+        /*
         LD_LOG(LD_LOG_ERROR,
             "failed to compile regex '%s' got error '%s' with offset %d",
             regex, error, errorOffset);
-
+        */
         return false;
     }
 
@@ -260,9 +258,12 @@ compareSemVer(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue, int (*op)(semver_t, semver_t))
 {
     bool result;
-    semver_t usem = {}, csem = {};
+    semver_t usem, csem;
 
     CHECKSTRING(uvalue, cvalue);
+
+    memset(&usem, 0, sizeof(usem));
+    memset(&csem, 0, sizeof(csem));
 
     if (semver_parse(LDGetText(uvalue), &usem)) {
         LD_LOG(LD_LOG_ERROR, "failed to parse uvalue");

@@ -36,8 +36,8 @@ void LDBasicLogger(const LDLogLevel level, const char *const text);
 void LDConfigureGlobalLogger(const LDLogLevel level,
     void (*logger)(const LDLogLevel level, const char *const text));
 
-#define LD_LOG(level, format, ...) \
-    LDi_log(level, "[%s, %d] " format, __FILE__, __LINE__, ##__VA_ARGS__)
+#define LD_LOG(level, format) \
+    LDi_log(level, "[%s, %d] " format, __FILE__, __LINE__)
 
 /**
  * @brief Convert a verbosity level Enum value to an equivalent static string.

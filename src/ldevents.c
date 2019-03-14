@@ -853,7 +853,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         return false;
     }
 
-    LD_LOG(LD_LOG_INFO, "connecting to url: %s", url);
+    /* LD_LOG(LD_LOG_INFO, "connecting to url: %s", url); */
 
     if (!prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;

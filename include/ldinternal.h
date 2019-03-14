@@ -128,10 +128,10 @@ bool LDSetString(char **const target, const char *const value);
 bool notNull(const struct LDJSON *const json);
 
 #define ASSERT_FMT \
-    "LD_ASSERT failed: expected condition '%s' in function '%s' aborting\n"
+    "LD_ASSERT failed: expected condition '%s' aborting\n"
 
 #define LD_ASSERT(condition) \
     if (!(condition)) { \
-        LD_LOG(LD_LOG_FATAL, ASSERT_FMT, #condition, __func__); \
+        LD_LOG(LD_LOG_FATAL, "LD_ASSERT failed: " #condition " aborting"); \
         abort(); \
     }

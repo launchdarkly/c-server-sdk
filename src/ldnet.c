@@ -45,8 +45,6 @@ prepareShared(const struct LDConfig *const config, const char *const url,
             goto error;
         }
 
-        LD_LOG(LD_LOG_INFO, "using authentication: %s", headerauth);
-
         if (!(headers = curl_slist_append(headers, headerauth))) {
             LD_LOG(LD_LOG_CRITICAL, "curl_slist_append failed for headerauth");
 
@@ -120,6 +118,7 @@ LDi_networkthread(void* const clientref)
     while (true) {
         struct CURLMsg *info;
         int running_handles, active_events;
+        unsigned int i;
 
         info            = NULL;
         running_handles = 0;
@@ -135,7 +134,7 @@ LDi_networkthread(void* const clientref)
 
         curl_multi_perform(multihandle, &running_handles);
 
-        for (unsigned int i = 0; i < interfacecount; i++) {
+        for (i = 0; i < interfacecount; i++) {
             CURL *const handle =
                 interfaces[i]->poll(client, interfaces[i]->context);
 
@@ -178,8 +177,10 @@ LDi_networkthread(void* const clientref)
                     goto cleanup;
                 }
 
+                /*
                 LD_LOG(LD_LOG_INFO, "message done code %d %d",
                     info->data.result, responsecode);
+                */
 
                 if (curl_easy_getinfo(
                     easy, CURLINFO_PRIVATE, &interface) != CURLE_OK)
@@ -219,18 +220,22 @@ LDi_networkthread(void* const clientref)
     }
 
   cleanup:
-    for (unsigned int i = 0; i < interfacecount; i++) {
-        struct NetworkInterface *const interface = interfaces[i];
+    {
+        unsigned int i;
 
-        if (interface->current) {
-            LD_ASSERT(curl_multi_remove_handle(
-                multihandle, interface->current) == CURLM_OK);
+        for (i = 0; i < interfacecount; i++) {
+            struct NetworkInterface *const interface = interfaces[i];
 
-            curl_easy_cleanup(interface->current);
+            if (interface->current) {
+                LD_ASSERT(curl_multi_remove_handle(
+                    multihandle, interface->current) == CURLM_OK);
+
+                curl_easy_cleanup(interface->current);
+            }
+
+            interface->destroy(interface->context);
+            free(interface);
         }
-
-        interface->destroy(interface->context);
-        free(interface);
     }
 
     LD_ASSERT(curl_multi_cleanup(multihandle) == CURLM_OK);

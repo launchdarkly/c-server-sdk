@@ -43,8 +43,6 @@ writeCallback(void *const contents, const size_t size,
     mem      = rawmem;
 
     if (!(mem->memory = LDRealloc(mem->memory, mem->size + realsize + 1))) {
-        LD_LOG(LD_LOG_CRITICAL, "not enough memory (realloc returned NULL)");
-
         return 0;
     }
 
@@ -79,10 +77,6 @@ done(struct LDClient *const client, void *const rawcontext)
 
     context = rawcontext;
 
-    LD_LOG(LD_LOG_INFO, "done!");
-
-    LD_LOG(LD_LOG_INFO, "message data %s", context->memory);
-
     LD_ASSERT(updateStore(client->config->store, context->memory));
 
     context->active = false;
@@ -104,8 +98,6 @@ destroy(void *const rawcontext)
     LD_ASSERT(rawcontext);
 
     context = rawcontext;
-
-    LD_LOG(LD_LOG_INFO, "polling destroyed");
 
     resetMemory(context);
 
@@ -147,7 +139,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         return false;
     }
 
-    LD_LOG(LD_LOG_INFO, "connecting to url: %s", url);
+    /* LD_LOG(LD_LOG_INFO, "connecting to url: %s", url); */
 
     if (!prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;
