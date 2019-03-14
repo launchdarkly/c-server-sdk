@@ -10,7 +10,7 @@ jobs:
           command: sudo apt-get update -y && sudo apt-get install -y libcurl4-openssl-dev cmake libpcre3-dev libgmp-dev
       - run: mkdir build && cd build && cmake ..
       - run: cd build && make
-      - run: cd build && make test
+      - run: cd build && CTEST_OUTPUT_ON_FAILURE=1 make test
       - run:
           name: Copy Artifacts
           command: |
@@ -30,7 +30,7 @@ jobs:
           command: brew install cmake pcre gmp
       - run: mkdir build && cd build && cmake ..
       - run: cd build && make
-      - run: cd build && make test
+      - run: cd build && CTEST_OUTPUT_ON_FAILURE=1 make test
       - run:
           name: Copy Artifacts
           command: |
