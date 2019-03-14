@@ -16,7 +16,7 @@ jobs:
           command: |
               mkdir -p /tmp/artifacts
               cp build/libsdk.a /tmp/artifacts/linux-gcc-64bit-libldapi.a
-              cp build libsdkdynamic.so /tmp/artifacts/linux-gcc-64bit-libldapi.so
+              cp build/libsdkdynamic.so /tmp/artifacts/linux-gcc-64bit-libldapi.so
       - store_artifacts:
           path: /tmp/artifacts
 
