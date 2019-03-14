@@ -781,8 +781,12 @@ clauseMatchesUser(const struct LDJSON *const clause,
     }
 
     if (strcmp(LDGetText(op), "segmentMatch") == 0) {
-        const struct LDJSON *values = NULL;
-        const struct LDJSON *iter = NULL;
+        bool anysuccess;
+        const struct LDJSON *values, *iter;
+
+        values    = NULL;
+        iter      = NULL;
+        anysuccess = false;
 
         if (!(values = LDObjectLookup(clause, "values"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
@@ -795,8 +799,6 @@ clauseMatchesUser(const struct LDJSON *const clause,
 
             return EVAL_SCHEMA;
         }
-
-        bool anysuccess = false;
 
         for (iter = LDGetIter(values); iter; iter = LDIterNext(iter)) {
             if (LDJSONGetType(iter) == LDText) {
