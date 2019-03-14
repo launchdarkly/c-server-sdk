@@ -36,3 +36,10 @@ jobs:
               cp libsdk.so /tmp/artifacts/osx-clang-64bit-libldapi.so
       - store_artifacts:
           path: /tmp/artifacts
+
+workflows:
+  version: 2
+  build_and_test_all:
+    jobs:
+      - build-test-linux
+      - build-test-osx
