@@ -1,0 +1,38 @@
+version: 2
+jobs:
+  build-test-linux:
+    docker:
+      - image: circleci/golang:1.9.6
+    steps:
+      - checkout
+      - run:
+          name: Install libcurl
+          command: sudo apt-get update -y && sudo apt-get install -y libcurl4-openssl-dev cmake libpcre3-dev libgmp-dev
+      - run: mkdir build && cd build && cmake ..
+      - run: make
+      - run: make tets
+      - run:
+          name: Copy Artifacts
+          command: |
+              mkdir -p /tmp/artifacts
+              cp libsdk.a /tmp/artifacts/linux-gcc-64bit-libldapi.a
+              cp libsdk.so /tmp/artifacts/linux-gcc-64bit-libldapi.so
+      - store_artifacts:
+          path: /tmp/artifacts
+
+  build-test-osx:
+    macos:
+      xcode: "9.0"
+    steps:
+      - checkout
+      - run: mkdir build && cd build && cmake ..
+      - run: make
+      - run: make test
+      - run:
+          name: Copy Artifacts
+          command: |
+              mkdir -p /tmp/artifacts
+              cp libsdk.a /tmp/artifacts/osx-clang-64bit-libldapi.a
+              cp libsdk.so /tmp/artifacts/osx-clang-64bit-libldapi.so
+      - store_artifacts:
+          path: /tmp/artifacts
