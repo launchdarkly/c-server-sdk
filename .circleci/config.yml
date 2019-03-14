@@ -6,17 +6,17 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install libcurl
+          name: Install deps
           command: sudo apt-get update -y && sudo apt-get install -y libcurl4-openssl-dev cmake libpcre3-dev libgmp-dev
       - run: mkdir build && cd build && cmake ..
-      - run: make
-      - run: make tets
+      - run: cd build && make
+      - run: cd build && make test
       - run:
           name: Copy Artifacts
           command: |
               mkdir -p /tmp/artifacts
-              cp libsdk.a /tmp/artifacts/linux-gcc-64bit-libldapi.a
-              cp libsdk.so /tmp/artifacts/linux-gcc-64bit-libldapi.so
+              cp build/libsdk.a /tmp/artifacts/linux-gcc-64bit-libldapi.a
+              cp build libsdk.so /tmp/artifacts/linux-gcc-64bit-libldapi.so
       - store_artifacts:
           path: /tmp/artifacts
 
@@ -25,15 +25,18 @@ jobs:
       xcode: "9.0"
     steps:
       - checkout
+      - run:
+          name: Install deps
+          command: brew install cmake pcre gmp
       - run: mkdir build && cd build && cmake ..
-      - run: make
-      - run: make test
+      - run: cd build && make
+      - run: cd build && make test
       - run:
           name: Copy Artifacts
           command: |
               mkdir -p /tmp/artifacts
-              cp libsdk.a /tmp/artifacts/osx-clang-64bit-libldapi.a
-              cp libsdk.so /tmp/artifacts/osx-clang-64bit-libldapi.so
+              cp build/libsdk.a /tmp/artifacts/osx-clang-64bit-libldapi.a
+              cp build/libsdk.so /tmp/artifacts/osx-clang-64bit-libldapi.so
       - store_artifacts:
           path: /tmp/artifacts
 
