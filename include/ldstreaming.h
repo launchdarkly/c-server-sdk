@@ -21,6 +21,6 @@ struct StreamContext {
     struct LDClient *client;
 };
 
-bool parsePath(const char *path, char **const kind, char **const key);
+bool LDi_parsePath(const char *path, char **const kind, char **const key);
 
-bool onSSE(struct StreamContext *const context, const char *line);
+bool LDi_onSSE(struct StreamContext *const context, const char *line);

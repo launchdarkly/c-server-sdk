@@ -9,7 +9,7 @@ testParsePathFlags()
     char *kind;
     char *key;
 
-    LD_ASSERT(parsePath("/flags/abcd", &kind, &key));
+    LD_ASSERT(LDi_parsePath("/flags/abcd", &kind, &key));
 
     LD_ASSERT(strcmp(kind, "flags") == 0);
     LD_ASSERT(strcmp(key, "abcd") == 0);
@@ -24,7 +24,7 @@ testParsePathSegments()
     char *kind;
     char *key;
 
-    LD_ASSERT(parsePath("/segments/xyz", &kind, &key));
+    LD_ASSERT(LDi_parsePath("/segments/xyz", &kind, &key));
 
     LD_ASSERT(strcmp(kind, "segments") == 0);
     LD_ASSERT(strcmp(key, "xyz") == 0);
@@ -39,7 +39,7 @@ testParsePathUnknownKind()
     char *kind = NULL;
     char *key = NULL;
 
-    LD_ASSERT(!parsePath("/unknown/123", &kind, &key));
+    LD_ASSERT(!LDi_parsePath("/unknown/123", &kind, &key));
 
     LD_ASSERT(!kind);
     LD_ASSERT(!key);
@@ -60,9 +60,9 @@ testInitialPut(struct StreamContext *const context)
 
     LD_ASSERT(context);
 
-    LD_ASSERT(onSSE(context, event));
-    LD_ASSERT(onSSE(context, body));
-    LD_ASSERT(onSSE(context, ""));
+    LD_ASSERT(LDi_onSSE(context, event));
+    LD_ASSERT(LDi_onSSE(context, body));
+    LD_ASSERT(LDi_onSSE(context, ""));
 
     LD_ASSERT(LDStoreGet(
         context->client->config->store, "flags", "my-flag", &flag));
@@ -91,9 +91,9 @@ testPatchFlag(struct StreamContext *const context)
 
     LD_ASSERT(context);
 
-    LD_ASSERT(onSSE(context, event));
-    LD_ASSERT(onSSE(context, body));
-    LD_ASSERT(onSSE(context, ""));
+    LD_ASSERT(LDi_onSSE(context, event));
+    LD_ASSERT(LDi_onSSE(context, body));
+    LD_ASSERT(LDi_onSSE(context, ""));
 
     LD_ASSERT(LDStoreGet(
         context->client->config->store, "flags", "my-flag", &flag));
@@ -115,9 +115,9 @@ testDeleteFlag(struct StreamContext *const context)
 
     LD_ASSERT(context);
 
-    LD_ASSERT(onSSE(context, event));
-    LD_ASSERT(onSSE(context, body));
-    LD_ASSERT(onSSE(context, ""));
+    LD_ASSERT(LDi_onSSE(context, event));
+    LD_ASSERT(LDi_onSSE(context, body));
+    LD_ASSERT(LDi_onSSE(context, ""));
 
     LD_ASSERT(LDStoreGet(
         context->client->config->store, "flags", "my-flag", &lookup));
@@ -140,9 +140,9 @@ testPatchSegment(struct StreamContext *const context)
 
     LD_ASSERT(context);
 
-    LD_ASSERT(onSSE(context, event));
-    LD_ASSERT(onSSE(context, body));
-    LD_ASSERT(onSSE(context, ""));
+    LD_ASSERT(LDi_onSSE(context, event));
+    LD_ASSERT(LDi_onSSE(context, body));
+    LD_ASSERT(LDi_onSSE(context, ""));
 
     LD_ASSERT(LDStoreGet(
         context->client->config->store, "segments", "my-segment", &segment));
@@ -164,9 +164,9 @@ testDeleteSegment(struct StreamContext *const context)
 
     LD_ASSERT(context);
 
-    LD_ASSERT(onSSE(context, event));
-    LD_ASSERT(onSSE(context, body));
-    LD_ASSERT(onSSE(context, ""));
+    LD_ASSERT(LDi_onSSE(context, event));
+    LD_ASSERT(LDi_onSSE(context, body));
+    LD_ASSERT(LDi_onSSE(context, ""));
 
     LD_ASSERT(LDStoreGet(
         context->client->config->store, "segments", "my-segment", &lookup));

@@ -855,7 +855,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     /* LD_LOG(LD_LOG_INFO, "connecting to url: %s", url); */
 
-    if (!prepareShared(client->config, url, &curl, &context->headers)) {
+    if (!LDi_prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;
     }
 
@@ -938,7 +938,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 }
 
 struct NetworkInterface *
-constructAnalytics(struct LDClient *const client)
+LDi_constructAnalytics(struct LDClient *const client)
 {
     struct NetworkInterface *interface;
     struct AnalyticsContext *context;

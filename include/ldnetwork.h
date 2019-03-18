@@ -3,7 +3,6 @@
  * @brief Internal API Interface for Networking
  */
 
-
 #pragma once
 
 #include <curl/curl.h>
@@ -23,11 +22,12 @@ struct NetworkInterface {
     CURL *current;
 };
 
-bool prepareShared(const struct LDConfig *const config, const char *const url,
-    CURL **const o_curl, struct curl_slist **const o_headers);
+bool LDi_prepareShared(const struct LDConfig *const config,
+    const char *const url, CURL **const o_curl,
+    struct curl_slist **const o_headers);
 
-struct NetworkInterface *constructPolling(struct LDClient *const client);
-struct NetworkInterface *constructStreaming(struct LDClient *const client);
-struct NetworkInterface *constructAnalytics(struct LDClient *const client);
+struct NetworkInterface *LDi_constructPolling(struct LDClient *const client);
+struct NetworkInterface *LDi_constructStreaming(struct LDClient *const client);
+struct NetworkInterface *LDi_constructAnalytics(struct LDClient *const client);
 
 THREAD_RETURN LDi_networkthread(void *const clientref);

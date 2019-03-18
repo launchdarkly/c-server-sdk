@@ -30,7 +30,7 @@ struct PollContext {
     unsigned long lastpoll;
 };
 
-size_t
+static size_t
 writeCallback(void *const contents, const size_t size,
     const size_t nmemb, void *const rawmem)
 {
@@ -141,7 +141,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     /* LD_LOG(LD_LOG_INFO, "connecting to url: %s", url); */
 
-    if (!prepareShared(client->config, url, &curl, &context->headers)) {
+    if (!LDi_prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;
     }
 
@@ -173,7 +173,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 }
 
 struct NetworkInterface *
-constructPolling(struct LDClient *const client)
+LDi_constructPolling(struct LDClient *const client)
 {
     struct NetworkInterface *interface;
     struct PollContext *context;

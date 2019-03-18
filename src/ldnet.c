@@ -8,7 +8,7 @@
 const char *const agentheader = "User-Agent: CServerClient/0.1";
 
 bool
-prepareShared(const struct LDConfig *const config, const char *const url,
+LDi_prepareShared(const struct LDConfig *const config, const char *const url,
     CURL **const o_curl, struct curl_slist **const o_headers)
 {
     CURL *curl;
@@ -97,19 +97,19 @@ LDi_networkthread(void* const clientref)
         return THREAD_RETURN_DEFAULT;
     }
 
-    if (!(interfaces[0] = constructPolling(client))) {
+    if (!(interfaces[0] = LDi_constructPolling(client))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct polling");
 
         return THREAD_RETURN_DEFAULT;
     }
 
-    if (!(interfaces[1] = constructStreaming(client))) {
+    if (!(interfaces[1] = LDi_constructStreaming(client))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct streaming");
 
         return THREAD_RETURN_DEFAULT;
     }
 
-    if (!(interfaces[2] = constructAnalytics(client))) {
+    if (!(interfaces[2] = LDi_constructAnalytics(client))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct analytics");
 
         return THREAD_RETURN_DEFAULT;

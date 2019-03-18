@@ -8,7 +8,7 @@
 #include "ldstreaming.h"
 
 bool
-parsePath(const char *path, char **const kind, char **const key)
+LDi_parsePath(const char *path, char **const kind, char **const key)
 {
     size_t segmentlen, flagslen;
     const char *segments, *flags;
@@ -126,7 +126,7 @@ onPatch(struct LDClient *const client, struct LDJSON *const data)
         goto cleanup;
     }
 
-    if (!parsePath(LDGetText(tmp), &kind, &key)) {
+    if (!LDi_parsePath(LDGetText(tmp), &kind, &key)) {
         LD_LOG(LD_LOG_ERROR, "failed to parse path");
 
         goto cleanup;
@@ -193,7 +193,7 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
         goto cleanup;
     }
 
-    if (!parsePath(LDGetText(tmp), &kind, &key)) {
+    if (!LDi_parsePath(LDGetText(tmp), &kind, &key)) {
         LD_LOG(LD_LOG_ERROR, "failed to parse path");
 
         goto cleanup;
@@ -228,7 +228,7 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
 }
 
 bool
-onSSE(struct StreamContext *const context, const char *line)
+LDi_onSSE(struct StreamContext *const context, const char *line)
 {
     LD_ASSERT(context);
 
@@ -342,7 +342,7 @@ writeCallback(void *contents, size_t size, size_t nmemb, void *rawcontext)
         size_t eaten = 0;
         while (nl) {
             *nl = 0;
-            onSSE(mem, mem->memory + eaten);
+            LDi_onSSE(mem, mem->memory + eaten);
             eaten = nl - mem->memory + 1;
             nl = memchr(mem->memory + eaten, '\n', mem->size - eaten);
         }
@@ -423,7 +423,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     /* LD_LOG(LD_LOG_INFO, "connecting to url: %s", url); */
 
-    if (!prepareShared(client->config, url, &curl, &context->headers)) {
+    if (!LDi_prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;
     }
 
@@ -453,7 +453,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 }
 
 struct NetworkInterface *
-constructStreaming(struct LDClient *const client)
+LDi_constructStreaming(struct LDClient *const client)
 {
     struct NetworkInterface *interface;
     struct StreamContext *context;
