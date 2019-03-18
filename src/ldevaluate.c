@@ -605,7 +605,7 @@ checkPrerequisites(struct LDClient *const client,
             variationNumRef = &variationNum;
         }
 
-        event = newFeatureRequestEvent(client,
+        event = LDi_newFeatureRequestEvent(client,
             LDGetText(key), user, variationNumRef,
             LDObjectLookup(result, "value"), NULL,
             LDGetText(LDObjectLookup(flag, "key")), preflag,

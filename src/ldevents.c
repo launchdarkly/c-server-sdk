@@ -10,7 +10,7 @@
 #include "ldnetwork.h"
 
 struct LDJSON *
-newBaseEvent(struct LDClient *const client,
+LDi_newBaseEvent(struct LDClient *const client,
     const struct LDUser *const user, const char *const kind)
 {
     struct LDJSON *tmp, *event;
@@ -91,7 +91,7 @@ notNull(const struct LDJSON *const json)
 }
 
 struct LDJSON *
-newFeatureRequestEvent(struct LDClient *const client,
+LDi_newFeatureRequestEvent(struct LDClient *const client,
     const char *const key, const struct LDUser *const user,
     const unsigned int *const variation, const struct LDJSON *const value,
     const struct LDJSON *const defaultValue, const char *const prereqOf,
@@ -105,7 +105,7 @@ newFeatureRequestEvent(struct LDClient *const client,
     tmp   = NULL;
     event = NULL;
 
-    if (!(event = newBaseEvent(client, user, "feature"))) {
+    if (!(event = LDi_newBaseEvent(client, user, "feature"))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         goto error;
@@ -224,7 +224,7 @@ newFeatureRequestEvent(struct LDClient *const client,
 }
 
 struct LDJSON *
-newCustomEvent(struct LDClient *const client, const struct LDUser *const user,
+LDi_newCustomEvent(struct LDClient *const client, const struct LDUser *const user,
     const char *const key, struct LDJSON *const data)
 {
     struct LDJSON *tmp, *event;
@@ -235,7 +235,7 @@ newCustomEvent(struct LDClient *const client, const struct LDUser *const user,
     tmp   = NULL;
     event = NULL;
 
-    if (!(event = newBaseEvent(client, user, "custom"))) {
+    if (!(event = LDi_newBaseEvent(client, user, "custom"))) {
         LD_LOG(LD_LOG_ERROR, "memory error");
 
         goto error;
@@ -280,7 +280,7 @@ newIdentifyEvent(struct LDClient *const client, const struct LDUser *const user)
     event = NULL;
     tmp   = NULL;
 
-    if (!(event = newBaseEvent(client, user, "identify"))) {
+    if (!(event = LDi_newBaseEvent(client, user, "identify"))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct base event");
 
         return NULL;
@@ -308,7 +308,7 @@ newIdentifyEvent(struct LDClient *const client, const struct LDUser *const user)
 }
 
 bool
-addEvent(struct LDClient *const client, const struct LDJSON *const event)
+LDi_addEvent(struct LDClient *const client, const struct LDJSON *const event)
 {
     LD_ASSERT(client);
     LD_ASSERT(event);
@@ -344,7 +344,7 @@ addEvent(struct LDClient *const client, const struct LDJSON *const event)
 }
 
 char *
-makeSummaryKey(const struct LDJSON *const event)
+LDi_makeSummaryKey(const struct LDJSON *const event)
 {
     char *keytext;
     struct LDJSON *key, *tmp;
@@ -419,7 +419,7 @@ makeSummaryKey(const struct LDJSON *const event)
 }
 
 bool
-summarizeEvent(struct LDClient *const client, const struct LDJSON *const event,
+LDi_summarizeEvent(struct LDClient *const client, const struct LDJSON *const event,
     const bool unknown)
 {
     char *keytext;
@@ -442,7 +442,7 @@ summarizeEvent(struct LDClient *const client, const struct LDJSON *const event,
     LD_ASSERT(LDJSONGetType(tmp) == LDText);
     LD_ASSERT(flagKey = LDGetText(tmp));
 
-    if (!(keytext = makeSummaryKey(event))) {
+    if (!(keytext = LDi_makeSummaryKey(event))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         return false;
@@ -695,7 +695,7 @@ objectToArray(const struct LDJSON *const object)
 }
 
 struct LDJSON *
-prepareSummaryEvent(struct LDClient *const client)
+LDi_prepareSummaryEvent(struct LDClient *const client)
 {
     unsigned long now;
     struct LDJSON *tmp, *summary, *iter, *counters;
@@ -877,7 +877,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     LD_ASSERT(LDi_wrlock(&client->lock));
 
-    if (!(summaryEvent = prepareSummaryEvent(client))) {
+    if (!(summaryEvent = LDi_prepareSummaryEvent(client))) {
         LD_LOG(LD_LOG_ERROR, "failed to prepare summary");
 
         LD_ASSERT(LDi_wrunlock(&client->lock));

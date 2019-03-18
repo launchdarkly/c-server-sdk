@@ -134,13 +134,13 @@ LDClientTrack(struct LDClient *const client, const struct LDUser *const user,
     LD_ASSERT(user);
     LD_ASSERT(key);
 
-    if (!(event = newCustomEvent(client, user, key, data))) {
+    if (!(event = LDi_newCustomEvent(client, user, key, data))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct custom event");
 
         return false;
     }
 
-    return addEvent(client, event);
+    return LDi_addEvent(client, event);
 }
 
 bool
@@ -157,7 +157,7 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
         return false;
     }
 
-    return addEvent(client, event);
+    return LDi_addEvent(client, event);
 }
 
 bool

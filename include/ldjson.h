@@ -307,5 +307,3 @@ char *LDJSONSerialize(const struct LDJSON *const json);
 struct LDJSON *LDJSONDeserialize(const char *const text);
 
 /*@}*/
-
-bool textInArray(const struct LDJSON *const array, const char *const text);

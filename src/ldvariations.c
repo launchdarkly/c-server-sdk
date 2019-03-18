@@ -108,13 +108,13 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         LD_ASSERT(LDJSONGetType(events) == LDArray);
 
         for (iter = LDGetIter(events); iter; iter = LDIterNext(iter)) {
-            if (!addEvent(client, iter)) {
+            if (!LDi_addEvent(client, iter)) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
                 goto error;
             }
 
-            if (!summarizeEvent(client, iter, false)) {
+            if (!LDi_summarizeEvent(client, iter, false)) {
                 LD_LOG(LD_LOG_ERROR, "summary failed");
 
                 goto error;
@@ -147,7 +147,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
             reasonref = LDObjectLookup(details, "reason");
         }
 
-        event = newFeatureRequestEvent(client, key, user, variationNumRef,
+        event = LDi_newFeatureRequestEvent(client, key, user, variationNumRef,
             evalue, fallback, NULL, flag, reasonref);
     }
 
@@ -161,7 +161,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         struct LDJSON *const track = LDObjectLookup(flag, "trackEvents");
 
         if (notNull(track) && LDGetBool(track)) {
-            if (!addEvent(client, event)) {
+            if (!LDi_addEvent(client, event)) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
                 goto error;
@@ -169,7 +169,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         }
     }
 
-    if (!summarizeEvent(client, event, (!flag) || isDeleted(flag))) {
+    if (!LDi_summarizeEvent(client, event, (!flag) || isDeleted(flag))) {
         LD_LOG(LD_LOG_ERROR, "summary failed");
 
         goto error;

@@ -9,16 +9,16 @@
 #include <stddef.h>
 
 /* event construction */
-struct LDJSON *newBaseEvent(struct LDClient *const client,
+struct LDJSON *LDi_newBaseEvent(struct LDClient *const client,
     const struct LDUser *const user, const char *const kind);
 
-struct LDJSON *newFeatureRequestEvent(struct LDClient *const client,
+struct LDJSON *LDi_newFeatureRequestEvent(struct LDClient *const client,
     const char *const key, const struct LDUser *const user,
     const unsigned int *const variation, const struct LDJSON *const value,
     const struct LDJSON *const defaultValue, const char *const prereqOf,
     const struct LDJSON *const flag, const struct LDJSON *const reason);
 
-struct LDJSON *newCustomEvent(struct LDClient *const client,
+struct LDJSON *LDi_newCustomEvent(struct LDClient *const client,
     const struct LDUser *const user, const char *const key,
     struct LDJSON *const data);
 
@@ -26,11 +26,11 @@ struct LDJSON *newIdentifyEvent(struct LDClient *const client,
     const struct LDUser *const user);
 
 /* event recording */
-bool addEvent(struct LDClient *const client, const struct LDJSON *const event);
+bool LDi_addEvent(struct LDClient *const client, const struct LDJSON *const event);
 
-bool summarizeEvent(struct LDClient *const client,
+bool LDi_summarizeEvent(struct LDClient *const client,
     const struct LDJSON *const event, const bool unknown);
 
-char *makeSummaryKey(const struct LDJSON *const event);
+char *LDi_makeSummaryKey(const struct LDJSON *const event);
 
-struct LDJSON *prepareSummaryEvent(struct LDClient *const client);
+struct LDJSON *LDi_prepareSummaryEvent(struct LDClient *const client);

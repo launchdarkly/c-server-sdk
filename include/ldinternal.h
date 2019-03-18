@@ -121,6 +121,7 @@ bool LDSetString(char **const target, const char *const value);
 
 bool notNull(const struct LDJSON *const json);
 bool isDeleted(const struct LDJSON *const feature);
+bool textInArray(const struct LDJSON *const array, const char *const text);
 
 #define ASSERT_FMT \
     "LD_ASSERT failed: expected condition '%s' aborting\n"

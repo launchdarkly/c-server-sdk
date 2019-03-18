@@ -32,7 +32,7 @@ makeMinimalFlag(const char *const key, const unsigned int version)
 }
 
 static void
-testSummarizeEventIncrementsCounters()
+testMakeSummaryKeyIncrementsCounters()
 {
     struct LDUser *user;
     struct LDClient *client;
@@ -67,24 +67,24 @@ testSummarizeEventIncrementsCounters()
     LD_ASSERT(default2 = LDNewText("default2"));
     LD_ASSERT(default3 = LDNewText("default3"));
 
-    LD_ASSERT(event1 = newFeatureRequestEvent(client, "key1", user, &variation1,
+    LD_ASSERT(event1 = LDi_newFeatureRequestEvent(client, "key1", user, &variation1,
         value1, default1, NULL, flag1, NULL));
-    LD_ASSERT(event2 = newFeatureRequestEvent(client, "key1", user, &variation2,
+    LD_ASSERT(event2 = LDi_newFeatureRequestEvent(client, "key1", user, &variation2,
         value2, default1, NULL, flag1, NULL));
-    LD_ASSERT(event3 = newFeatureRequestEvent(client, "key2", user, &variation1,
+    LD_ASSERT(event3 = LDi_newFeatureRequestEvent(client, "key2", user, &variation1,
         value99, default2, NULL, flag2, NULL));
-    LD_ASSERT(event4 = newFeatureRequestEvent(client, "key1", user, &variation1,
+    LD_ASSERT(event4 = LDi_newFeatureRequestEvent(client, "key1", user, &variation1,
         value1, default1, NULL, flag1, NULL));
-    LD_ASSERT(event5 = newFeatureRequestEvent(client, "badkey", user, NULL,
+    LD_ASSERT(event5 = LDi_newFeatureRequestEvent(client, "badkey", user, NULL,
         default3, default3, NULL, NULL, NULL));
 
-    LD_ASSERT(summarizeEvent(client, event1, false));
-    LD_ASSERT(summarizeEvent(client, event2, false));
-    LD_ASSERT(summarizeEvent(client, event3, false));
-    LD_ASSERT(summarizeEvent(client, event4, false));
-    LD_ASSERT(summarizeEvent(client, event5, false));
+    LD_ASSERT(LDi_summarizeEvent(client, event1, false));
+    LD_ASSERT(LDi_summarizeEvent(client, event2, false));
+    LD_ASSERT(LDi_summarizeEvent(client, event3, false));
+    LD_ASSERT(LDi_summarizeEvent(client, event4, false));
+    LD_ASSERT(LDi_summarizeEvent(client, event5, false));
 
-    LD_ASSERT(summary = prepareSummaryEvent(client));
+    LD_ASSERT(summary = LDi_prepareSummaryEvent(client));
     LD_ASSERT(summary = LDObjectLookup(summary, "features"))
 
     LD_ASSERT(summaryEntry = LDObjectLookup(summary, "key1"))
@@ -165,18 +165,18 @@ testCounterForNilVariationIsDistinctFromOthers()
     LD_ASSERT(value2 = LDNewText("value2"));
     LD_ASSERT(default1 = LDNewText("default1"));
 
-    LD_ASSERT(event1 = newFeatureRequestEvent(client, "key1", user, &variation1,
+    LD_ASSERT(event1 = LDi_newFeatureRequestEvent(client, "key1", user, &variation1,
         value1, default1, NULL, flag, NULL));
-    LD_ASSERT(event2 = newFeatureRequestEvent(client, "key1", user, &variation2,
+    LD_ASSERT(event2 = LDi_newFeatureRequestEvent(client, "key1", user, &variation2,
         value2, default1, NULL, flag, NULL));
-    LD_ASSERT(event3 = newFeatureRequestEvent(client, "key1", user, NULL,
+    LD_ASSERT(event3 = LDi_newFeatureRequestEvent(client, "key1", user, NULL,
         default1, default1, NULL, flag, NULL));
 
-    LD_ASSERT(summarizeEvent(client, event1, false));
-    LD_ASSERT(summarizeEvent(client, event2, false));
-    LD_ASSERT(summarizeEvent(client, event3, false));
+    LD_ASSERT(LDi_summarizeEvent(client, event1, false));
+    LD_ASSERT(LDi_summarizeEvent(client, event2, false));
+    LD_ASSERT(LDi_summarizeEvent(client, event3, false));
 
-    LD_ASSERT(summary = prepareSummaryEvent(client));
+    LD_ASSERT(summary = LDi_prepareSummaryEvent(client));
     LD_ASSERT(summary = LDObjectLookup(summary, "features"))
 
     LD_ASSERT(summaryEntry = LDObjectLookup(summary, "key1"))
@@ -217,7 +217,7 @@ main()
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
     LDGlobalInit();
 
-    testSummarizeEventIncrementsCounters();
+    testMakeSummaryKeyIncrementsCounters();
     testCounterForNilVariationIsDistinctFromOthers();
 
     return 0;
