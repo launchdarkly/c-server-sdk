@@ -914,8 +914,11 @@ poll(struct LDClient *const client, void *const rawcontext)
         }
 
         LDJSONFree(client->events);
+        LDJSONFree(client->summaryCounters);
 
-        client->summaryStart = 0;
+        client->summaryStart    = 0;
+        client->events          = NULL;
+        client->summaryCounters = NULL;
 
         if (!(client->events = LDNewArray())) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
