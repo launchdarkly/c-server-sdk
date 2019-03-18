@@ -43,13 +43,13 @@ getTime(unsigned long *const resultMilliseconds, clockid_t clockid)
 }
 
 bool
-getMonotonicMilliseconds(unsigned long *const resultMilliseconds)
+LDi_getMonotonicMilliseconds(unsigned long *const resultMilliseconds)
 {
     return getTime(resultMilliseconds, CLOCK_MONOTONIC);
 }
 
 bool
-getUnixMilliseconds(unsigned long *const resultMilliseconds)
+LDi_getUnixMilliseconds(unsigned long *const resultMilliseconds)
 {
     return getTime(resultMilliseconds, CLOCK_REALTIME);
 }

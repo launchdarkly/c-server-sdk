@@ -57,7 +57,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     if (maxwaitmilli){
         unsigned long start, diff, now;
 
-        LD_ASSERT(getMonotonicMilliseconds(&start));
+        LD_ASSERT(LDi_getMonotonicMilliseconds(&start));
         do {
             LD_ASSERT(LDi_rdlock(&client->lock));
             if (client->initialized) {
@@ -68,7 +68,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
             LDi_sleepMilliseconds(5);
 
-            LD_ASSERT(getMonotonicMilliseconds(&now));
+            LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
         } while ((diff = now - start) < maxwaitmilli);
     }
     LD_LOG(LD_LOG_INFO, "initialized");

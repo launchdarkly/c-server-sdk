@@ -40,7 +40,7 @@ LDi_newBaseEvent(struct LDClient *const client,
         }
     }
 
-    if (!getUnixMilliseconds(&milliseconds)) {
+    if (!LDi_getUnixMilliseconds(&milliseconds)) {
         LD_LOG(LD_LOG_ERROR, "failed to get time");
 
         goto error;
@@ -454,7 +454,7 @@ LDi_summarizeEvent(struct LDClient *const client,
     if (client->summaryStart == 0) {
         unsigned long now;
 
-        LD_ASSERT(getUnixMilliseconds(&now));
+        LD_ASSERT(LDi_getUnixMilliseconds(&now));
 
         client->summaryStart = now;
     }
@@ -642,7 +642,7 @@ done(struct LDClient *const client, void *const rawcontext)
     client->initialized = true;
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
-    LD_ASSERT(getMonotonicMilliseconds(&context->lastFlush));
+    LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastFlush));
 
     resetMemory(context);
 }
@@ -739,7 +739,7 @@ LDi_prepareSummaryEvent(struct LDClient *const client)
         goto error;
     }
 
-    if (!getUnixMilliseconds(&now)) {
+    if (!LDi_getUnixMilliseconds(&now)) {
         LD_LOG(LD_LOG_ERROR, "failed to get time");
 
         goto error;
@@ -836,7 +836,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     if (!shouldFlush) {
         unsigned long now;
 
-        LD_ASSERT(getMonotonicMilliseconds(&now));
+        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
         LD_ASSERT(now >= context->lastFlush);
 
         if (now - context->lastFlush < client->config->flushInterval * 1000) {

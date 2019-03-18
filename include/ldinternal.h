@@ -114,8 +114,8 @@ struct LDClient {
 /* **** LDUtility **** */
 
 bool LDi_sleepMilliseconds(const unsigned int milliseconds);
-bool getMonotonicMilliseconds(unsigned long *const resultMilliseconds);
-bool getUnixMilliseconds(unsigned long *const resultMilliseconds);
+bool LDi_getMonotonicMilliseconds(unsigned long *const resultMilliseconds);
+bool LDi_getUnixMilliseconds(unsigned long *const resultMilliseconds);
 
 bool LDSetString(char **const target, const char *const value);
 

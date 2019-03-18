@@ -6,8 +6,8 @@ testMonotonic()
     unsigned long past;
     unsigned long present;
 
-    LD_ASSERT(getMonotonicMilliseconds(&past));
-    LD_ASSERT(getMonotonicMilliseconds(&present));
+    LD_ASSERT(LDi_getMonotonicMilliseconds(&past));
+    LD_ASSERT(LDi_getMonotonicMilliseconds(&present));
 
     LD_ASSERT(present >= past);
 }
@@ -18,11 +18,11 @@ testSleepMinimum()
     unsigned long past;
     unsigned long present;
 
-    LD_ASSERT(getMonotonicMilliseconds(&past));
+    LD_ASSERT(LDi_getMonotonicMilliseconds(&past));
 
     LD_ASSERT(LDi_sleepMilliseconds(25));
 
-    LD_ASSERT(getMonotonicMilliseconds(&present));
+    LD_ASSERT(LDi_getMonotonicMilliseconds(&present));
 
     LD_ASSERT(present - past >= 25);
 }

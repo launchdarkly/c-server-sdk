@@ -85,7 +85,7 @@ done(struct LDClient *const client, void *const rawcontext)
     client->initialized = true;
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
-    LD_ASSERT(getMonotonicMilliseconds(&context->lastpoll));
+    LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastpoll));
 
     resetMemory(context);
 }
@@ -123,7 +123,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     {
         unsigned long now;
 
-        LD_ASSERT(getMonotonicMilliseconds(&now));
+        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
         LD_ASSERT(now >= context->lastpoll);
 
         if (now - context->lastpoll < client->config->pollInterval * 1000) {
