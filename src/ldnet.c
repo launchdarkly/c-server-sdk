@@ -119,6 +119,7 @@ LDi_networkthread(void* const clientref)
         struct CURLMsg *info;
         int running_handles, active_events;
         unsigned int i;
+        bool offline;
 
         info            = NULL;
         running_handles = 0;
@@ -130,31 +131,34 @@ LDi_networkthread(void* const clientref)
 
             break;
         }
+        offline = client->config->offline;
         LD_ASSERT(LDi_rdunlock(&client->lock));
 
         curl_multi_perform(multihandle, &running_handles);
 
-        for (i = 0; i < interfacecount; i++) {
-            CURL *const handle =
-                interfaces[i]->poll(client, interfaces[i]->context);
+        if (!offline) {
+            for (i = 0; i < interfacecount; i++) {
+                CURL *const handle =
+                    interfaces[i]->poll(client, interfaces[i]->context);
 
-            if (handle) {
-                interfaces[i]->current = handle;
+                if (handle) {
+                    interfaces[i]->current = handle;
 
-                if (curl_easy_setopt(
-                    handle, CURLOPT_PRIVATE, interfaces[i]) != CURLE_OK)
-                {
-                    LD_LOG(LD_LOG_ERROR, "failed to associate context");
+                    if (curl_easy_setopt(
+                        handle, CURLOPT_PRIVATE, interfaces[i]) != CURLE_OK)
+                    {
+                        LD_LOG(LD_LOG_ERROR, "failed to associate context");
 
-                    goto cleanup;
-                }
+                        goto cleanup;
+                    }
 
-                if (curl_multi_add_handle(
-                    multihandle, handle) != CURLM_OK)
-                {
-                    LD_LOG(LD_LOG_ERROR, "failed to add handle");
+                    if (curl_multi_add_handle(
+                        multihandle, handle) != CURLM_OK)
+                    {
+                        LD_LOG(LD_LOG_ERROR, "failed to add handle");
 
-                    goto cleanup;
+                        goto cleanup;
+                    }
                 }
             }
         }
