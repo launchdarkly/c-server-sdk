@@ -14,6 +14,6 @@
 typedef bool (*OpFn)(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue);
 
-OpFn lookupOperation(const char *const operation);
+OpFn LDi_lookupOperation(const char *const operation);
 
-bool parseTime(const struct LDJSON *const json, timestamp_t *result);
+bool LDi_parseTime(const struct LDJSON *const json, timestamp_t *result);

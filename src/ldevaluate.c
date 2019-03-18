@@ -1114,7 +1114,7 @@ clauseMatchesUserNoSegments(const struct LDJSON *const clause,
         return EVAL_MEM;
     }
 
-    if (!(fn = lookupOperation(operatorText))) {
+    if (!(fn = LDi_lookupOperation(operatorText))) {
         LD_LOG(LD_LOG_WARNING, "unknown operator");
 
         return EVAL_MISS;

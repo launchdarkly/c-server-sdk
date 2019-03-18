@@ -26,7 +26,7 @@ typedef bool (*NumberOpFn)(const float uvalue, const float cvalue);
         return false; \
     }
 
-bool
+static bool
 operatorInFn(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue)
 {
@@ -160,7 +160,7 @@ operatorGreaterThanOrEqualFn(const struct LDJSON *const uvalue,
 }
 
 bool
-parseTime(const struct LDJSON *const json, timestamp_t *result)
+LDi_parseTime(const struct LDJSON *const json, timestamp_t *result)
 {
     LD_ASSERT(json);
     LD_ASSERT(result);
@@ -218,8 +218,8 @@ compareTime(const struct LDJSON *const uvalue,
     timestamp_t ustamp;
     timestamp_t cstamp;
 
-    if (parseTime(uvalue, &ustamp)) {
-        if (parseTime(cvalue, &cstamp)) {
+    if (LDi_parseTime(uvalue, &ustamp)) {
+        if (LDi_parseTime(cvalue, &cstamp)) {
             return op(timestamp_compare(&ustamp, &cstamp), 0);
         }
     }
@@ -309,7 +309,7 @@ operatorSemVerGreaterThan(const struct LDJSON *const uvalue,
 }
 
 OpFn
-lookupOperation(const char *const operation)
+LDi_lookupOperation(const char *const operation)
 {
     LD_ASSERT(operation);
 
