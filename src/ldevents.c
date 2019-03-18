@@ -224,8 +224,9 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
 }
 
 struct LDJSON *
-LDi_newCustomEvent(struct LDClient *const client, const struct LDUser *const user,
-    const char *const key, struct LDJSON *const data)
+LDi_newCustomEvent(struct LDClient *const client,
+    const struct LDUser *const user, const char *const key,
+    struct LDJSON *const data)
 {
     struct LDJSON *tmp, *event;
 
@@ -419,8 +420,8 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
 }
 
 bool
-LDi_summarizeEvent(struct LDClient *const client, const struct LDJSON *const event,
-    const bool unknown)
+LDi_summarizeEvent(struct LDClient *const client,
+    const struct LDJSON *const event, const bool unknown)
 {
     char *keytext;
     const char *flagKey;

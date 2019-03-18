@@ -317,7 +317,8 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
 }
 
 struct LDJSON *
-LDi_valueOfAttribute(const struct LDUser *const user, const char *const attribute)
+LDi_valueOfAttribute(const struct LDUser *const user,
+    const char *const attribute)
 {
     LD_ASSERT(user);
     LD_ASSERT(attribute);

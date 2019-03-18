@@ -62,6 +62,7 @@ bool LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
     const struct LDUser *const user, const char *const key,
     const char *const salt, unsigned int *const index);
 
-struct LDJSON *LDi_getIndexForVariationOrRollout(const struct LDJSON *const flag,
+struct LDJSON *LDi_getIndexForVariationOrRollout(
+    const struct LDJSON *const flag,
     const struct LDJSON *const varOrRoll,
     const struct LDUser *const user);

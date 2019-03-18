@@ -387,7 +387,9 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
                 return EVAL_SCHEMA;
             }
 
-            if (LDi_isEvalError(substatus = LDi_ruleMatchesUser(iter, user, store))) {
+            if (LDi_isEvalError(substatus = LDi_ruleMatchesUser(
+                iter, user, store)))
+            {
                 LD_LOG(LD_LOG_ERROR, "sub error");
 
                 return substatus;
@@ -576,7 +578,9 @@ LDi_checkPrerequisites(struct LDClient *const client,
             return EVAL_MISS;
         }
 
-        if (LDi_isEvalError(status = LDi_evaluate(client, preflag, user, store, &result))) {
+        if (LDi_isEvalError(status = LDi_evaluate(
+            client, preflag, user, store, &result)))
+        {
             LDJSONFree(preflag);
 
             return status;
@@ -737,7 +741,9 @@ LDi_ruleMatchesUser(const struct LDJSON *const rule,
             return EVAL_SCHEMA;
         }
 
-        if (LDi_isEvalError(substatus = LDi_clauseMatchesUser(iter, user, store))) {
+        if (LDi_isEvalError(substatus = LDi_clauseMatchesUser(
+            iter, user, store)))
+        {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
             return substatus;

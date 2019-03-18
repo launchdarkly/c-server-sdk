@@ -101,7 +101,8 @@ bool LDStoreInit(const struct LDStore *const store, struct LDJSON *const sets);
 
 /** @brief A convenience wrapper around `store->get`. */
 bool LDStoreGet(const struct LDStore *const store,
-    const char *const kind, const char *const key, struct LDJSON **const result);
+    const char *const kind, const char *const key,
+    struct LDJSON **const result);
 
 /** @brief A convenience wrapper around `store->all`. */
 bool LDStoreAll(const struct LDStore *const store,

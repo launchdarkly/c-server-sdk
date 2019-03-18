@@ -26,7 +26,8 @@ struct LDJSON *newIdentifyEvent(struct LDClient *const client,
     const struct LDUser *const user);
 
 /* event recording */
-bool LDi_addEvent(struct LDClient *const client, const struct LDJSON *const event);
+bool LDi_addEvent(struct LDClient *const client,
+    const struct LDJSON *const event);
 
 bool LDi_summarizeEvent(struct LDClient *const client,
     const struct LDJSON *const event, const bool unknown);
