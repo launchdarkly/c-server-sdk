@@ -46,6 +46,7 @@ testMakeSummaryKeyIncrementsCounters()
     const unsigned int variation1 = 1;
     const unsigned int variation2 = 2;
     struct LDJSON *summary;
+    struct LDJSON *features;
     struct LDJSON *summaryEntry;
     struct LDJSON *counterEntry;
     struct LDJSON *value1;
@@ -84,10 +85,12 @@ testMakeSummaryKeyIncrementsCounters()
     LD_ASSERT(LDi_summarizeEvent(client, event4, false));
     LD_ASSERT(LDi_summarizeEvent(client, event5, false));
 
+    LD_ASSERT(LDi_rdlock(&client->lock));
     LD_ASSERT(summary = LDi_prepareSummaryEvent(client));
-    LD_ASSERT(summary = LDObjectLookup(summary, "features"))
+    LD_ASSERT(LDi_rdunlock(&client->lock));
+    LD_ASSERT(features = LDObjectLookup(summary, "features"))
 
-    LD_ASSERT(summaryEntry = LDObjectLookup(summary, "key1"))
+    LD_ASSERT(summaryEntry = LDObjectLookup(features, "key1"))
     LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summaryEntry, "default")));
     LD_ASSERT(counterEntry = LDObjectLookup(summaryEntry, "counters"));
 
@@ -103,7 +106,7 @@ testMakeSummaryKeyIncrementsCounters()
     LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "variation")) == 2);
     LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "version")) == 11);
 
-    LD_ASSERT(summaryEntry = LDObjectLookup(summary, "key2"))
+    LD_ASSERT(summaryEntry = LDObjectLookup(features, "key2"))
     LD_ASSERT(LDJSONCompare(default2, LDObjectLookup(summaryEntry, "default")));
     LD_ASSERT(counterEntry = LDObjectLookup(summaryEntry, "counters"));
 
@@ -113,7 +116,7 @@ testMakeSummaryKeyIncrementsCounters()
     LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "variation")) == 1);
     LD_ASSERT(LDGetNumber(LDObjectLookup(counterEntry, "version")) == 22);
 
-    LD_ASSERT(summaryEntry = LDObjectLookup(summary, "badkey"))
+    LD_ASSERT(summaryEntry = LDObjectLookup(features, "badkey"))
     LD_ASSERT(LDJSONCompare(default3, LDObjectLookup(summaryEntry, "default")));
     LD_ASSERT(counterEntry = LDObjectLookup(summaryEntry, "counters"));
 
@@ -154,6 +157,7 @@ testCounterForNilVariationIsDistinctFromOthers()
     struct LDJSON *value2;
     struct LDJSON *default1;
     struct LDJSON *summary;
+    struct LDJSON *features;
     struct LDJSON *summaryEntry;
     struct LDJSON *counterEntry;
 
@@ -176,10 +180,12 @@ testCounterForNilVariationIsDistinctFromOthers()
     LD_ASSERT(LDi_summarizeEvent(client, event2, false));
     LD_ASSERT(LDi_summarizeEvent(client, event3, false));
 
+    LD_ASSERT(LDi_rdlock(&client->lock));
     LD_ASSERT(summary = LDi_prepareSummaryEvent(client));
-    LD_ASSERT(summary = LDObjectLookup(summary, "features"))
+    LD_ASSERT(LDi_rdunlock(&client->lock));
+    LD_ASSERT(features = LDObjectLookup(summary, "features"))
 
-    LD_ASSERT(summaryEntry = LDObjectLookup(summary, "key1"))
+    LD_ASSERT(summaryEntry = LDObjectLookup(features, "key1"))
     LD_ASSERT(LDJSONCompare(default1, LDObjectLookup(summaryEntry, "default")));
     LD_ASSERT(counterEntry = LDObjectLookup(summaryEntry, "counters"));
 
