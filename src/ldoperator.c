@@ -98,11 +98,14 @@ operatorMatchesFn(const struct LDJSON *const uvalue,
         regex, PCRE_JAVASCRIPT_COMPAT, &error, &errorOffset, NULL);
 
     if (!context) {
-        /*
-        LD_LOG(LD_LOG_ERROR,
+        char msg[256];
+
+        LD_ASSERT(snprintf(msg, sizeof(msg),
             "failed to compile regex '%s' got error '%s' with offset %d",
-            regex, error, errorOffset);
-        */
+            regex, error, errorOffset) >= 0);
+
+        LD_LOG(LD_LOG_ERROR, msg);
+
         return false;
     }
 

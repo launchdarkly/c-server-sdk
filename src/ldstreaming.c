@@ -255,11 +255,13 @@ LDi_onSSE(struct StreamContext *const context, const char *line)
             } else if (strcmp(context->eventName, "delete") == 0) {
                 status = onDelete(context->client, json);
             } else {
-                /*
-                LD_LOG(LD_LOG_WARNING,
+                char msg[256];
+
+                LD_ASSERT(snprintf(msg, sizeof(msg),
                     "streamcallback unknown event name: %s",
-                    context->eventName);
-                */
+                    context->eventName) >= 0);
+
+                LD_LOG(LD_LOG_ERROR, msg);
             }
         }
 
@@ -421,7 +423,14 @@ poll(struct LDClient *const client, void *const rawcontext)
         return false;
     }
 
-    /* LD_LOG(LD_LOG_INFO, "connecting to url: %s", url); */
+    {
+        char msg[256];
+
+        LD_ASSERT(snprintf(msg, sizeof(msg),
+            "connection to streaming url: %s", url) >= 0);
+
+        LD_LOG(LD_LOG_INFO, msg);
+    }
 
     if (!LDi_prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;

@@ -139,7 +139,14 @@ poll(struct LDClient *const client, void *const rawcontext)
         return false;
     }
 
-    /* LD_LOG(LD_LOG_INFO, "connecting to url: %s", url); */
+    {
+        char msg[256];
+
+        LD_ASSERT(snprintf(msg, sizeof(msg),
+            "connection to polling url: %s", url) >= 0);
+
+        LD_LOG(LD_LOG_INFO, msg);
+    }
 
     if (!LDi_prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;
