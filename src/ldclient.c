@@ -112,6 +112,8 @@ LDClientClose(struct LDClient *const client)
         LDConfigFree(client->config);
 
         LDFree(client);
+
+        LD_LOG(LD_LOG_INFO, "trace client cleanup");
     }
 }
 

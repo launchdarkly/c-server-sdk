@@ -2,6 +2,7 @@
 #include "ldnetwork.h"
 
 #include <stdio.h>
+#include <math.h>
 
 #include <curl/curl.h>
 
@@ -138,8 +139,41 @@ LDi_networkthread(void* const clientref)
 
         if (!offline) {
             for (i = 0; i < interfacecount; i++) {
-                CURL *const handle =
-                    interfaces[i]->poll(client, interfaces[i]->context);
+                CURL *handle;
+                /* skip if waiting on backoff */
+                if (interfaces[i]->attempts) {
+                    unsigned long now, backoff;
+
+                    if (!LDi_getMonotonicMilliseconds(&now)) {
+                        LD_LOG(LD_LOG_ERROR, "failed to get time for backoff");
+
+                        goto cleanup;
+                    }
+
+                    if (interfaces[i]->waitUntil) {
+                        if (now >= interfaces[i]->waitUntil) {
+                            interfaces[i]->waitUntil = 0;
+                            /* fallthrough to polling */
+                        } else {
+                            /* still waiting on this interface */
+                            continue;
+                        }
+                    } else {
+                        /* calculate time to wait */
+                        backoff = 1000 * pow(2, interfaces[i]->attempts);
+
+                        if (backoff > 3600 * 1000) {
+                            backoff = 3600 * 1000;
+                        }
+
+                        interfaces[i]->waitUntil = now + backoff;
+                        /* skip because we are waiting */
+                        continue;
+                    }
+                }
+
+                /* not waiting on backoff */
+                handle = interfaces[i]->poll(client, interfaces[i]->context);
 
                 if (handle) {
                     interfaces[i]->current = handle;

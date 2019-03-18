@@ -490,12 +490,13 @@ LDi_constructStreaming(struct LDClient *const client)
     context->dataBuffer   = NULL;
     context->client       = client;
 
-    interface->done     = done;
-    interface->poll     = poll;
-    interface->context  = context;
-    interface->destroy  = destroy;
-    interface->current  = NULL;
-    interface->attempts = 0;
+    interface->done      = done;
+    interface->poll      = poll;
+    interface->context   = context;
+    interface->destroy   = destroy;
+    interface->current   = NULL;
+    interface->attempts  = 0;
+    interface->waitUntil = 0;
 
     return interface;
 
