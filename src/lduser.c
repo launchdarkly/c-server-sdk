@@ -180,7 +180,7 @@ isPrivateAttr(struct LDClient *const client, const struct LDUser *const user,
     bool global = false;
 
     if (client) {
-        global = client->config->allAttributesPrivate  ||
+        global = client->config->allAttributesPrivate ||
             LDi_textInArray(client->config->privateAttributeNames, key);
     }
 
