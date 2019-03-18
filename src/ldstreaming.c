@@ -372,7 +372,7 @@ resetMemory(struct StreamContext *const context)
 }
 
 static void
-done(struct LDClient *const client, void *const rawcontext)
+done(struct LDClient *const client, void *const rawcontext, const bool success)
 {
     struct StreamContext *const context = rawcontext;
 
@@ -380,6 +380,8 @@ done(struct LDClient *const client, void *const rawcontext)
     LD_ASSERT(context);
 
     context->active = false;
+
+    (void)success;
 
     resetMemory(context);
 }
@@ -488,11 +490,12 @@ LDi_constructStreaming(struct LDClient *const client)
     context->dataBuffer   = NULL;
     context->client       = client;
 
-    interface->done    = done;
-    interface->poll    = poll;
-    interface->context = context;
-    interface->destroy = destroy;
-    interface->current = NULL;
+    interface->done     = done;
+    interface->poll     = poll;
+    interface->context  = context;
+    interface->destroy  = destroy;
+    interface->current  = NULL;
+    interface->attempts = 0;
 
     return interface;
 

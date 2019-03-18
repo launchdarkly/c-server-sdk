@@ -68,7 +68,7 @@ resetMemory(struct PollContext *const context)
 }
 
 static void
-done(struct LDClient *const client, void *const rawcontext)
+done(struct LDClient *const client, void *const rawcontext, const bool success)
 {
     struct PollContext *context;
 
@@ -76,16 +76,17 @@ done(struct LDClient *const client, void *const rawcontext)
     LD_ASSERT(rawcontext);
 
     context = rawcontext;
-
-    LD_ASSERT(updateStore(client->config->store, context->memory));
-
     context->active = false;
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
-    client->initialized = true;
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    if (success) {
+        LD_ASSERT(updateStore(client->config->store, context->memory));
 
-    LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastpoll));
+        LD_ASSERT(LDi_wrlock(&client->lock));
+        client->initialized = true;
+        LD_ASSERT(LDi_wrunlock(&client->lock));
+
+        LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastpoll));
+    }
 
     resetMemory(context);
 }
@@ -204,12 +205,13 @@ LDi_constructPolling(struct LDClient *const client)
     context->active   = false;
     context->lastpoll = 0;
 
-    interface->done    = done;
-    interface->poll    = poll;
-    interface->context = context;
-    interface->destroy = destroy;
-    interface->context = context;
-    interface->current = NULL;
+    interface->done     = done;
+    interface->poll     = poll;
+    interface->context  = context;
+    interface->destroy  = destroy;
+    interface->context  = context;
+    interface->current  = NULL;
+    interface->attempts = 0;
 
     return interface;
 

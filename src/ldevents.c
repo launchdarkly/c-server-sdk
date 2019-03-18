@@ -611,6 +611,7 @@ struct AnalyticsContext {
     struct curl_slist *headers;
     struct LDClient *client;
     char *buffer;
+    bool lastFailed;
 };
 
 static void
@@ -626,7 +627,7 @@ resetMemory(struct AnalyticsContext *const context)
 }
 
 static void
-done(struct LDClient *const client, void *const rawcontext)
+done(struct LDClient *const client, void *const rawcontext, const bool success)
 {
     struct AnalyticsContext *const context = rawcontext;
 
@@ -635,16 +636,18 @@ done(struct LDClient *const client, void *const rawcontext)
 
     LD_LOG(LD_LOG_INFO, "done!");
 
-    context->active = false;
+    context->active     = false;
+    context->lastFailed = !success;
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
-    client->shouldFlush = false;
-    client->initialized = true;
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    if (success) {
+        LD_ASSERT(LDi_wrlock(&client->lock));
+        client->shouldFlush = false;
+        LD_ASSERT(LDi_wrunlock(&client->lock));
 
-    LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastFlush));
+        LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastFlush));
 
-    resetMemory(context);
+        resetMemory(context);
+    }
 }
 
 static void
@@ -820,27 +823,31 @@ poll(struct LDClient *const client, void *const rawcontext)
         return NULL;
     }
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
-    if (LDCollectionGetSize(client->events) == 0 &&
-        LDCollectionGetSize(client->summaryCounters) == 0)
-    {
+    if (!context->lastFailed) {
+        LD_ASSERT(LDi_wrlock(&client->lock));
+        if (LDCollectionGetSize(client->events) == 0 &&
+            LDCollectionGetSize(client->summaryCounters) == 0)
+        {
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            client->shouldFlush = false;
+
+            return NULL;
+        }
+        shouldFlush = client->shouldFlush;
         LD_ASSERT(LDi_wrunlock(&client->lock));
 
-        client->shouldFlush = false;
+        if (!shouldFlush) {
+            unsigned long now;
 
-        return NULL;
-    }
-    shouldFlush = client->shouldFlush;
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+            LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+            LD_ASSERT(now >= context->lastFlush);
 
-    if (!shouldFlush) {
-        unsigned long now;
-
-        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
-        LD_ASSERT(now >= context->lastFlush);
-
-        if (now - context->lastFlush < client->config->flushInterval * 1000) {
-            return NULL;
+            if (now - context->lastFlush <
+                client->config->flushInterval * 1000)
+            {
+                return NULL;
+            }
         }
     }
 
@@ -883,47 +890,49 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     /* serialize events */
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    if (!context->lastFailed) {
+        LD_ASSERT(LDi_wrlock(&client->lock));
 
-    if (!(summaryEvent = LDi_prepareSummaryEvent(client))) {
-        LD_LOG(LD_LOG_ERROR, "failed to prepare summary");
+        if (!(summaryEvent = LDi_prepareSummaryEvent(client))) {
+            LD_LOG(LD_LOG_ERROR, "failed to prepare summary");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            goto error;
+        }
+
+        LDArrayPush(client->events, summaryEvent);
+
+        if (!(context->buffer = LDJSONSerialize(client->events))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            goto error;
+        }
+
+        LDJSONFree(client->events);
+
+        client->summaryStart = 0;
+
+        if (!(client->events = LDNewArray())) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            goto error;
+        }
+
+        if (!(client->summaryCounters = LDNewObject())) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            goto error;
+        }
 
         LD_ASSERT(LDi_wrunlock(&client->lock));
-
-        goto error;
     }
-
-    LDArrayPush(client->events, summaryEvent);
-
-    if (!(context->buffer = LDJSONSerialize(client->events))) {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
-
-        LD_ASSERT(LDi_wrunlock(&client->lock));
-
-        goto error;
-    }
-
-    LDJSONFree(client->events);
-
-    client->summaryStart = 0;
-
-    if (!(client->events = LDNewArray())) {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
-
-        LD_ASSERT(LDi_wrunlock(&client->lock));
-
-        goto error;
-    }
-
-    if (!(client->summaryCounters = LDNewObject())) {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
-
-        LD_ASSERT(LDi_wrunlock(&client->lock));
-
-        goto error;
-    }
-
-    LD_ASSERT(LDi_wrunlock(&client->lock));
 
     /* add outgoing buffer */
 
@@ -964,18 +973,20 @@ LDi_constructAnalytics(struct LDClient *const client)
         goto error;
     }
 
-    context->active    = false;
-    context->lastFlush = 0;
-    context->headers   = NULL;
-    context->client    = client;
-    context->buffer    = NULL;
+    context->active     = false;
+    context->lastFlush  = 0;
+    context->headers    = NULL;
+    context->client     = client;
+    context->buffer     = NULL;
+    context->lastFailed = false;
 
-    interface->done    = done;
-    interface->poll    = poll;
-    interface->context = context;
-    interface->destroy = destroy;
-    interface->context = context;
-    interface->current = NULL;
+    interface->done     = done;
+    interface->poll     = poll;
+    interface->context  = context;
+    interface->destroy  = destroy;
+    interface->context  = context;
+    interface->current  = NULL;
+    interface->attempts = 0;
 
     return interface;
 

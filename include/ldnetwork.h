@@ -13,13 +13,15 @@ struct NetworkInterface {
     /* get next handle */
     CURL *(*poll)(struct LDClient *const client, void *context);
     /* called when handle is ready */
-    void (*done)(struct LDClient *const client, void *context);
+    void (*done)(struct LDClient *const client, void *context, bool success);
     /* final action destroy */
     void (*destroy)(void *context);
     /* stores any private implementation data */
     void *context;
     /* active handle */
     CURL *current;
+    /* used for tracking retry */
+    unsigned int attempts;
 };
 
 bool LDi_prepareShared(const struct LDConfig *const config,

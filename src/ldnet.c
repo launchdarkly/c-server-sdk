@@ -168,6 +168,7 @@ LDi_networkthread(void* const clientref)
                 long responsecode;
                 CURL *easy = info->easy_handle;
                 struct NetworkInterface *interface = NULL;
+                bool requestSuccess;
 
                 if (curl_easy_getinfo(
                     easy, CURLINFO_RESPONSE_CODE, &responsecode) != CURLE_OK)
@@ -206,7 +207,16 @@ LDi_networkthread(void* const clientref)
                 LD_ASSERT(interface->done);
                 LD_ASSERT(interface->context);
 
-                interface->done(client, interface->context);
+                requestSuccess = info->data.result == CURLE_OK &&
+                    responsecode == 200;
+
+                if (requestSuccess) {
+                    interface->attempts = 0;
+                } else {
+                    interface->attempts++;
+                }
+
+                interface->done(client, interface->context, requestSuccess);
 
                 interface->current = NULL;
 
