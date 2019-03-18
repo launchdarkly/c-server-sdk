@@ -177,10 +177,22 @@ LDi_networkthread(void* const clientref)
                     goto cleanup;
                 }
 
-                /*
-                LD_LOG(LD_LOG_INFO, "message done code %d %d",
-                    info->data.result, responsecode);
-                */
+                if (responsecode == 401 || responsecode == 403) {
+                    LD_LOG(LD_LOG_ERROR, "LaunchDarkly API Access Denied");
+
+                    goto cleanup;
+                }
+
+                {
+                    char msg[256];
+
+                    LD_ASSERT(snprintf(msg, sizeof(msg),
+                        "message done code %s %ld",
+                        curl_easy_strerror(info->data.result),
+                        responsecode) >= 0);
+
+                    LD_LOG(LD_LOG_TRACE, msg);
+                }
 
                 if (curl_easy_getinfo(
                     easy, CURLINFO_PRIVATE, &interface) != CURLE_OK)
@@ -220,6 +232,8 @@ LDi_networkthread(void* const clientref)
     }
 
   cleanup:
+    LD_LOG(LD_LOG_INFO, "cleanup up networking thread");
+
     {
         unsigned int i;
 
