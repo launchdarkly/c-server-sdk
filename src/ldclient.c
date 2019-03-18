@@ -5,6 +5,7 @@
 #include "ldstore.h"
 #include "ldclient.h"
 #include "ldevents.h"
+#include "ldnetwork.h"
 
 struct LDClient *
 LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)

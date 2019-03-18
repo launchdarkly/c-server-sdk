@@ -29,3 +29,5 @@ bool prepareShared(const struct LDConfig *const config, const char *const url,
 struct NetworkInterface *constructPolling(struct LDClient *const client);
 struct NetworkInterface *constructStreaming(struct LDClient *const client);
 struct NetworkInterface *constructAnalytics(struct LDClient *const client);
+
+THREAD_RETURN LDi_networkthread(void *const clientref);

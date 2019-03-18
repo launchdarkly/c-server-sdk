@@ -111,10 +111,6 @@ struct LDClient {
     bool shouldFlush;
 };
 
-/* **** LDNetwork **** */
-
-THREAD_RETURN LDi_networkthread(void *const clientref);
-
 /* **** LDUtility **** */
 
 bool sleepMilliseconds(const unsigned int milliseconds);
