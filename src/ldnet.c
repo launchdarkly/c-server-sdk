@@ -246,7 +246,7 @@ LDi_networkthread(void* const clientref)
                 LD_ASSERT(interface->context);
 
                 requestSuccess = info->data.result == CURLE_OK &&
-                    responsecode == 200;
+                    (responsecode == 200 || responsecode == 202);
 
                 if (requestSuccess) {
                     interface->attempts = 0;
