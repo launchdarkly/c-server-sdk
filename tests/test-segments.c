@@ -40,7 +40,7 @@ testExplicitIncludeUser()
     LD_ASSERT(LDObjectSetKey(segment, "included", tmp));
 
     /* run */
-    LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MATCH);
+    LD_ASSERT(LDi_segmentMatchesUser(segment, user) == EVAL_MATCH);
 
     LDJSONFree(segment);
     LDUserFree(user);
@@ -68,7 +68,7 @@ testExplicitExcludeUser()
     LD_ASSERT(LDObjectSetKey(segment, "excluded", tmp));
 
     /* run */
-    LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MISS);
+    LD_ASSERT(LDi_segmentMatchesUser(segment, user) == EVAL_MISS);
 
     LDJSONFree(segment);
     LDUserFree(user);
@@ -100,7 +100,7 @@ testExplicitIncludeHasPrecedence()
     LD_ASSERT(LDObjectSetKey(segment, "included", tmp));
 
     /* run */
-    LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MATCH);
+    LD_ASSERT(LDi_segmentMatchesUser(segment, user) == EVAL_MATCH);
 
     LDJSONFree(segment);
     LDUserFree(user);
@@ -144,7 +144,7 @@ testMatchingRuleWithFullRollout()
     LD_ASSERT(segment = makeTestSegment(rules));
 
     /* run */
-    LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MATCH);
+    LD_ASSERT(LDi_segmentMatchesUser(segment, user) == EVAL_MATCH);
 
     LDJSONFree(segment);
     LDUserFree(user);
@@ -188,7 +188,7 @@ testMatchingRuleWithZeroRollout()
     LD_ASSERT(segment = makeTestSegment(rules));
 
     /* run */
-    LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MISS);
+    LD_ASSERT(LDi_segmentMatchesUser(segment, user) == EVAL_MISS);
 
     LDJSONFree(segment);
     LDUserFree(user);
@@ -244,7 +244,7 @@ testMatchingRuleWithMultipleClauses()
     LD_ASSERT(segment = makeTestSegment(rules));
 
     /* run */
-    LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MATCH);
+    LD_ASSERT(LDi_segmentMatchesUser(segment, user) == EVAL_MATCH);
 
     LDJSONFree(segment);
     LDUserFree(user);
@@ -300,7 +300,7 @@ testNonMatchingRuleWithMultipleClauses()
     LD_ASSERT(segment = makeTestSegment(rules));
 
     /* run */
-    LD_ASSERT(segmentMatchesUser(segment, user) == EVAL_MISS);
+    LD_ASSERT(LDi_segmentMatchesUser(segment, user) == EVAL_MISS);
 
     LDJSONFree(segment);
     LDUserFree(user);

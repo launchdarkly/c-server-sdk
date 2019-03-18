@@ -19,49 +19,49 @@ typedef enum {
     EVAL_MISS
 } EvalStatus;
 
-bool isEvalError(const EvalStatus status);
+bool LDi_isEvalError(const EvalStatus status);
 
-struct LDJSON *addReason(struct LDJSON **const result,
+struct LDJSON *LDi_addReason(struct LDJSON **const result,
     const char *const reason, struct LDJSON *const events);
 
-struct LDJSON *addErrorReason(struct LDJSON **const result,
+struct LDJSON *LDi_addErrorReason(struct LDJSON **const result,
     const char *const kind);
 
-EvalStatus evaluate(struct LDClient *const client,
+EvalStatus LDi_evaluate(struct LDClient *const client,
     const struct LDJSON *const flag, const struct LDUser *const user,
     struct LDStore *const store, struct LDJSON **const result);
 
-EvalStatus checkPrerequisites(struct LDClient *const client,
+EvalStatus LDi_checkPrerequisites(struct LDClient *const client,
     const struct LDJSON *const flag, const struct LDUser *const user,
     struct LDStore *const store, const char **const failedKey,
     struct LDJSON **const events);
 
-EvalStatus ruleMatchesUser(const struct LDJSON *const rule,
+EvalStatus LDi_ruleMatchesUser(const struct LDJSON *const rule,
     const struct LDUser *const user, struct LDStore *const store);
 
-EvalStatus clauseMatchesUser(const struct LDJSON *const clause,
+EvalStatus LDi_clauseMatchesUser(const struct LDJSON *const clause,
     const struct LDUser *const user, struct LDStore *const store);
 
-EvalStatus segmentMatchesUser(const struct LDJSON *const segment,
+EvalStatus LDi_segmentMatchesUser(const struct LDJSON *const segment,
     const struct LDUser *const user);
 
-EvalStatus segmentRuleMatchUser(const struct LDJSON *const segmentRule,
+EvalStatus LDi_segmentRuleMatchUser(const struct LDJSON *const segmentRule,
     const char *const segmentKey, const struct LDUser *const user,
     const char *const salt);
 
-EvalStatus clauseMatchesUserNoSegments(const struct LDJSON *const clause,
+EvalStatus LDi_clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     const struct LDUser *const user);
 
-bool bucketUser(const struct LDUser *const user,
+bool LDi_bucketUser(const struct LDUser *const user,
     const char *const segmentKey, const char *const attribute,
     const char *const salt, float *const bucket);
 
-char *bucketableStringValue(const struct LDJSON *const node);
+char *LDi_bucketableStringValue(const struct LDJSON *const node);
 
-bool variationIndexForUser(const struct LDJSON *const varOrRoll,
+bool LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
     const struct LDUser *const user, const char *const key,
     const char *const salt, unsigned int *const index);
 
-struct LDJSON *getIndexForVariationOrRollout(const struct LDJSON *const flag,
+struct LDJSON *LDi_getIndexForVariationOrRollout(const struct LDJSON *const flag,
     const struct LDJSON *const varOrRoll,
     const struct LDUser *const user);

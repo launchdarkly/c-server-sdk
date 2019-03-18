@@ -27,7 +27,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     evalue           = NULL;
 
     if (!client) {
-        if (!addErrorReason(&details, "NULL_CLIENT")) {
+        if (!LDi_addErrorReason(&details, "NULL_CLIENT")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -37,7 +37,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!LDClientIsInitialized(client)) {
-        if (!addErrorReason(&details, "CLIENT_NOT_READY")) {
+        if (!LDi_addErrorReason(&details, "CLIENT_NOT_READY")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -47,7 +47,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!key) {
-        if (!addErrorReason(&details, "NULL_KEY")) {
+        if (!LDi_addErrorReason(&details, "NULL_KEY")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             return NULL;
@@ -59,7 +59,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     LD_ASSERT(store = client->config->store);
 
     if (!LDStoreGet(store, "flags", key, &flag)) {
-        if (!addErrorReason(&details, "FLAG_NOT_FOUND")) {
+        if (!LDi_addErrorReason(&details, "FLAG_NOT_FOUND")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -69,7 +69,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!flag || isDeleted(flag)) {
-        if (!addErrorReason(&details, "FLAG_NOT_FOUND")) {
+        if (!LDi_addErrorReason(&details, "FLAG_NOT_FOUND")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -77,7 +77,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
         status = EVAL_MISS;
     } else if (!user || !user->key) {
-        if (!addErrorReason(&details, "USER_NOT_SPECIFIED")) {
+        if (!LDi_addErrorReason(&details, "USER_NOT_SPECIFIED")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -85,7 +85,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
         status = EVAL_MISS;
     } else {
-        status = evaluate(client, flag, user, store, &details);
+        status = LDi_evaluate(client, flag, user, store, &details);
     }
 
     if (status == EVAL_MEM) {
@@ -93,7 +93,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (status == EVAL_SCHEMA) {
-        if (!addErrorReason(&details, "MALFORMED_FLAG")) {
+        if (!LDi_addErrorReason(&details, "MALFORMED_FLAG")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -182,7 +182,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (LDJSONGetType(value) != type) {
-        if (!addErrorReason(&details, "WRONG_TYPE")) {
+        if (!LDi_addErrorReason(&details, "WRONG_TYPE")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
             goto error;
@@ -450,7 +450,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         struct LDJSON *value;
         struct LDJSON *details = NULL;
 
-        EvalStatus status = evaluate(client, flag, user,
+        EvalStatus status = LDi_evaluate(client, flag, user,
             client->config->store, &details);
 
         if (status == EVAL_MEM || status == EVAL_SCHEMA) {
