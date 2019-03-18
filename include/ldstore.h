@@ -133,8 +133,6 @@ void LDStoreDestroy(struct LDStore *const store);
   * @brief The default store type.
   * @return The newly allocated store, or NULL on failure.
   */
-struct LDStore *makeInMemoryStore();
+struct LDStore *LDMakeInMemoryStore();
 
 /*@}*/
-
-bool isDeleted(const struct LDJSON *const feature);

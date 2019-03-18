@@ -14,7 +14,7 @@ prepareEmptyStore()
     struct LDJSON *sets;
     struct LDJSON *tmp;
 
-    LD_ASSERT(store = makeInMemoryStore());
+    LD_ASSERT(store = LDMakeInMemoryStore());
     LD_ASSERT(!LDStoreInitialized(store));
 
     LD_ASSERT(sets = LDNewObject());

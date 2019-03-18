@@ -307,7 +307,7 @@ memoryDestructor(void *const rawcontext)
 }
 
 struct LDStore *
-makeInMemoryStore()
+LDMakeInMemoryStore()
 {
     struct LDStore *store;
     struct MemoryContext *context;

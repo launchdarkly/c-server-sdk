@@ -23,7 +23,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     if (config->store) {
         config->defaultStore = false;
     } else {
-        if (!(config->store = makeInMemoryStore())) {
+        if (!(config->store = LDMakeInMemoryStore())) {
             LDFree(client);
 
             return NULL;
