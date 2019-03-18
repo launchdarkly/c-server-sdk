@@ -3,7 +3,7 @@ find_package(CURL REQUIRED)
 
 enable_testing() # CTEST_OUTPUT_ON_FAILURE=1 make test
 
-set(CMAKE_C_FLAGS "-D__USE_XOPEN -D_GNU_SOURCE -ansi -pedantic -Wall -Wextra -g3 -fno-omit-frame-pointer -Wno-pointer-to-int-cast -Wdeclaration-after-statement")
+set(CMAKE_C_FLAGS "-D__USE_XOPEN -D_GNU_SOURCE -Wall -Wextra -g3 -fno-omit-frame-pointer -Wno-pointer-to-int-cast -Wdeclaration-after-statement")
 
 include_directories("include" "third-party/include" ${CURL_INCLUDE_DIR})
 file(GLOB SOURCES "src/*" "third-party/src/*")
