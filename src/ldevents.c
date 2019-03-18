@@ -79,7 +79,7 @@ LDi_newBaseEvent(struct LDClient *const client,
 }
 
 bool
-notNull(const struct LDJSON *const json)
+LDi_notNull(const struct LDJSON *const json)
 {
     if (json) {
         if (LDJSONGetType(json) != LDNull) {
@@ -180,7 +180,7 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     if (flag) {
         tmp = LDObjectLookup(flag, "version");
 
-        if (notNull(tmp)) {
+        if (LDi_notNull(tmp)) {
             if (LDJSONGetType(tmp) != LDNumber) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -363,7 +363,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
 
     tmp = LDObjectLookup(event, "variation");
 
-    if (notNull(tmp)) {
+    if (LDi_notNull(tmp)) {
         LD_ASSERT(LDJSONGetType(tmp) == LDNumber);
 
         if (!(tmp = LDJSONDuplicate(tmp))) {
@@ -385,7 +385,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
 
     tmp = LDObjectLookup(event, "version");
 
-    if (notNull(tmp)) {
+    if (LDi_notNull(tmp)) {
         LD_ASSERT(LDJSONGetType(tmp) == LDNumber);
 
         if (!(tmp = LDJSONDuplicate(tmp))) {
@@ -467,7 +467,7 @@ LDi_summarizeEvent(struct LDClient *const client, const struct LDJSON *const eve
 
         tmp = LDObjectLookup(event, "default");
 
-        if (notNull(tmp)) {
+        if (LDi_notNull(tmp)) {
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -524,7 +524,7 @@ LDi_summarizeEvent(struct LDClient *const client, const struct LDJSON *const eve
 
         tmp = LDObjectLookup(event, "value");
 
-        if (notNull(tmp)) {
+        if (LDi_notNull(tmp)) {
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -540,7 +540,7 @@ LDi_summarizeEvent(struct LDClient *const client, const struct LDJSON *const eve
 
         tmp = LDObjectLookup(event, "version");
 
-        if (notNull(tmp)) {
+        if (LDi_notNull(tmp)) {
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -556,7 +556,7 @@ LDi_summarizeEvent(struct LDClient *const client, const struct LDJSON *const eve
 
         tmp = LDObjectLookup(event, "variation");
 
-        if (notNull(tmp)) {
+        if (LDi_notNull(tmp)) {
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 

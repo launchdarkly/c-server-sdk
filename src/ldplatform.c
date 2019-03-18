@@ -10,7 +10,7 @@
 #endif
 
 bool
-sleepMilliseconds(const unsigned int milliseconds)
+LDi_sleepMilliseconds(const unsigned int milliseconds)
 {
     int status;
 

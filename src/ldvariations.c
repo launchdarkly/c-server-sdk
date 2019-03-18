@@ -68,7 +68,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         status = EVAL_MISS;
     }
 
-    if (!flag || isDeleted(flag)) {
+    if (!flag || LDi_isDeleted(flag)) {
         if (!LDi_addErrorReason(&details, "FLAG_NOT_FOUND")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
@@ -124,7 +124,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     variationNumJSON = LDObjectLookup(details, "variationIndex");
 
-    if (notNull(variationNumJSON)) {
+    if (LDi_notNull(variationNumJSON)) {
         if (LDJSONGetType(variationNumJSON) != LDNumber) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -136,7 +136,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         variationNumRef = &variationNum;
     }
 
-    if (!notNull(evalue = LDObjectLookup(details, "value"))) {
+    if (!LDi_notNull(evalue = LDObjectLookup(details, "value"))) {
         evalue = fallback;
     }
 
@@ -160,7 +160,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     if (flag) {
         struct LDJSON *const track = LDObjectLookup(flag, "trackEvents");
 
-        if (notNull(track) && LDGetBool(track)) {
+        if (LDi_notNull(track) && LDGetBool(track)) {
             if (!LDi_addEvent(client, event)) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -169,7 +169,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         }
     }
 
-    if (!LDi_summarizeEvent(client, event, (!flag) || isDeleted(flag))) {
+    if (!LDi_summarizeEvent(client, event, (!flag) || LDi_isDeleted(flag))) {
         LD_LOG(LD_LOG_ERROR, "summary failed");
 
         goto error;
@@ -177,7 +177,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     value = LDObjectLookup(details, "value");
 
-    if (!notNull(value)) {
+    if (!LDi_notNull(value)) {
         goto fallback;
     }
 

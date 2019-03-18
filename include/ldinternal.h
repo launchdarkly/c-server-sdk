@@ -91,7 +91,7 @@ struct LDUser {
     struct LDJSON *custom; /* Object, may be NULL */
 };
 
-struct LDJSON *valueOfAttribute(const struct LDUser *const user,
+struct LDJSON *LDi_valueOfAttribute(const struct LDUser *const user,
     const char *const attribute);
 
 struct LDJSON *LDUserToJSON(struct LDClient *const client,
@@ -113,15 +113,15 @@ struct LDClient {
 
 /* **** LDUtility **** */
 
-bool sleepMilliseconds(const unsigned int milliseconds);
+bool LDi_sleepMilliseconds(const unsigned int milliseconds);
 bool getMonotonicMilliseconds(unsigned long *const resultMilliseconds);
 bool getUnixMilliseconds(unsigned long *const resultMilliseconds);
 
 bool LDSetString(char **const target, const char *const value);
 
-bool notNull(const struct LDJSON *const json);
-bool isDeleted(const struct LDJSON *const feature);
-bool textInArray(const struct LDJSON *const array, const char *const text);
+bool LDi_notNull(const struct LDJSON *const json);
+bool LDi_isDeleted(const struct LDJSON *const feature);
+bool LDi_textInArray(const struct LDJSON *const array, const char *const text);
 
 #define ASSERT_FMT \
     "LD_ASSERT failed: expected condition '%s' aborting\n"

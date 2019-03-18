@@ -82,7 +82,7 @@ deletedOnly()
 
     LD_ASSERT(LDStoreGet(store, "flags", "abc", &lookup));
     LD_ASSERT(lookup);
-    LD_ASSERT(isDeleted(lookup));
+    LD_ASSERT(LDi_isDeleted(lookup));
 
     LDStoreDestroy(store);
 }
@@ -189,7 +189,7 @@ upsertDelete()
 
     LD_ASSERT(LDStoreGet(store, "segments", "my-heap-key", &lookup));
     LD_ASSERT(lookup);
-    LD_ASSERT(isDeleted(lookup));
+    LD_ASSERT(LDi_isDeleted(lookup));
 
     LDStoreDestroy(store);
 }

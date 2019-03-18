@@ -56,7 +56,7 @@ memoryInit(void *const rawcontext, struct LDJSON *const sets)
 }
 
 bool
-isDeleted(const struct LDJSON *const feature)
+LDi_isDeleted(const struct LDJSON *const feature)
 {
     struct LDJSON *deleted;
 
@@ -142,7 +142,7 @@ memoryAll(void *const rawcontext, const char *const kind,
     }
 
     for (iter = LDGetIter(set); iter; iter = LDIterNext(iter)) {
-        if (!isDeleted(iter)) {
+        if (!LDi_isDeleted(iter)) {
             struct LDJSON *duplicate = NULL;
 
             if (!(duplicate = LDJSONDuplicate(iter))) {

@@ -157,7 +157,7 @@ LDUserAddPrivateAttribute(struct LDUser *const user,
 }
 
 bool
-textInArray(const struct LDJSON *const array, const char *const text)
+LDi_textInArray(const struct LDJSON *const array, const char *const text)
 {
     struct LDJSON *iter;
 
@@ -181,10 +181,10 @@ isPrivateAttr(struct LDClient *const client, const struct LDUser *const user,
 
     if (client) {
         global = client->config->allAttributesPrivate  ||
-            textInArray(client->config->privateAttributeNames, key);
+            LDi_textInArray(client->config->privateAttributeNames, key);
     }
 
-    return global || textInArray(user->privateAttributeNames, key);
+    return global || LDi_textInArray(user->privateAttributeNames, key);
 }
 
 static bool
@@ -317,7 +317,7 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
 }
 
 struct LDJSON *
-valueOfAttribute(const struct LDUser *const user, const char *const attribute)
+LDi_valueOfAttribute(const struct LDUser *const user, const char *const attribute)
 {
     LD_ASSERT(user);
     LD_ASSERT(attribute);

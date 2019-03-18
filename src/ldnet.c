@@ -215,7 +215,7 @@ LDi_networkthread(void* const clientref)
 
         if (!active_events) {
             /* if curl is not doing anything wait so we don't burn CPU */
-            LD_ASSERT(sleepMilliseconds(10));
+            LD_ASSERT(LDi_sleepMilliseconds(10));
         }
     }
 

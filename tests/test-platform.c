@@ -20,7 +20,7 @@ testSleepMinimum()
 
     LD_ASSERT(getMonotonicMilliseconds(&past));
 
-    LD_ASSERT(sleepMilliseconds(25));
+    LD_ASSERT(LDi_sleepMilliseconds(25));
 
     LD_ASSERT(getMonotonicMilliseconds(&present));
 
@@ -79,7 +79,7 @@ threadGoAwait(void *const rawcontext)
         }
         LD_ASSERT(LDi_wrunlock(&context->lock));
 
-        LD_ASSERT(sleepMilliseconds(1));
+        LD_ASSERT(LDi_sleepMilliseconds(1));
     }
 
     return THREAD_RETURN_DEFAULT;
@@ -96,7 +96,7 @@ testConcurrency()
     LD_ASSERT(LDi_rwlockinit(&context.lock));
     LD_ASSERT(LDi_createthread(&thread, threadGoAwait, &context));
 
-    LD_ASSERT(sleepMilliseconds(25));
+    LD_ASSERT(LDi_sleepMilliseconds(25));
     LD_ASSERT(LDi_wrlock(&context.lock));
     context.flag = true;
     LD_ASSERT(LDi_wrunlock(&context.lock));
@@ -112,7 +112,7 @@ testConcurrency()
             break;
         }
 
-        LD_ASSERT(sleepMilliseconds(1));
+        LD_ASSERT(LDi_sleepMilliseconds(1));
     }
 
     LD_ASSERT(LDi_jointhread(thread));

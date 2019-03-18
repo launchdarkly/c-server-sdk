@@ -66,7 +66,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
             }
             LD_ASSERT(LDi_rdunlock(&client->lock));
 
-            sleepMilliseconds(5);
+            LDi_sleepMilliseconds(5);
 
             LD_ASSERT(getMonotonicMilliseconds(&now));
         } while ((diff = now - start) < maxwaitmilli);

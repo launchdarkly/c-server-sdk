@@ -25,7 +25,7 @@ maybeNegate(const struct LDJSON *const object, const EvalStatus status)
         return status;
     }
 
-    if (notNull(negate = LDObjectLookup(object, "negate"))) {
+    if (LDi_notNull(negate = LDObjectLookup(object, "negate"))) {
         if (LDJSONGetType(negate) != LDBool) {
             return EVAL_SCHEMA;
         }
@@ -145,7 +145,7 @@ addValue(const struct LDJSON *const flag, struct LDJSON *result,
     variations = NULL;
     variation  = NULL;
 
-    if (notNull(index)) {
+    if (LDi_notNull(index)) {
         if (LDJSONGetType(index) != LDNumber) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -171,7 +171,7 @@ addValue(const struct LDJSON *const flag, struct LDJSON *result,
         return false;
     }
 
-    if (notNull(index)) {
+    if (LDi_notNull(index)) {
         if (!(variations = LDObjectLookup(flag, "variations"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -345,7 +345,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
             LD_ASSERT(values);
             LD_ASSERT(LDJSONGetType(values) == LDArray);
 
-            if (user->key && textInArray(values, user->key)) {
+            if (user->key && LDi_textInArray(values, user->key)) {
                 const struct LDJSON *variation = NULL;
 
                 variation = LDObjectLookup(iter, "variation");
@@ -567,7 +567,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             return EVAL_STORE;
         }
 
-        if (!preflag || isDeleted(preflag))
+        if (!preflag || LDi_isDeleted(preflag))
         {
             LD_LOG(LD_LOG_ERROR, "store lookup error");
 
@@ -590,7 +590,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
 
         variationNumJSON = LDObjectLookup(result, "variationIndex");
 
-        if (notNull(variationNumJSON)) {
+        if (LDi_notNull(variationNumJSON)) {
             if (LDJSONGetType(variationNumJSON) != LDNumber) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -676,7 +676,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
 
             variationIndex = LDObjectLookup(result, "variationIndex");
 
-            if (notNull(variationIndex)) {
+            if (LDi_notNull(variationIndex)) {
                 if (LDJSONGetType(variationIndex) != LDNumber) {
                     LDJSONFree(preflag);
                     LDJSONFree(result);
@@ -811,7 +811,7 @@ LDi_clauseMatchesUser(const struct LDJSON *const clause,
                     return EVAL_STORE;
                 }
 
-                if (!segment || isDeleted(segment)) {
+                if (!segment || LDi_isDeleted(segment)) {
                     LD_LOG(LD_LOG_WARNING, "store lookup error");
 
                     continue;
@@ -869,28 +869,28 @@ LDi_segmentMatchesUser(const struct LDJSON *const segment,
 
     included = LDObjectLookup(segment, "included");
 
-    if (notNull(included)) {
+    if (LDi_notNull(included)) {
         if (LDJSONGetType(included) != LDArray) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
             return EVAL_SCHEMA;
         }
 
-        if (textInArray(included, user->key)) {
+        if (LDi_textInArray(included, user->key)) {
             return EVAL_MATCH;
         }
     }
 
     excluded = LDObjectLookup(segment, "excluded");
 
-    if (notNull(excluded)) {
+    if (LDi_notNull(excluded)) {
         if (LDJSONGetType(excluded) != LDArray) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
             return EVAL_SCHEMA;
         }
 
-        if (textInArray(excluded, user->key)) {
+        if (LDi_textInArray(excluded, user->key)) {
             return EVAL_MISS;
         }
     }
@@ -998,7 +998,7 @@ LDi_segmentRuleMatchUser(const struct LDJSON *const segmentRule,
     {
         const struct LDJSON *weight = LDObjectLookup(segmentRule, "weight");
 
-        if (!notNull(weight)) {
+        if (!LDi_notNull(weight)) {
             return EVAL_MATCH;
         }
 
@@ -1120,7 +1120,7 @@ LDi_clauseMatchesUserNoSegments(const struct LDJSON *const clause,
         return EVAL_MISS;
     }
 
-    if (!(attributeValue = valueOfAttribute(user, attributeText))) {
+    if (!(attributeValue = LDi_valueOfAttribute(user, attributeText))) {
         LD_LOG(LD_LOG_TRACE, "attribute does not exist");
 
         return EVAL_MISS;
@@ -1193,7 +1193,7 @@ LDi_bucketUser(const struct LDUser *const user, const char *const segmentKey,
 
     attributeValue = NULL;
 
-    if ((attributeValue = valueOfAttribute(user, attribute))) {
+    if ((attributeValue = LDi_valueOfAttribute(user, attribute))) {
         char raw[256];
 
         char *const bucketable = LDi_bucketableStringValue(attributeValue);
@@ -1268,7 +1268,7 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
 
     variation = LDObjectLookup(varOrRoll, "variation");
 
-    if (notNull(variation)) {
+    if (LDi_notNull(variation)) {
         if (LDJSONGetType(variation) != LDNumber) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -1285,7 +1285,7 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
 
     rollout = LDObjectLookup(varOrRoll, "rollout");
 
-    if (!notNull(rollout)) {
+    if (!LDi_notNull(rollout)) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
         return false;
@@ -1299,7 +1299,7 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
 
     variations = LDObjectLookup(rollout, "variations");
 
-    if (!notNull(variations)) {
+    if (!LDi_notNull(variations)) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
         return false;
@@ -1330,7 +1330,7 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
 
         weight = LDObjectLookup(variation, "weight");
 
-        if (!notNull(weight)) {
+        if (!LDi_notNull(weight)) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
             return false;
@@ -1349,7 +1349,7 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
 
             subvariation = LDObjectLookup(variation, "variation");
 
-            if (!notNull(subvariation)) {
+            if (!LDi_notNull(subvariation)) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
                 return false;
@@ -1388,7 +1388,7 @@ LDi_getIndexForVariationOrRollout(const struct LDJSON *const flag,
     key    = NULL;
     salt   = NULL;
 
-    if (notNull(jkey = LDObjectLookup(flag, "key"))) {
+    if (LDi_notNull(jkey = LDObjectLookup(flag, "key"))) {
         if (LDJSONGetType(jkey) != LDText) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -1398,7 +1398,7 @@ LDi_getIndexForVariationOrRollout(const struct LDJSON *const flag,
         key = LDGetText(jkey);
     }
 
-    if (notNull(jsalt = LDObjectLookup(flag, "salt"))) {
+    if (LDi_notNull(jsalt = LDObjectLookup(flag, "salt"))) {
         if (LDJSONGetType(jsalt) != LDText) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
