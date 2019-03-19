@@ -102,7 +102,7 @@ destroy(void *const rawcontext)
 
     resetMemory(context);
 
-    free(context);
+    LDFree(context);
 }
 
 static CURL *
