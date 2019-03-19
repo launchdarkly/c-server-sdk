@@ -399,7 +399,10 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     }
 
     if (rules && LDCollectionGetSize(rules) != 0) {
-        unsigned int index = 0;
+        unsigned int index;
+
+        index = 0;
+
         for (iter = LDGetIter(rules); iter; iter = LDIterNext(iter)) {
             EvalStatus substatus;
 
