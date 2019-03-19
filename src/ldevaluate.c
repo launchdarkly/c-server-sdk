@@ -370,7 +370,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
                 return EVAL_SCHEMA;
             }
 
-            if (user->key && LDi_textInArray(values, user->key)) {
+            if (LDi_textInArray(values, user->key)) {
                 const struct LDJSON *variation = NULL;
 
                 variation = LDObjectLookup(iter, "variation");
@@ -882,10 +882,6 @@ LDi_segmentMatchesUser(const struct LDJSON *const segment,
     salt         = NULL;
     segmentRules = NULL;
     iter         = NULL;
-
-    if (!user->key) {
-        return EVAL_MISS;
-    }
 
     included = LDObjectLookup(segment, "included");
 
