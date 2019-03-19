@@ -8,10 +8,6 @@
 #include <math.h>
 #include <gmp.h>
 
-typedef bool (*StringOpFn)(const char *const uvalue, const char *const cvalue);
-
-typedef bool (*NumberOpFn)(const float uvalue, const float cvalue);
-
 #define CHECKSTRING(uvalue, cvalue) \
     if (LDJSONGetType(uvalue) != LDText || \
         LDJSONGetType(cvalue) != LDText) \
