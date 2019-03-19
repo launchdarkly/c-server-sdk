@@ -495,6 +495,8 @@ LDi_summarizeEvent(struct LDClient *const client,
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
+                LDJSONFree(flagContext);
+
                 goto cleanup;
             }
 
@@ -502,6 +504,7 @@ LDi_summarizeEvent(struct LDClient *const client,
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
                 LDJSONFree(tmp);
+                LDJSONFree(flagContext);
 
                 goto cleanup;
             }
@@ -510,6 +513,8 @@ LDi_summarizeEvent(struct LDClient *const client,
         if (!(tmp = LDNewObject())) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
+            LDJSONFree(flagContext);
+
             goto cleanup;
         }
 
@@ -517,12 +522,15 @@ LDi_summarizeEvent(struct LDClient *const client,
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
             LDJSONFree(tmp);
+            LDJSONFree(flagContext);
 
             goto cleanup;
         }
 
         if (!LDObjectSetKey(client->summaryCounters, flagKey, flagContext)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(flagContext);
 
             goto cleanup;
         }
@@ -541,6 +549,8 @@ LDi_summarizeEvent(struct LDClient *const client,
         if (!(tmp = LDNewNumber(1))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
+            LDJSONFree(entry);
+
             goto cleanup;
         }
 
@@ -548,6 +558,7 @@ LDi_summarizeEvent(struct LDClient *const client,
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
             LDJSONFree(tmp);
+            LDJSONFree(entry);
 
             goto cleanup;
         }
@@ -558,6 +569,8 @@ LDi_summarizeEvent(struct LDClient *const client,
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
+                LDJSONFree(entry);
+
                 goto cleanup;
             }
 
@@ -565,6 +578,7 @@ LDi_summarizeEvent(struct LDClient *const client,
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
                 LDJSONFree(tmp);
+                LDJSONFree(entry);
 
                 goto cleanup;
             }
@@ -576,6 +590,8 @@ LDi_summarizeEvent(struct LDClient *const client,
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
+                LDJSONFree(entry);
+
                 goto cleanup;
             }
 
@@ -583,6 +599,7 @@ LDi_summarizeEvent(struct LDClient *const client,
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
                 LDJSONFree(tmp);
+                LDJSONFree(entry);
 
                 goto cleanup;
             }
@@ -594,6 +611,8 @@ LDi_summarizeEvent(struct LDClient *const client,
             if (!(tmp = LDJSONDuplicate(tmp))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
+                LDJSONFree(entry);
+
                 goto cleanup;
             }
 
@@ -601,6 +620,7 @@ LDi_summarizeEvent(struct LDClient *const client,
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
                 LDJSONFree(tmp);
+                LDJSONFree(entry);
 
                 goto cleanup;
             }
@@ -610,6 +630,8 @@ LDi_summarizeEvent(struct LDClient *const client,
             if (!(tmp = LDNewBool(true))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
+                LDJSONFree(entry);
+
                 goto cleanup;
             }
 
@@ -617,6 +639,7 @@ LDi_summarizeEvent(struct LDClient *const client,
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
                 LDJSONFree(tmp);
+                LDJSONFree(entry);
 
                 goto cleanup;
             }
@@ -624,6 +647,8 @@ LDi_summarizeEvent(struct LDClient *const client,
 
         if (!LDObjectSetKey(counters, keytext, entry)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(entry);
 
             goto cleanup;
         }
