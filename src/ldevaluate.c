@@ -717,8 +717,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
                     LDGetNumber(variation);
             }
 
-            if (status == EVAL_MISS || !LDGetBool(on) || !variationMatch)
-            {
+            if (status == EVAL_MISS || !LDGetBool(on) || !variationMatch) {
                 LDJSONFree(preflag);
                 LDJSONFree(result);
 
