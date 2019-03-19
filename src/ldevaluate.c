@@ -226,8 +226,8 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     struct LDJSON **const result)
 {
     EvalStatus substatus;
-    const struct LDJSON *iter, *rules, *targets, *on, *fallthrough;
-    struct LDJSON *events;
+    const struct LDJSON *iter, *rules, *targets, *on;
+    struct LDJSON *events, *index;
     const char *failedKey;
 
     LD_ASSERT(flag);
@@ -239,9 +239,9 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     rules       = NULL;
     targets     = NULL;
     on          = NULL;
-    fallthrough = NULL;
     failedKey   = NULL;
     events      = NULL;
+    index       = NULL;
 
     if (LDJSONGetType(flag) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
@@ -402,15 +402,12 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
             }
 
             if (substatus == EVAL_MATCH) {
-                const struct LDJSON *variation;
-                struct LDJSON *reason, *tmp, *ruleid;
+                struct LDJSON *variation, *reason, *tmp, *ruleid;
 
                 variation = NULL;
                 reason    = NULL;
                 tmp       = NULL;
                 ruleid    = NULL;
-
-                variation = LDi_getIndexForVariationOrRollout(flag, iter, user);
 
                 if (!(reason = LDi_addReason(result, "RULE_MATCH", events))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add reason");
@@ -418,11 +415,17 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
                     return EVAL_MEM;
                 }
 
+                variation = LDi_getIndexForVariationOrRollout(flag, iter, user);
+
                 if (!(addValue(flag, *result, variation))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add value");
 
+                    LDJSONFree(variation);
+
                     return EVAL_MEM;
                 }
+
+                LDJSONFree(variation);
 
                 if (!(tmp = LDNewNumber(index))) {
                     LD_LOG(LD_LOG_ERROR, "memory error");
@@ -469,20 +472,24 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     }
 
     /* fallthrough */
-    fallthrough = LDi_getIndexForVariationOrRollout(flag,
-        LDObjectLookup(flag, "fallthrough"), user);
-
     if (!LDi_addReason(result, "FALLTHROUGH", events)) {
         LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
         return EVAL_MEM;
     }
 
-    if (!(addValue(flag, *result, fallthrough))) {
+    index = LDi_getIndexForVariationOrRollout(flag,
+        LDObjectLookup(flag, "fallthrough"), user);
+
+    if (!(addValue(flag, *result, index))) {
         LD_LOG(LD_LOG_ERROR, "failed to add value");
+
+        LDJSONFree(index);
 
         return EVAL_MEM;
     }
+
+    LDJSONFree(index);
 
     return EVAL_MATCH;
 }
