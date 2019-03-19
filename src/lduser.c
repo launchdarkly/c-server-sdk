@@ -307,6 +307,7 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
                 if (isPrivateAttr(client, lduser, LDIterKey(item))) {
                     if (!addHidden(&hidden, LDIterKey(item))) {
                         LDJSONFree(json);
+                        LDJSONFree(custom);
 
                         return NULL;
                     }
@@ -318,11 +319,20 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
             }
         }
 
-        LDObjectSetKey(json, "custom", custom);
+        if (!LDObjectSetKey(json, "custom", custom)) {
+            LDJSONFree(custom);
+            LDJSONFree(json);
+
+            return NULL;
+        }
     }
 
     if (hidden) {
-        LDObjectSetKey(json, "privateAttrs", hidden);
+        if (!LDObjectSetKey(json, "privateAttrs", hidden)) {
+            LDJSONFree(json);
+
+            return NULL;
+        }
     }
 
     return json;
