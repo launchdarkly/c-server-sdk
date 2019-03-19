@@ -1117,13 +1117,13 @@ LDi_clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     if (!(operatorText = LDGetText(operator))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
-        return EVAL_MEM;
+        return EVAL_SCHEMA;
     }
 
     if (!(values = LDObjectLookup(clause, "values"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return EVAL_MEM;
+        return EVAL_SCHEMA;
     }
 
     if (!(fn = LDi_lookupOperation(operatorText))) {
@@ -1141,9 +1141,9 @@ LDi_clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     type = LDJSONGetType(attributeValue);
 
     if (type == LDArray || type == LDObject) {
-        struct LDJSON *iter = LDGetIter(attributeValue);
+        struct LDJSON *iter;
 
-        for (; iter; iter = LDIterNext(iter)) {
+        for (iter = LDGetIter(attributeValue); iter; iter = LDIterNext(iter)) {
             EvalStatus substatus;
 
             type = LDJSONGetType(iter);
