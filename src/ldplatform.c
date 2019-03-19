@@ -31,7 +31,8 @@ LDi_sleepMilliseconds(const unsigned long milliseconds)
 static bool
 getTime(unsigned long *const resultMilliseconds, clockid_t clockid)
 {
-    int status; struct timespec spec;
+    int status;
+    struct timespec spec;
 
     LD_ASSERT(resultMilliseconds);
 
