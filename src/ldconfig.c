@@ -197,7 +197,7 @@ bool
 LDConfigAddPrivateAttribute(struct LDConfig *const config,
     const char *const attribute)
 {
-    struct LDJSON *temp;;
+    struct LDJSON *temp;
 
     LD_ASSERT(config);
     LD_ASSERT(attribute);
