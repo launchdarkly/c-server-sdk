@@ -533,15 +533,10 @@ LDi_checkPrerequisites(struct LDClient *const client,
     LD_ASSERT(store);
     LD_ASSERT(failedKey);
     LD_ASSERT(events);
+    LD_ASSERT(LDJSONGetType(flag) == LDObject);
 
     prerequisites = NULL;
     iter          = NULL;
-
-    if (LDJSONGetType(flag) != LDObject) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        return EVAL_SCHEMA;
-    }
 
     prerequisites = LDObjectLookup(flag, "prerequisites");
 
