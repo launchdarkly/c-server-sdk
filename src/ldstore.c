@@ -88,20 +88,28 @@ memoryGet(void *const rawcontext, const char *const kind, const char *const key,
     LD_ASSERT(LDi_rdlock(&context->lock));
 
     if (!(set = LDObjectLookup(context->store, kind))) {
+        LD_ASSERT(LDi_rdunlock(&context->lock));
+
         return false;
     }
 
     if ((current = LDObjectLookup(set, key))) {
-        struct LDJSON *const copy = LDJSONDuplicate(current);
-
-        LD_ASSERT(LDi_rdunlock(&context->lock));
-
-        if (copy) {
-            *result = copy;
+        if (LDi_isDeleted(current)) {
+            LD_ASSERT(LDi_rdunlock(&context->lock));
 
             return true;
         } else {
-            return false;
+            struct LDJSON *const copy = LDJSONDuplicate(current);
+
+            LD_ASSERT(LDi_rdunlock(&context->lock));
+
+            if (copy) {
+                *result = copy;
+
+                return true;
+            } else {
+                return false;
+            }
         }
     } else {
         LD_ASSERT(LDi_rdunlock(&context->lock));
