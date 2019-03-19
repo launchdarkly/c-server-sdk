@@ -844,7 +844,9 @@ LDi_clauseMatchesUser(const struct LDJSON *const clause,
                 }
 
                 if (!segment || LDi_isDeleted(segment)) {
-                    LD_LOG(LD_LOG_WARNING, "store lookup error");
+                    LD_LOG(LD_LOG_WARNING, "segment not found");
+
+                    LDJSONFree(segment);
 
                     continue;
                 }
