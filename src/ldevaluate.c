@@ -463,30 +463,26 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
                     return EVAL_MEM;
                 }
 
-                if (!(ruleid = LDObjectLookup(iter, "id"))) {
-                    LD_LOG(LD_LOG_ERROR, "schema error");
+                if (LDi_notNull(ruleid = LDObjectLookup(iter, "id"))) {
+                    if (LDJSONGetType(ruleid) != LDText) {
+                        LD_LOG(LD_LOG_ERROR, "schema error");
 
-                    return EVAL_SCHEMA;
-                }
+                        return EVAL_SCHEMA;
+                    }
 
-                if (LDJSONGetType(ruleid) != LDText) {
-                    LD_LOG(LD_LOG_ERROR, "schema error");
+                    if (!(tmp = LDNewText(LDGetText(ruleid)))) {
+                        LD_LOG(LD_LOG_ERROR, "memory error");
 
-                    return EVAL_SCHEMA;
-                }
+                        return EVAL_MEM;
+                    }
 
-                if (!(tmp = LDNewText(LDGetText(ruleid)))) {
-                    LD_LOG(LD_LOG_ERROR, "memory error");
+                    if (!LDObjectSetKey(reason, "ruleId", tmp)) {
+                        LD_LOG(LD_LOG_ERROR, "memory error");
 
-                    return EVAL_MEM;
-                }
+                        LDJSONFree(tmp);
 
-                if (!LDObjectSetKey(reason, "ruleId", tmp)) {
-                    LD_LOG(LD_LOG_ERROR, "memory error");
-
-                    LDJSONFree(tmp);
-
-                    return EVAL_MEM;
+                        return EVAL_MEM;
+                    }
                 }
 
 
