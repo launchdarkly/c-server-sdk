@@ -1010,7 +1010,7 @@ LDi_segmentRuleMatchUser(const struct LDJSON *const segmentRule,
         }
 
         if (substatus == EVAL_MISS) {
-            return substatus = EVAL_MISS;
+            return EVAL_MISS;
         }
     }
 
