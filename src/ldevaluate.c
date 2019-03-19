@@ -78,6 +78,7 @@ LDi_addReason(struct LDJSON **const result, const char *const reason,
     if (!LDObjectSetKey(tmpcollection, "kind", tmp)) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
+        LDJSONFree(tmp);
         LDJSONFree(tmpcollection);
 
         return NULL;
