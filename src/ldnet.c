@@ -296,7 +296,7 @@ LDi_networkthread(void* const clientref)
             }
 
             interface->destroy(interface->context);
-            free(interface);
+            LDFree(interface);
         }
     }
 
