@@ -349,12 +349,23 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
         for (iter = LDGetIter(targets); iter; iter = LDIterNext(iter)) {
             const struct LDJSON *values = NULL;
 
-            LD_ASSERT(LDJSONGetType(iter) == LDObject);
+            if (LDJSONGetType(iter) != LDObject) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
 
-            values = LDObjectLookup(iter, "values");
+                return EVAL_SCHEMA;
+            }
 
-            LD_ASSERT(values);
-            LD_ASSERT(LDJSONGetType(values) == LDArray);
+            if (!(values = LDObjectLookup(iter, "values"))) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
+
+                return EVAL_SCHEMA;
+            }
+
+            if (LDJSONGetType(values) != LDArray) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
+
+                return EVAL_SCHEMA;
+            }
 
             if (user->key && LDi_textInArray(values, user->key)) {
                 const struct LDJSON *variation = NULL;
