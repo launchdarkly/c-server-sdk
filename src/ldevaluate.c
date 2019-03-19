@@ -441,6 +441,8 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
                 if (!LDObjectSetKey(reason, "ruleIndex", tmp)) {
                     LD_LOG(LD_LOG_ERROR, "memory error");
 
+                    LDJSONFree(tmp);
+
                     return EVAL_MEM;
                 }
 
@@ -464,6 +466,8 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
                 if (!LDObjectSetKey(reason, "ruleId", tmp)) {
                     LD_LOG(LD_LOG_ERROR, "memory error");
+
+                    LDJSONFree(tmp);
 
                     return EVAL_MEM;
                 }
