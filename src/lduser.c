@@ -275,7 +275,11 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
                     return NULL;                                               \
                 }                                                              \
                                                                                \
-                LDObjectSetKey(json, #field, temp);                            \
+                if (!LDObjectSetKey(json, #field, temp)) {                     \
+                    LDJSONFree(json);                                          \
+                                                                               \
+                    return NULL;                                               \
+                }                                                              \
             }                                                                  \
         }                                                                      \
 
