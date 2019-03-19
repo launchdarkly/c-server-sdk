@@ -602,11 +602,8 @@ LDi_checkPrerequisites(struct LDClient *const client,
             return EVAL_STORE;
         }
 
-        if (!preflag || LDi_isDeleted(preflag))
-        {
-            LD_LOG(LD_LOG_ERROR, "store lookup error");
-
-            LDJSONFree(preflag);
+        if (!preflag) {
+            LD_LOG(LD_LOG_ERROR, "cannot find flag in store");
 
             return EVAL_MISS;
         }
@@ -841,10 +838,8 @@ LDi_clauseMatchesUser(const struct LDJSON *const clause,
                     return EVAL_STORE;
                 }
 
-                if (!segment || LDi_isDeleted(segment)) {
-                    LD_LOG(LD_LOG_WARNING, "segment not found");
-
-                    LDJSONFree(segment);
+                if (!segment) {
+                    LD_LOG(LD_LOG_WARNING, "segment not found in store");
 
                     continue;
                 }
@@ -1250,7 +1245,7 @@ LDi_bucketUser(const struct LDUser *const user, const char *const segmentKey,
 
             return true;
         } else {
-            LDFree(bucketable);    
+            LDFree(bucketable);
         }
     }
 

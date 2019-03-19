@@ -68,7 +68,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         status = EVAL_MISS;
     }
 
-    if (!flag || LDi_isDeleted(flag)) {
+    if (!flag) {
         if (!LDi_addErrorReason(&details, "FLAG_NOT_FOUND")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
@@ -169,7 +169,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         }
     }
 
-    if (!LDi_summarizeEvent(client, event, (!flag) || LDi_isDeleted(flag))) {
+    if (!LDi_summarizeEvent(client, event, !flag)) {
         LD_LOG(LD_LOG_ERROR, "summary failed");
 
         goto error;
