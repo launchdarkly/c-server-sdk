@@ -1154,7 +1154,7 @@ LDi_clauseMatchesUserNoSegments(const struct LDJSON *const clause,
 
     type = LDJSONGetType(attributeValue);
 
-    if (type == LDArray || type == LDObject) {
+    if (type == LDArray) {
         struct LDJSON *iter;
 
         for (iter = LDGetIter(attributeValue); iter; iter = LDIterNext(iter)) {
