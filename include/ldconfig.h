@@ -21,7 +21,7 @@ struct LDStore; struct LDConfig;
 struct LDConfig *LDConfigNew(const char *const key);
 
 /**
- * @brief Destory a config not associated with a client instance.
+ * @brief Destroy a config not associated with a client instance.
  * @param[in] config May be NULL.
  * @return Void.
  */
@@ -191,5 +191,3 @@ bool LDConfigAddPrivateAttribute(struct LDConfig *const config,
  */
 void LDConfigSetFeatureStore(struct LDConfig *const config,
     struct LDStore *const store);
-
-bool LDStoreInitEmpty(struct LDStore *const store);

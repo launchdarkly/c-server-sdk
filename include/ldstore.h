@@ -122,6 +122,9 @@ bool LDStoreInitialized(const struct LDStore *const store);
 /** @brief A convenience wrapper around `store->destructor.` */
 void LDStoreDestroy(struct LDStore *const store);
 
+/** @brief Calls LDStoreInit with empty sets. */
+bool LDStoreInitEmpty(struct LDStore *const store);
+
 /*@}*/
 
 /***************************************************************************//**
