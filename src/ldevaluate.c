@@ -1249,6 +1249,8 @@ LDi_bucketUser(const struct LDUser *const user, const char *const segmentKey,
             LDFree(bucketable);
 
             return true;
+        } else {
+            LDFree(bucketable);    
         }
     }
 
