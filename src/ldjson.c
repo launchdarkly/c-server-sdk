@@ -128,7 +128,8 @@ LDGetText(const struct LDJSON *const node)
 {
     cJSON *const json = (cJSON *const)node;
 
-    LD_ASSERT(json); LD_ASSERT(cJSON_IsString(json));
+    LD_ASSERT(json);
+    LD_ASSERT(cJSON_IsString(json));
 
     return json->valuestring;
 }
