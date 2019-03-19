@@ -40,7 +40,8 @@ LDConfigureGlobalLogger(const LDLogLevel level,
 void
 LDi_log(const LDLogLevel level, const char *const format, ...)
 {
-    char buffer[4096]; va_list va;
+    char buffer[4096];
+    va_list va;
 
     LD_ASSERT(format);
 
