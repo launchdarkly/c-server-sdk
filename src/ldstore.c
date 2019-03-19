@@ -201,6 +201,8 @@ memoryDelete(void *const rawcontext, const char *const kind,
     }
 
     if (!LDObjectSetKey(placeholder, "key", temp)) {
+        LDJSONFree(temp);
+
         goto error;
     }
 
@@ -209,6 +211,8 @@ memoryDelete(void *const rawcontext, const char *const kind,
     }
 
     if (!LDObjectSetKey(placeholder, "version", temp)) {
+        LDJSONFree(temp);
+
         goto error;
     }
 
