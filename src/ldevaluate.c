@@ -558,8 +558,9 @@ LDi_checkPrerequisites(struct LDClient *const client,
     for (iter = LDGetIter(prerequisites); iter; iter = LDIterNext(iter)) {
         struct LDJSON *result, *preflag, *event, *subevents;
         const struct LDJSON *key, *variation, *variationNumJSON;
-        unsigned int variationNum, *variationNumRef ;
+        unsigned int variationNum, *variationNumRef;
         EvalStatus status;
+        const char *keyText;
 
         result           = NULL;
         preflag          = NULL;
@@ -588,7 +589,9 @@ LDi_checkPrerequisites(struct LDClient *const client,
             return EVAL_SCHEMA;
         }
 
-        *failedKey = LDGetText(key);
+        keyText = LDGetText(key);
+
+        *failedKey = keyText;
 
         if (!(variation = LDObjectLookup(iter, "variation"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
@@ -602,7 +605,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             return EVAL_SCHEMA;
         }
 
-        if (!LDStoreGet(store, "flags", LDGetText(key), &preflag)) {
+        if (!LDStoreGet(store, "flags", keyText, &preflag)) {
             LD_LOG(LD_LOG_ERROR, "store lookup error");
 
             return EVAL_STORE;
