@@ -280,9 +280,13 @@ memoryUpsert(void *const rawcontext, const char *const kind,
             return true;
         }
 
-        LDObjectSetKey(set, LDGetText(key), replacement);
+        if (!LDObjectSetKey(set, LDGetText(key), replacement)) {
+            goto error;
+        }
     } else {
-        LDObjectSetKey(set, LDGetText(key), replacement);
+        if (!LDObjectSetKey(set, LDGetText(key), replacement)) {
+            goto error;
+        }
     }
 
     LD_ASSERT(LDi_wrunlock(&context->lock));
