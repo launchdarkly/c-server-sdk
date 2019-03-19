@@ -14,9 +14,6 @@ target_link_libraries(sdk ${CURL_LIBRARIES} pthread pcre m gmp)
 add_library(sdkdynamic SHARED ${SOURCES})
 target_link_libraries(sdkdynamic ${CURL_LIBRARIES} pthread pcre m gmp)
 
-add_executable(main "src/main.c")
-target_link_libraries(main sdk)
-
 file(GLOB TESTS "tests/*")
 foreach(testsource ${TESTS})
     get_filename_component(testsourceleaf ${testsource} NAME)
