@@ -121,8 +121,7 @@ testDeleteFlag(struct StreamContext *const context)
 
     LD_ASSERT(LDStoreGet(
         context->client->config->store, "flags", "my-flag", &lookup));
-    LD_ASSERT(lookup);
-    LD_ASSERT(LDi_isDeleted(lookup));
+    LD_ASSERT(!lookup);
 
     LDJSONFree(lookup);
 }
@@ -170,8 +169,7 @@ testDeleteSegment(struct StreamContext *const context)
 
     LD_ASSERT(LDStoreGet(
         context->client->config->store, "segments", "my-segment", &lookup));
-    LD_ASSERT(lookup);
-    LD_ASSERT(LDi_isDeleted(lookup));
+    LD_ASSERT(!lookup);
 
     LDJSONFree(lookup);
 }
