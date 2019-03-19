@@ -294,9 +294,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     {
         struct LDJSON *reason;
 
-        LD_LOG(LD_LOG_ERROR, "sub error error");
-
-        LDJSONFree(events);
+        LD_LOG(LD_LOG_ERROR, "checkPrequisites failed");
 
         if (!(reason = LDi_addReason(result, "PREREQUISITE_FAILED", events))) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
