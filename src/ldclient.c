@@ -83,7 +83,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     LDJSONFree(client->events);
     LDJSONFree(client->summaryCounters);
 
-    free(client);
+    LDFree(client);
 
     return NULL;
 }
