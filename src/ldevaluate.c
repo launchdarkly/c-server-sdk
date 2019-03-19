@@ -174,6 +174,8 @@ addValue(const struct LDJSON *const flag, struct LDJSON *result,
     if (!(LDObjectSetKey(result, "variationIndex", tmp))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
+        LDJSONFree(tmp);
+
         return false;
     }
 
@@ -213,6 +215,8 @@ addValue(const struct LDJSON *const flag, struct LDJSON *result,
 
     if (!(LDObjectSetKey(result, "value", tmp))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
+
+        LDJSONFree(tmp);
 
         return false;
     }
