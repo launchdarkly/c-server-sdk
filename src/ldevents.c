@@ -36,6 +36,8 @@ LDi_newBaseEvent(struct LDClient *const client,
         if (!(LDObjectSetKey(event, "user", tmp))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
+            LDJSONFree(tmp);
+
             goto error;
         }
     }
@@ -54,6 +56,8 @@ LDi_newBaseEvent(struct LDClient *const client,
 
     if (!(LDObjectSetKey(event, "creationDate", tmp))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(tmp);
 
         goto error;
     }
@@ -120,6 +124,8 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     if (!LDObjectSetKey(event, "key", tmp)) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
+        LDJSONFree(tmp);
+
         goto error;
     }
 
@@ -132,6 +138,8 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
 
         if (!LDObjectSetKey(event, "variation", tmp)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(tmp);
 
             goto error;
         }
@@ -146,6 +154,8 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     if (!LDObjectSetKey(event, "value", tmp)) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
+        LDJSONFree(tmp);
+
         goto error;
     }
 
@@ -158,6 +168,8 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
 
         if (!LDObjectSetKey(event, "default", tmp)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(tmp);
 
             goto error;
         }
@@ -172,6 +184,8 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
 
         if (!LDObjectSetKey(event, "prereqOf", tmp)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(tmp);
 
             goto error;
         }
@@ -196,6 +210,8 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
             if (!LDObjectSetKey(event, "version", tmp)) {
                 LD_LOG(LD_LOG_ERROR, "memory error");
 
+                LDJSONFree(tmp);
+
                 goto error;
             }
         }
@@ -210,6 +226,8 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
 
         if (!LDObjectSetKey(event, "reason", tmp)) {
             LD_LOG(LD_LOG_ERROR, "memory error");
+
+            LDJSONFree(tmp);
 
             goto error;
         }
@@ -250,6 +268,8 @@ LDi_newCustomEvent(struct LDClient *const client,
 
     if (!LDObjectSetKey(event, "key", tmp)) {
         LD_LOG(LD_LOG_ERROR, "memory error");
+
+        LDJSONFree(tmp);
 
         goto error;
     }
@@ -299,6 +319,7 @@ newIdentifyEvent(struct LDClient *const client, const struct LDUser *const user)
         if (!LDObjectSetKey(event, "key", tmp)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
+            LDJSONFree(tmp);
             LDJSONFree(event);
 
             return NULL;
@@ -379,6 +400,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
             LDJSONFree(key);
+            LDJSONFree(tmp);
 
             return false;
         }
@@ -401,6 +423,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
             LDJSONFree(key);
+            LDJSONFree(tmp);
 
             return false;
         }
@@ -478,6 +501,8 @@ LDi_summarizeEvent(struct LDClient *const client,
             if (!LDObjectSetKey(flagContext, "default", tmp)) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
+                LDJSONFree(tmp);
+
                 goto cleanup;
             }
         }
@@ -490,6 +515,8 @@ LDi_summarizeEvent(struct LDClient *const client,
 
         if (!LDObjectSetKey(flagContext, "counters", tmp)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(tmp);
 
             goto cleanup;
         }
@@ -520,6 +547,8 @@ LDi_summarizeEvent(struct LDClient *const client,
         if (!LDObjectSetKey(entry, "count", tmp)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
+            LDJSONFree(tmp);
+
             goto cleanup;
         }
 
@@ -534,6 +563,8 @@ LDi_summarizeEvent(struct LDClient *const client,
 
             if (!LDObjectSetKey(entry, "value", tmp)) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                LDJSONFree(tmp);
 
                 goto cleanup;
             }
@@ -551,6 +582,8 @@ LDi_summarizeEvent(struct LDClient *const client,
             if (!LDObjectSetKey(entry, "version", tmp)) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
+                LDJSONFree(tmp);
+
                 goto cleanup;
             }
         }
@@ -567,6 +600,8 @@ LDi_summarizeEvent(struct LDClient *const client,
             if (!LDObjectSetKey(entry, "variation", tmp)) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
+                LDJSONFree(tmp);
+
                 goto cleanup;
             }
         }
@@ -580,6 +615,8 @@ LDi_summarizeEvent(struct LDClient *const client,
 
             if (!LDObjectSetKey(entry, "unknown", tmp)) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
+
+                LDJSONFree(tmp);
 
                 goto cleanup;
             }
@@ -727,6 +764,8 @@ LDi_prepareSummaryEvent(struct LDClient *const client)
     if (!(LDObjectSetKey(summary, "kind", tmp))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
+        LDJSONFree(tmp);
+
         goto error;
     }
 
@@ -738,6 +777,8 @@ LDi_prepareSummaryEvent(struct LDClient *const client)
 
     if (!(LDObjectSetKey(summary, "startDate", tmp))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(tmp);
 
         goto error;
     }
@@ -756,6 +797,8 @@ LDi_prepareSummaryEvent(struct LDClient *const client)
 
     if (!(LDObjectSetKey(summary, "endDate", tmp))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(tmp);
 
         goto error;
     }
