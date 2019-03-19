@@ -1037,11 +1037,11 @@ LDi_segmentRuleMatchUser(const struct LDJSON *const segmentRule,
         {
             float bucket;
 
-            const struct LDJSON *bucketBy =
+            const struct LDJSON *const bucketBy =
                 LDObjectLookup(segmentRule, "bucketBy");
 
-            const char *const attribute = (bucketBy == NULL)
-                ? "key" : LDGetText(bucketBy);
+            const char *const attribute = LDi_notNull(bucketBy)
+                ? LDGetText(bucketBy) : "key";
 
             if (!LDi_bucketUser(user, segmentKey, attribute, salt, &bucket)) {
                 LD_LOG(LD_LOG_ERROR, "LDi_bucketUser error");
