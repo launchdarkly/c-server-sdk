@@ -648,7 +648,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         }
 
         event = LDi_newFeatureRequestEvent(client,
-            LDGetText(key), user, variationNumRef,
+            keyText, user, variationNumRef,
             LDObjectLookup(result, "value"), NULL,
             LDGetText(LDObjectLookup(flag, "key")), preflag,
             LDObjectLookup(result, "reason"));
