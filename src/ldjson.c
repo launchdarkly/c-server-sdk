@@ -232,7 +232,9 @@ LDObjectLookup(const struct LDJSON *const rawobject, const char *const key)
 {
     cJSON *const object = (cJSON *const)rawobject;
 
-    LD_ASSERT(object); LD_ASSERT(cJSON_IsObject(object)); LD_ASSERT(key);
+    LD_ASSERT(object);
+    LD_ASSERT(cJSON_IsObject(object));
+    LD_ASSERT(key);
 
     return (struct LDJSON *)cJSON_GetObjectItemCaseSensitive(object, key);
 }
