@@ -50,7 +50,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         if (!LDi_addErrorReason(&details, "NULL_KEY")) {
             LD_LOG(LD_LOG_ERROR, "failed to add error reason");
 
-            return NULL;
+            goto error;
         }
 
         goto fallback;
@@ -466,6 +466,9 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
                 }
 
                 if (!LDObjectSetKey(evaluatedFlags, LDIterKey(flag), value)) {
+                    LDJSONFree(value);
+                    LDJSONFree(details);
+
                     goto error;
                 }
             }

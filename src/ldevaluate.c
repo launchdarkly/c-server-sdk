@@ -829,8 +829,8 @@ LDi_clauseMatchesUser(const struct LDJSON *const clause,
         bool anysuccess;
         const struct LDJSON *values, *iter;
 
-        values    = NULL;
-        iter      = NULL;
+        values     = NULL;
+        iter       = NULL;
         anysuccess = false;
 
         if (!(values = LDObjectLookup(clause, "values"))) {
