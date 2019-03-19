@@ -128,6 +128,7 @@ LDi_addErrorReason(struct LDJSON **const result, const char *const kind)
     }
 
     if (!(LDObjectSetKey(tmpcollection, "errorKind", tmp))) {
+        LDJSONFree(tmp);
         LDJSONFree(tmpcollection);
 
         LD_LOG(LD_LOG_ERROR, "failed to set key");
