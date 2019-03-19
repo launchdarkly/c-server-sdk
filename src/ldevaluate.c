@@ -70,17 +70,23 @@ LDi_addReason(struct LDJSON **const result, const char *const reason,
     if (!(tmp = LDNewText(reason))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
+        LDJSONFree(tmpcollection);
+
         return NULL;
     }
 
     if (!LDObjectSetKey(tmpcollection, "kind", tmp)) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
+        LDJSONFree(tmpcollection);
+
         return NULL;
     }
 
     if (!LDObjectSetKey(*result, "reason", tmpcollection)) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
+
+        LDJSONFree(tmpcollection);
 
         return NULL;
     }
