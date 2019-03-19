@@ -267,8 +267,9 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     }
 
     if (!LDGetBool(on)) {
-        const struct LDJSON *offVariation =
-            LDObjectLookup(flag, "offVariation");
+        const struct LDJSON *offVariation;
+
+        offVariation = LDObjectLookup(flag, "offVariation");
 
         if (!LDi_addReason(result, "OFF", NULL)) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
