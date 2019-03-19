@@ -148,10 +148,19 @@ memoryAll(void *const rawcontext, const char *const kind,
             if (!(duplicate = LDJSONDuplicate(iter))) {
                 LDJSONFree(object);
 
+                LD_ASSERT(LDi_rdunlock(&context->lock));
+
                 return false;
             }
 
-            LDObjectSetKey(object, LDIterKey(iter), duplicate);
+            if (!LDObjectSetKey(object, LDIterKey(iter), duplicate)) {
+                LDJSONFree(object);
+                LDJSONFree(duplicate);
+
+                LD_ASSERT(LDi_rdunlock(&context->lock));
+
+                return false;
+            }
         }
     }
 
