@@ -231,18 +231,32 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
 
     if (lduser->key) {
         if (!(temp = LDNewText(lduser->key))) {
+            LDJSONFree(json);
+
             return NULL;
         }
 
-        LDObjectSetKey(json, "key", temp);
+        if (!LDObjectSetKey(json, "key", temp)) {
+            LDJSONFree(temp);
+            LDJSONFree(json);
+
+            return NULL;
+        }
     }
 
     if (lduser->anonymous) {
         if (!(temp = LDNewBool(lduser->anonymous))) {
+            LDJSONFree(json);
+
             return NULL;
         }
 
-        LDObjectSetKey(json, "anonymous", temp);
+        if (!LDObjectSetKey(json, "anonymous", temp)) {
+            LDJSONFree(temp);
+            LDJSONFree(json);
+
+            return NULL;
+        }
     }
 
     #define addstring(field)                                                   \
