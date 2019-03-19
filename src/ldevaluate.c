@@ -628,14 +628,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         variationNumJSON = LDObjectLookup(result, "variationIndex");
 
         if (LDi_notNull(variationNumJSON)) {
-            if (LDJSONGetType(variationNumJSON) != LDNumber) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
-
-                LDJSONFree(preflag);
-                LDJSONFree(result);
-
-                return EVAL_SCHEMA;
-            }
+            LD_ASSERT(LDJSONGetType(variationNumJSON) == LDNumber);
 
             variationNum = LDGetNumber(variationNumJSON);
 
