@@ -13,6 +13,8 @@ main()
 
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
+    LDGlobalInit();
+
     config = LDConfigNew("****");
 
     LD_ASSERT(LDConfigSetBaseURI(config, "https://ld-stg.launchdarkly.com"));
