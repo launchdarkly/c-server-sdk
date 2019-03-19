@@ -1,34 +1,45 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <assert.h>
 
-#include "ldlogging.h"
-#include "ldinternal.h"
+#include "ldapi.h"
+
+#define YOUR_SDK_KEY "<put your SDK key here>"
+#define YOUR_FEATURE_KEY "<put your feature key here>"
 
 int
 main()
 {
-    struct LDConfig *config; struct LDClient *client;
+    struct LDConfig *config;
+    struct LDClient *client;
+    struct LDUser *user;
 
     setbuf(stdout, NULL);
 
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
-
     LDGlobalInit();
 
-    config = LDConfigNew("****");
-
-    LD_ASSERT(LDConfigSetBaseURI(config, "https://ld-stg.launchdarkly.com"));
+    config = LDConfigNew(YOUR_SDK_KEY);
+    assert(config);
 
     client = LDClientInit(config, 0);
+    assert(client);
 
-    if (client) {
-        LD_LOG(LD_LOG_INFO, "LDClientInit Success");
+    user = LDUserNew("abc");
+    assert(user);
 
-        getchar();
+    while (true) {
+        const bool flag = LDBoolVariation(
+            client, user, YOUR_FEATURE_KEY, false, NULL);
 
-        LDClientClose(client);
-    } else {
-        LD_LOG(LD_LOG_INFO, "LDClientInit Failed\n");
+        if (flag) {
+            LD_LOG(LD_LOG_INFO, "feature flag is true");
+        } else {
+            LD_LOG(LD_LOG_INFO, "feature flag is false");
+        }
+
+        sleep(1);
     }
 
     return 0;
