@@ -1076,7 +1076,7 @@ LDi_clauseMatchesUserNoSegments(const struct LDJSON *const clause,
 {
     OpFn fn;
     const char *operatorText, *attributeText;
-    struct LDJSON *operator,* attributeValue, *attribute;
+    struct LDJSON *operator, *attributeValue, *attribute;
     const struct LDJSON *values;
     LDJSONType type;
 
