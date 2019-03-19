@@ -485,7 +485,6 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
                     }
                 }
 
-
                 return EVAL_MATCH;
             }
 
