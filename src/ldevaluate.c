@@ -295,8 +295,11 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
         LD_LOG(LD_LOG_ERROR, "sub error error");
 
+        LDJSONFree(events);
+
         if (!(reason = LDi_addReason(result, "PREREQUISITE_FAILED", events))) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
+
 
             return EVAL_MEM;
         }
