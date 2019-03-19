@@ -570,6 +570,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         variationNumJSON = NULL;
         event            = NULL;
         subevents        = NULL;
+        keyText          = NULL;
 
         if (LDJSONGetType(iter) != LDObject) {
             LD_LOG(LD_LOG_ERROR, "schema error");
