@@ -817,6 +817,8 @@ LDi_prepareSummaryEvent(struct LDClient *const client)
         if (!(countersArray = objectToArray(countersObject))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
+            LDJSONFree(countersObject);
+
             goto error;
         }
 
@@ -824,6 +826,8 @@ LDi_prepareSummaryEvent(struct LDClient *const client)
 
         if (!LDObjectSetKey(iter, "counters", countersArray)) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(countersArray);
 
             goto error;
         }
