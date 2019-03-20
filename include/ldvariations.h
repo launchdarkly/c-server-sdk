@@ -19,7 +19,6 @@ enum LDEvalReason {
     LD_TARGET_MATCH,
     LD_RULE_MATCH,
     LD_FALLTHROUGH
-
 };
 
 enum LDEvalErrorKind {
@@ -53,6 +52,9 @@ struct LDDetails {
 void LDDetailsInit(struct LDDetails *const details);
 
 void LDDetailsClear(struct LDDetails *const details);
+
+const char *LDEvalKindToString(const enum LDEvalReason kind);
+const char *LDEvalErrorKindToString(const enum LDEvalErrorKind kind);
 
 bool LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const bool fallback,

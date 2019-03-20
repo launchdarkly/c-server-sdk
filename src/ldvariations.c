@@ -17,6 +17,44 @@ LDDetailsClear(struct LDDetails *const details)
     LDDetailsInit(details);
 }
 
+const char *
+LDEvalKindToString(const enum LDEvalReason kind)
+{
+    switch (kind) {
+        case LD_ERROR:               return "ERROR";
+        case LD_OFF:                 return "OFF";
+        case LD_PREREQUISITE_FAILED: return "PREREQUISITE_FAILED";
+        case LD_TARGET_MATCH:        return "TARGET_MATCH";
+        case LD_RULE_MATCH:          return "RULE_MATCH";
+        case LD_FALLTHROUGH:         return "FALLTHROUGH";
+        default: return NULL;
+    }
+}
+
+const char *
+LDEvalErrorKindToString(const enum LDEvalErrorKind kind)
+{
+    switch (kind) {
+        case LD_NULL_CLIENT:        return "NULL_CLIENT";
+        case LD_CLIENT_NOT_READY:   return "CLIENT_NOT_READY";
+        case LD_NULL_KEY:           return "NULL_KEY";
+        case LD_STORE_ERROR:        return "STORE_ERROR";
+        case LD_FLAG_NOT_FOUND:     return "FLAG_NOT_FOUND";
+        case LD_USER_NOT_SPECIFIED: return "USER_NOT_SPECIFIED";
+        case LD_MALFORMED_FLAG:     return "MALFORMED_FLAG";
+        case LD_WRONG_TYPE:         return "WRONG_TYPE";
+        default: return NULL;
+    }
+}
+
+struct LDJSON *
+LDDetailsToJSON(const struct LDDetails *const details)
+{
+    LD_ASSERT(details);
+
+    return NULL;
+}
+
 static struct LDJSON *
 variation(struct LDClient *const client, const struct LDUser *const user,
     const char *const key, struct LDJSON *const fallback,

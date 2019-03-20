@@ -637,7 +637,6 @@ testFlagMatchesUserFromRules()
     struct LDJSON *flag;
     struct LDJSON *result;
     struct LDJSON *variation;
-    struct LDJSON *reason;
     struct LDJSON *events;
     struct LDDetails details;
 
