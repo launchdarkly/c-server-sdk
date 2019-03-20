@@ -10,6 +10,7 @@
 
 #include "ldjson.h"
 #include "ldstore.h"
+#include "ldvariations.h"
 
 typedef enum {
     EVAL_MEM,
@@ -21,16 +22,10 @@ typedef enum {
 
 bool LDi_isEvalError(const EvalStatus status);
 
-struct LDJSON *LDi_addReason(struct LDJSON **const result,
-    const char *const reason);
-
-struct LDJSON *LDi_addErrorReason(struct LDJSON **const result,
-    const char *const kind);
-
 EvalStatus LDi_evaluate(struct LDClient *const client,
     const struct LDJSON *const flag, const struct LDUser *const user,
-    struct LDStore *const store, struct LDJSON **const result,
-    struct LDJSON **const events);
+    struct LDStore *const store, struct LDDetails *const details,
+    struct LDJSON **const o_events, struct LDJSON **const o_value);
 
 EvalStatus LDi_checkPrerequisites(struct LDClient *const client,
     const struct LDJSON *const flag, const struct LDUser *const user,

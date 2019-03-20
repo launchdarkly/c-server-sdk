@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "ldvariations.h"
+
 /* event construction */
 struct LDJSON *LDi_newBaseEvent(struct LDClient *const client,
     const struct LDUser *const user, const char *const kind);
@@ -16,7 +18,7 @@ struct LDJSON *LDi_newFeatureRequestEvent(struct LDClient *const client,
     const char *const key, const struct LDUser *const user,
     const unsigned int *const variation, const struct LDJSON *const value,
     const struct LDJSON *const defaultValue, const char *const prereqOf,
-    const struct LDJSON *const flag, const struct LDJSON *const reason);
+    const struct LDJSON *const flag, const struct LDDetails *const reason);
 
 struct LDJSON *LDi_newCustomEvent(struct LDClient *const client,
     const struct LDUser *const user, const char *const key,

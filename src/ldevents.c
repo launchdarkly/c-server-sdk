@@ -99,8 +99,11 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     const char *const key, const struct LDUser *const user,
     const unsigned int *const variation, const struct LDJSON *const value,
     const struct LDJSON *const defaultValue, const char *const prereqOf,
-    const struct LDJSON *const flag, const struct LDJSON *const reason)
+    const struct LDJSON *const flag, const struct LDDetails *const details)
 {
+    return NULL;
+
+    /*
     struct LDJSON *tmp, *event;
 
     LD_ASSERT(key);
@@ -239,6 +242,7 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     LDJSONFree(event);
 
     return NULL;
+    */
 }
 
 struct LDJSON *

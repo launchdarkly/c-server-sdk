@@ -8,13 +8,13 @@ LDDetailsInit(struct LDDetails *const details)
 {
     details->variationIndex = 0;
     details->hasVariation   = false;
-    details->reason         = NULL;
+    details->kind           = LD_UNKNOWN;
 }
 
 void
 LDDetailsClear(struct LDDetails *const details)
 {
-    LDJSONFree(details->reason);
+    LDDetailsClear(details);
 }
 
 static struct LDJSON *
@@ -23,49 +23,40 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     const LDJSONType type, struct LDJSON **const reason)
 {
     EvalStatus status;
-    unsigned int variationNum, *variationNumRef;
+    unsigned int *variationNumRef;
     struct LDStore *store;
-    struct LDJSON *flag, *value, *details, *events, *event,
-        *variationNumJSON, *evalue;
+    struct LDJSON *flag, *value, *events, *event, *evalue;
+    struct LDDetails details;
 
     LD_ASSERT(client);
 
     flag             = NULL;
     value            = NULL;
     store            = NULL;
-    details          = NULL;
     events           = NULL;
     event            = NULL;
     variationNumRef  = NULL;
-    variationNumJSON = NULL;
     evalue           = NULL;
 
-    if (!client) {
-        if (!LDi_addErrorReason(&details, "NULL_CLIENT")) {
-            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
+    LDDetailsInit(&details);
 
-            goto error;
-        }
+    if (!client) {
+        details.kind = LD_ERROR;
+        details.extra.errorKind = LD_NULL_CLIENT;
 
         goto fallback;
     }
 
     if (!LDClientIsInitialized(client)) {
-        if (!LDi_addErrorReason(&details, "CLIENT_NOT_READY")) {
-            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
-
-            goto error;
-        }
+        details.kind = LD_ERROR;
+        details.extra.errorKind = LD_CLIENT_NOT_READY;
 
         goto fallback;
     }
 
     if (!key) {
-        if (!LDi_addErrorReason(&details, "NULL_KEY")) {
-            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
-
-            goto error;
-        }
+        details.kind = LD_ERROR;
+        details.extra.errorKind = LD_NULL_KEY;
 
         goto fallback;
     }
@@ -73,33 +64,25 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     LD_ASSERT(store = client->config->store);
 
     if (!LDStoreGet(store, "flags", key, &flag)) {
-        if (!LDi_addErrorReason(&details, "FLAG_NOT_FOUND")) {
-            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
-
-            goto error;
-        }
+        details.kind = LD_ERROR;
+        details.extra.errorKind = LD_STORE_ERROR;
 
         status = EVAL_MISS;
     }
 
     if (!flag) {
-        if (!LDi_addErrorReason(&details, "FLAG_NOT_FOUND")) {
-            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
-
-            goto error;
-        }
+        details.kind = LD_ERROR;
+        details.extra.errorKind = LD_FLAG_NOT_FOUND;
 
         status = EVAL_MISS;
     } else if (!user || !user->key) {
-        if (!LDi_addErrorReason(&details, "USER_NOT_SPECIFIED")) {
-            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
-
-            goto error;
-        }
+        details.kind = LD_ERROR;
+        details.extra.errorKind = LD_USER_NOT_SPECIFIED;
 
         status = EVAL_MISS;
     } else {
-        status = LDi_evaluate(client, flag, user, store, &details, &events);
+        status = LDi_evaluate(client, flag, user, store, &details, &events,
+            &value);
     }
 
     if (status == EVAL_MEM) {
@@ -107,11 +90,8 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (status == EVAL_SCHEMA) {
-        if (!LDi_addErrorReason(&details, "MALFORMED_FLAG")) {
-            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
-
-            goto error;
-        }
+        details.kind = LD_ERROR;
+        details.extra.errorKind = LD_MALFORMED_FLAG;
 
         goto fallback;
     }
@@ -136,34 +116,16 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         }
     }
 
-    variationNumJSON = LDObjectLookup(details, "variationIndex");
-
-    if (LDi_notNull(variationNumJSON)) {
-        if (LDJSONGetType(variationNumJSON) != LDNumber) {
-            LD_LOG(LD_LOG_ERROR, "schema error");
-
-            goto fallback;
-        }
-
-        variationNum = LDGetNumber(variationNumJSON);
-
-        variationNumRef = &variationNum;
+    if (details.hasVariation) {
+        variationNumRef = &details.variationIndex;
     }
 
-    if (!LDi_notNull(evalue = LDObjectLookup(details, "value"))) {
+    if (!LDi_notNull(evalue = value)) {
         evalue = fallback;
     }
 
-    {
-        struct LDJSON *reasonref = NULL;
-
-        if (reason) {
-            reasonref = LDObjectLookup(details, "reason");
-        }
-
-        event = LDi_newFeatureRequestEvent(client, key, user, variationNumRef,
-            evalue, fallback, NULL, flag, reasonref);
-    }
+    event = LDi_newFeatureRequestEvent(client, key, user, variationNumRef,
+        evalue, fallback, NULL, flag, &reason);
 
     if (!event) {
         LD_LOG(LD_LOG_ERROR, "failed to build feature request event");
@@ -189,50 +151,49 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto error;
     }
 
-    value = LDObjectLookup(details, "value");
-
     if (!LDi_notNull(value)) {
         goto fallback;
     }
 
     if (LDJSONGetType(value) != type) {
-        if (!LDi_addErrorReason(&details, "WRONG_TYPE")) {
-            LD_LOG(LD_LOG_ERROR, "failed to add error reason");
-
-            goto error;
-        }
+        details.kind = LD_ERROR;
+        details.extra.errorKind = LD_WRONG_TYPE;
 
         goto fallback;
     }
 
-    value = LDJSONDuplicate(value);
-
+    /*
     if (reason) {
         *reason = LDJSONDuplicate(details);
     }
+    */
 
     LDJSONFree(event);
-    LDJSONFree(details);
     LDJSONFree(fallback);
     LDJSONFree(flag);
+    LDDetailsClear(&details);
 
     return value;
 
   fallback:
+    /*
     if (reason) {
         *reason = LDJSONDuplicate(details);
     }
+    */
 
     LDJSONFree(flag);
     LDJSONFree(event);
-    LDJSONFree(details);
+    LDJSONFree(value);
+    LDDetailsClear(&details);
 
     return fallback;
 
   error:
     LDJSONFree(event);
-    LDJSONFree(details);
     LDJSONFree(flag);
+    LDJSONFree(value);
+    LDDetailsClear(&details);
 
     return fallback;
 }
@@ -461,44 +422,38 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
     LD_ASSERT(LDJSONGetType(rawFlags) == LDObject);
 
     for (flag = LDGetIter(rawFlags); flag; flag = LDIterNext(flag)) {
-        struct LDJSON *value, *details, *events;
+        struct LDJSON *value, *events;
         EvalStatus status;
+        struct LDDetails details;
 
         value   = NULL;
-        details = NULL;
         events  = NULL;
 
+        LDDetailsInit(&details);
+
         status = LDi_evaluate(client, flag, user, client->config->store,
-            &details, &events);
+            &details, &events, &value);
 
         if (status == EVAL_MEM || status == EVAL_SCHEMA) {
-            LDJSONFree(details);
             LDJSONFree(events);
+            LDDetailsClear(&details);
 
             goto error;
         }
 
-        if (details) {
-            if ((value = LDObjectLookup(details, "value"))) {
-                if (!(value = LDJSONDuplicate(value))) {
-                    LDJSONFree(details);
-                    LDJSONFree(events);
+        if (value) {
+            if (!LDObjectSetKey(evaluatedFlags, LDIterKey(flag), value)) {
+                LDJSONFree(events);
+                LDJSONFree(value);
+                LDDetailsClear(&details);
 
-                    goto error;
-                }
-
-                if (!LDObjectSetKey(evaluatedFlags, LDIterKey(flag), value)) {
-                    LDJSONFree(value);
-                    LDJSONFree(details);
-                    LDJSONFree(events);
-
-                    goto error;
-                }
+                goto error;
             }
-
-            LDJSONFree(details);
-            LDJSONFree(events);
         }
+
+        LDJSONFree(events);
+        LDJSONFree(value);
+        LDDetailsClear(&details);
     }
 
     LDJSONFree(rawFlags);

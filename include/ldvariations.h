@@ -11,10 +11,43 @@
 #include "lduser.h"
 #include "ldjson.h"
 
+enum LDEvalReason {
+    LD_UNKNOWN = 0,
+    LD_ERROR,
+    LD_OFF,
+    LD_PREREQUISITE_FAILED,
+    LD_TARGET_MATCH,
+    LD_RULE_MATCH,
+    LD_FALLTHROUGH
+
+};
+
+enum LDEvalErrorKind {
+    LD_NULL_CLIENT,
+    LD_CLIENT_NOT_READY,
+    LD_NULL_KEY,
+    LD_STORE_ERROR,
+    LD_FLAG_NOT_FOUND,
+    LD_USER_NOT_SPECIFIED,
+    LD_MALFORMED_FLAG,
+    LD_WRONG_TYPE
+};
+
+struct LDDetailsRule {
+    unsigned int ruleIndex;
+    char *id;
+    bool hasId;
+};
+
 struct LDDetails {
-    int variationIndex;
+    unsigned int variationIndex;
     bool hasVariation;
-    struct LDJSON *reason;
+    enum LDEvalReason kind;
+    union {
+        enum LDEvalErrorKind errorKind;
+        char *prequisiteKey;
+        struct LDDetailsRule rule;
+    } extra;
 };
 
 void LDDetailsInit(struct LDDetails *const details);

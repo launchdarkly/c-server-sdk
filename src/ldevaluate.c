@@ -94,85 +94,31 @@ LDi_addReason(struct LDJSON **const result, const char *const reason)
     return tmpcollection;
 }
 
-struct LDJSON *
-LDi_addErrorReason(struct LDJSON **const result, const char *const kind)
-{
-    struct LDJSON *tmpcollection, *tmp;
-
-    LD_ASSERT(result);
-    LD_ASSERT(kind);
-
-    tmpcollection = NULL;
-    tmp           = NULL;
-
-    if (!(tmpcollection = LDi_addReason(result, "ERROR"))) {
-        LD_LOG(LD_LOG_ERROR, "LDi_addReason failed");
-
-        return NULL;
-    }
-
-    if (!(tmp = LDNewText(kind))) {
-        LDJSONFree(tmpcollection);
-
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        return NULL;
-    }
-
-    if (!(LDObjectSetKey(tmpcollection, "errorKind", tmp))) {
-        LDJSONFree(tmp);
-        LDJSONFree(tmpcollection);
-
-        LD_LOG(LD_LOG_ERROR, "failed to set key");
-
-        return NULL;
-    }
-
-    return tmpcollection;
-}
-
 static bool
-addValue(const struct LDJSON *const flag, struct LDJSON *result,
-    const struct LDJSON *const index)
+addValue(const struct LDJSON *const flag, struct LDJSON **result,
+    struct LDDetails *const details, const struct LDJSON *const index)
 {
     struct LDJSON *tmp, *variations, *variation;
 
     LD_ASSERT(flag);
     LD_ASSERT(result);
+    LD_ASSERT(details);
 
     tmp        = NULL;
     variations = NULL;
     variation  = NULL;
 
     if (LDi_notNull(index)) {
+        details->hasVariation = true;
+
         if (LDJSONGetType(index) != LDNumber) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
             return false;
         }
 
-        if (!(tmp = LDNewNumber(LDGetNumber(index)))) {
-            LD_LOG(LD_LOG_ERROR, "allocation error");
+        details->variationIndex = LDGetNumber(index);
 
-            return false;
-        }
-    } else {
-        if (!(tmp = LDNewNull())) {
-            LD_LOG(LD_LOG_ERROR, "allocation error");
-
-            return false;
-        }
-    }
-
-    if (!(LDObjectSetKey(result, "variationIndex", tmp))) {
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        LDJSONFree(tmp);
-
-        return false;
-    }
-
-    if (LDi_notNull(index)) {
         if (!(variations = LDObjectLookup(flag, "variations"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -198,20 +144,11 @@ addValue(const struct LDJSON *const flag, struct LDJSON *result,
 
             return false;
         }
+
+        *result = tmp;
     } else {
-        if (!(tmp = LDNewNull())) {
-            LD_LOG(LD_LOG_ERROR, "allocation error");
-
-            return false;
-        }
-    }
-
-    if (!(LDObjectSetKey(result, "value", tmp))) {
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        LDJSONFree(tmp);
-
-        return false;
+        *result = NULL;
+        details->hasVariation = true;
     }
 
     return true;
@@ -220,7 +157,8 @@ addValue(const struct LDJSON *const flag, struct LDJSON *result,
 EvalStatus
 LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     const struct LDUser *const user, struct LDStore *const store,
-    struct LDJSON **const result, struct LDJSON **const events)
+    struct LDDetails *const details, struct LDJSON **const o_events,
+    struct LDJSON **const o_value)
 {
     EvalStatus substatus;
     const struct LDJSON *iter, *rules, *targets, *on;
@@ -230,8 +168,9 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     LD_ASSERT(flag);
     LD_ASSERT(user);
     LD_ASSERT(store);
-    LD_ASSERT(result);
-    LD_ASSERT(events);
+    LD_ASSERT(details);
+    LD_ASSERT(o_events);
+    LD_ASSERT(o_value);
 
     iter        = NULL;
     rules       = NULL;
@@ -264,13 +203,9 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
         offVariation = LDObjectLookup(flag, "offVariation");
 
-        if (!LDi_addReason(result, "OFF")) {
-            LD_LOG(LD_LOG_ERROR, "failed to add reason");
+        details->kind = LD_OFF;
 
-            return EVAL_MEM;
-        }
-
-        if (!(addValue(flag, *result, offVariation))) {
+        if (!(addValue(flag, o_value, details, offVariation))) {
             LD_LOG(LD_LOG_ERROR, "failed to add value");
 
             return EVAL_MEM;
@@ -281,47 +216,29 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
     /* prerequisites */
     if (LDi_isEvalError(substatus =
-        LDi_checkPrerequisites(client, flag, user, store, &failedKey, events)))
+        LDi_checkPrerequisites(client, flag, user, store, &failedKey,
+            o_events)))
     {
-        struct LDJSON *reason;
-
         LD_LOG(LD_LOG_ERROR, "checkPrequisites failed");
-
-        if (!(reason = LDi_addReason(result, "PREREQUISITE_FAILED"))) {
-            LD_LOG(LD_LOG_ERROR, "failed to add reason");
-
-
-            return EVAL_MEM;
-        }
 
         return substatus;
     }
 
     if (substatus == EVAL_MISS) {
-        struct LDJSON *key, *reason;
+        char *key;
 
-        key    = NULL;
-        reason = NULL;
-
-        if (!(reason = LDi_addReason(result, "PREREQUISITE_FAILED"))) {
-            LD_LOG(LD_LOG_ERROR, "failed to add reason");
-
-            return EVAL_MEM;
-        }
-
-        if (!(key = LDNewText(failedKey))) {
+        if (!(key = LDStrDup(failedKey))) {
             LD_LOG(LD_LOG_ERROR, "memory error");
 
             return EVAL_MEM;
         }
 
-        if (!LDObjectSetKey(reason, "prerequisiteKey", key)) {
-            LD_LOG(LD_LOG_ERROR, "memory error");
+        details->kind = LD_PREREQUISITE_FAILED;
+        details->extra.prequisiteKey = key;
 
-            return EVAL_MEM;
-        }
-
-        if (!(addValue(flag, *result, LDObjectLookup(flag, "offVariation")))) {
+        if (!(addValue(flag, o_value, details,
+            LDObjectLookup(flag, "offVariation"))))
+        {
             LD_LOG(LD_LOG_ERROR, "failed to add value");
 
             return EVAL_MEM;
@@ -366,13 +283,9 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
                 variation = LDObjectLookup(iter, "variation");
 
-                if (!LDi_addReason(result, "TARGET_MATCH")) {
-                    LD_LOG(LD_LOG_ERROR, "failed to add reason");
+                details->kind = LD_TARGET_MATCH;
 
-                    return EVAL_MEM;
-                }
-
-                if (!(addValue(flag, *result, variation))) {
+                if (!(addValue(flag, o_value, details, variation))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add value");
 
                     return EVAL_MEM;
@@ -415,22 +328,18 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
             }
 
             if (substatus == EVAL_MATCH) {
-                struct LDJSON *variation, *reason, *tmp, *ruleid;
+                struct LDJSON *variation, *ruleid;
 
                 variation = NULL;
-                reason    = NULL;
-                tmp       = NULL;
                 ruleid    = NULL;
 
-                if (!(reason = LDi_addReason(result, "RULE_MATCH"))) {
-                    LD_LOG(LD_LOG_ERROR, "failed to add reason");
-
-                    return EVAL_MEM;
-                }
+                details->kind = LD_RULE_MATCH;
+                details->extra.rule.ruleIndex = index;
+                details->extra.rule.hasId = false;
 
                 variation = LDi_getIndexForVariationOrRollout(flag, iter, user);
 
-                if (!(addValue(flag, *result, variation))) {
+                if (!(addValue(flag, o_value, details, variation))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add value");
 
                     LDJSONFree(variation);
@@ -440,40 +349,23 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
                 LDJSONFree(variation);
 
-                if (!(tmp = LDNewNumber(index))) {
-                    LD_LOG(LD_LOG_ERROR, "memory error");
-
-                    return EVAL_MEM;
-                }
-
-                if (!LDObjectSetKey(reason, "ruleIndex", tmp)) {
-                    LD_LOG(LD_LOG_ERROR, "memory error");
-
-                    LDJSONFree(tmp);
-
-                    return EVAL_MEM;
-                }
-
                 if (LDi_notNull(ruleid = LDObjectLookup(iter, "id"))) {
+                    char *text;
+
                     if (LDJSONGetType(ruleid) != LDText) {
                         LD_LOG(LD_LOG_ERROR, "schema error");
 
                         return EVAL_SCHEMA;
                     }
 
-                    if (!(tmp = LDNewText(LDGetText(ruleid)))) {
+                    if (!(text = LDStrDup(LDGetText(ruleid)))) {
                         LD_LOG(LD_LOG_ERROR, "memory error");
 
                         return EVAL_MEM;
                     }
 
-                    if (!LDObjectSetKey(reason, "ruleId", tmp)) {
-                        LD_LOG(LD_LOG_ERROR, "memory error");
-
-                        LDJSONFree(tmp);
-
-                        return EVAL_MEM;
-                    }
+                    details->extra.rule.id = text;
+                    details->extra.rule.hasId = true;
                 }
 
                 return EVAL_MATCH;
@@ -484,16 +376,12 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     }
 
     /* fallthrough */
-    if (!LDi_addReason(result, "FALLTHROUGH")) {
-        LD_LOG(LD_LOG_ERROR, "failed to add reason");
-
-        return EVAL_MEM;
-    }
+    details->kind = LD_FALLTHROUGH;
 
     index = LDi_getIndexForVariationOrRollout(flag,
         LDObjectLookup(flag, "fallthrough"), user);
 
-    if (!(addValue(flag, *result, index))) {
+    if (!(addValue(flag, o_value, details, index))) {
         LD_LOG(LD_LOG_ERROR, "failed to add value");
 
         LDJSONFree(index);
@@ -537,21 +425,23 @@ LDi_checkPrerequisites(struct LDClient *const client,
     }
 
     for (iter = LDGetIter(prerequisites); iter; iter = LDIterNext(iter)) {
-        struct LDJSON *result, *preflag, *event, *subevents;
-        const struct LDJSON *key, *variation, *variationNumJSON;
-        unsigned int variationNum, *variationNumRef;
+        struct LDJSON *value, *preflag, *event, *subevents;
+        const struct LDJSON *key, *variation;
+        unsigned int *variationNumRef;
         EvalStatus status;
         const char *keyText;
+        struct LDDetails details;
 
-        result           = NULL;
+        value            = NULL;
         preflag          = NULL;
         key              = NULL;
         variation        = NULL;
         variationNumRef  = NULL;
-        variationNumJSON = NULL;
         event            = NULL;
         subevents        = NULL;
         keyText          = NULL;
+
+        LDDetailsInit(&details);
 
         if (LDJSONGetType(iter) != LDObject) {
             LD_LOG(LD_LOG_ERROR, "schema error");
@@ -600,38 +490,30 @@ LDi_checkPrerequisites(struct LDClient *const client,
         }
 
         if (LDi_isEvalError(status = LDi_evaluate(
-            client, preflag, user, store, &result, events)))
+            client, preflag, user, store, &details, &subevents, &value)))
         {
             LDJSONFree(preflag);
 
             return status;
         }
 
-        if (!result) {
+        if (!value) {
             LDJSONFree(preflag);
 
             LD_LOG(LD_LOG_ERROR, "sub error with result");
         }
 
-        variationNumJSON = LDObjectLookup(result, "variationIndex");
-
-        if (LDi_notNull(variationNumJSON)) {
-            LD_ASSERT(LDJSONGetType(variationNumJSON) == LDNumber);
-
-            variationNum = LDGetNumber(variationNumJSON);
-
-            variationNumRef = &variationNum;
+        if (details.hasVariation) {
+            variationNumRef = &details.variationIndex;
         }
 
         event = LDi_newFeatureRequestEvent(client,
-            keyText, user, variationNumRef,
-            LDObjectLookup(result, "value"), NULL,
-            LDGetText(LDObjectLookup(flag, "key")), preflag,
-            LDObjectLookup(result, "reason"));
+            keyText, user, variationNumRef, value, NULL,
+            LDGetText(LDObjectLookup(flag, "key")), preflag, &details);
 
         if (!event) {
             LDJSONFree(preflag);
-            LDJSONFree(result);
+            LDJSONFree(value);
 
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -641,7 +523,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         if (!(*events)) {
             if (!(*events = LDNewArray())) {
                 LDJSONFree(preflag);
-                LDJSONFree(result);
+                LDJSONFree(value);
 
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -649,10 +531,10 @@ LDi_checkPrerequisites(struct LDClient *const client,
             }
         }
 
-        if ((subevents = LDObjectLookup(result, "events"))) {
+        if (subevents) {
             if (!LDArrayAppend(*events, subevents)) {
                 LDJSONFree(preflag);
-                LDJSONFree(result);
+                LDJSONFree(value);
 
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -662,7 +544,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
 
         if (!LDArrayPush(*events, event)) {
             LDJSONFree(preflag);
-            LDJSONFree(result);
+            LDJSONFree(value);
 
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -671,12 +553,11 @@ LDi_checkPrerequisites(struct LDClient *const client,
 
         {
             struct LDJSON *on;
-            struct LDJSON *variationIndex;
             bool variationMatch = false;
 
             if (!(on = LDObjectLookup(preflag, "on"))) {
                 LDJSONFree(preflag);
-                LDJSONFree(result);
+                LDJSONFree(value);
 
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -685,39 +566,28 @@ LDi_checkPrerequisites(struct LDClient *const client,
 
             if (LDJSONGetType(on) != LDBool) {
                 LDJSONFree(preflag);
-                LDJSONFree(result);
+                LDJSONFree(value);
 
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
                 return EVAL_SCHEMA;
             }
 
-            variationIndex = LDObjectLookup(result, "variationIndex");
-
-            if (LDi_notNull(variationIndex)) {
-                if (LDJSONGetType(variationIndex) != LDNumber) {
-                    LDJSONFree(preflag);
-                    LDJSONFree(result);
-
-                    LD_LOG(LD_LOG_ERROR, "schema error");
-
-                    return EVAL_SCHEMA;
-                }
-
-                variationMatch = LDGetNumber(variationIndex) ==
+            if (details.hasVariation) {
+                variationMatch = details.variationIndex ==
                     LDGetNumber(variation);
             }
 
             if (status == EVAL_MISS || !LDGetBool(on) || !variationMatch) {
                 LDJSONFree(preflag);
-                LDJSONFree(result);
+                LDJSONFree(value);
 
                 return EVAL_MISS;
             }
         }
 
         LDJSONFree(preflag);
-        LDJSONFree(result);
+        LDJSONFree(value);
     }
 
     return EVAL_MATCH;
