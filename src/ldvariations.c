@@ -50,7 +50,101 @@ LDEvalErrorKindToString(const enum LDEvalErrorKind kind)
 struct LDJSON *
 LDDetailsToJSON(const struct LDDetails *const details)
 {
+    struct LDJSON *result, *tmp;
+    const char *kind;
+
     LD_ASSERT(details);
+
+    result = NULL;
+
+    if (!(result = LDNewObject())) {
+        return NULL;
+    }
+
+    if (!(kind = LDEvalKindToString(details->kind))) {
+        LD_LOG(LD_LOG_ERROR, "cannot find kind");
+
+        goto error;
+    }
+
+    if (!(tmp = LDNewText(kind))) {
+        goto error;
+    }
+
+    if (!LDObjectSetKey(result, "kind", tmp)) {
+        LDJSONFree(tmp);
+
+        goto error;
+    }
+
+    if (details->hasVariation) {
+        if (!(tmp = LDNewNumber(details->variationIndex))) {
+            goto error;
+        }
+
+        if (!LDObjectSetKey(result, "variationIndex", tmp)) {
+            LDJSONFree(tmp);
+
+            goto error;
+        }
+    }
+
+    if (details->kind == LD_ERROR) {
+        if (!(kind = LDEvalErrorKindToString(details->extra.errorKind))) {
+            LD_LOG(LD_LOG_ERROR, "cannot find kind");
+
+            goto error;
+        }
+
+        if (!(tmp = LDNewText(kind))) {
+            goto error;
+        }
+
+        if (!LDObjectSetKey(result, "errorKind", tmp)) {
+            LDJSONFree(tmp);
+
+            goto error;
+        }
+    } else if (details->kind == LD_PREREQUISITE_FAILED &&
+        details->extra.prerequisiteKey)
+    {
+        if (!(tmp = LDNewText(details->extra.prerequisiteKey))) {
+            goto error;
+        }
+
+        if (!LDObjectSetKey(result, "prerequisiteKey", tmp)) {
+            LDJSONFree(tmp);
+
+            goto error;
+        }
+    } else if (details->kind == LD_RULE_MATCH) {
+        if (details->extra.rule.hasId) {
+            if (!(tmp = LDNewText(details->extra.rule.id))) {
+                goto error;
+            }
+
+            if (!LDObjectSetKey(result, "id", tmp)) {
+                LDJSONFree(tmp);
+
+                goto error;
+            }
+        }
+
+        if (!(tmp = LDNewNumber(details->extra.rule.ruleIndex))) {
+            goto error;
+        }
+
+        if (!LDObjectSetKey(result, "ruleIndex", tmp)) {
+            LDJSONFree(tmp);
+
+            goto error;
+        }
+    }
+
+    return result;
+
+  error:
+    LDJSONFree(result);
 
     return NULL;
 }

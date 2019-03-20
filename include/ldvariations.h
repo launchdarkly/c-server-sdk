@@ -56,6 +56,8 @@ void LDDetailsClear(struct LDDetails *const details);
 const char *LDEvalKindToString(const enum LDEvalReason kind);
 const char *LDEvalErrorKindToString(const enum LDEvalErrorKind kind);
 
+struct LDJSON *LDDetailsToJSON(const struct LDDetails *const details);
+
 bool LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const bool fallback,
     struct LDDetails *const details);
