@@ -452,7 +452,6 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         }
 
         LDJSONFree(events);
-        LDJSONFree(value);
         LDDetailsClear(&details);
     }
 
