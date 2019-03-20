@@ -3,6 +3,20 @@
 #include "ldvariations.h"
 #include "ldevents.h"
 
+void
+LDDetailsInit(struct LDDetails *const details)
+{
+    details->variationIndex = 0;
+    details->hasVariation   = false;
+    details->reason         = NULL;
+}
+
+void
+LDDetailsClear(struct LDDetails *const details)
+{
+    LDJSONFree(details->reason);
+}
+
 static struct LDJSON *
 variation(struct LDClient *const client, const struct LDUser *const user,
     const char *const key, struct LDJSON *const fallback,
@@ -85,7 +99,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
         status = EVAL_MISS;
     } else {
-        status = LDi_evaluate(client, flag, user, store, &details);
+        status = LDi_evaluate(client, flag, user, store, &details, &events);
     }
 
     if (status == EVAL_MEM) {
@@ -102,7 +116,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto fallback;
     }
 
-    if ((events = LDObjectLookup(details, "events"))) {
+    if (events) {
         struct LDJSON *iter;
         /* local only sanity */
         LD_ASSERT(LDJSONGetType(events) == LDArray);
@@ -447,13 +461,20 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
     LD_ASSERT(LDJSONGetType(rawFlags) == LDObject);
 
     for (flag = LDGetIter(rawFlags); flag; flag = LDIterNext(flag)) {
-        struct LDJSON *value;
-        struct LDJSON *details = NULL;
+        struct LDJSON *value, *details, *events;
+        EvalStatus status;
 
-        EvalStatus status = LDi_evaluate(client, flag, user,
-            client->config->store, &details);
+        value   = NULL;
+        details = NULL;
+        events  = NULL;
+
+        status = LDi_evaluate(client, flag, user, client->config->store,
+            &details, &events);
 
         if (status == EVAL_MEM || status == EVAL_SCHEMA) {
+            LDJSONFree(details);
+            LDJSONFree(events);
+
             goto error;
         }
 
@@ -461,6 +482,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
             if ((value = LDObjectLookup(details, "value"))) {
                 if (!(value = LDJSONDuplicate(value))) {
                     LDJSONFree(details);
+                    LDJSONFree(events);
 
                     goto error;
                 }
@@ -468,12 +490,14 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
                 if (!LDObjectSetKey(evaluatedFlags, LDIterKey(flag), value)) {
                     LDJSONFree(value);
                     LDJSONFree(details);
+                    LDJSONFree(events);
 
                     goto error;
                 }
             }
 
             LDJSONFree(details);
+            LDJSONFree(events);
         }
     }
 

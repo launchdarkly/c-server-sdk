@@ -43,8 +43,7 @@ maybeNegate(const struct LDJSON *const object, const EvalStatus status)
 }
 
 struct LDJSON *
-LDi_addReason(struct LDJSON **const result, const char *const reason,
-    struct LDJSON *const events)
+LDi_addReason(struct LDJSON **const result, const char *const reason)
 {
     struct LDJSON *tmpcollection, *tmp;
 
@@ -92,14 +91,6 @@ LDi_addReason(struct LDJSON **const result, const char *const reason,
         return NULL;
     }
 
-    if (events) {
-        if (!LDObjectSetKey(*result, "events", events)) {
-            LD_LOG(LD_LOG_ERROR, "events");
-
-            return NULL;
-        }
-    }
-
     return tmpcollection;
 }
 
@@ -114,7 +105,7 @@ LDi_addErrorReason(struct LDJSON **const result, const char *const kind)
     tmpcollection = NULL;
     tmp           = NULL;
 
-    if (!(tmpcollection = LDi_addReason(result, "ERROR", NULL))) {
+    if (!(tmpcollection = LDi_addReason(result, "ERROR"))) {
         LD_LOG(LD_LOG_ERROR, "LDi_addReason failed");
 
         return NULL;
@@ -229,24 +220,24 @@ addValue(const struct LDJSON *const flag, struct LDJSON *result,
 EvalStatus
 LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     const struct LDUser *const user, struct LDStore *const store,
-    struct LDJSON **const result)
+    struct LDJSON **const result, struct LDJSON **const events)
 {
     EvalStatus substatus;
     const struct LDJSON *iter, *rules, *targets, *on;
-    struct LDJSON *events, *index;
+    struct LDJSON *index;
     const char *failedKey;
 
     LD_ASSERT(flag);
     LD_ASSERT(user);
     LD_ASSERT(store);
     LD_ASSERT(result);
+    LD_ASSERT(events);
 
     iter        = NULL;
     rules       = NULL;
     targets     = NULL;
     on          = NULL;
     failedKey   = NULL;
-    events      = NULL;
     index       = NULL;
 
     if (LDJSONGetType(flag) != LDObject) {
@@ -273,7 +264,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
         offVariation = LDObjectLookup(flag, "offVariation");
 
-        if (!LDi_addReason(result, "OFF", NULL)) {
+        if (!LDi_addReason(result, "OFF")) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
             return EVAL_MEM;
@@ -290,13 +281,13 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
     /* prerequisites */
     if (LDi_isEvalError(substatus =
-        LDi_checkPrerequisites(client, flag, user, store, &failedKey, &events)))
+        LDi_checkPrerequisites(client, flag, user, store, &failedKey, events)))
     {
         struct LDJSON *reason;
 
         LD_LOG(LD_LOG_ERROR, "checkPrequisites failed");
 
-        if (!(reason = LDi_addReason(result, "PREREQUISITE_FAILED", events))) {
+        if (!(reason = LDi_addReason(result, "PREREQUISITE_FAILED"))) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
 
@@ -312,7 +303,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
         key    = NULL;
         reason = NULL;
 
-        if (!(reason = LDi_addReason(result, "PREREQUISITE_FAILED", events))) {
+        if (!(reason = LDi_addReason(result, "PREREQUISITE_FAILED"))) {
             LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
             return EVAL_MEM;
@@ -375,7 +366,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
                 variation = LDObjectLookup(iter, "variation");
 
-                if (!LDi_addReason(result, "TARGET_MATCH", events)) {
+                if (!LDi_addReason(result, "TARGET_MATCH")) {
                     LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
                     return EVAL_MEM;
@@ -431,7 +422,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
                 tmp       = NULL;
                 ruleid    = NULL;
 
-                if (!(reason = LDi_addReason(result, "RULE_MATCH", events))) {
+                if (!(reason = LDi_addReason(result, "RULE_MATCH"))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
                     return EVAL_MEM;
@@ -493,7 +484,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     }
 
     /* fallthrough */
-    if (!LDi_addReason(result, "FALLTHROUGH", events)) {
+    if (!LDi_addReason(result, "FALLTHROUGH")) {
         LD_LOG(LD_LOG_ERROR, "failed to add reason");
 
         return EVAL_MEM;
@@ -609,7 +600,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         }
 
         if (LDi_isEvalError(status = LDi_evaluate(
-            client, preflag, user, store, &result)))
+            client, preflag, user, store, &result, events)))
         {
             LDJSONFree(preflag);
 

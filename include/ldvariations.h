@@ -11,6 +11,16 @@
 #include "lduser.h"
 #include "ldjson.h"
 
+struct LDDetails {
+    int variationIndex;
+    bool hasVariation;
+    struct LDJSON *reason;
+};
+
+void LDDetailsInit(struct LDDetails *const details);
+
+void LDDetailsClear(struct LDDetails *const details);
+
 bool LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const bool fallback,
     struct LDJSON **const details);

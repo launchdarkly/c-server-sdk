@@ -160,9 +160,12 @@ static void
 returnsOffVariationIfFlagIsOff()
 {
     struct LDUser *user;
+    struct LDJSON *flag;
+    struct LDJSON *result;
+    struct LDJSON *events;
 
-    struct LDJSON *flag = NULL;
-    struct LDJSON *result = NULL;
+    events = NULL;
+    result = NULL;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -175,15 +178,15 @@ returnsOffVariationIfFlagIsOff()
     setFallthrough(flag, 0);
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result)
-        == EVAL_MISS);
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result,
+        &events) == EVAL_MISS);
 
     /* validation */
     LD_ASSERT(strcmp("off", LDGetText(LDObjectLookup(result, "value"))) == 0);
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 1);
     LD_ASSERT(strcmp("OFF", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -194,9 +197,12 @@ static void
 testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
 {
     struct LDUser *user;
+    struct LDJSON *flag;
+    struct LDJSON *result;
+    struct LDJSON *events;
 
-    struct LDJSON *flag = NULL;
-    struct LDJSON *result = NULL;
+    events = NULL;
+    result = NULL;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -208,8 +214,8 @@ testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
     addVariations1(flag);
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result)
-        == EVAL_MISS);
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result,
+        &events) == EVAL_MISS);
 
     /* validation */
     LD_ASSERT(LDJSONGetType(LDObjectLookup(result, "value")) == LDNull);
@@ -217,7 +223,7 @@ testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
         LDObjectLookup(result, "variationIndex")) == LDNull);
     LD_ASSERT(strcmp("OFF", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -228,9 +234,12 @@ static void
 testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
 {
     struct LDUser *user;
+    struct LDJSON *flag;
+    struct LDJSON *result;
+    struct LDJSON *events;
 
-    struct LDJSON *flag = NULL;
-    struct LDJSON *result = NULL;
+    events = NULL;
+    result = NULL;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -243,15 +252,15 @@ testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
     addVariations1(flag);
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result)
-        == EVAL_MATCH);
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result,
+        &events) == EVAL_MATCH);
 
     /* validate */
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(result, "value")), "fall") == 0);
     LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 0);
     LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -265,9 +274,12 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     struct LDStore *store;
     struct LDJSON *flag1;
     struct LDJSON *flag2;
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDJSON *reason;
     struct LDJSON *events;
+
+    events = NULL;
+    result = NULL;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -293,7 +305,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &result));
+    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &result, &events));
 
     /* validate */
     LD_ASSERT(strcmp("off", LDGetText(LDObjectLookup(result, "value"))) == 0);
@@ -304,7 +316,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     LD_ASSERT(strcmp("feature1", LDGetText(
         LDObjectLookup(reason, "prerequisiteKey"))) == 0);
 
-    LD_ASSERT(events = LDObjectLookup(result, "events"));
+    LD_ASSERT(events);
     LD_ASSERT(LDCollectionGetSize(events) == 1);
     LD_ASSERT(events = LDGetIter(events));
     LD_ASSERT(strcmp("feature1",
@@ -318,6 +330,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
 
     LDJSONFree(flag1);
     LDJSONFree(result);
+    LDJSONFree(events);
     LDStoreDestroy(store);
     LDUserFree(user);
 }
@@ -329,8 +342,11 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     struct LDStore *store;
     struct LDJSON *flag1;
     struct LDJSON *flag2;
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDJSON *events;
+
+    events = NULL;
+    result = NULL;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -357,7 +373,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &result));
+    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &result, &events));
 
     /* validate */
     LD_ASSERT(strcmp("off", LDGetText(LDObjectLookup(result, "value"))) == 0);
@@ -365,7 +381,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     LD_ASSERT(strcmp("PREREQUISITE_FAILED", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
 
-    LD_ASSERT(events = LDObjectLookup(result, "events"));
+    LD_ASSERT(events);
     LD_ASSERT(LDCollectionGetSize(events) == 1);
     LD_ASSERT(events = LDGetIter(events));
     LD_ASSERT(strcmp("feature1",
@@ -379,6 +395,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
 
     LDJSONFree(flag1);
     LDJSONFree(result);
+    LDJSONFree(events);
     LDStoreDestroy(store);
     LDUserFree(user);
 }
@@ -390,8 +407,11 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     struct LDStore *store;
     struct LDJSON *flag1;
     struct LDJSON *flag2;
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDJSON *events;
+
+    events = NULL;
+    result = NULL;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -418,7 +438,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &result));
+    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &result, &events));
 
     /* validate */
     LD_ASSERT(strcmp("fall", LDGetText(LDObjectLookup(result, "value"))) == 0);
@@ -426,7 +446,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
 
-    LD_ASSERT(events = LDObjectLookup(result, "events"));
+    LD_ASSERT(events);
     LD_ASSERT(LDCollectionGetSize(events) == 1);
     LD_ASSERT(events = LDGetIter(events));
     LD_ASSERT(strcmp("feature1",
@@ -440,6 +460,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
 
     LDJSONFree(flag1);
     LDJSONFree(result);
+    LDJSONFree(events);
     LDStoreDestroy(store);
     LDUserFree(user);
 }
@@ -452,8 +473,11 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     struct LDJSON *flag1;
     struct LDJSON *flag2;
     struct LDJSON *flag3;
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDJSON *events;
+
+    events = NULL;
+    result = NULL;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
@@ -491,7 +515,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     LD_ASSERT(LDStoreUpsert(store, "flags", flag3));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &result));
+    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &result, &events));
 
     /* validate */
     LD_ASSERT(strcmp("fall", LDGetText(LDObjectLookup(result, "value"))) == 0);
@@ -499,7 +523,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
         LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
 
-    LD_ASSERT(events = LDObjectLookup(result, "events"));
+    LD_ASSERT(events);;
     LD_ASSERT(LDCollectionGetSize(events) == 2);
 
     LD_ASSERT(events = LDGetIter(events));
@@ -523,6 +547,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
         LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
 
     LDJSONFree(flag1);
+    LDJSONFree(events);
     LDJSONFree(result);
     LDStoreDestroy(store);
     LDUserFree(user);
@@ -533,7 +558,11 @@ testFlagMatchesUserFromTarget()
 {
     struct LDUser *user;
     struct LDJSON *flag;
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
+    struct LDJSON *events;
+
+    events = NULL;
+    result = NULL;
 
     LD_ASSERT(user = LDUserNew("userkey"));
 
@@ -564,7 +593,8 @@ testFlagMatchesUserFromTarget()
     }
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result));
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result,
+        &events));
 
     /* validate */
     LD_ASSERT(strcmp("on", LDGetText(LDObjectLookup(result, "value"))) == 0);
@@ -574,6 +604,7 @@ testFlagMatchesUserFromTarget()
     LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
+    LDJSONFree(events);
     LDJSONFree(result);
     LDUserFree(user);
 }
@@ -583,9 +614,13 @@ testFlagMatchesUserFromRules()
 {
     struct LDUser *user;
     struct LDJSON *flag;
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDJSON *variation;
     struct LDJSON *reason;
+    struct LDJSON *events;
+
+    events = NULL;
+    result = NULL;
 
     LD_ASSERT(user = LDUserNew("userkey"));
 
@@ -595,7 +630,8 @@ testFlagMatchesUserFromRules()
     flag = makeFlagToMatchUser("userkey", variation);
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result));
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result,
+        &events));
 
     /* validate */
     LD_ASSERT(strcmp("on", LDGetText(LDObjectLookup(result, "value"))) == 0);
@@ -609,6 +645,7 @@ testFlagMatchesUserFromRules()
     LD_ASSERT(!LDObjectLookup(result, "events"));
 
     LDJSONFree(flag);
+    LDJSONFree(events);
     LDJSONFree(result);
     LDUserFree(user);
 }
@@ -616,11 +653,15 @@ testFlagMatchesUserFromRules()
 static void
 testClauseCanMatchBuiltInAttribute()
 {
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
     struct LDJSON *values;
+    struct LDJSON *events;
+
+    events = NULL;
+    result = NULL;
 
     /* user */
     LD_ASSERT(user = LDUserNew("key"));
@@ -638,11 +679,12 @@ testClauseCanMatchBuiltInAttribute()
     LD_ASSERT(flag = booleanFlagWithClause(clause));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result));
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result,
+        &events));
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -652,12 +694,16 @@ testClauseCanMatchBuiltInAttribute()
 static void
 testClauseCanMatchCustomAttribute()
 {
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
     struct LDJSON *values;
     struct LDJSON *custom;
+    struct LDJSON *events;
+
+    events = NULL;
+    result = NULL;
 
     /* user */
     LD_ASSERT(user = LDUserNew("key"));
@@ -677,11 +723,12 @@ testClauseCanMatchCustomAttribute()
     LD_ASSERT(flag = booleanFlagWithClause(clause));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result));
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result,
+        &events));
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -691,11 +738,15 @@ testClauseCanMatchCustomAttribute()
 static void
 testClauseReturnsFalseForMissingAttribute()
 {
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
     struct LDJSON *values;
+    struct LDJSON *events;
+
+    events = NULL;
+    result = NULL;
 
     /* user */
     LD_ASSERT(user = LDUserNew("key"));
@@ -713,11 +764,12 @@ testClauseReturnsFalseForMissingAttribute()
     LD_ASSERT(flag = booleanFlagWithClause(clause));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result));
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result,
+        &events));
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -727,11 +779,15 @@ testClauseReturnsFalseForMissingAttribute()
 static void
 testClauseCanBeNegated()
 {
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
     struct LDJSON *values;
+    struct LDJSON *events;
+
+    events = NULL;
+    result = NULL;
 
     /* user */
     LD_ASSERT(user = LDUserNew("key"));
@@ -750,11 +806,12 @@ testClauseCanBeNegated()
     LD_ASSERT(flag = booleanFlagWithClause(clause));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result));
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result,
+        &events));
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -764,11 +821,15 @@ testClauseCanBeNegated()
 static void
 testClauseForMissingAttributeIsFalseEvenIfNegate()
 {
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
     struct LDJSON *values;
+    struct LDJSON *events;
+
+    events = NULL;
+    result = NULL;
 
     /* user */
     LD_ASSERT(user = LDUserNew("key"));
@@ -787,11 +848,12 @@ testClauseForMissingAttributeIsFalseEvenIfNegate()
     LD_ASSERT(flag = booleanFlagWithClause(clause));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result));
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result,
+        &events));
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -801,11 +863,15 @@ testClauseForMissingAttributeIsFalseEvenIfNegate()
 static void
 testClauseWithUnknownOperatorDoesNotMatch()
 {
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDUser *user;
     struct LDJSON *flag;
     struct LDJSON *clause;
     struct LDJSON *values;
+    struct LDJSON *events;
+
+    result = NULL;
+    events = NULL;
 
     /* user */
     LD_ASSERT(user = LDUserNew("key"));
@@ -823,12 +889,12 @@ testClauseWithUnknownOperatorDoesNotMatch()
     LD_ASSERT(flag = booleanFlagWithClause(clause));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result)
-        == EVAL_MATCH);
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &result,
+        &events) == EVAL_MATCH);
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -842,10 +908,14 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
     struct LDStore *store;
     struct LDJSON *segment;
     struct LDJSON *flag;
-    struct LDJSON *result = NULL;
+    struct LDJSON *result;
     struct LDJSON *included;
     struct LDJSON *values;
     struct LDJSON *clause;
+    struct LDJSON *events;
+
+    result = NULL;
+    events = NULL;
 
     LD_ASSERT(user = LDUserNew("foo"));
 
@@ -873,12 +943,12 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
     LD_ASSERT(LDStoreUpsert(store, "segments", segment));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, store, &result)
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, store, &result, &events)
         == EVAL_MATCH);
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -891,10 +961,10 @@ testSegmentMatchClauseFallsThroughIfSegmentNotFound()
 {
     struct LDUser *user;
     struct LDStore *store;
-    struct LDJSON *flag;
-    struct LDJSON *result = NULL;
-    struct LDJSON *values;
-    struct LDJSON *clause;
+    struct LDJSON *flag, *result, *values, *clause, *events;
+
+    result = NULL;
+    events = NULL;
 
     LD_ASSERT(user = LDUserNew("foo"));
 
@@ -913,12 +983,12 @@ testSegmentMatchClauseFallsThroughIfSegmentNotFound()
     LD_ASSERT(store = prepareEmptyStore());
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, store, &result)
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, store, &result, &events)
         == EVAL_MATCH);
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == false);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -929,14 +999,13 @@ testSegmentMatchClauseFallsThroughIfSegmentNotFound()
 static void
 testCanMatchJustOneSegmentFromList()
 {
-    struct LDUser *user;
     struct LDStore *store;
-    struct LDJSON *segment;
-    struct LDJSON *flag;
-    struct LDJSON *result = NULL;
-    struct LDJSON *included;
-    struct LDJSON *values;
-    struct LDJSON *clause;
+    struct LDUser *user;
+    struct LDJSON *segment, *flag, *result, *included, *values, *clause,
+        *events;
+
+    events = NULL;
+    result = NULL;
 
     LD_ASSERT(user = LDUserNew("foo"));
 
@@ -965,12 +1034,12 @@ testCanMatchJustOneSegmentFromList()
     LD_ASSERT(LDStoreUpsert(store, "segments", segment));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, store, &result)
+    LD_ASSERT(LDi_evaluate(NULL, flag, user, store, &result, &events)
         == EVAL_MATCH);
 
     /* validate */
     LD_ASSERT(LDGetBool(LDObjectLookup(result, "value")) == true);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(result);
