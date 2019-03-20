@@ -50,7 +50,7 @@ LDEvalErrorKindToString(const enum LDEvalErrorKind kind)
 struct LDJSON *
 LDDetailsToJSON(const struct LDDetails *const details)
 {
-    struct LDJSON *result, *tmp;
+    struct LDJSON *result, *tmp, *reason;
     const char *kind;
 
     LD_ASSERT(details);
@@ -59,6 +59,16 @@ LDDetailsToJSON(const struct LDDetails *const details)
 
     if (!(result = LDNewObject())) {
         return NULL;
+    }
+
+    if (!(reason = LDNewObject())) {
+        goto error;
+    }
+
+    if (!LDObjectSetKey(result, "reason", reason)) {
+        LDJSONFree(reason);
+
+        goto error;
     }
 
     if (!(kind = LDEvalKindToString(details->kind))) {
@@ -71,7 +81,7 @@ LDDetailsToJSON(const struct LDDetails *const details)
         goto error;
     }
 
-    if (!LDObjectSetKey(result, "kind", tmp)) {
+    if (!LDObjectSetKey(reason, "kind", tmp)) {
         LDJSONFree(tmp);
 
         goto error;
@@ -100,7 +110,7 @@ LDDetailsToJSON(const struct LDDetails *const details)
             goto error;
         }
 
-        if (!LDObjectSetKey(result, "errorKind", tmp)) {
+        if (!LDObjectSetKey(reason, "errorKind", tmp)) {
             LDJSONFree(tmp);
 
             goto error;
@@ -112,7 +122,7 @@ LDDetailsToJSON(const struct LDDetails *const details)
             goto error;
         }
 
-        if (!LDObjectSetKey(result, "prerequisiteKey", tmp)) {
+        if (!LDObjectSetKey(reason, "prerequisiteKey", tmp)) {
             LDJSONFree(tmp);
 
             goto error;
@@ -123,7 +133,7 @@ LDDetailsToJSON(const struct LDDetails *const details)
                 goto error;
             }
 
-            if (!LDObjectSetKey(result, "id", tmp)) {
+            if (!LDObjectSetKey(reason, "id", tmp)) {
                 LDJSONFree(tmp);
 
                 goto error;
@@ -134,7 +144,7 @@ LDDetailsToJSON(const struct LDDetails *const details)
             goto error;
         }
 
-        if (!LDObjectSetKey(result, "ruleIndex", tmp)) {
+        if (!LDObjectSetKey(reason, "ruleIndex", tmp)) {
             LDJSONFree(tmp);
 
             goto error;
