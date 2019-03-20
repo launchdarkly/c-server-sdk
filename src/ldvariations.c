@@ -48,9 +48,9 @@ LDEvalErrorKindToString(const enum LDEvalErrorKind kind)
 }
 
 struct LDJSON *
-LDDetailsToJSON(const struct LDDetails *const details)
+LDReasonToJSON(const struct LDDetails *const details)
 {
-    struct LDJSON *result, *tmp, *reason;
+    struct LDJSON *result, *tmp;
     const char *kind;
 
     LD_ASSERT(details);
@@ -58,16 +58,6 @@ LDDetailsToJSON(const struct LDDetails *const details)
     result = NULL;
 
     if (!(result = LDNewObject())) {
-        return NULL;
-    }
-
-    if (!(reason = LDNewObject())) {
-        goto error;
-    }
-
-    if (!LDObjectSetKey(result, "reason", reason)) {
-        LDJSONFree(reason);
-
         goto error;
     }
 
@@ -81,22 +71,10 @@ LDDetailsToJSON(const struct LDDetails *const details)
         goto error;
     }
 
-    if (!LDObjectSetKey(reason, "kind", tmp)) {
+    if (!LDObjectSetKey(result, "kind", tmp)) {
         LDJSONFree(tmp);
 
         goto error;
-    }
-
-    if (details->hasVariation) {
-        if (!(tmp = LDNewNumber(details->variationIndex))) {
-            goto error;
-        }
-
-        if (!LDObjectSetKey(result, "variationIndex", tmp)) {
-            LDJSONFree(tmp);
-
-            goto error;
-        }
     }
 
     if (details->kind == LD_ERROR) {
@@ -110,7 +88,7 @@ LDDetailsToJSON(const struct LDDetails *const details)
             goto error;
         }
 
-        if (!LDObjectSetKey(reason, "errorKind", tmp)) {
+        if (!LDObjectSetKey(result, "errorKind", tmp)) {
             LDJSONFree(tmp);
 
             goto error;
@@ -122,7 +100,7 @@ LDDetailsToJSON(const struct LDDetails *const details)
             goto error;
         }
 
-        if (!LDObjectSetKey(reason, "prerequisiteKey", tmp)) {
+        if (!LDObjectSetKey(result, "prerequisiteKey", tmp)) {
             LDJSONFree(tmp);
 
             goto error;
@@ -133,7 +111,7 @@ LDDetailsToJSON(const struct LDDetails *const details)
                 goto error;
             }
 
-            if (!LDObjectSetKey(reason, "id", tmp)) {
+            if (!LDObjectSetKey(result, "id", tmp)) {
                 LDJSONFree(tmp);
 
                 goto error;
@@ -144,7 +122,7 @@ LDDetailsToJSON(const struct LDDetails *const details)
             goto error;
         }
 
-        if (!LDObjectSetKey(reason, "ruleIndex", tmp)) {
+        if (!LDObjectSetKey(result, "ruleIndex", tmp)) {
             LDJSONFree(tmp);
 
             goto error;

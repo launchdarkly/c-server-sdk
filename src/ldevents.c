@@ -218,8 +218,7 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     }
 
     if (details) {
-        /*
-        if (!(tmp = LDJSONDuplicate(reason))) {
+        if (!(tmp = LDReasonToJSON(details))) {
             LD_LOG(LD_LOG_ERROR, "memory error");
 
             goto error;
@@ -232,7 +231,6 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
 
             goto error;
         }
-        */
     }
 
     return event;
