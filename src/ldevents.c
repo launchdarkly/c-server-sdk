@@ -101,9 +101,6 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     const struct LDJSON *const defaultValue, const char *const prereqOf,
     const struct LDJSON *const flag, const struct LDDetails *const details)
 {
-    return NULL;
-
-    /*
     struct LDJSON *tmp, *event;
 
     LD_ASSERT(key);
@@ -220,7 +217,8 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
         }
     }
 
-    if (reason) {
+    if (details) {
+        /*
         if (!(tmp = LDJSONDuplicate(reason))) {
             LD_LOG(LD_LOG_ERROR, "memory error");
 
@@ -234,6 +232,7 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
 
             goto error;
         }
+        */
     }
 
     return event;
@@ -242,7 +241,6 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     LDJSONFree(event);
 
     return NULL;
-    */
 }
 
 struct LDJSON *

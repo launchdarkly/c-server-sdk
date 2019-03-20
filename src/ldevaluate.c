@@ -148,7 +148,7 @@ addValue(const struct LDJSON *const flag, struct LDJSON **result,
         *result = tmp;
     } else {
         *result = NULL;
-        details->hasVariation = true;
+        details->hasVariation = false;
     }
 
     return true;
@@ -234,7 +234,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
         }
 
         details->kind = LD_PREREQUISITE_FAILED;
-        details->extra.prequisiteKey = key;
+        details->extra.prerequisiteKey = key;
 
         if (!(addValue(flag, o_value, details,
             LDObjectLookup(flag, "offVariation"))))

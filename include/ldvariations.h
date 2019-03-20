@@ -45,7 +45,7 @@ struct LDDetails {
     enum LDEvalReason kind;
     union {
         enum LDEvalErrorKind errorKind;
-        char *prequisiteKey;
+        char *prerequisiteKey;
         struct LDDetailsRule rule;
     } extra;
 };
