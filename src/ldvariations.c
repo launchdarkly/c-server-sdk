@@ -14,7 +14,7 @@ LDDetailsInit(struct LDDetails *const details)
 void
 LDDetailsClear(struct LDDetails *const details)
 {
-    LDDetailsClear(details);
+    LDDetailsInit(details);
 }
 
 static struct LDJSON *

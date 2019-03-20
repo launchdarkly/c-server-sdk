@@ -617,11 +617,11 @@ testFlagMatchesUserFromTarget()
         &events, &result));
 
     /* validate */
-    LD_ASSERT(strcmp("on", LDGetText(LDObjectLookup(result, "value"))) == 0);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 2);
-    LD_ASSERT(strcmp("TARGET_MATCH", LDGetText(
-        LDObjectLookup(LDObjectLookup(result, "reason"), "kind"))) == 0);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(strcmp(LDGetText(result), "on") == 0);
+    LD_ASSERT(details.hasVariation);
+    LD_ASSERT(details.variationIndex == 2);
+    LD_ASSERT(details.kind == LD_TARGET_MATCH);
+    LD_ASSERT(!events)
 
     LDJSONFree(flag);
     LDJSONFree(events);
@@ -657,15 +657,14 @@ testFlagMatchesUserFromRules()
         &events, &result));
 
     /* validate */
-    LD_ASSERT(strcmp("on", LDGetText(result)) == 0);
-    LD_ASSERT(reason = LDObjectLookup(result, "reason"));
-    LD_ASSERT(LDGetNumber(LDObjectLookup(result, "variationIndex")) == 2);
-    LD_ASSERT(strcmp("RULE_MATCH",
-        LDGetText(LDObjectLookup(reason, "kind"))) == 0);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(reason, "ruleIndex")) == 0);
-    LD_ASSERT(strcmp("rule-id",
-        LDGetText(LDObjectLookup(reason, "ruleId"))) == 0);
-    LD_ASSERT(!LDObjectLookup(result, "events"));
+    LD_ASSERT(strcmp(LDGetText(result), "on") == 0);
+    LD_ASSERT(details.hasVariation);
+    LD_ASSERT(details.variationIndex == 2);
+    LD_ASSERT(details.kind == LD_RULE_MATCH);
+    LD_ASSERT(details.extra.rule.ruleIndex == 0);
+    LD_ASSERT(details.extra.rule.hasId == true);
+    LD_ASSERT(strcmp(details.extra.rule.id, "rule-id") == 0);
+    LD_ASSERT(!events);
 
     LDJSONFree(flag);
     LDJSONFree(events);
