@@ -50,9 +50,8 @@ testBoolVariation()
     struct LDJSON *flag;
     struct LDClient *client;
     struct LDUser *user;
-    struct LDJSON *details = NULL;
     bool actual;
-    struct LDJSON *reason;
+    struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
     LD_ASSERT(user = LDUserNew("userkey"));
@@ -70,14 +69,11 @@ testBoolVariation()
     actual = LDBoolVariation(client, user, "validFeatureKey", false, &details);
     /* validate */
     LD_ASSERT(actual == true);
-    LD_ASSERT(reason = LDObjectLookup(details, "reason"));
-    LD_ASSERT(LDJSONGetType(reason) == LDObject);
-    LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
-        LDObjectLookup(reason, "kind"))) == 0);
+    LD_ASSERT(details.kind == LD_FALLTHROUGH);
     /* cleanup */
     LDUserFree(user);
-    LDJSONFree(details);
     LDClientClose(client);
+    LDDetailsClear(&details);
 }
 
 static void
@@ -86,9 +82,8 @@ testIntVariation()
     struct LDJSON *flag;
     struct LDClient *client;
     struct LDUser *user;
-    struct LDJSON *details = NULL;
     int actual;
-    struct LDJSON *reason;
+    struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
     LD_ASSERT(user = LDUserNew("userkey"));
@@ -106,14 +101,11 @@ testIntVariation()
     actual = LDIntVariation(client, user, "validFeatureKey", 1000, &details);
     /* validate */
     LD_ASSERT(actual == 100);
-    LD_ASSERT(reason = LDObjectLookup(details, "reason"));
-    LD_ASSERT(LDJSONGetType(reason) == LDObject);
-    LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
-        LDObjectLookup(reason, "kind"))) == 0);
+    LD_ASSERT(details.kind == LD_FALLTHROUGH);
     /* cleanup */
     LDUserFree(user);
-    LDJSONFree(reason);
     LDClientClose(client);
+    LDDetailsClear(&details);
 }
 
 static void
@@ -122,9 +114,8 @@ testDoubleVariation()
     struct LDJSON *flag;
     struct LDClient *client;
     struct LDUser *user;
-    struct LDJSON *details = NULL;
     double actual;
-    struct LDJSON *reason;
+    struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
     LD_ASSERT(user = LDUserNew("userkey"));
@@ -142,14 +133,11 @@ testDoubleVariation()
     actual = LDDoubleVariation(client, user, "validFeatureKey", 0.0, &details);
     /* validate */
     LD_ASSERT(actual == 100.01);
-    LD_ASSERT(reason = LDObjectLookup(details, "reason"));
-    LD_ASSERT(LDJSONGetType(reason) == LDObject);
-    LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
-        LDObjectLookup(reason, "kind"))) == 0);
+    LD_ASSERT(details.kind == LD_FALLTHROUGH);
     /* cleanup */
     LDUserFree(user);
-    LDJSONFree(reason);
     LDClientClose(client);
+    LDDetailsClear(&details);
 }
 
 static void
@@ -158,9 +146,8 @@ testStringVariation()
     struct LDJSON *flag;
     struct LDClient *client;
     struct LDUser *user;
-    struct LDJSON *details = NULL;
     char *actual;
-    struct LDJSON *reason;
+    struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
     LD_ASSERT(user = LDUserNew("userkey"));
@@ -178,15 +165,12 @@ testStringVariation()
     actual = LDStringVariation(client, user, "validFeatureKey", "a", &details);
     /* validate */
     LD_ASSERT(strcmp(actual, "b") == 0);
-    LD_ASSERT(reason = LDObjectLookup(details, "reason"));
-    LD_ASSERT(LDJSONGetType(reason) == LDObject);
-    LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
-        LDObjectLookup(reason, "kind"))) == 0);
+    LD_ASSERT(details.kind == LD_FALLTHROUGH);
     /* cleanup */
     free(actual);
     LDUserFree(user);
-    LDJSONFree(reason);
     LDClientClose(client);
+    LDDetailsClear(&details);
 }
 
 static void
@@ -195,12 +179,11 @@ testJSONVariation()
     struct LDJSON *flag;
     struct LDClient *client;
     struct LDUser *user;
-    struct LDJSON *details = NULL;
     struct LDJSON *actual;
     struct LDJSON *expected;
     struct LDJSON *other;
     struct LDJSON *def;
-    struct LDJSON *reason;
+    struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
     LD_ASSERT(user = LDUserNew("userkey"));
@@ -225,16 +208,13 @@ testJSONVariation()
     actual = LDJSONVariation(client, user, "validFeatureKey", def, &details);
     /* validate */
     LD_ASSERT(LDJSONCompare(actual, expected));
-    LD_ASSERT(reason = LDObjectLookup(details, "reason"));
-    LD_ASSERT(LDJSONGetType(reason) == LDObject);
-    LD_ASSERT(strcmp("FALLTHROUGH", LDGetText(
-        LDObjectLookup(reason, "kind"))) == 0);
+    LD_ASSERT(details.kind == LD_FALLTHROUGH);
     /* cleanup */
     LDJSONFree(def);
     LDJSONFree(actual);
     LDUserFree(user);
-    LDJSONFree(reason);
     LDClientClose(client);
+    LDDetailsClear(&details);
 }
 
 int

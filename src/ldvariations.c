@@ -20,13 +20,13 @@ LDDetailsClear(struct LDDetails *const details)
 static struct LDJSON *
 variation(struct LDClient *const client, const struct LDUser *const user,
     const char *const key, struct LDJSON *const fallback,
-    const LDJSONType type, struct LDJSON **const reason)
+    const LDJSONType type, struct LDDetails *const o_details)
 {
     EvalStatus status;
     unsigned int *variationNumRef;
     struct LDStore *store;
     struct LDJSON *flag, *value, *events, *event, *evalue;
-    struct LDDetails details;
+    struct LDDetails details, *detailsref;
 
     LD_ASSERT(client);
 
@@ -40,23 +40,31 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     LDDetailsInit(&details);
 
+    if (o_details) {
+        detailsref = o_details;
+        LDDetailsInit(detailsref);
+    } else {
+        detailsref = &details;
+    }
+
+
     if (!client) {
-        details.kind = LD_ERROR;
-        details.extra.errorKind = LD_NULL_CLIENT;
+        detailsref->kind = LD_ERROR;
+        detailsref->extra.errorKind = LD_NULL_CLIENT;
 
         goto fallback;
     }
 
     if (!LDClientIsInitialized(client)) {
-        details.kind = LD_ERROR;
-        details.extra.errorKind = LD_CLIENT_NOT_READY;
+        detailsref->kind = LD_ERROR;
+        detailsref->extra.errorKind = LD_CLIENT_NOT_READY;
 
         goto fallback;
     }
 
     if (!key) {
-        details.kind = LD_ERROR;
-        details.extra.errorKind = LD_NULL_KEY;
+        detailsref->kind = LD_ERROR;
+        detailsref->extra.errorKind = LD_NULL_KEY;
 
         goto fallback;
     }
@@ -64,24 +72,24 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     LD_ASSERT(store = client->config->store);
 
     if (!LDStoreGet(store, "flags", key, &flag)) {
-        details.kind = LD_ERROR;
-        details.extra.errorKind = LD_STORE_ERROR;
+        detailsref->kind = LD_ERROR;
+        detailsref->extra.errorKind = LD_STORE_ERROR;
 
         status = EVAL_MISS;
     }
 
     if (!flag) {
-        details.kind = LD_ERROR;
-        details.extra.errorKind = LD_FLAG_NOT_FOUND;
+        detailsref->kind = LD_ERROR;
+        detailsref->extra.errorKind = LD_FLAG_NOT_FOUND;
 
         status = EVAL_MISS;
     } else if (!user || !user->key) {
-        details.kind = LD_ERROR;
-        details.extra.errorKind = LD_USER_NOT_SPECIFIED;
+        detailsref->kind = LD_ERROR;
+        detailsref->extra.errorKind = LD_USER_NOT_SPECIFIED;
 
         status = EVAL_MISS;
     } else {
-        status = LDi_evaluate(client, flag, user, store, &details, &events,
+        status = LDi_evaluate(client, flag, user, store, detailsref, &events,
             &value);
     }
 
@@ -90,8 +98,8 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (status == EVAL_SCHEMA) {
-        details.kind = LD_ERROR;
-        details.extra.errorKind = LD_MALFORMED_FLAG;
+        detailsref->kind = LD_ERROR;
+        detailsref->extra.errorKind = LD_MALFORMED_FLAG;
 
         goto fallback;
     }
@@ -116,8 +124,8 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         }
     }
 
-    if (details.hasVariation) {
-        variationNumRef = &details.variationIndex;
+    if (detailsref->hasVariation) {
+        variationNumRef = &detailsref->variationIndex;
     }
 
     if (!LDi_notNull(evalue = value)) {
@@ -125,7 +133,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     event = LDi_newFeatureRequestEvent(client, key, user, variationNumRef,
-        evalue, fallback, NULL, flag, &reason);
+        evalue, fallback, NULL, flag, detailsref);
 
     if (!event) {
         LD_LOG(LD_LOG_ERROR, "failed to build feature request event");
@@ -156,17 +164,11 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (LDJSONGetType(value) != type) {
-        details.kind = LD_ERROR;
-        details.extra.errorKind = LD_WRONG_TYPE;
+        detailsref->kind = LD_ERROR;
+        detailsref->extra.errorKind = LD_WRONG_TYPE;
 
         goto fallback;
     }
-
-    /*
-    if (reason) {
-        *reason = LDJSONDuplicate(details);
-    }
-    */
 
     LDJSONFree(event);
     LDJSONFree(fallback);
@@ -176,12 +178,6 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     return value;
 
   fallback:
-    /*
-    if (reason) {
-        *reason = LDJSONDuplicate(details);
-    }
-    */
-
     LDJSONFree(flag);
     LDJSONFree(event);
     LDJSONFree(value);
@@ -201,7 +197,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 bool
 LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const bool fallback,
-    struct LDJSON **const details)
+    struct LDDetails *const details)
 {
     bool value;
     struct LDJSON *result, *fallbackJSON;
@@ -233,7 +229,7 @@ LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
 int
 LDIntVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const int fallback,
-    struct LDJSON **const details)
+    struct LDDetails *const details)
 {
     int value;
     struct LDJSON *result, *fallbackJSON;
@@ -265,7 +261,7 @@ LDIntVariation(struct LDClient *const client, struct LDUser *const user,
 double
 LDDoubleVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const double fallback,
-    struct LDJSON **const details)
+    struct LDDetails *const details)
 {
     double value;
     struct LDJSON *result, *fallbackJSON;
@@ -297,7 +293,7 @@ LDDoubleVariation(struct LDClient *const client, struct LDUser *const user,
 char *
 LDStringVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const char* const fallback,
-    struct LDJSON **const details)
+    struct LDDetails *const details)
 {
     char *value;
     struct LDJSON *result, *fallbackJSON;
@@ -343,7 +339,7 @@ LDStringVariation(struct LDClient *const client, struct LDUser *const user,
 struct LDJSON *
 LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const struct LDJSON *const fallback,
-    struct LDJSON **const details)
+    struct LDDetails *const details)
 {
     struct LDJSON *result, *fallbackJSON;
 
