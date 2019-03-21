@@ -15,8 +15,8 @@ jobs:
           name: Copy Artifacts
           command: |
               mkdir -p /tmp/artifacts
-              cp build/libsdk.a /tmp/artifacts/linux-gcc-64bit-libldapi.a
-              cp build/libsdkdynamic.so /tmp/artifacts/linux-gcc-64bit-libldapi.so
+              cp build/libldserverapi.a /tmp/artifacts/linux-gcc-64bit-libldserverapi.a
+              cp build/libldserverapidynamic.so /tmp/artifacts/linux-gcc-64bit-libldserverapi.so
       - store_artifacts:
           path: /tmp/artifacts
 
