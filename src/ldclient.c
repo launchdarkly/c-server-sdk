@@ -142,7 +142,9 @@ LDClientTrack(struct LDClient *const client, const char *const key,
         return false;
     }
 
-    return LDi_addEvent(client, event);
+    LDi_addEvent(client, event);
+
+    return true;
 }
 
 bool
@@ -159,7 +161,9 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
         return false;
     }
 
-    return LDi_addEvent(client, event);
+    LDi_addEvent(client, event);
+
+    return true;
 }
 
 bool

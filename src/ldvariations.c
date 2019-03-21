@@ -227,17 +227,13 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         LD_ASSERT(LDJSONGetType(events) == LDArray);
 
         for (iter = LDGetIter(events); iter; iter = LDIterNext(iter)) {
-            if (!LDi_addEvent(client, iter)) {
-                LD_LOG(LD_LOG_ERROR, "alloc error");
-
-                goto error;
-            }
-
             if (!LDi_summarizeEvent(client, iter, false)) {
                 LD_LOG(LD_LOG_ERROR, "summary failed");
 
                 goto error;
             }
+
+            LDi_addEvent(client, iter);
         }
     }
 
@@ -266,22 +262,18 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto error;
     }
 
-    if (flag) {
-        struct LDJSON *const track = LDObjectLookup(flag, "trackEvents");
-
-        if (LDi_notNull(track) && LDGetBool(track)) {
-            if (!LDi_addEvent(client, event)) {
-                LD_LOG(LD_LOG_ERROR, "alloc error");
-
-                goto error;
-            }
-        }
-    }
-
     if (!LDi_summarizeEvent(client, event, !flag)) {
         LD_LOG(LD_LOG_ERROR, "summary failed");
 
         goto error;
+    }
+
+    if (flag) {
+        struct LDJSON *const track = LDObjectLookup(flag, "trackEvents");
+
+        if (LDi_notNull(track) && LDGetBool(track)) {
+            LDi_addEvent(client, event);
+        }
     }
 
     if (!LDi_notNull(value)) {

@@ -330,8 +330,8 @@ newIdentifyEvent(struct LDClient *const client, const struct LDUser *const user)
     return event;
 }
 
-bool
-LDi_addEvent(struct LDClient *const client, const struct LDJSON *const event)
+void
+LDi_addEvent(struct LDClient *const client, struct LDJSON *const event)
 {
     LD_ASSERT(client);
     LD_ASSERT(event);
@@ -345,24 +345,10 @@ LDi_addEvent(struct LDClient *const client, const struct LDJSON *const event)
         LD_LOG(LD_LOG_WARNING, "event capacity exceeded, dropping event");
 
         LD_ASSERT(LDi_wrunlock(&client->lock));
-
-        return true;
     } else {
-        struct LDJSON *dupe;
-
-        if (!(dupe = LDJSONDuplicate(event))) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            LD_ASSERT(LDi_wrunlock(&client->lock));
-
-            return false;
-        }
-
-        LDArrayPush(client->events, dupe);
+        LDArrayPush(client->events, event);
 
         LD_ASSERT(LDi_wrunlock(&client->lock));
-
-        return true;
     }
 }
 
