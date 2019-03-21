@@ -280,6 +280,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
         if (LDi_notNull(track) && LDGetBool(track)) {
             LDi_addEvent(client, event);
+            event = NULL;
         }
     }
 
