@@ -252,8 +252,16 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         evalue = fallback;
     }
 
-    event = LDi_newFeatureRequestEvent(client, key, user, variationNumRef,
-        evalue, fallback, NULL, flag, detailsref);
+    {
+        struct LDDetails *optionalDetails = NULL;
+
+        if (o_details) {
+            optionalDetails = detailsref;
+        }
+
+        event = LDi_newFeatureRequestEvent(client, key, user, variationNumRef,
+            evalue, fallback, NULL, flag, optionalDetails);
+    }
 
     if (!event) {
         LD_LOG(LD_LOG_ERROR, "failed to build feature request event");
