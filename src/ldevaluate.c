@@ -498,8 +498,6 @@ LDi_checkPrerequisites(struct LDClient *const client,
         }
 
         if (!value) {
-            LDJSONFree(preflag);
-
             LD_LOG(LD_LOG_ERROR, "sub error with result");
         }
 
