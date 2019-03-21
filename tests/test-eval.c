@@ -12,8 +12,7 @@ static struct LDStore *
 prepareEmptyStore()
 {
     struct LDStore *store;
-    struct LDJSON *sets;
-    struct LDJSON *tmp;
+    struct LDJSON *sets, *tmp;
 
     LD_ASSERT(store = LDMakeInMemoryStore());
     LD_ASSERT(!LDStoreInitialized(store));
@@ -59,8 +58,7 @@ static void
 addPrerequisite(struct LDJSON *const flag, const char *const key,
     const unsigned int variation)
 {
-    struct LDJSON *tmp;
-    struct LDJSON *prerequisites;
+    struct LDJSON *tmp, *prerequisites;
 
     if (!(prerequisites = LDObjectLookup(flag, "prerequisites"))) {
         LD_ASSERT(prerequisites = LDNewArray());
@@ -93,10 +91,7 @@ static struct LDJSON *
 makeFlagToMatchUser(const char *const key,
     struct LDJSON *const variationOrRollout)
 {
-    struct LDJSON *flag;
-    struct LDJSON *clause;
-    struct LDJSON *tmp;
-    struct LDJSON *rule;
+    struct LDJSON *flag, *clause, *tmp, *rule;
 
     LD_ASSERT(clause = LDNewObject());
     LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("key")));
@@ -130,10 +125,7 @@ makeFlagToMatchUser(const char *const key,
 static struct LDJSON *
 booleanFlagWithClause(struct LDJSON *const clause)
 {
-    struct LDJSON *flag;
-    struct LDJSON *rule;
-    struct LDJSON *clauses;
-    struct LDJSON *rules;
+    struct LDJSON *flag, *rule, *clauses, *rules;
 
     LD_ASSERT(clauses = LDNewArray());
     LD_ASSERT(LDArrayPush(clauses, clause));
@@ -161,9 +153,7 @@ static void
 returnsOffVariationIfFlagIsOff()
 {
     struct LDUser *user;
-    struct LDJSON *flag;
-    struct LDJSON *result;
-    struct LDJSON *events;
+    struct LDJSON *flag, *result, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -201,9 +191,7 @@ static void
 testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
 {
     struct LDUser *user;
-    struct LDJSON *flag;
-    struct LDJSON *result;
-    struct LDJSON *events;
+    struct LDJSON *flag, *result, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -239,9 +227,7 @@ static void
 testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
 {
     struct LDUser *user;
-    struct LDJSON *flag;
-    struct LDJSON *result;
-    struct LDJSON *events;
+    struct LDJSON *flag, *result, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -346,10 +332,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
 {
     struct LDUser *user;
     struct LDStore *store;
-    struct LDJSON *flag1;
-    struct LDJSON *flag2;
-    struct LDJSON *result;
-    struct LDJSON *events;
+    struct LDJSON *flag1, *flag2, *result, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -415,10 +398,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
 {
     struct LDUser *user;
     struct LDStore *store;
-    struct LDJSON *flag1;
-    struct LDJSON *flag2;
-    struct LDJSON *result;
-    struct LDJSON *events;
+    struct LDJSON *flag1, *flag2, *result, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -484,11 +464,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
 {
     struct LDUser *user;
     struct LDStore *store;
-    struct LDJSON *flag1;
-    struct LDJSON *flag2;
-    struct LDJSON *flag3;
-    struct LDJSON *result;
-    struct LDJSON *events;
+    struct LDJSON *flag1, *flag2, *flag3, *result, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -575,9 +551,7 @@ static void
 testFlagMatchesUserFromTarget()
 {
     struct LDUser *user;
-    struct LDJSON *flag;
-    struct LDJSON *result;
-    struct LDJSON *events;
+    struct LDJSON *flag, *result, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -634,10 +608,7 @@ static void
 testFlagMatchesUserFromRules()
 {
     struct LDUser *user;
-    struct LDJSON *flag;
-    struct LDJSON *result;
-    struct LDJSON *variation;
-    struct LDJSON *events;
+    struct LDJSON *flag, *result, *variation, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -675,12 +646,8 @@ testFlagMatchesUserFromRules()
 static void
 testClauseCanMatchBuiltInAttribute()
 {
-    struct LDJSON *result;
     struct LDUser *user;
-    struct LDJSON *flag;
-    struct LDJSON *clause;
-    struct LDJSON *values;
-    struct LDJSON *events;
+    struct LDJSON *flag, *result, *clause, *values, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -719,13 +686,8 @@ testClauseCanMatchBuiltInAttribute()
 static void
 testClauseCanMatchCustomAttribute()
 {
-    struct LDJSON *result;
     struct LDUser *user;
-    struct LDJSON *flag;
-    struct LDJSON *clause;
-    struct LDJSON *values;
-    struct LDJSON *custom;
-    struct LDJSON *events;
+    struct LDJSON *flag, *result, *clause, *values, *custom, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -766,12 +728,8 @@ testClauseCanMatchCustomAttribute()
 static void
 testClauseReturnsFalseForMissingAttribute()
 {
-    struct LDJSON *result;
     struct LDUser *user;
-    struct LDJSON *flag;
-    struct LDJSON *clause;
-    struct LDJSON *values;
-    struct LDJSON *events;
+    struct LDJSON *flag, *result, *clause, *values, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -810,12 +768,8 @@ testClauseReturnsFalseForMissingAttribute()
 static void
 testClauseCanBeNegated()
 {
-    struct LDJSON *result;
     struct LDUser *user;
-    struct LDJSON *flag;
-    struct LDJSON *clause;
-    struct LDJSON *values;
-    struct LDJSON *events;
+    struct LDJSON *flag, *result, *clause, *values, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -855,12 +809,8 @@ testClauseCanBeNegated()
 static void
 testClauseForMissingAttributeIsFalseEvenIfNegate()
 {
-    struct LDJSON *result;
     struct LDUser *user;
-    struct LDJSON *flag;
-    struct LDJSON *clause;
-    struct LDJSON *values;
-    struct LDJSON *events;
+    struct LDJSON *flag, *result, *clause, *values, *events;
     struct LDDetails details;
 
     events = NULL;
@@ -900,12 +850,8 @@ testClauseForMissingAttributeIsFalseEvenIfNegate()
 static void
 testClauseWithUnknownOperatorDoesNotMatch()
 {
-    struct LDJSON *result;
     struct LDUser *user;
-    struct LDJSON *flag;
-    struct LDJSON *clause;
-    struct LDJSON *values;
-    struct LDJSON *events;
+    struct LDJSON *flag, *result, *clause, *values, *events;
     struct LDDetails details;
 
     result = NULL;
@@ -946,13 +892,8 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
 {
     struct LDUser *user;
     struct LDStore *store;
-    struct LDJSON *segment;
-    struct LDJSON *flag;
-    struct LDJSON *result;
-    struct LDJSON *included;
-    struct LDJSON *values;
-    struct LDJSON *clause;
-    struct LDJSON *events;
+    struct LDJSON *segment, *flag, *result, *included, *values, *clause,
+        *events;
     struct LDDetails details;
 
     result = NULL;

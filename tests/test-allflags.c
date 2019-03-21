@@ -42,10 +42,8 @@ addVariation(struct LDJSON *const flag, struct LDJSON *const variation)
 static void
 testAllFlags()
 {
-    struct LDJSON *flag1;
-    struct LDJSON *flag2;
+    struct LDJSON *flag1, *flag2, *allFlags;
     struct LDClient *client;
-    struct LDJSON *allFlags;
     struct LDUser *user;
 
     LD_ASSERT(client = makeTestClient());
@@ -91,8 +89,7 @@ testAllFlags()
 static void
 testAllFlagsReturnsNilIfUserKeyIsNil()
 {
-    struct LDJSON *flag1;
-    struct LDJSON *flag2;
+    struct LDJSON *flag1, *flag2;
     struct LDClient *client;
 
     LD_ASSERT(client = makeTestClient());
