@@ -14,6 +14,10 @@ LDDetailsInit(struct LDDetails *const details)
 void
 LDDetailsClear(struct LDDetails *const details)
 {
+    if (details->reason == LD_RULE_MATCH) {
+        LDFree(details->extra.rule.id);
+    }
+
     LDDetailsInit(details);
 }
 
