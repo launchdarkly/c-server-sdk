@@ -104,7 +104,6 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     struct LDJSON *tmp, *event;
 
     LD_ASSERT(key);
-    LD_ASSERT(value);
 
     tmp   = NULL;
     event = NULL;
@@ -145,18 +144,20 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
         }
     }
 
-    if (!(tmp = LDJSONDuplicate(value))) {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
+    if (value) {
+        if (!(tmp = LDJSONDuplicate(value))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
 
-        goto error;
-    }
+            goto error;
+        }
 
-    if (!LDObjectSetKey(event, "value", tmp)) {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
+        if (!LDObjectSetKey(event, "value", tmp)) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
 
-        LDJSONFree(tmp);
+            LDJSONFree(tmp);
 
-        goto error;
+            goto error;
+        }
     }
 
     if (defaultValue) {
