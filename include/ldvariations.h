@@ -22,7 +22,6 @@ enum LDEvalReason {
 };
 
 enum LDEvalErrorKind {
-    LD_NULL_CLIENT,
     LD_CLIENT_NOT_READY,
     LD_NULL_KEY,
     LD_STORE_ERROR,

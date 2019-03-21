@@ -35,7 +35,6 @@ const char *
 LDEvalErrorKindToString(const enum LDEvalErrorKind kind)
 {
     switch (kind) {
-        case LD_NULL_CLIENT:        return "NULL_CLIENT";
         case LD_CLIENT_NOT_READY:   return "CLIENT_NOT_READY";
         case LD_NULL_KEY:           return "NULL_KEY";
         case LD_STORE_ERROR:        return "STORE_ERROR";
@@ -148,6 +147,8 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     struct LDJSON *flag, *value, *events, *event, *evalue;
     struct LDDetails details, *detailsref;
 
+    LD_ASSERT(client);
+
     flag             = NULL;
     value            = NULL;
     store            = NULL;
@@ -163,13 +164,6 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         LDDetailsInit(detailsref);
     } else {
         detailsref = &details;
-    }
-
-    if (!client) {
-        detailsref->kind = LD_ERROR;
-        detailsref->extra.errorKind = LD_NULL_CLIENT;
-
-        goto error;
     }
 
     if (!LDClientIsInitialized(client)) {
