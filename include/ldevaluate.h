@@ -25,12 +25,13 @@ bool LDi_isEvalError(const EvalStatus status);
 EvalStatus LDi_evaluate(struct LDClient *const client,
     const struct LDJSON *const flag, const struct LDUser *const user,
     struct LDStore *const store, struct LDDetails *const details,
-    struct LDJSON **const o_events, struct LDJSON **const o_value);
+    struct LDJSON **const o_events, struct LDJSON **const o_value,
+    const bool recordReason);
 
 EvalStatus LDi_checkPrerequisites(struct LDClient *const client,
     const struct LDJSON *const flag, const struct LDUser *const user,
     struct LDStore *const store, const char **const failedKey,
-    struct LDJSON **const events);
+    struct LDJSON **const events, const bool recordReason);
 
 EvalStatus LDi_ruleMatchesUser(const struct LDJSON *const rule,
     const struct LDUser *const user, struct LDStore *const store);

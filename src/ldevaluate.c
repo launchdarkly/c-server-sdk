@@ -158,7 +158,7 @@ EvalStatus
 LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     const struct LDUser *const user, struct LDStore *const store,
     struct LDDetails *const details, struct LDJSON **const o_events,
-    struct LDJSON **const o_value)
+    struct LDJSON **const o_value, const bool recordReason)
 {
     EvalStatus substatus;
     const struct LDJSON *iter, *rules, *targets, *on;
@@ -217,7 +217,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     /* prerequisites */
     if (LDi_isEvalError(substatus =
         LDi_checkPrerequisites(client, flag, user, store, &failedKey,
-            o_events)))
+            o_events, recordReason)))
     {
         LD_LOG(LD_LOG_ERROR, "checkPrequisites failed");
 
@@ -401,7 +401,8 @@ EvalStatus
 LDi_checkPrerequisites(struct LDClient *const client,
     const struct LDJSON *const flag,
     const struct LDUser *const user, struct LDStore *const store,
-    const char **const failedKey, struct LDJSON **const events)
+    const char **const failedKey, struct LDJSON **const events,
+    const bool recordReason)
 {
     struct LDJSON *prerequisites, *iter;
 
@@ -433,7 +434,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         unsigned int *variationNumRef;
         EvalStatus status;
         const char *keyText;
-        struct LDDetails details;
+        struct LDDetails details, *detailsRef;
 
         value            = NULL;
         preflag          = NULL;
@@ -443,6 +444,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         event            = NULL;
         subevents        = NULL;
         keyText          = NULL;
+        detailsRef       = NULL;
 
         LDDetailsInit(&details);
 
@@ -492,10 +494,11 @@ LDi_checkPrerequisites(struct LDClient *const client,
             return EVAL_MISS;
         }
 
-        if (LDi_isEvalError(status = LDi_evaluate(
-            client, preflag, user, store, &details, &subevents, &value)))
+        if (LDi_isEvalError(status = LDi_evaluate(client, preflag, user, store,
+            &details, &subevents, &value, recordReason)))
         {
             LDJSONFree(preflag);
+            LDDetailsClear(&details);
 
             return status;
         }
@@ -508,13 +511,19 @@ LDi_checkPrerequisites(struct LDClient *const client,
             variationNumRef = &details.variationIndex;
         }
 
+        if (recordReason) {
+            detailsRef = &details;
+        }
+
         event = LDi_newFeatureRequestEvent(client,
             keyText, user, variationNumRef, value, NULL,
-            LDGetText(LDObjectLookup(flag, "key")), preflag, &details);
+            LDGetText(LDObjectLookup(flag, "key")), preflag, detailsRef);
+
 
         if (!event) {
             LDJSONFree(preflag);
             LDJSONFree(value);
+            LDDetailsClear(&details);
 
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -525,6 +534,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             if (!(*events = LDNewArray())) {
                 LDJSONFree(preflag);
                 LDJSONFree(value);
+                LDDetailsClear(&details);
 
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -536,6 +546,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             if (!LDArrayAppend(*events, subevents)) {
                 LDJSONFree(preflag);
                 LDJSONFree(value);
+                LDDetailsClear(&details);
 
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -546,6 +557,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         if (!LDArrayPush(*events, event)) {
             LDJSONFree(preflag);
             LDJSONFree(value);
+            LDDetailsClear(&details);
 
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -555,6 +567,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         if (status == EVAL_MISS) {
             LDJSONFree(preflag);
             LDJSONFree(value);
+            LDDetailsClear(&details);
 
             return EVAL_MISS;
         }
@@ -566,6 +579,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             if (!(on = LDObjectLookup(preflag, "on"))) {
                 LDJSONFree(preflag);
                 LDJSONFree(value);
+                LDDetailsClear(&details);
 
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -575,6 +589,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             if (LDJSONGetType(on) != LDBool) {
                 LDJSONFree(preflag);
                 LDJSONFree(value);
+                LDDetailsClear(&details);
 
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -589,6 +604,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             if (!LDGetBool(on) || !variationMatch) {
                 LDJSONFree(preflag);
                 LDJSONFree(value);
+                LDDetailsClear(&details);
 
                 return EVAL_MISS;
             }
@@ -596,6 +612,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
 
         LDJSONFree(preflag);
         LDJSONFree(value);
+        LDDetailsClear(&details);
     }
 
     return EVAL_MATCH;

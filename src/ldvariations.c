@@ -205,7 +205,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         status = EVAL_MISS;
     } else {
         status = LDi_evaluate(client, flag, user, store, detailsref, &events,
-            &value);
+            &value, o_details != NULL);
     }
 
     if (status == EVAL_MEM) {
@@ -545,7 +545,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         LDDetailsInit(&details);
 
         status = LDi_evaluate(client, flag, user, client->config->store,
-            &details, &events, &value);
+            &details, &events, &value, false);
 
         if (LDi_isEvalError(status)) {
             LDJSONFree(events);
