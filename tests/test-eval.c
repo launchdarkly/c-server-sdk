@@ -632,7 +632,6 @@ testFlagMatchesUserFromRules()
     LD_ASSERT(details.variationIndex == 2);
     LD_ASSERT(details.kind == LD_RULE_MATCH);
     LD_ASSERT(details.extra.rule.ruleIndex == 0);
-    LD_ASSERT(details.extra.rule.hasId == true);
     LD_ASSERT(strcmp(details.extra.rule.id, "rule-id") == 0);
     LD_ASSERT(!events);
 

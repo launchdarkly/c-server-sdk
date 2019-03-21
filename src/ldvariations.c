@@ -105,7 +105,7 @@ LDReasonToJSON(const struct LDDetails *const details)
             goto error;
         }
     } else if (details->kind == LD_RULE_MATCH) {
-        if (details->extra.rule.hasId) {
+        if (details->extra.rule.id) {
             if (!(tmp = LDNewText(details->extra.rule.id))) {
                 goto error;
             }

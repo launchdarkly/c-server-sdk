@@ -336,7 +336,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
                 details->kind = LD_RULE_MATCH;
                 details->extra.rule.ruleIndex = index;
-                details->extra.rule.hasId = false;
+                details->extra.rule.id = NULL;
 
                 if (!LDi_getIndexForVariationOrRollout(flag, iter, user,
                     &variation))
@@ -368,7 +368,6 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
                     }
 
                     details->extra.rule.id = text;
-                    details->extra.rule.hasId = true;
                 }
 
                 return EVAL_MATCH;

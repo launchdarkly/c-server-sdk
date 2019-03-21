@@ -34,7 +34,6 @@ enum LDEvalErrorKind {
 struct LDDetailsRule {
     unsigned int ruleIndex;
     char *id;
-    bool hasId;
 };
 
 struct LDDetails {
