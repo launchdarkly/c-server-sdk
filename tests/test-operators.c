@@ -28,10 +28,8 @@ addTest(const char *const op, struct LDJSON *const uvalue,
 static void
 testParseDateZero()
 {
-    struct LDJSON *jtimestamp;
-    timestamp_t ttimestamp;
-    struct LDJSON *jexpected;
-    timestamp_t texpected;
+    struct LDJSON *jtimestamp, *jexpected;
+    timestamp_t texpected, ttimestamp;
 
     LD_ASSERT(jexpected = LDNewNumber(0.0));
     LD_ASSERT(LDi_parseTime(jexpected, &texpected));
@@ -48,10 +46,8 @@ testParseDateZero()
 static void
 testParseUTCTimestamp()
 {
-    struct LDJSON *jtimestamp;
-    timestamp_t ttimestamp;
-    struct LDJSON *jexpected;
-    timestamp_t texpected;
+    struct LDJSON *jtimestamp, *jexpected;
+    timestamp_t texpected, ttimestamp;
 
     LD_ASSERT(jexpected = LDNewNumber(1460847451684));
     LD_ASSERT(LDi_parseTime(jexpected, &texpected));
@@ -68,10 +64,8 @@ testParseUTCTimestamp()
 static void
 testParseTimezone()
 {
-    struct LDJSON *jtimestamp;
-    timestamp_t ttimestamp;
-    struct LDJSON *jexpected;
-    timestamp_t texpected;
+    struct LDJSON *jtimestamp, *jexpected;
+    timestamp_t texpected, ttimestamp;
 
     LD_ASSERT(jexpected = LDNewNumber(1460851752759));
     LD_ASSERT(LDi_parseTime(jexpected, &texpected));
@@ -88,10 +82,8 @@ testParseTimezone()
 static void
 testParseTimezoneNoMillis()
 {
-    struct LDJSON *jtimestamp;
-    timestamp_t ttimestamp;
-    struct LDJSON *jexpected;
-    timestamp_t texpected;
+    struct LDJSON *jtimestamp, *jexpected;
+    timestamp_t texpected, ttimestamp;
 
     LD_ASSERT(jexpected = LDNewNumber(1460851752000));
     LD_ASSERT(LDi_parseTime(jexpected, &texpected));
@@ -108,10 +100,8 @@ testParseTimezoneNoMillis()
 static void
 testTimeCompareSimilar()
 {
-    struct LDJSON *jtimestamp1;
-    timestamp_t ttimestamp1;
-    struct LDJSON *jtimestamp2;
-    timestamp_t ttimestamp2;
+    struct LDJSON *jtimestamp1, *jtimestamp2;
+    timestamp_t ttimestamp2, ttimestamp1;
 
     LD_ASSERT(jtimestamp1 = LDNewNumber(1000));
     LD_ASSERT(LDi_parseTime(jtimestamp1, &ttimestamp1));
@@ -249,13 +239,8 @@ main()
 
     for (iter = LDGetIter(tests); iter; iter = LDIterNext(iter)) {
         OpFn opfn;
-        struct LDJSON *op;
-        struct LDJSON *uvalue;
-        struct LDJSON *cvalue;
-        struct LDJSON *expect;
-
-        char *serializeduvalue;
-        char *serializedcvalue;
+        struct LDJSON *op, *uvalue, *cvalue, *expect;
+        char *serializeduvalue, *serializedcvalue;
 
         LD_ASSERT(op = LDObjectLookup(iter, "op"));
         LD_ASSERT(uvalue = LDObjectLookup(iter, "uvalue"));

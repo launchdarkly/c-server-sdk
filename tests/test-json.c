@@ -64,9 +64,7 @@ testText()
 static void
 testArray()
 {
-    struct LDJSON *json;
-    struct LDJSON *tmp;
-    struct LDJSON *iter;
+    struct LDJSON *json, *tmp, *iter;
 
     LD_ASSERT(json = LDNewArray());
 
@@ -90,9 +88,7 @@ testArray()
 static void
 testObject()
 {
-    struct LDJSON *json;
-    struct LDJSON *tmp;
-    struct LDJSON *iter;
+    struct LDJSON *json, *tmp, *iter;
 
     LD_ASSERT(json = LDNewObject());
 
@@ -122,8 +118,7 @@ testObject()
 static void
 testMerge()
 {
-    struct LDJSON *left;
-    struct LDJSON *right;
+    struct LDJSON *left, *right;
 
     LD_ASSERT(left = LDNewObject());
     LD_ASSERT(LDObjectSetKey(left, "a", LDNewNumber(1)));
@@ -145,9 +140,7 @@ testMerge()
 static void
 testAppend()
 {
-    struct LDJSON *iter;
-    struct LDJSON *left;
-    struct LDJSON *right;
+    struct LDJSON *iter, *left, *right;
 
     LD_ASSERT(left = LDNewArray());
     LD_ASSERT(LDArrayPush(left, LDNewNumber(1)));

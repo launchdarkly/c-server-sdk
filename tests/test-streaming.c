@@ -6,8 +6,7 @@
 static void
 testParsePathFlags()
 {
-    char *kind;
-    char *key;
+    char *kind, *key;
 
     LD_ASSERT(LDi_parsePath("/flags/abcd", &kind, &key));
 
@@ -21,8 +20,7 @@ testParsePathFlags()
 static void
 testParsePathSegments()
 {
-    char *kind;
-    char *key;
+    char *kind, *key;
 
     LD_ASSERT(LDi_parsePath("/segments/xyz", &kind, &key));
 
@@ -36,8 +34,7 @@ testParsePathSegments()
 static void
 testParsePathUnknownKind()
 {
-    char *kind = NULL;
-    char *key = NULL;
+    char *kind, *key;
 
     LD_ASSERT(!LDi_parsePath("/unknown/123", &kind, &key));
 
@@ -48,8 +45,7 @@ testParsePathUnknownKind()
 static void
 testInitialPut(struct StreamContext *const context)
 {
-    struct LDJSON *flag;
-    struct LDJSON *segment;
+    struct LDJSON *flag, *segment;
 
     const char *const event = "event: put";
 
@@ -152,7 +148,7 @@ testPatchSegment(struct StreamContext *const context)
 static void
 testDeleteSegment(struct StreamContext *const context)
 {
-    struct LDJSON* lookup;
+    struct LDJSON *lookup;
 
     const char *const event = "event: delete";
 

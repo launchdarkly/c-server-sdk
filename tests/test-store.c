@@ -5,8 +5,7 @@ static struct LDStore *
 prepareEmptyStore()
 {
     struct LDStore *store;
-    struct LDJSON *sets;
-    struct LDJSON *tmp;
+    struct LDJSON *sets, *tmp;
 
     LD_ASSERT(store = LDMakeInMemoryStore());
     LD_ASSERT(!LDStoreInitialized(store));
@@ -36,8 +35,7 @@ allocateAndFree()
 static struct LDJSON *
 makeVersioned(const char *const key, const unsigned int version)
 {
-    struct LDJSON *feature;
-    struct LDJSON *tmp;
+    struct LDJSON *feature, *tmp;
 
     LD_ASSERT(feature = LDNewObject());
 
@@ -56,8 +54,7 @@ makeVersioned(const char *const key, const unsigned int version)
 static struct LDJSON *
 makeDeleted(const char *const key, const unsigned int version)
 {
-    struct LDJSON *feature;
-    struct LDJSON *tmp;
+    struct LDJSON *feature, *tmp;
 
     LD_ASSERT(feature = makeVersioned(key, version));
 
@@ -71,8 +68,7 @@ static void
 deletedOnly()
 {
     struct LDStore *store;
-    struct LDJSON *feature;
-    struct LDJSON *lookup;
+    struct LDJSON *feature, *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -90,8 +86,7 @@ static void
 basicExists()
 {
     struct LDStore *store;
-    struct LDJSON *feature;
-    struct LDJSON *lookup;
+    struct LDJSON *feature, *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -126,8 +121,7 @@ static void
 upsertNewer()
 {
     struct LDStore *store;
-    struct LDJSON *feature;
-    struct LDJSON *lookup;
+    struct LDJSON *feature, *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -150,9 +144,7 @@ static void
 upsertOlder()
 {
     struct LDStore *store;
-    struct LDJSON *feature1;
-    struct LDJSON *feature2;
-    struct LDJSON *lookup;
+    struct LDJSON *feature1, *feature2, *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -175,8 +167,7 @@ static void
 upsertDelete()
 {
     struct LDStore *store;
-    struct LDJSON *feature;
-    struct LDJSON *lookup;
+    struct LDJSON *feature, *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -196,9 +187,7 @@ static void
 conflictDifferentNamespace()
 {
     struct LDStore *store;
-    struct LDJSON *feature1;
-    struct LDJSON *feature2;
-    struct LDJSON *lookup;;
+    struct LDJSON *feature1, *feature2, *lookup;;
 
     LD_ASSERT(store = prepareEmptyStore());
 

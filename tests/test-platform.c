@@ -3,8 +3,7 @@
 static void
 testMonotonic()
 {
-    unsigned long past;
-    unsigned long present;
+    unsigned long past, present;
 
     LD_ASSERT(LDi_getMonotonicMilliseconds(&past));
     LD_ASSERT(LDi_getMonotonicMilliseconds(&present));
@@ -15,8 +14,7 @@ testMonotonic()
 static void
 testSleepMinimum()
 {
-    unsigned long past;
-    unsigned long present;
+    unsigned long past, present;
 
     LD_ASSERT(LDi_getMonotonicMilliseconds(&past));
 
