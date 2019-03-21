@@ -234,8 +234,10 @@ variation(struct LDClient *const client, const struct LDUser *const user,
             }
         }
 
-        for (iter = LDGetIter(events); iter; iter = LDIterNext(iter)) {
-            LDi_addEvent(client, iter);
+        for (iter = LDGetIter(events); iter;) {
+            struct LDJSON *const next = LDIterNext(iter);
+            LDi_addEvent(client, LDCollectionDetachIter(events, iter));
+            iter = next;
         }
 
         LDJSONFree(events);

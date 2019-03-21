@@ -178,6 +178,20 @@ LDCollectionGetSize(const struct LDJSON *const rawcollection)
 }
 
 struct LDJSON *
+LDCollectionDetachIter(struct LDJSON *const rawcollection,
+    struct LDJSON *const rawiter)
+{
+    cJSON *const collection = (cJSON *const)rawcollection;
+    cJSON *const iter = (cJSON *const)rawiter;
+
+    LD_ASSERT(collection);
+    LD_ASSERT(cJSON_IsArray(collection) || cJSON_IsObject(collection));
+    LD_ASSERT(iter);
+
+    return (struct LDJSON *)cJSON_DetachItemViaPointer(collection, iter);
+}
+
+struct LDJSON *
 LDArrayLookup(const struct LDJSON *const rawarray, const unsigned int index)
 {
     cJSON *const array = (cJSON *const)rawarray;

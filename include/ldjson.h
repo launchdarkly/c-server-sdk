@@ -183,6 +183,24 @@ struct LDJSON *LDGetIter(const struct LDJSON *const collection);
  */
 const char *LDIterKey(const struct LDJSON *const iter);
 
+/**
+ * @brief Return the size of a JSON collection
+ * @param[in] collection May not be NULL (assert),
+ * must be of type `LDJSONArray` or `LDJSONObject` (assert).
+ * @return The size of the collection
+ */
+unsigned int LDCollectionGetSize(const struct LDJSON *const collection);
+
+/**
+ * @brief Remove an iterator from a collection
+ * @param[in] collection May not be NULL (assert),
+ * must be of type `LDJSONArray` or `LDJSONObject` (assert).
+ * @param[in] iter May not be NULL (assert).
+ * @return The detached iterator
+ */
+struct LDJSON *LDCollectionDetachIter(struct LDJSON *const collection,
+    struct LDJSON *const iter);
+
 /*@}*/
 
 /***************************************************************************//**
@@ -190,14 +208,6 @@ const char *LDIterKey(const struct LDJSON *const iter);
  * Routines for working with arrays
  * @{
  ******************************************************************************/
-
-/**
- * @brief Return the size of a JSON array
- * @param[in] array May not be NULL (assert),
- * must be of type `LDJSONArray` (assert).
- * @return The size of the array
- */
-unsigned int LDCollectionGetSize(const struct LDJSON *const array);
 
 /**
  * @brief Lookup up the value of an index for a given array
