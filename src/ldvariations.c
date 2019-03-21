@@ -172,21 +172,21 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         detailsref->kind = LD_ERROR;
         detailsref->extra.errorKind = LD_NULL_CLIENT;
 
-        goto fallback;
+        goto error;
     }
 
     if (!LDClientIsInitialized(client)) {
         detailsref->kind = LD_ERROR;
         detailsref->extra.errorKind = LD_CLIENT_NOT_READY;
 
-        goto fallback;
+        goto error;
     }
 
     if (!key) {
         detailsref->kind = LD_ERROR;
         detailsref->extra.errorKind = LD_NULL_KEY;
 
-        goto fallback;
+        goto error;
     }
 
     LD_ASSERT(store = client->config->store);
@@ -221,7 +221,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         detailsref->kind = LD_ERROR;
         detailsref->extra.errorKind = LD_MALFORMED_FLAG;
 
-        goto fallback;
+        goto error;
     }
 
     if (events) {
@@ -288,14 +288,14 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!LDi_notNull(value)) {
-        goto fallback;
+        goto error;
     }
 
     if (LDJSONGetType(value) != type) {
         detailsref->kind = LD_ERROR;
         detailsref->extra.errorKind = LD_WRONG_TYPE;
 
-        goto fallback;
+        goto error;
     }
 
     LDJSONFree(event);
@@ -305,17 +305,9 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     return value;
 
-  fallback:
-    LDJSONFree(flag);
-    LDJSONFree(event);
-    LDJSONFree(value);
-    LDDetailsClear(&details);
-
-    return fallback;
-
   error:
-    LDJSONFree(event);
     LDJSONFree(flag);
+    LDJSONFree(event);
     LDJSONFree(value);
     LDDetailsClear(&details);
 
@@ -558,7 +550,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         status = LDi_evaluate(client, flag, user, client->config->store,
             &details, &events, &value);
 
-        if (status == EVAL_MEM || status == EVAL_SCHEMA) {
+        if (LDi_isEvalError(status)) {
             LDJSONFree(events);
             LDDetailsClear(&details);
 
