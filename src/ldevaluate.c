@@ -551,6 +551,13 @@ LDi_checkPrerequisites(struct LDClient *const client,
             return EVAL_MEM;
         }
 
+        if (status == EVAL_MISS) {
+            LDJSONFree(preflag);
+            LDJSONFree(value);
+
+            return EVAL_MISS;
+        }
+
         {
             struct LDJSON *on;
             bool variationMatch = false;
@@ -578,7 +585,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
                     LDGetNumber(variation);
             }
 
-            if (status == EVAL_MISS || !LDGetBool(on) || !variationMatch) {
+            if (!LDGetBool(on) || !variationMatch) {
                 LDJSONFree(preflag);
                 LDJSONFree(value);
 
