@@ -6,7 +6,7 @@
 
 #include <curl/curl.h>
 
-const char *const agentheader = "User-Agent: CServerClient/0.1";
+#define LD_USER_AGENT "User-Agent: CServerClient/" LD_SDK_VERSION
 
 bool
 LDi_prepareShared(const struct LDConfig *const config, const char *const url,
@@ -53,7 +53,7 @@ LDi_prepareShared(const struct LDConfig *const config, const char *const url,
         }
     }
 
-    if (!(headers = curl_slist_append(headers, agentheader))) {
+    if (!(headers = curl_slist_append(headers, LD_USER_AGENT))) {
         LD_LOG(LD_LOG_CRITICAL, "curl_slist_append failed for headeragent");
 
         goto error;

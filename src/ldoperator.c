@@ -26,11 +26,7 @@ static bool
 operatorInFn(const struct LDJSON *const uvalue,
     const struct LDJSON *const cvalue)
 {
-    if (LDJSONCompare(uvalue, cvalue)) {
-        return true;
-    }
-
-    return false;
+    return LDJSONCompare(uvalue, cvalue);
 }
 
 static bool
