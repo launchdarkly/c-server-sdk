@@ -341,7 +341,7 @@ LDi_addEvent(struct LDClient *const client, struct LDJSON *const event)
     /* sanity check */
     LD_ASSERT(LDJSONGetType(client->events) == LDArray);
 
-    if (LDCollectionGetSize(client->events) > client->config->eventsCapacity) {
+    if (LDCollectionGetSize(client->events) >= client->config->eventsCapacity) {
         LD_LOG(LD_LOG_WARNING, "event capacity exceeded, dropping event");
 
         LD_ASSERT(LDi_wrunlock(&client->lock));
