@@ -52,13 +52,10 @@ bool LDi_bucketUser(const struct LDUser *const user,
     const char *const segmentKey, const char *const attribute,
     const char *const salt, float *const bucket);
 
-char *LDi_bucketableStringValue(const struct LDJSON *const node);
-
 bool LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
     const struct LDUser *const user, const char *const key,
-    const char *const salt, unsigned int *const index);
+    const char *const salt, const struct LDJSON **const index);
 
-struct LDJSON *LDi_getIndexForVariationOrRollout(
-    const struct LDJSON *const flag,
-    const struct LDJSON *const varOrRoll,
-    const struct LDUser *const user);
+bool LDi_getIndexForVariationOrRollout(
+    const struct LDJSON *const flag, const struct LDJSON *const varOrRoll,
+    const struct LDUser *const user, const struct LDJSON **const result);

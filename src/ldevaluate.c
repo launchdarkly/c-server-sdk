@@ -162,7 +162,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 {
     EvalStatus substatus;
     const struct LDJSON *iter, *rules, *targets, *on;
-    struct LDJSON *index;
+    const struct LDJSON *index;
     const char *failedKey;
 
     LD_ASSERT(flag);
@@ -328,7 +328,8 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
             }
 
             if (substatus == EVAL_MATCH) {
-                struct LDJSON *variation, *ruleid;
+                struct LDJSON *ruleid;
+                const struct LDJSON *variation;
 
                 variation = NULL;
                 ruleid    = NULL;
@@ -337,17 +338,19 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
                 details->extra.rule.ruleIndex = index;
                 details->extra.rule.hasId = false;
 
-                variation = LDi_getIndexForVariationOrRollout(flag, iter, user);
+                if (!LDi_getIndexForVariationOrRollout(flag, iter, user,
+                    &variation))
+                {
+                    LD_LOG(LD_LOG_ERROR, "schema error");
+
+                    return EVAL_SCHEMA;
+                }
 
                 if (!(addValue(flag, o_value, details, variation))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-                    LDJSONFree(variation);
-
                     return EVAL_MEM;
                 }
-
-                LDJSONFree(variation);
 
                 if (LDi_notNull(ruleid = LDObjectLookup(iter, "id"))) {
                     char *text;
@@ -378,18 +381,19 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     /* fallthrough */
     details->kind = LD_FALLTHROUGH;
 
-    index = LDi_getIndexForVariationOrRollout(flag,
-        LDObjectLookup(flag, "fallthrough"), user);
+    if (!LDi_getIndexForVariationOrRollout(flag,
+        LDObjectLookup(flag, "fallthrough"), user, &index))
+    {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return EVAL_SCHEMA;
+    }
 
     if (!(addValue(flag, o_value, details, index))) {
         LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-        LDJSONFree(index);
-
         return EVAL_MEM;
     }
-
-    LDJSONFree(index);
 
     return EVAL_MATCH;
 }
@@ -1076,13 +1080,24 @@ LDi_bucketUser(const struct LDUser *const user, const char *const segmentKey,
     attributeValue = NULL;
 
     if ((attributeValue = LDi_valueOfAttribute(user, attribute))) {
-        char raw[256];
+        char raw[256], bucketableBuffer[256];
+        const char *bucketable;
 
-        char *const bucketable = LDi_bucketableStringValue(attributeValue);
+        bucketable = NULL;
 
-        LDJSONFree(attributeValue);
+        if (LDJSONGetType(attributeValue) == LDText) {
+            bucketable = LDGetText(attributeValue);
+        } else if (LDJSONGetType(attributeValue) == LDNumber) {
+            if (snprintf(bucketableBuffer, sizeof(bucketableBuffer), "%f",
+                LDGetNumber(attributeValue)) >= 0)
+            {
+                bucketable = bucketableBuffer;
+            }
+        }
 
         if (!bucketable) {
+            LDJSONFree(attributeValue);
+
             return false;
         }
 
@@ -1102,41 +1117,21 @@ LDi_bucketUser(const struct LDUser *const user, const char *const segmentKey,
 
             *bucket = (float)strtoll(encoded, NULL, 16) / longScale;
 
-            LDFree(bucketable);
+            LDJSONFree(attributeValue);
 
             return true;
-        } else {
-            LDFree(bucketable);
         }
+
+        LDJSONFree(attributeValue);
     }
 
     return false;
 }
 
-char *
-LDi_bucketableStringValue(const struct LDJSON *const node)
-{
-    LD_ASSERT(node);
-
-    if (LDJSONGetType(node) == LDText) {
-        return LDStrDup(LDGetText(node));
-    } else if (LDJSONGetType(node) == LDNumber) {
-        char buffer[256];
-
-        if (snprintf(buffer, sizeof(buffer), "%f", LDGetNumber(node)) < 0) {
-            return NULL;
-        } else {
-            return LDStrDup(buffer);
-        }
-    } else {
-        return NULL;
-    }
-}
-
 bool
 LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
     const struct LDUser *const user, const char *const key,
-    const char *const salt, unsigned int *const index)
+    const char *const salt, const struct LDJSON **const index)
 {
     struct LDJSON *variation, *rollout, *variations;
     float userBucket, sum;
@@ -1159,7 +1154,7 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
             return false;
         }
 
-        *index = LDGetNumber(variation);
+        *index = variation;
 
         return true;
     }
@@ -1245,7 +1240,7 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
                 return false;
             }
 
-            *index = LDGetNumber(subvariation);
+            *index = subvariation;
 
             return true;
         }
@@ -1254,29 +1249,29 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
     return false;
 }
 
-struct LDJSON *
+bool
 LDi_getIndexForVariationOrRollout(const struct LDJSON *const flag,
     const struct LDJSON *const varOrRoll,
-    const struct LDUser *const user)
+    const struct LDUser *const user, const struct LDJSON **const result)
 {
-    unsigned int cindex;
     const struct LDJSON *jkey, *jsalt;
     const char *key, *salt;
 
     LD_ASSERT(flag);
     LD_ASSERT(varOrRoll);
+    LD_ASSERT(result);
 
-    cindex = 0;
-    jkey   = NULL;
-    jsalt  = NULL;
-    key    = NULL;
-    salt   = NULL;
+    jkey    = NULL;
+    jsalt   = NULL;
+    key     = NULL;
+    salt    = NULL;
+    *result = NULL;
 
     if (LDi_notNull(jkey = LDObjectLookup(flag, "key"))) {
         if (LDJSONGetType(jkey) != LDText) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return NULL;
+            return false;
         }
 
         key = LDGetText(jkey);
@@ -1286,17 +1281,17 @@ LDi_getIndexForVariationOrRollout(const struct LDJSON *const flag,
         if (LDJSONGetType(jsalt) != LDText) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return NULL;
+            return false;
         }
 
         salt = LDGetText(jsalt);
     }
 
-    if (!LDi_variationIndexForUser(varOrRoll, user, key, salt, &cindex)) {
+    if (!LDi_variationIndexForUser(varOrRoll, user, key, salt, result)) {
         LD_LOG(LD_LOG_ERROR, "failed to get variation index");
 
-        return NULL;
+        return false;
     }
 
-    return LDNewNumber(cindex);
+    return true;
 }
