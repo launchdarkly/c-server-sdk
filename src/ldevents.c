@@ -966,12 +966,34 @@ poll(struct LDClient *const client, void *const rawcontext)
     /* serialize events */
 
     if (!context->lastFailed) {
+        struct LDJSON *nextEvents, *nextSummaryCounters;
+
+        nextEvents          = NULL;
+        nextSummaryCounters = NULL;
+
+        if (!(nextEvents = LDNewArray())) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            goto error;
+        }
+
+        if (!(nextSummaryCounters = LDNewObject())) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(nextEvents);
+
+            goto error;
+        }
+
         LD_ASSERT(LDi_wrlock(&client->lock));
 
         if (!(summaryEvent = LDi_prepareSummaryEvent(client))) {
             LD_LOG(LD_LOG_ERROR, "failed to prepare summary");
 
             LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            LDJSONFree(nextEvents);
+            LDJSONFree(nextSummaryCounters);
 
             goto error;
         }
@@ -983,6 +1005,9 @@ poll(struct LDClient *const client, void *const rawcontext)
 
             LD_ASSERT(LDi_wrunlock(&client->lock));
 
+            LDJSONFree(nextEvents);
+            LDJSONFree(nextSummaryCounters);
+
             goto error;
         }
 
@@ -990,24 +1015,8 @@ poll(struct LDClient *const client, void *const rawcontext)
         LDJSONFree(client->summaryCounters);
 
         client->summaryStart    = 0;
-        client->events          = NULL;
-        client->summaryCounters = NULL;
-
-        if (!(client->events = LDNewArray())) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            LD_ASSERT(LDi_wrunlock(&client->lock));
-
-            goto error;
-        }
-
-        if (!(client->summaryCounters = LDNewObject())) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            LD_ASSERT(LDi_wrunlock(&client->lock));
-
-            goto error;
-        }
+        client->events          = nextEvents;
+        client->summaryCounters = nextSummaryCounters;
 
         LD_ASSERT(LDi_wrunlock(&client->lock));
     }
