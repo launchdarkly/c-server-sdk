@@ -127,8 +127,8 @@ LDClientIsInitialized(struct LDClient *const client)
 
 
 bool
-LDClientTrack(struct LDClient *const client, const struct LDUser *const user,
-    const char *const key, struct LDJSON *const data)
+LDClientTrack(struct LDClient *const client, const char *const key,
+    const struct LDUser *const user, struct LDJSON *const data)
 {
     struct LDJSON *event;
 
