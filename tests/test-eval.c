@@ -178,7 +178,7 @@ returnsOffVariationIfFlagIsOff()
     LD_ASSERT(strcmp("off", LDGetText(result)) == 0);
     LD_ASSERT(details.hasVariation);
     LD_ASSERT(details.variationIndex == 1);
-    LD_ASSERT(details.kind == LD_OFF);
+    LD_ASSERT(details.reason == LD_OFF);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -214,7 +214,7 @@ testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
     /* validation */
     LD_ASSERT(!result);
     LD_ASSERT(!details.hasVariation);
-    LD_ASSERT(details.kind == LD_OFF);
+    LD_ASSERT(details.reason == LD_OFF);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -252,7 +252,7 @@ testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
     LD_ASSERT(strcmp(LDGetText(result), "fall") == 0);
     LD_ASSERT(details.hasVariation);
     LD_ASSERT(details.variationIndex == 0);
-    LD_ASSERT(details.kind == LD_FALLTHROUGH);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -304,7 +304,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     LD_ASSERT(strcmp(LDGetText(result), "off") == 0);
     LD_ASSERT(details.hasVariation);
     LD_ASSERT(details.variationIndex == 1);
-    LD_ASSERT(details.kind == LD_PREREQUISITE_FAILED);
+    LD_ASSERT(details.reason == LD_PREREQUISITE_FAILED);
     LD_ASSERT(strcmp("feature1", details.extra.prerequisiteKey) == 0)
 
     LD_ASSERT(events);
@@ -371,7 +371,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     LD_ASSERT(strcmp(LDGetText(result), "off") == 0);
     LD_ASSERT(details.hasVariation);
     LD_ASSERT(details.variationIndex == 1);
-    LD_ASSERT(details.kind == LD_PREREQUISITE_FAILED);
+    LD_ASSERT(details.reason == LD_PREREQUISITE_FAILED);
 
     LD_ASSERT(events);
     LD_ASSERT(LDCollectionGetSize(events) == 1);
@@ -437,7 +437,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     LD_ASSERT(strcmp(LDGetText(result), "fall") == 0);
     LD_ASSERT(details.hasVariation);
     LD_ASSERT(details.variationIndex == 0);
-    LD_ASSERT(details.kind == LD_FALLTHROUGH);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
 
     LD_ASSERT(events);
     LD_ASSERT(LDCollectionGetSize(events) == 1);
@@ -514,7 +514,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     LD_ASSERT(strcmp(LDGetText(result), "fall") == 0);
     LD_ASSERT(details.hasVariation);
     LD_ASSERT(details.variationIndex == 0);
-    LD_ASSERT(details.kind == LD_FALLTHROUGH);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
 
     LD_ASSERT(events);;
     LD_ASSERT(LDCollectionGetSize(events) == 2);
@@ -594,7 +594,7 @@ testFlagMatchesUserFromTarget()
     LD_ASSERT(strcmp(LDGetText(result), "on") == 0);
     LD_ASSERT(details.hasVariation);
     LD_ASSERT(details.variationIndex == 2);
-    LD_ASSERT(details.kind == LD_TARGET_MATCH);
+    LD_ASSERT(details.reason == LD_TARGET_MATCH);
     LD_ASSERT(!events)
 
     LDJSONFree(flag);
@@ -630,7 +630,7 @@ testFlagMatchesUserFromRules()
     LD_ASSERT(strcmp(LDGetText(result), "on") == 0);
     LD_ASSERT(details.hasVariation);
     LD_ASSERT(details.variationIndex == 2);
-    LD_ASSERT(details.kind == LD_RULE_MATCH);
+    LD_ASSERT(details.reason == LD_RULE_MATCH);
     LD_ASSERT(details.extra.rule.ruleIndex == 0);
     LD_ASSERT(strcmp(details.extra.rule.id, "rule-id") == 0);
     LD_ASSERT(!events);

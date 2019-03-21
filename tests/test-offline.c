@@ -33,7 +33,7 @@ testBoolVariationDefaultValueOffline()
     value = LDBoolVariation(client, user, "featureKey", true, &details);
     /* validate */
     LD_ASSERT(value == true);
-    LD_ASSERT(details.kind == LD_ERROR);
+    LD_ASSERT(details.reason == LD_ERROR);
     LD_ASSERT(details.extra.errorKind == LD_CLIENT_NOT_READY);
     /* cleanup */
     LDUserFree(user);
@@ -56,7 +56,7 @@ testIntVariationDefaultValueOffline()
     value = LDIntVariation(client, user, "featureKey", 100, &details);
     /* validate */
     LD_ASSERT(value == 100);
-    LD_ASSERT(details.kind == LD_ERROR);
+    LD_ASSERT(details.reason == LD_ERROR);
     LD_ASSERT(details.extra.errorKind == LD_CLIENT_NOT_READY);
     /* cleanup */
     LDUserFree(user);
@@ -79,7 +79,7 @@ testDoubleVariationDefaultValueOffline()
     value = LDDoubleVariation(client, user, "featureKey", 102.1, &details);
     /* validate */
     LD_ASSERT(value == 102.1);
-    LD_ASSERT(details.kind == LD_ERROR);
+    LD_ASSERT(details.reason == LD_ERROR);
     LD_ASSERT(details.extra.errorKind == LD_CLIENT_NOT_READY);
     /* cleanup */
     LDUserFree(user);
@@ -102,7 +102,7 @@ testStringVariationDefaultValueOffline()
     value = LDStringVariation(client, user, "featureKey", "default", &details);
     /* validate */
     LD_ASSERT(strcmp(value, "default") == 0);
-    LD_ASSERT(details.kind == LD_ERROR);
+    LD_ASSERT(details.reason == LD_ERROR);
     LD_ASSERT(details.extra.errorKind == LD_CLIENT_NOT_READY);
     /* cleanup */
     free(value);
@@ -129,7 +129,7 @@ testJSONVariationDefaultValueOffline()
     actual = LDJSONVariation(client, user, "featureKey", expected, &details);
     /* validate */
     LD_ASSERT(LDJSONCompare(actual, expected));
-    LD_ASSERT(details.kind == LD_ERROR);
+    LD_ASSERT(details.reason == LD_ERROR);
     LD_ASSERT(details.extra.errorKind == LD_CLIENT_NOT_READY);
     /* cleanup */
     LDJSONFree(actual);

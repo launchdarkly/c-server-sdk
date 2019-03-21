@@ -39,7 +39,7 @@ struct LDDetailsRule {
 struct LDDetails {
     unsigned int variationIndex;
     bool hasVariation;
-    enum LDEvalReason kind;
+    enum LDEvalReason reason;
     union {
         enum LDEvalErrorKind errorKind;
         char *prerequisiteKey;
@@ -51,7 +51,7 @@ void LDDetailsInit(struct LDDetails *const details);
 
 void LDDetailsClear(struct LDDetails *const details);
 
-const char *LDEvalKindToString(const enum LDEvalReason kind);
+const char *LDEvalReasonKindToString(const enum LDEvalReason kind);
 const char *LDEvalErrorKindToString(const enum LDEvalErrorKind kind);
 
 struct LDJSON *LDReasonToJSON(const struct LDDetails *const details);

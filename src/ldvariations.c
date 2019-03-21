@@ -8,7 +8,7 @@ LDDetailsInit(struct LDDetails *const details)
 {
     details->variationIndex = 0;
     details->hasVariation   = false;
-    details->kind           = LD_UNKNOWN;
+    details->reason         = LD_UNKNOWN;
 }
 
 void
@@ -18,7 +18,7 @@ LDDetailsClear(struct LDDetails *const details)
 }
 
 const char *
-LDEvalKindToString(const enum LDEvalReason kind)
+LDEvalReasonKindToString(const enum LDEvalReason kind)
 {
     switch (kind) {
         case LD_ERROR:               return "ERROR";
@@ -60,7 +60,7 @@ LDReasonToJSON(const struct LDDetails *const details)
         goto error;
     }
 
-    if (!(kind = LDEvalKindToString(details->kind))) {
+    if (!(kind = LDEvalReasonKindToString(details->reason))) {
         LD_LOG(LD_LOG_ERROR, "cannot find kind");
 
         goto error;
@@ -76,7 +76,7 @@ LDReasonToJSON(const struct LDDetails *const details)
         goto error;
     }
 
-    if (details->kind == LD_ERROR) {
+    if (details->reason == LD_ERROR) {
         if (!(kind = LDEvalErrorKindToString(details->extra.errorKind))) {
             LD_LOG(LD_LOG_ERROR, "cannot find kind");
 
@@ -92,7 +92,7 @@ LDReasonToJSON(const struct LDDetails *const details)
 
             goto error;
         }
-    } else if (details->kind == LD_PREREQUISITE_FAILED &&
+    } else if (details->reason == LD_PREREQUISITE_FAILED &&
         details->extra.prerequisiteKey)
     {
         if (!(tmp = LDNewText(details->extra.prerequisiteKey))) {
@@ -104,7 +104,7 @@ LDReasonToJSON(const struct LDDetails *const details)
 
             goto error;
         }
-    } else if (details->kind == LD_RULE_MATCH) {
+    } else if (details->reason == LD_RULE_MATCH) {
         if (details->extra.rule.id) {
             if (!(tmp = LDNewText(details->extra.rule.id))) {
                 goto error;
@@ -167,14 +167,14 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!LDClientIsInitialized(client)) {
-        detailsref->kind = LD_ERROR;
+        detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_CLIENT_NOT_READY;
 
         goto error;
     }
 
     if (!key) {
-        detailsref->kind = LD_ERROR;
+        detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_NULL_KEY;
 
         goto error;
@@ -183,19 +183,19 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     LD_ASSERT(store = client->config->store);
 
     if (!LDStoreGet(store, "flags", key, &flag)) {
-        detailsref->kind = LD_ERROR;
+        detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_STORE_ERROR;
 
         status = EVAL_MISS;
     }
 
     if (!flag) {
-        detailsref->kind = LD_ERROR;
+        detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_FLAG_NOT_FOUND;
 
         status = EVAL_MISS;
     } else if (!user || !user->key) {
-        detailsref->kind = LD_ERROR;
+        detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_USER_NOT_SPECIFIED;
 
         status = EVAL_MISS;
@@ -209,7 +209,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (status == EVAL_SCHEMA) {
-        detailsref->kind = LD_ERROR;
+        detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_MALFORMED_FLAG;
 
         goto error;
@@ -283,7 +283,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (LDJSONGetType(value) != type) {
-        detailsref->kind = LD_ERROR;
+        detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_WRONG_TYPE;
 
         goto error;

@@ -203,7 +203,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
         offVariation = LDObjectLookup(flag, "offVariation");
 
-        details->kind = LD_OFF;
+        details->reason = LD_OFF;
 
         if (!(addValue(flag, o_value, details, offVariation))) {
             LD_LOG(LD_LOG_ERROR, "failed to add value");
@@ -233,7 +233,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
             return EVAL_MEM;
         }
 
-        details->kind = LD_PREREQUISITE_FAILED;
+        details->reason = LD_PREREQUISITE_FAILED;
         details->extra.prerequisiteKey = key;
 
         if (!(addValue(flag, o_value, details,
@@ -283,7 +283,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
 
                 variation = LDObjectLookup(iter, "variation");
 
-                details->kind = LD_TARGET_MATCH;
+                details->reason = LD_TARGET_MATCH;
 
                 if (!(addValue(flag, o_value, details, variation))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add value");
@@ -334,7 +334,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
                 variation = NULL;
                 ruleid    = NULL;
 
-                details->kind = LD_RULE_MATCH;
+                details->reason = LD_RULE_MATCH;
                 details->extra.rule.ruleIndex = index;
                 details->extra.rule.id = NULL;
 
@@ -378,7 +378,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     }
 
     /* fallthrough */
-    details->kind = LD_FALLTHROUGH;
+    details->reason = LD_FALLTHROUGH;
 
     if (!LDi_getIndexForVariationOrRollout(flag,
         LDObjectLookup(flag, "fallthrough"), user, &index))

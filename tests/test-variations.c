@@ -69,7 +69,7 @@ testBoolVariation()
     actual = LDBoolVariation(client, user, "validFeatureKey", false, &details);
     /* validate */
     LD_ASSERT(actual == true);
-    LD_ASSERT(details.kind == LD_FALLTHROUGH);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
     /* cleanup */
     LDUserFree(user);
     LDClientClose(client);
@@ -101,7 +101,7 @@ testIntVariation()
     actual = LDIntVariation(client, user, "validFeatureKey", 1000, &details);
     /* validate */
     LD_ASSERT(actual == 100);
-    LD_ASSERT(details.kind == LD_FALLTHROUGH);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
     /* cleanup */
     LDUserFree(user);
     LDClientClose(client);
@@ -133,7 +133,7 @@ testDoubleVariation()
     actual = LDDoubleVariation(client, user, "validFeatureKey", 0.0, &details);
     /* validate */
     LD_ASSERT(actual == 100.01);
-    LD_ASSERT(details.kind == LD_FALLTHROUGH);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
     /* cleanup */
     LDUserFree(user);
     LDClientClose(client);
@@ -165,7 +165,7 @@ testStringVariation()
     actual = LDStringVariation(client, user, "validFeatureKey", "a", &details);
     /* validate */
     LD_ASSERT(strcmp(actual, "b") == 0);
-    LD_ASSERT(details.kind == LD_FALLTHROUGH);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
     /* cleanup */
     free(actual);
     LDUserFree(user);
@@ -204,7 +204,7 @@ testJSONVariation()
     actual = LDJSONVariation(client, user, "validFeatureKey", def, &details);
     /* validate */
     LD_ASSERT(LDJSONCompare(actual, expected));
-    LD_ASSERT(details.kind == LD_FALLTHROUGH);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
     /* cleanup */
     LDJSONFree(def);
     LDJSONFree(actual);
