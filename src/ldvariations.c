@@ -148,8 +148,6 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     struct LDJSON *flag, *value, *events, *event, *evalue;
     struct LDDetails details, *detailsref;
 
-    LD_ASSERT(client);
-
     flag             = NULL;
     value            = NULL;
     store            = NULL;
@@ -166,7 +164,6 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     } else {
         detailsref = &details;
     }
-
 
     if (!client) {
         detailsref->kind = LD_ERROR;
