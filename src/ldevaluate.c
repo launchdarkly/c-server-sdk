@@ -305,7 +305,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
         return EVAL_SCHEMA;
     }
 
-    if (rules && LDGetIter(rules)) {
+    if (rules) {
         unsigned int index;
 
         index = 0;
