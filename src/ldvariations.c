@@ -225,16 +225,21 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         struct LDJSON *iter;
         /* local only sanity */
         LD_ASSERT(LDJSONGetType(events) == LDArray);
-
+        /* different loop to make cleanup easier */
         for (iter = LDGetIter(events); iter; iter = LDIterNext(iter)) {
             if (!LDi_summarizeEvent(client, iter, false)) {
                 LD_LOG(LD_LOG_ERROR, "summary failed");
 
                 goto error;
             }
+        }
 
+        for (iter = LDGetIter(events); iter; iter = LDIterNext(iter)) {
             LDi_addEvent(client, iter);
         }
+
+        LDJSONFree(events);
+        events = NULL;
     }
 
     if (detailsref->hasVariation) {
@@ -291,6 +296,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     LDJSONFree(fallback);
     LDJSONFree(flag);
     LDDetailsClear(&details);
+    LDJSONFree(events);
 
     return value;
 
@@ -299,6 +305,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     LDJSONFree(event);
     LDJSONFree(value);
     LDDetailsClear(&details);
+    LDJSONFree(events);
 
     return fallback;
 }
