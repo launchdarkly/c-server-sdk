@@ -22,8 +22,7 @@ static void
 testExplicitIncludeUser()
 {
     struct LDUser *user;
-    struct LDJSON *segment;
-    struct LDJSON *tmp;
+    struct LDJSON *segment, *tmp;
 
     /* user */
     LD_ASSERT(user = LDUserNew("foo"));
@@ -50,8 +49,7 @@ static void
 testExplicitExcludeUser()
 {
     struct LDUser *user;
-    struct LDJSON *segment;
-    struct LDJSON *tmp;
+    struct LDJSON *segment, *tmp;
 
     /* user */
     LD_ASSERT(user = LDUserNew("foo"));
@@ -78,8 +76,7 @@ static void
 testExplicitIncludeHasPrecedence()
 {
     struct LDUser *user;
-    struct LDJSON *segment;
-    struct LDJSON *tmp;
+    struct LDJSON *segment, *tmp;
 
     /* user */
     LD_ASSERT(user = LDUserNew("foo"));
@@ -110,12 +107,7 @@ static void
 testMatchingRuleWithFullRollout()
 {
     struct LDUser *user;
-    struct LDJSON *segment;
-    struct LDJSON *rules;
-    struct LDJSON *rule;
-    struct LDJSON *clauses;
-    struct LDJSON *clause;
-    struct LDJSON *values;
+    struct LDJSON *segment, *rules, *rule, *clauses, *clause, *values;
 
     /* user */
     LD_ASSERT(user = LDUserNew("foo"));
@@ -154,12 +146,7 @@ static void
 testMatchingRuleWithZeroRollout()
 {
     struct LDUser *user;
-    struct LDJSON *segment;
-    struct LDJSON *rules;
-    struct LDJSON *rule;
-    struct LDJSON *clauses;
-    struct LDJSON *clause;
-    struct LDJSON *values;
+    struct LDJSON *segment, *rules, *rule, *clauses, *clause, *values;
 
     /* user */
     LD_ASSERT(user = LDUserNew("foo"));
@@ -198,14 +185,8 @@ static void
 testMatchingRuleWithMultipleClauses()
 {
     struct LDUser *user;
-    struct LDJSON *segment;
-    struct LDJSON *rules;
-    struct LDJSON *rule;
-    struct LDJSON *clauses;
-    struct LDJSON *clause1;
-    struct LDJSON *clause2;
-    struct LDJSON *values1;
-    struct LDJSON *values2;
+    struct LDJSON *segment, *rules, *rule, *clauses, *clause1, *clause2,
+        *values1, *values2;
 
     /* user */
     LD_ASSERT(user = LDUserNew("foo"));
@@ -254,14 +235,8 @@ static void
 testNonMatchingRuleWithMultipleClauses()
 {
     struct LDUser *user;
-    struct LDJSON *segment;
-    struct LDJSON *rules;
-    struct LDJSON *rule;
-    struct LDJSON *clauses;
-    struct LDJSON *clause1;
-    struct LDJSON *clause2;
-    struct LDJSON *values1;
-    struct LDJSON *values2;
+    struct LDJSON *segment, *rules, *rule, *clauses, *clause1, *clause2,
+        *values1, *values2;
 
     /* user */
     LD_ASSERT(user = LDUserNew("foo"));

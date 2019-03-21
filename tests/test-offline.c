@@ -114,8 +114,7 @@ testStringVariationDefaultValueOffline()
 static void
 testJSONVariationDefaultValueOffline()
 {
-    struct LDJSON *actual;
-    struct LDJSON *expected;
+    struct LDJSON *actual, *expected;
     struct LDUser *user;
     struct LDClient *client;
     struct LDDetails details;

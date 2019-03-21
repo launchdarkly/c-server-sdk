@@ -5,8 +5,8 @@
 static struct LDUser *
 constructBasic()
 {
-    struct LDJSON *custom = NULL;
-    struct LDUser *user = NULL;
+    struct LDJSON *custom;
+    struct LDUser *user;
 
     LD_ASSERT(user = LDUserNew("abc"));
 
@@ -41,7 +41,7 @@ constructNoSettings()
 static void
 constructAllSettings()
 {
-    struct LDUser *user = NULL;
+    struct LDUser *user;
 
     LD_ASSERT(user = constructBasic());
 
@@ -51,9 +51,9 @@ constructAllSettings()
 static void
 serializeEmpty()
 {
-    struct LDJSON *json = NULL;
-    struct LDUser *user = NULL;
-    char *serialized = NULL;
+    struct LDJSON *json;
+    struct LDUser *user;
+    char *serialized;
 
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(json = LDUserToJSON(NULL, user, false));
@@ -69,10 +69,10 @@ serializeEmpty()
 static void
 serializeRedacted()
 {
-    struct LDJSON *json = NULL;
-    struct LDUser *user = NULL;
-    char *serialized = NULL;
-    struct LDJSON *custom = NULL, *child = NULL;
+    struct LDJSON *json;
+    struct LDUser *user;
+    char *serialized;
+    struct LDJSON *custom, *child;
 
     LD_ASSERT(user = LDUserNew("123"));
 
@@ -98,9 +98,9 @@ serializeRedacted()
 static void
 serializeAll()
 {
-    struct LDJSON *json = NULL;
-    struct LDUser *user = NULL;
-    char *serialized = NULL;
+    struct LDJSON *json;
+    struct LDUser *user;
+    char *serialized;
 
     LD_ASSERT(user = constructBasic());
 

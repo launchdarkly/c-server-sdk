@@ -176,13 +176,9 @@ testStringVariation()
 static void
 testJSONVariation()
 {
-    struct LDJSON *flag;
     struct LDClient *client;
     struct LDUser *user;
-    struct LDJSON *actual;
-    struct LDJSON *expected;
-    struct LDJSON *other;
-    struct LDJSON *def;
+    struct LDJSON *actual, *flag, *expected, *other, *def;
     struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
