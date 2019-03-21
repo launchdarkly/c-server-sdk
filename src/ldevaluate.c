@@ -13,11 +13,11 @@ LDi_isEvalError(const EvalStatus status)
 }
 
 static EvalStatus
-maybeNegate(const struct LDJSON *const object, const EvalStatus status)
+maybeNegate(const struct LDJSON *const clause, const EvalStatus status)
 {
     const struct LDJSON *negate;
 
-    LD_ASSERT(object);
+    LD_ASSERT(clause);
 
     negate = NULL;
 
@@ -25,7 +25,7 @@ maybeNegate(const struct LDJSON *const object, const EvalStatus status)
         return status;
     }
 
-    if (LDi_notNull(negate = LDObjectLookup(object, "negate"))) {
+    if (LDi_notNull(negate = LDObjectLookup(clause, "negate"))) {
         if (LDJSONGetType(negate) != LDBool) {
             return EVAL_SCHEMA;
         }
