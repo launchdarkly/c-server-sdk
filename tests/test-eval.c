@@ -12,20 +12,10 @@ static struct LDStore *
 prepareEmptyStore()
 {
     struct LDStore *store;
-    struct LDJSON *sets, *tmp;
 
     LD_ASSERT(store = LDMakeInMemoryStore());
     LD_ASSERT(!LDStoreInitialized(store));
-
-    LD_ASSERT(sets = LDNewObject());
-
-    LD_ASSERT(tmp = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(sets, "segments", tmp));
-
-    LD_ASSERT(tmp = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(sets, "flags", tmp));
-
-    LD_ASSERT(LDStoreInit(store, sets));
+    LD_ASSERT(LDStoreInitEmpty(store));
     LD_ASSERT(LDStoreInitialized(store));
 
     return store;

@@ -16,6 +16,8 @@ LDDetailsClear(struct LDDetails *const details)
 {
     if (details->reason == LD_RULE_MATCH) {
         LDFree(details->extra.rule.id);
+    } else if (details->reason == LD_PREREQUISITE_FAILED) {
+        LDFree(details->extra.prerequisiteKey);
     }
 
     LDDetailsInit(details);
