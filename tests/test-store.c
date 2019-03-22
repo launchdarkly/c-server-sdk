@@ -5,21 +5,9 @@ static struct LDStore *
 prepareEmptyStore()
 {
     struct LDStore *store;
-    struct LDJSON *sets, *tmp;
-
     LD_ASSERT(store = LDMakeInMemoryStore());
     LD_ASSERT(!LDStoreInitialized(store));
-
-    LD_ASSERT(sets = LDNewObject());
-
-    LD_ASSERT(tmp = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(sets, LD_SEGMENT, tmp));
-
-    LD_ASSERT(tmp = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(sets,  LD_FLAG, tmp));
-
-    LD_ASSERT(LDStoreInit(store, sets));
-    LD_ASSERT(LDStoreInitialized(store));
+    LD_ASSERT(LDStoreInitEmpty(store));
 
     return store;
 }
@@ -68,7 +56,8 @@ static void
 deletedOnly()
 {
     struct LDStore *store;
-    struct LDJSON *feature, *lookup;
+    struct LDJSON *feature;
+    struct LDJSONRC *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -86,7 +75,8 @@ static void
 basicExists()
 {
     struct LDStore *store;
-    struct LDJSON *feature, *lookup;
+    struct LDJSON *feature;
+    struct LDJSONRC *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -96,9 +86,8 @@ basicExists()
 
     LD_ASSERT(LDStoreGet(store, LD_FLAG, "my-heap-key", &lookup));
     LD_ASSERT(lookup);
-    LD_ASSERT(LDJSONCompare(lookup, feature));
-
-    LDJSONFree(lookup);
+    LD_ASSERT(LDJSONCompare(LDJSONRCGet(lookup), feature));
+    LDJSONRCDecrement(lookup);
 
     LDStoreDestroy(store);
 }
@@ -107,7 +96,7 @@ static void
 basicDoesNotExist()
 {
     struct LDStore *store;
-    struct LDJSON *lookup;
+    struct LDJSONRC *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -121,7 +110,8 @@ static void
 upsertNewer()
 {
     struct LDStore *store;
-    struct LDJSON *feature, *lookup;
+    struct LDJSON *feature;
+    struct LDJSONRC *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -133,9 +123,8 @@ upsertNewer()
 
     LD_ASSERT(LDStoreGet(store, LD_SEGMENT, "my-heap-key", &lookup));
     LD_ASSERT(lookup);
-    LD_ASSERT(LDJSONCompare(lookup, feature));
-
-    LDJSONFree(lookup);
+    LD_ASSERT(LDJSONCompare(LDJSONRCGet(lookup), feature));
+    LDJSONRCDecrement(lookup);
 
     LDStoreDestroy(store);
 }
@@ -144,7 +133,8 @@ static void
 upsertOlder()
 {
     struct LDStore *store;
-    struct LDJSON *feature1, *feature2, *lookup;
+    struct LDJSON *feature1, *feature2;
+    struct LDJSONRC *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -156,10 +146,9 @@ upsertOlder()
 
     LD_ASSERT(LDStoreGet(store, LD_SEGMENT, "my-heap-key", &lookup));
     LD_ASSERT(lookup);
-    LD_ASSERT(LDJSONCompare(lookup, feature1));
+    LD_ASSERT(LDJSONCompare(LDJSONRCGet(lookup), feature1));
 
-    LDJSONFree(lookup);
-
+    LDJSONRCDecrement(lookup);
     LDStoreDestroy(store);
 }
 
@@ -167,7 +156,8 @@ static void
 upsertDelete()
 {
     struct LDStore *store;
-    struct LDJSON *feature, *lookup;
+    struct LDJSON *feature;
+    struct LDJSONRC *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -187,7 +177,8 @@ static void
 conflictDifferentNamespace()
 {
     struct LDStore *store;
-    struct LDJSON *feature1, *feature2, *lookup;;
+    struct LDJSON *feature1, *feature2;
+    struct LDJSONRC *lookup;
 
     LD_ASSERT(store = prepareEmptyStore());
 
@@ -199,13 +190,13 @@ conflictDifferentNamespace()
 
     LD_ASSERT(LDStoreGet(store, LD_SEGMENT, "my-heap-key", &lookup));
     LD_ASSERT(lookup);
-    LD_ASSERT(LDJSONCompare(lookup, feature1));
-    LDJSONFree(lookup);
+    LD_ASSERT(LDJSONCompare(LDJSONRCGet(lookup), feature1));
+    LDJSONRCDecrement(lookup);
 
     LD_ASSERT(LDStoreGet(store, LD_FLAG, "my-heap-key", &lookup));
     LD_ASSERT(lookup);
-    LD_ASSERT(LDJSONCompare(lookup, feature2));
-    LDJSONFree(lookup);
+    LD_ASSERT(LDJSONCompare(LDJSONRCGet(lookup), feature2));
+    LDJSONRCDecrement(lookup);
 
     LDStoreDestroy(store);
 }
