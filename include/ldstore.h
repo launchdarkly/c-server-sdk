@@ -63,7 +63,7 @@ struct LDStore {
      * @return Returns an object map keys to features, NULL on failure.
      */
     bool (*all)(void *const context, const enum FeatureKind kind,
-        struct LDJSON **const result);
+        struct LDJSONRC ***const result);
     /**
      * @brief Mark an existing feature as deleted
      * (only virtually deletes to maintain version)
@@ -122,7 +122,7 @@ bool LDStoreGet(const struct LDStore *const store,
 
 /** @brief A convenience wrapper around `store->all`. */
 bool LDStoreAll(const struct LDStore *const store,
-    const enum FeatureKind kind, struct LDJSON **const result);
+    const enum FeatureKind kind, struct LDJSONRC ***const result);
 
 /** @brief A convenience wrapper around `store->delete`. */
 bool LDStoreDelete(const struct LDStore *const store,

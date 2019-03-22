@@ -11,7 +11,7 @@ static bool memoryGet(void *const rawcontext, const enum FeatureKind kind,
     const char *const key, struct LDJSONRC **const result);
 
 static bool memoryAll(void *const rawcontext, const enum FeatureKind kind,
-    struct LDJSON **const result);
+    struct LDJSONRC ***const result);
 
 static bool memoryDelete(void *const rawcontext, const enum FeatureKind kind,
     const char *const key, const unsigned int version);
@@ -307,18 +307,20 @@ memoryGet(void *const rawcontext, const enum FeatureKind kind,
 
 static bool
 memoryAll(void *const rawcontext, const enum FeatureKind kind,
-    struct LDJSON **const result)
+    struct LDJSONRC ***const result)
 {
     struct MemoryContext *context;
     struct FeatureCollection **set, *current, *tmp;
-    struct LDJSON *object, *item;
+    struct LDJSONRC **collection, **collectioniter;
+    unsigned int count;
 
     LD_ASSERT(rawcontext);
     LD_ASSERT(result);
 
-    object  = NULL;
-    *result = NULL;
-    context = rawcontext;
+    *result    = NULL;
+    context    = rawcontext;
+    collection = NULL;
+    count      = 0;
 
     LD_ASSERT(LDi_rdlock(&context->lock));
 
@@ -332,43 +334,39 @@ memoryAll(void *const rawcontext, const enum FeatureKind kind,
         LD_ASSERT(false);
     }
 
-    if (!(object = LDNewObject())) {
+    HASH_ITER(hh, *set, current, tmp) {
+        if (!LDi_isDeleted(LDJSONRCGet(current->feature))) {
+            count++;
+        }
+    }
+
+    if (count == 0) {
+        LD_ASSERT(LDi_rdunlock(&context->lock));
+
+        return true;
+    }
+
+    if (!(collection = malloc(sizeof(struct LDJSONRC *) * (count + 1)))) {
         LD_ASSERT(LDi_rdunlock(&context->lock));
 
         return false;
     }
 
+    collectioniter = collection;
+
     HASH_ITER(hh, *set, current, tmp) {
-        item = LDJSONRCGet(current->feature);
-
-        if (!LDi_isDeleted(item)) {
-            struct LDJSON *duplicate;
-            const char *key;
-
-            if (!(duplicate = LDJSONDuplicate(item))) {
-                LDJSONFree(object);
-
-                LD_ASSERT(LDi_rdunlock(&context->lock));
-
-                return false;
-            }
-
-            LD_ASSERT(key = LDGetText(LDObjectLookup(item, "key")));
-
-            if (!LDObjectSetKey(object, key, duplicate)) {
-                LDJSONFree(object);
-                LDJSONFree(duplicate);
-
-                LD_ASSERT(LDi_rdunlock(&context->lock));
-
-                return false;
-            }
+        if (!LDi_isDeleted(LDJSONRCGet(current->feature))) {
+            *collectioniter = current->feature;
+            LDJSONRCIncrement(current->feature);
+            collectioniter++;
         }
     }
 
+    *collectioniter = NULL;
+
     LD_ASSERT(LDi_rdunlock(&context->lock));
 
-    *result = object;
+    *result = collection;
 
     return true;
 }
@@ -654,7 +652,7 @@ LDStoreGet(const struct LDStore *const store, const enum FeatureKind kind,
 
 bool
 LDStoreAll(const struct LDStore *const store, const enum FeatureKind kind,
-    struct LDJSON **const result)
+    struct LDJSONRC ***const result)
 {
     LD_ASSERT(store);
     LD_ASSERT(result);
