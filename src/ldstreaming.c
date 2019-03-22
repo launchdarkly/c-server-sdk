@@ -48,7 +48,7 @@ onPut(struct LDClient *const client, struct LDJSON *const data)
 
     success = false;
 
-    if (!(tmp = LDObjectLookup(data, "data"))) {
+    if (!(tmp = LDObjectDetachKey(data, "data"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
         goto cleanup;
@@ -57,11 +57,7 @@ onPut(struct LDClient *const client, struct LDJSON *const data)
     if (LDJSONGetType(tmp) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        goto cleanup;
-    }
-
-    if (!(tmp = LDJSONDuplicate(tmp))) {
-        LD_LOG(LD_LOG_ERROR, "memory error");
+        LDJSONFree(tmp);
 
         goto cleanup;
     }
