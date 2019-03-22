@@ -61,12 +61,12 @@ testInitialPut(struct StreamContext *const context)
     LD_ASSERT(LDi_onSSE(context, ""));
 
     LD_ASSERT(LDStoreGet(
-        context->client->config->store, "flags", "my-flag", &flag));
+        context->client->config->store, LD_FLAG, "my-flag", &flag));
     LD_ASSERT(flag);
     LD_ASSERT(LDGetNumber(LDObjectLookup(flag, "version")) == 2);
 
     LD_ASSERT(LDStoreGet(
-        context->client->config->store, "segments", "my-segment", &segment));
+        context->client->config->store, LD_SEGMENT, "my-segment", &segment));
     LD_ASSERT(segment);
     LD_ASSERT(LDGetNumber(LDObjectLookup(segment, "version")) == 5);
 
@@ -92,7 +92,7 @@ testPatchFlag(struct StreamContext *const context)
     LD_ASSERT(LDi_onSSE(context, ""));
 
     LD_ASSERT(LDStoreGet(
-        context->client->config->store, "flags", "my-flag", &flag));
+        context->client->config->store, LD_FLAG, "my-flag", &flag));
     LD_ASSERT(flag);
     LD_ASSERT(LDGetNumber(LDObjectLookup(flag, "version")) == 3);
 
@@ -116,7 +116,7 @@ testDeleteFlag(struct StreamContext *const context)
     LD_ASSERT(LDi_onSSE(context, ""));
 
     LD_ASSERT(LDStoreGet(
-        context->client->config->store, "flags", "my-flag", &lookup));
+        context->client->config->store, LD_FLAG, "my-flag", &lookup));
     LD_ASSERT(!lookup);
 }
 
@@ -138,7 +138,7 @@ testPatchSegment(struct StreamContext *const context)
     LD_ASSERT(LDi_onSSE(context, ""));
 
     LD_ASSERT(LDStoreGet(
-        context->client->config->store, "segments", "my-segment", &segment));
+        context->client->config->store, LD_SEGMENT, "my-segment", &segment));
     LD_ASSERT(segment);
     LD_ASSERT(LDGetNumber(LDObjectLookup(segment, "version")) == 7);
 
@@ -162,7 +162,7 @@ testDeleteSegment(struct StreamContext *const context)
     LD_ASSERT(LDi_onSSE(context, ""));
 
     LD_ASSERT(LDStoreGet(
-        context->client->config->store, "segments", "my-segment", &lookup));
+        context->client->config->store, LD_SEGMENT, "my-segment", &lookup));
     LD_ASSERT(!lookup);
 }
 

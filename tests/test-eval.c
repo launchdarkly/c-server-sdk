@@ -294,7 +294,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
 
     /* store setup */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
@@ -361,7 +361,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
 
     /* store */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
@@ -427,7 +427,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
 
     /* store */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
@@ -503,8 +503,8 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
 
     /* store */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
-    LD_ASSERT(LDStoreUpsert(store, "flags", flag3));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag3));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
@@ -922,7 +922,7 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
 
     /* store */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "segments", segment));
+    LD_ASSERT(LDStoreUpsert(store, LD_SEGMENT, segment));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag, user, store, &details, &events, &result,
@@ -1019,7 +1019,7 @@ testCanMatchJustOneSegmentFromList()
 
     /* store */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "segments", segment));
+    LD_ASSERT(LDStoreUpsert(store, LD_SEGMENT, segment));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag, user, store, &details, &events, &result,

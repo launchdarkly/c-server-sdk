@@ -435,6 +435,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         EvalStatus status;
         const char *keyText;
         struct LDDetails details, *detailsRef;
+        struct LDJSONRC *preflagrc;
 
         value            = NULL;
         preflag          = NULL;
@@ -445,6 +446,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         subevents        = NULL;
         keyText          = NULL;
         detailsRef       = NULL;
+        preflagrc        = NULL;
 
         LDDetailsInit(&details);
 
@@ -482,10 +484,14 @@ LDi_checkPrerequisites(struct LDClient *const client,
             return EVAL_SCHEMA;
         }
 
-        if (!LDStoreGet(store, "flags", keyText, &preflag)) {
+        if (!LDStoreGet(store, LD_FLAG, keyText, &preflagrc)) {
             LD_LOG(LD_LOG_ERROR, "store lookup error");
 
             return EVAL_STORE;
+        }
+
+        if (preflagrc) {
+            preflag = LDJSONRCGet(preflagrc);
         }
 
         if (!preflag) {
@@ -497,7 +503,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         if (LDi_isEvalError(status = LDi_evaluate(client, preflag, user, store,
             &details, &subevents, &value, recordReason)))
         {
-            LDJSONFree(preflag);
+            LDJSONRCDecrement(preflagrc);
             LDDetailsClear(&details);
 
             return status;
@@ -519,9 +525,8 @@ LDi_checkPrerequisites(struct LDClient *const client,
             keyText, user, variationNumRef, value, NULL,
             LDGetText(LDObjectLookup(flag, "key")), preflag, detailsRef);
 
-
         if (!event) {
-            LDJSONFree(preflag);
+            LDJSONRCDecrement(preflagrc);
             LDJSONFree(value);
             LDDetailsClear(&details);
 
@@ -532,7 +537,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
 
         if (!(*events)) {
             if (!(*events = LDNewArray())) {
-                LDJSONFree(preflag);
+                LDJSONRCDecrement(preflagrc);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
 
@@ -544,7 +549,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
 
         if (subevents) {
             if (!LDArrayAppend(*events, subevents)) {
-                LDJSONFree(preflag);
+                LDJSONRCDecrement(preflagrc);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
 
@@ -555,7 +560,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         }
 
         if (!LDArrayPush(*events, event)) {
-            LDJSONFree(preflag);
+            LDJSONRCDecrement(preflagrc);
             LDJSONFree(value);
             LDDetailsClear(&details);
 
@@ -565,7 +570,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         }
 
         if (status == EVAL_MISS) {
-            LDJSONFree(preflag);
+            LDJSONRCDecrement(preflagrc);
             LDJSONFree(value);
             LDDetailsClear(&details);
 
@@ -577,7 +582,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             bool variationMatch = false;
 
             if (!(on = LDObjectLookup(preflag, "on"))) {
-                LDJSONFree(preflag);
+                LDJSONRCDecrement(preflagrc);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
 
@@ -587,7 +592,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             }
 
             if (LDJSONGetType(on) != LDBool) {
-                LDJSONFree(preflag);
+                LDJSONRCDecrement(preflagrc);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
 
@@ -602,7 +607,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             }
 
             if (!LDGetBool(on) || !variationMatch) {
-                LDJSONFree(preflag);
+                LDJSONRCDecrement(preflagrc);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
 
@@ -610,7 +615,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             }
         }
 
-        LDJSONFree(preflag);
+        LDJSONRCDecrement(preflagrc);
         LDJSONFree(value);
         LDDetailsClear(&details);
     }
@@ -716,12 +721,17 @@ LDi_clauseMatchesUser(const struct LDJSON *const clause,
             if (LDJSONGetType(iter) == LDText) {
                 EvalStatus evalstatus;
                 struct LDJSON *segment;
+                struct LDJSONRC *segmentrc;
 
-                if (!LDStoreGet(store, "segments", LDGetText(iter), &segment)) {
+                if (!LDStoreGet(store, LD_SEGMENT, LDGetText(iter),
+                    &segmentrc))
+                {
                     LD_LOG(LD_LOG_ERROR, "store lookup error");
 
                     return EVAL_STORE;
                 }
+
+                segment = LDJSONRCGet(segmentrc);
 
                 if (!segment) {
                     LD_LOG(LD_LOG_WARNING, "segment not found in store");

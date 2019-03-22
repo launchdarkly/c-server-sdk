@@ -150,10 +150,12 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     struct LDStore *store;
     struct LDJSON *flag, *value, *events, *event, *evalue;
     struct LDDetails details, *detailsref;
+    struct LDJSONRC *flagrc;
 
     LD_ASSERT(client);
 
     flag             = NULL;
+    flagrc           = NULL;
     value            = NULL;
     store            = NULL;
     events           = NULL;
@@ -186,11 +188,15 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     LD_ASSERT(store = client->config->store);
 
-    if (!LDStoreGet(store, "flags", key, &flag)) {
+    if (!LDStoreGet(store, LD_FLAG, key, &flagrc)) {
         detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_STORE_ERROR;
 
         status = EVAL_MISS;
+    }
+
+    if (flagrc) {
+        flag = LDJSONRCGet(flagrc);
     }
 
     if (!flag) {
@@ -204,8 +210,8 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
         status = EVAL_MISS;
     } else {
-        status = LDi_evaluate(client, flag, user, store, detailsref, &events,
-            &value, o_details != NULL);
+        status = LDi_evaluate(client, flag, user, store,
+            detailsref, &events, &value, o_details != NULL);
     }
 
     if (status == EVAL_MEM) {
@@ -295,18 +301,18 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     LDJSONFree(event);
     LDJSONFree(fallback);
-    LDJSONFree(flag);
     LDDetailsClear(&details);
     LDJSONFree(events);
+    LDJSONRCDecrement(flagrc);
 
     return value;
 
   error:
-    LDJSONFree(flag);
     LDJSONFree(event);
     LDJSONFree(value);
     LDDetailsClear(&details);
     LDJSONFree(events);
+    LDJSONRCDecrement(flagrc);
 
     return fallback;
 }
@@ -517,7 +523,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         }
     }
 
-    if (!LDStoreAll(client->config->store, "flags", &rawFlags)) {
+    if (!LDStoreAll(client->config->store, LD_FLAG, &rawFlags)) {
         LD_LOG(LD_LOG_ERROR, "LDAllFlags failed to fetch flags");
 
         return NULL;

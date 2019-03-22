@@ -8,7 +8,7 @@
 #include "ldstreaming.h"
 
 bool
-LDi_parsePath(const char *path, char **const kind, char **const key)
+LDi_parsePath(const char *path, enum FeatureKind *const kind, char **const key)
 {
     size_t segmentlen, flagslen;
     const char *segments, *flags;
@@ -17,7 +17,6 @@ LDi_parsePath(const char *path, char **const kind, char **const key)
     LD_ASSERT(kind);
     LD_ASSERT(key);
 
-    *kind      = NULL;
     *key       = NULL;
     segments   = "/segments/";
     flags      = "/flags/";
@@ -29,17 +28,13 @@ LDi_parsePath(const char *path, char **const kind, char **const key)
             goto error;
         }
 
-        if (!(*kind = LDStrNDup(path + 1, segmentlen - 2))) {
-            goto error;
-        }
+        *kind = LD_SEGMENT;
     } else if(strncmp(path, flags, flagslen) == 0) {
         if (!(*key = LDStrDup(path + flagslen))) {
             goto error;
         }
 
-        if (!(*kind = LDStrNDup(path + 1, flagslen - 2))) {
-            goto error;
-        }
+        *kind = LD_FLAG;
     } else {
         goto error;
     }
@@ -47,10 +42,8 @@ LDi_parsePath(const char *path, char **const kind, char **const key)
     return true;
 
   error:
-    free(*kind);
     free(*key);
 
-    *kind = NULL;
     *key  = NULL;
 
     return false;
@@ -103,14 +96,14 @@ static bool
 onPatch(struct LDClient *const client, struct LDJSON *const data)
 {
     struct LDJSON *tmp;
-    char *kind, *key;
+    char *key;
     bool success;
+    enum FeatureKind kind;
 
     LD_ASSERT(client);
     LD_ASSERT(data);
 
     tmp     = NULL;
-    kind    = NULL;
     key     = NULL;
     success = false;
 
@@ -159,7 +152,6 @@ onPatch(struct LDClient *const client, struct LDJSON *const data)
     success = true;
 
   cleanup:
-    LDFree(kind);
     LDFree(key);
     LDJSONFree(data);
 
@@ -170,14 +162,14 @@ static bool
 onDelete(struct LDClient *const client, struct LDJSON *const data)
 {
     struct LDJSON *tmp;
-    char *kind, *key;
+    char *key;
     bool success;
+    enum FeatureKind kind;
 
     LD_ASSERT(client);
     LD_ASSERT(data);
 
     tmp     = NULL;
-    kind    = NULL;
     key     = NULL;
     success = false;
 
@@ -220,7 +212,6 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
     success = true;
 
   cleanup:
-    LDFree(kind);
     LDFree(key);
     LDJSONFree(data);
 

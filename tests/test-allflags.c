@@ -69,8 +69,8 @@ testAllFlags()
 
     /* store */
     LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LD_ASSERT(LDStoreUpsert(client->config->store, "flags", flag1));
-    LD_ASSERT(LDStoreUpsert(client->config->store, "flags", flag2));
+    LD_ASSERT(LDStoreUpsert(client->config->store, LD_FLAG, flag1));
+    LD_ASSERT(LDStoreUpsert(client->config->store, LD_FLAG, flag2));
 
     /* test */
     LD_ASSERT(allFlags = LDAllFlags(client, user));
@@ -114,8 +114,8 @@ testAllFlagsReturnsNilIfUserKeyIsNil()
 
     /* store */
     LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LD_ASSERT(LDStoreUpsert(client->config->store, "flags", flag1));
-    LD_ASSERT(LDStoreUpsert(client->config->store, "flags", flag2));
+    LD_ASSERT(LDStoreUpsert(client->config->store, LD_FLAG, flag1));
+    LD_ASSERT(LDStoreUpsert(client->config->store, LD_FLAG, flag2));
 
     /* test / validation */
     LD_ASSERT(!LDAllFlags(client, NULL));

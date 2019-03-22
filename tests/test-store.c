@@ -13,10 +13,10 @@ prepareEmptyStore()
     LD_ASSERT(sets = LDNewObject());
 
     LD_ASSERT(tmp = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(sets, "segments", tmp));
+    LD_ASSERT(LDObjectSetKey(sets, LD_SEGMENT, tmp));
 
     LD_ASSERT(tmp = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(sets, "flags", tmp));
+    LD_ASSERT(LDObjectSetKey(sets,  LD_FLAG, tmp));
 
     LD_ASSERT(LDStoreInit(store, sets));
     LD_ASSERT(LDStoreInitialized(store));
@@ -74,9 +74,9 @@ deletedOnly()
 
     LD_ASSERT(feature = makeDeleted("abc", 123));
 
-    LD_ASSERT(LDStoreUpsert(store, "flags", feature));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, feature));
 
-    LD_ASSERT(LDStoreGet(store, "flags", "abc", &lookup));
+    LD_ASSERT(LDStoreGet(store, LD_FLAG, "abc", &lookup));
     LD_ASSERT(!lookup);
 
     LDStoreDestroy(store);
@@ -92,9 +92,9 @@ basicExists()
 
     LD_ASSERT(feature = makeVersioned("my-heap-key", 3))
 
-    LD_ASSERT(LDStoreUpsert(store, "flags", feature));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, feature));
 
-    LD_ASSERT(LDStoreGet(store, "flags", "my-heap-key", &lookup));
+    LD_ASSERT(LDStoreGet(store, LD_FLAG, "my-heap-key", &lookup));
     LD_ASSERT(lookup);
     LD_ASSERT(LDJSONCompare(lookup, feature));
 
@@ -111,7 +111,7 @@ basicDoesNotExist()
 
     LD_ASSERT(store = prepareEmptyStore());
 
-    LD_ASSERT(LDStoreGet(store, "flags", "abc", &lookup));
+    LD_ASSERT(LDStoreGet(store, LD_FLAG, "abc", &lookup));
     LD_ASSERT(!lookup);
 
     LDStoreDestroy(store);
@@ -126,12 +126,12 @@ upsertNewer()
     LD_ASSERT(store = prepareEmptyStore());
 
     LD_ASSERT(feature = makeVersioned("my-heap-key", 3))
-    LD_ASSERT(LDStoreUpsert(store, "segments", feature));
+    LD_ASSERT(LDStoreUpsert(store,  LD_SEGMENT, feature));
 
     LD_ASSERT(feature = makeVersioned("my-heap-key", 5))
-    LD_ASSERT(LDStoreUpsert(store, "segments", feature));
+    LD_ASSERT(LDStoreUpsert(store, LD_SEGMENT, feature));
 
-    LD_ASSERT(LDStoreGet(store, "segments", "my-heap-key", &lookup));
+    LD_ASSERT(LDStoreGet(store, LD_SEGMENT, "my-heap-key", &lookup));
     LD_ASSERT(lookup);
     LD_ASSERT(LDJSONCompare(lookup, feature));
 
@@ -149,12 +149,12 @@ upsertOlder()
     LD_ASSERT(store = prepareEmptyStore());
 
     LD_ASSERT(feature1 = makeVersioned("my-heap-key", 5))
-    LD_ASSERT(LDStoreUpsert(store, "segments", feature1));
+    LD_ASSERT(LDStoreUpsert(store, LD_SEGMENT, feature1));
 
     LD_ASSERT(feature2 = makeVersioned("my-heap-key", 3))
-    LD_ASSERT(LDStoreUpsert(store, "segments", feature2));
+    LD_ASSERT(LDStoreUpsert(store, LD_SEGMENT, feature2));
 
-    LD_ASSERT(LDStoreGet(store, "segments", "my-heap-key", &lookup));
+    LD_ASSERT(LDStoreGet(store, LD_SEGMENT, "my-heap-key", &lookup));
     LD_ASSERT(lookup);
     LD_ASSERT(LDJSONCompare(lookup, feature1));
 
@@ -172,12 +172,12 @@ upsertDelete()
     LD_ASSERT(store = prepareEmptyStore());
 
     LD_ASSERT(feature = makeVersioned("my-heap-key", 3))
-    LD_ASSERT(LDStoreUpsert(store, "segments", feature));
+    LD_ASSERT(LDStoreUpsert(store, LD_SEGMENT, feature));
 
     LD_ASSERT(feature = makeDeleted("my-heap-key", 5))
-    LD_ASSERT(LDStoreUpsert(store, "segments", feature));
+    LD_ASSERT(LDStoreUpsert(store, LD_SEGMENT, feature));
 
-    LD_ASSERT(LDStoreGet(store, "segments", "my-heap-key", &lookup));
+    LD_ASSERT(LDStoreGet(store, LD_SEGMENT, "my-heap-key", &lookup));
     LD_ASSERT(!lookup);
 
     LDStoreDestroy(store);
@@ -192,17 +192,17 @@ conflictDifferentNamespace()
     LD_ASSERT(store = prepareEmptyStore());
 
     LD_ASSERT(feature1 = makeVersioned("my-heap-key", 3));
-    LD_ASSERT(LDStoreUpsert(store, "segments", feature1));
+    LD_ASSERT(LDStoreUpsert(store, LD_SEGMENT, feature1));
 
     LD_ASSERT(feature2 = makeVersioned("my-heap-key", 3));
-    LD_ASSERT(LDStoreUpsert(store, "flags", feature2));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, feature2));
 
-    LD_ASSERT(LDStoreGet(store, "segments", "my-heap-key", &lookup));
+    LD_ASSERT(LDStoreGet(store, LD_SEGMENT, "my-heap-key", &lookup));
     LD_ASSERT(lookup);
     LD_ASSERT(LDJSONCompare(lookup, feature1));
     LDJSONFree(lookup);
 
-    LD_ASSERT(LDStoreGet(store, "flags", "my-heap-key", &lookup));
+    LD_ASSERT(LDStoreGet(store, LD_FLAG, "my-heap-key", &lookup));
     LD_ASSERT(lookup);
     LD_ASSERT(LDJSONCompare(lookup, feature2));
     LDJSONFree(lookup);

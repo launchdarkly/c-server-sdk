@@ -64,7 +64,7 @@ testBoolVariation()
     addVariation(flag, LDNewBool(false));
     addVariation(flag, LDNewBool(true));
     LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LDStoreUpsert(client->config->store, "flags", flag);
+    LDStoreUpsert(client->config->store, LD_FLAG, flag);
     /* run */
     actual = LDBoolVariation(client, user, "validFeatureKey", false, &details);
     /* validate */
@@ -96,7 +96,7 @@ testIntVariation()
     addVariation(flag, LDNewNumber(-1));
     addVariation(flag, LDNewNumber(100));
     LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LDStoreUpsert(client->config->store, "flags", flag);
+    LDStoreUpsert(client->config->store, LD_FLAG, flag);
     /* run */
     actual = LDIntVariation(client, user, "validFeatureKey", 1000, &details);
     /* validate */
@@ -128,7 +128,7 @@ testDoubleVariation()
     addVariation(flag, LDNewNumber(-1));
     addVariation(flag, LDNewNumber(100.01));
     LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LDStoreUpsert(client->config->store, "flags", flag);
+    LDStoreUpsert(client->config->store, LD_FLAG, flag);
     /* run */
     actual = LDDoubleVariation(client, user, "validFeatureKey", 0.0, &details);
     /* validate */
@@ -160,7 +160,7 @@ testStringVariation()
     addVariation(flag, LDNewText("a"));
     addVariation(flag, LDNewText("b"));
     LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LDStoreUpsert(client->config->store, "flags", flag);
+    LDStoreUpsert(client->config->store, LD_FLAG, flag);
     /* run */
     actual = LDStringVariation(client, user, "validFeatureKey", "a", &details);
     /* validate */
@@ -199,7 +199,7 @@ testJSONVariation()
     addVariation(flag, other);
     addVariation(flag, expected);
     LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LDStoreUpsert(client->config->store, "flags", flag);
+    LDStoreUpsert(client->config->store, LD_FLAG, flag);
     /* run */
     actual = LDJSONVariation(client, user, "validFeatureKey", def, &details);
     /* validate */
