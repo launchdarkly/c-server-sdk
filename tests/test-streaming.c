@@ -6,46 +6,46 @@
 static void
 testParsePathFlags()
 {
-    char *kind, *key;
+    enum FeatureKind kind;
+    char *key;
 
     LD_ASSERT(LDi_parsePath("/flags/abcd", &kind, &key));
 
-    LD_ASSERT(strcmp(kind, "flags") == 0);
+    LD_ASSERT(kind == LD_FLAG);
     LD_ASSERT(strcmp(key, "abcd") == 0);
 
-    LDFree(kind);
     LDFree(key);
 }
 
 static void
 testParsePathSegments()
 {
-    char *kind, *key;
+    enum FeatureKind kind;
+    char *key;
 
     LD_ASSERT(LDi_parsePath("/segments/xyz", &kind, &key));
 
-    LD_ASSERT(strcmp(kind, "segments") == 0);
+    LD_ASSERT(kind == LD_SEGMENT);
     LD_ASSERT(strcmp(key, "xyz") == 0);
 
-    LDFree(kind);
     LDFree(key);
 }
 
 static void
 testParsePathUnknownKind()
 {
-    char *kind, *key;
+    enum FeatureKind kind;
+    char *key;
 
     LD_ASSERT(!LDi_parsePath("/unknown/123", &kind, &key));
 
-    LD_ASSERT(!kind);
     LD_ASSERT(!key);
 }
 
 static void
 testInitialPut(struct StreamContext *const context)
 {
-    struct LDJSON *flag, *segment;
+    struct LDJSONRC *flag, *segment;
 
     const char *const event = "event: put";
 
@@ -63,21 +63,22 @@ testInitialPut(struct StreamContext *const context)
     LD_ASSERT(LDStoreGet(
         context->client->config->store, LD_FLAG, "my-flag", &flag));
     LD_ASSERT(flag);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(flag, "version")) == 2);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(LDJSONRCGet(flag), "version")) == 2);
 
     LD_ASSERT(LDStoreGet(
         context->client->config->store, LD_SEGMENT, "my-segment", &segment));
     LD_ASSERT(segment);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(segment, "version")) == 5);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(LDJSONRCGet(segment), "version")) ==
+        5);
 
-    LDJSONFree(flag);
-    LDJSONFree(segment);
+    LDJSONRCDecrement(flag);
+    LDJSONRCDecrement(segment);
 }
 
 static void
 testPatchFlag(struct StreamContext *const context)
 {
-    struct LDJSON *flag;
+    struct LDJSONRC *flag;
 
     const char *const event = "event: patch";
 
@@ -94,15 +95,15 @@ testPatchFlag(struct StreamContext *const context)
     LD_ASSERT(LDStoreGet(
         context->client->config->store, LD_FLAG, "my-flag", &flag));
     LD_ASSERT(flag);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(flag, "version")) == 3);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(LDJSONRCGet(flag), "version")) == 3);
 
-    LDJSONFree(flag);
+    LDJSONRCDecrement(flag);
 }
 
 static void
 testDeleteFlag(struct StreamContext *const context)
 {
-    struct LDJSON *lookup;
+    struct LDJSONRC *lookup;
 
     const char *const event = "event: delete";
 
@@ -123,7 +124,7 @@ testDeleteFlag(struct StreamContext *const context)
 static void
 testPatchSegment(struct StreamContext *const context)
 {
-    struct LDJSON *segment;
+    struct LDJSONRC *segment;
 
     const char *const event = "event: patch";
 
@@ -140,15 +141,16 @@ testPatchSegment(struct StreamContext *const context)
     LD_ASSERT(LDStoreGet(
         context->client->config->store, LD_SEGMENT, "my-segment", &segment));
     LD_ASSERT(segment);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(segment, "version")) == 7);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(LDJSONRCGet(segment), "version")) ==
+        7);
 
-    LDJSONFree(segment);
+    LDJSONRCDecrement(segment);
 }
 
 static void
 testDeleteSegment(struct StreamContext *const context)
 {
-    struct LDJSON *lookup;
+    struct LDJSONRC *lookup;
 
     const char *const event = "event: delete";
 
