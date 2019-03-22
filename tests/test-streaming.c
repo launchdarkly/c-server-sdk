@@ -7,35 +7,31 @@ static void
 testParsePathFlags()
 {
     enum FeatureKind kind;
-    char *key;
+    const char *key;
 
     LD_ASSERT(LDi_parsePath("/flags/abcd", &kind, &key));
 
     LD_ASSERT(kind == LD_FLAG);
     LD_ASSERT(strcmp(key, "abcd") == 0);
-
-    LDFree(key);
 }
 
 static void
 testParsePathSegments()
 {
     enum FeatureKind kind;
-    char *key;
+    const char *key;
 
     LD_ASSERT(LDi_parsePath("/segments/xyz", &kind, &key));
 
     LD_ASSERT(kind == LD_SEGMENT);
     LD_ASSERT(strcmp(key, "xyz") == 0);
-
-    LDFree(key);
 }
 
 static void
 testParsePathUnknownKind()
 {
     enum FeatureKind kind;
-    char *key;
+    const char *key;
 
     LD_ASSERT(!LDi_parsePath("/unknown/123", &kind, &key));
 

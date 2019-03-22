@@ -22,6 +22,6 @@ struct StreamContext {
 };
 
 bool LDi_parsePath(const char *path, enum FeatureKind *const kind,
-    char **const key);
+    const char **const key);
 
 bool LDi_onSSE(struct StreamContext *const context, const char *line);

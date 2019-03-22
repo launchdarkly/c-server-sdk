@@ -8,7 +8,8 @@
 #include "ldstreaming.h"
 
 bool
-LDi_parsePath(const char *path, enum FeatureKind *const kind, char **const key)
+LDi_parsePath(const char *path, enum FeatureKind *const kind,
+    const char **const key)
 {
     size_t segmentlen, flagslen;
     const char *segments, *flags;
@@ -24,29 +25,16 @@ LDi_parsePath(const char *path, enum FeatureKind *const kind, char **const key)
     flagslen   = strlen(flags);
 
     if (strncmp(path, segments, segmentlen) == 0) {
-        if (!(*key = LDStrDup(path + segmentlen))) {
-            goto error;
-        }
-
+        *key = path + segmentlen;
         *kind = LD_SEGMENT;
     } else if(strncmp(path, flags, flagslen) == 0) {
-        if (!(*key = LDStrDup(path + flagslen))) {
-            goto error;
-        }
-
+        *key = path + flagslen;
         *kind = LD_FLAG;
     } else {
-        goto error;
+        return false;
     }
 
     return true;
-
-  error:
-    free(*key);
-
-    *key  = NULL;
-
-    return false;
 }
 
 static bool
@@ -96,7 +84,7 @@ static bool
 onPatch(struct LDClient *const client, struct LDJSON *const data)
 {
     struct LDJSON *tmp;
-    char *key;
+    const char *key;
     bool success;
     enum FeatureKind kind;
 
@@ -148,7 +136,6 @@ onPatch(struct LDClient *const client, struct LDJSON *const data)
     success = true;
 
   cleanup:
-    LDFree(key);
     LDJSONFree(data);
 
     return success;
@@ -158,7 +145,7 @@ static bool
 onDelete(struct LDClient *const client, struct LDJSON *const data)
 {
     struct LDJSON *tmp;
-    char *key;
+    const char *key;
     bool success;
     enum FeatureKind kind;
 
@@ -208,7 +195,6 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
     success = true;
 
   cleanup:
-    LDFree(key);
     LDJSONFree(data);
 
     return success;
