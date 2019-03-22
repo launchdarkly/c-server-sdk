@@ -504,7 +504,9 @@ LDi_checkPrerequisites(struct LDClient *const client,
             &details, &subevents, &value, recordReason)))
         {
             LDJSONRCDecrement(preflagrc);
+            LDJSONFree(value);
             LDDetailsClear(&details);
+            LDJSONFree(subevents);
 
             return status;
         }
@@ -529,6 +531,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
             LDJSONRCDecrement(preflagrc);
             LDJSONFree(value);
             LDDetailsClear(&details);
+            LDJSONFree(subevents);
 
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -540,6 +543,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
                 LDJSONRCDecrement(preflagrc);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
+                LDJSONFree(subevents);
 
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -552,6 +556,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
                 LDJSONRCDecrement(preflagrc);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
+                LDJSONFree(subevents);
 
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
