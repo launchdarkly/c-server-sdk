@@ -32,12 +32,14 @@
     #define ld_thread_t HANDLE
 
     #define ld_rwlock_t SRWLOCK
+    #define ld_mutex_t CRITICAL_SECTION
 #else
     #define THREAD_RETURN void *
     #define THREAD_RETURN_DEFAULT NULL
     #define ld_thread_t pthread_t
 
     #define ld_rwlock_t pthread_rwlock_t
+    #define ld_mutex_t pthread_mutex_t
 #endif
 
 bool LDi_jointhread(ld_thread_t thread);
@@ -50,6 +52,11 @@ bool LDi_rdlock(ld_rwlock_t *const lock);
 bool LDi_wrlock(ld_rwlock_t *const lock);
 bool LDi_rdunlock(ld_rwlock_t *const lock);
 bool LDi_wrunlock(ld_rwlock_t *const lock);
+
+bool LDi_mtxinit(ld_mutex_t *const mutex);
+bool LDi_mtxdestroy(ld_mutex_t *const mutex);
+bool LDi_mtxlock(ld_mutex_t *const mutex);
+bool LDi_mtxunlock(ld_mutex_t *const mutex);
 
 /* **** LDConfig **** */
 
