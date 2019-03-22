@@ -723,6 +723,9 @@ LDi_clauseMatchesUser(const struct LDJSON *const clause,
                 struct LDJSON *segment;
                 struct LDJSONRC *segmentrc;
 
+                segmentrc = NULL;
+                segment   = NULL;
+
                 if (!LDStoreGet(store, LD_SEGMENT, LDGetText(iter),
                     &segmentrc))
                 {
@@ -731,7 +734,9 @@ LDi_clauseMatchesUser(const struct LDJSON *const clause,
                     return EVAL_STORE;
                 }
 
-                segment = LDJSONRCGet(segmentrc);
+                if (segmentrc) {
+                    segment = LDJSONRCGet(segmentrc);
+                }
 
                 if (!segment) {
                     LD_LOG(LD_LOG_WARNING, "segment not found in store");
@@ -744,7 +749,7 @@ LDi_clauseMatchesUser(const struct LDJSON *const clause,
                 {
                     LD_LOG(LD_LOG_ERROR, "sub error");
 
-                    LDJSONFree(segment);
+                    LDJSONRCDecrement(segmentrc);
 
                     return evalstatus;
                 }

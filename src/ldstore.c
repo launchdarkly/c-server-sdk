@@ -84,6 +84,16 @@ LDJSONRCIncrement(struct LDJSONRC *const rc)
 }
 
 void
+LDJSONRCDestroy(struct LDJSONRC *const rc)
+{
+    if (rc) {
+        LDJSONFree(rc->value);
+        LD_ASSERT(LDi_mtxdestroy(&rc->lock));
+        LDFree(rc);
+    }
+}
+
+void
 LDJSONRCDecrement(struct LDJSONRC *const rc)
 {
     if (rc) {
@@ -93,9 +103,7 @@ LDJSONRCDecrement(struct LDJSONRC *const rc)
         if (rc->count == 0) {
             LD_ASSERT(LDi_mtxunlock(&rc->lock));
 
-            LDJSONFree(rc->value);
-            LD_ASSERT(LDi_mtxdestroy(&rc->lock));
-            LDFree(rc);
+            LDJSONRCDestroy(rc);
         } else {
             LD_ASSERT(LDi_mtxunlock(&rc->lock));
         }
@@ -120,15 +128,80 @@ struct MemoryContext {
 };
 
 static bool
+addFeatures(struct FeatureCollection **set,
+    struct LDJSON *const features)
+{
+    struct LDJSONRC *rc;
+    struct FeatureCollection *item;
+    struct LDJSON *keyjson, *iter;
+    const char *key;
+
+    for (iter = LDGetIter(features); iter; iter = LDIterNext(iter)) {
+        if (!(keyjson = LDObjectLookup(iter, "key"))) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (LDJSONGetType(keyjson) != LDText) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        LD_ASSERT(key = LDGetText(keyjson));
+
+        if (!(rc = LDJSONRCNew(iter))) {
+            return false;
+        }
+
+        if (!(item = makeFeatureCollection(rc))) {
+            LDJSONRCDestroy(rc);
+
+            return false;
+        }
+
+        HASH_ADD_KEYPTR(hh, *set, key, strlen(key), item);
+    }
+
+    return true;
+}
+
+static bool
 memoryInit(void *const rawcontext, struct LDJSON *const sets)
 {
     struct MemoryContext *context;
+    struct LDJSON *flags, *segments;
 
     LD_ASSERT(rawcontext);
     LD_ASSERT(sets);
     LD_ASSERT(LDJSONGetType(sets) == LDObject);
 
     context = rawcontext;
+
+    if (!(flags = LDObjectLookup(sets, "flags"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if (LDJSONGetType(flags) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if (!(segments = LDObjectLookup(sets, "segments"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
+
+    if (LDJSONGetType(flags) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        return false;
+    }
 
     LD_ASSERT(LDi_rdlock(&context->lock));
 
@@ -152,11 +225,16 @@ memoryInit(void *const rawcontext, struct LDJSON *const sets)
         }
     }
 
-    /* fill store from sets */
-
-    context->initialized = true;
+    context->initialized = false;
     context->flags       = NULL;
     context->segments    = NULL;
+
+    /* fill store from sets */
+
+    addFeatures(&context->flags, flags);
+    addFeatures(&context->segments, segments);
+
+    context->initialized = true;
 
     LD_ASSERT(LDi_rdunlock(&context->lock));
 
