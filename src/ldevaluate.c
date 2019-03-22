@@ -754,7 +754,7 @@ LDi_clauseMatchesUser(const struct LDJSON *const clause,
                     return evalstatus;
                 }
 
-                LDJSONFree(segment);
+                LDJSONRCDecrement(segmentrc);
 
                 if (evalstatus == EVAL_MATCH) {
                     return maybeNegate(clause, EVAL_MATCH);
