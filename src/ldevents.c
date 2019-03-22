@@ -1057,7 +1057,6 @@ LDi_constructAnalytics(struct LDClient *const client)
     interface->poll      = poll;
     interface->context   = context;
     interface->destroy   = destroy;
-    interface->context   = context;
     interface->current   = NULL;
     interface->attempts  = 0;
     interface->waitUntil = 0;
