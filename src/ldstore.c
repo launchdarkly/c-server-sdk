@@ -31,23 +31,23 @@ struct LDJSONRC {
     unsigned int count;
 };
 
-struct FeatureCollection {
+struct FeatureCollectionItem {
     struct LDJSONRC *feature;
     UT_hash_handle hh;
 };
 
-struct FeatureCollection *
+struct FeatureCollectionItem *
 makeFeatureCollection(struct LDJSONRC *feature)
 {
-    struct FeatureCollection *result;
+    struct FeatureCollectionItem *result;
 
     LD_ASSERT(feature);
 
-    if (!(result = malloc(sizeof(struct FeatureCollection)))) {
+    if (!(result = malloc(sizeof(struct FeatureCollectionItem)))) {
         return NULL;
     }
 
-    memset(result, 0, sizeof(struct FeatureCollection));
+    memset(result, 0, sizeof(struct FeatureCollectionItem));
 
     result->feature = feature;
 
@@ -122,17 +122,17 @@ LDJSONRCGet(struct LDJSONRC *const rc)
 
 struct MemoryContext {
     bool initialized;
-    struct FeatureCollection *flags;
-    struct FeatureCollection *segments;
+    struct FeatureCollectionItem *flags;
+    struct FeatureCollectionItem *segments;
     ld_rwlock_t lock;
 };
 
 static bool
-addFeatures(struct FeatureCollection **set,
+addFeatures(struct FeatureCollectionItem **set,
     struct LDJSON *const features)
 {
     struct LDJSONRC *rc;
-    struct FeatureCollection *item;
+    struct FeatureCollectionItem *item;
     struct LDJSON *keyjson, *iter, *next;
     const char *key;
 
@@ -174,7 +174,7 @@ addFeatures(struct FeatureCollection **set,
 static void
 memoryClearCollections(struct MemoryContext *const context)
 {
-    struct FeatureCollection *current, *tmp;
+    struct FeatureCollectionItem *current, *tmp;
 
     LD_ASSERT(context);
 
@@ -296,7 +296,7 @@ static bool
 memoryGet(void *const rawcontext, const enum FeatureKind kind,
     const char *const key, struct LDJSONRC **const result)
 {
-    struct FeatureCollection **set, *current;
+    struct FeatureCollectionItem **set, *current;
     struct MemoryContext *context;
 
     LD_ASSERT(rawcontext);
@@ -348,7 +348,7 @@ memoryAll(void *const rawcontext, const enum FeatureKind kind,
     struct LDJSONRC ***const result)
 {
     struct MemoryContext *context;
-    struct FeatureCollection **set, *current, *tmp;
+    struct FeatureCollectionItem **set, *current, *tmp;
     struct LDJSONRC **collection, **collectioniter;
     unsigned int count;
 
@@ -468,7 +468,7 @@ memoryUpsert(void *const rawcontext, const enum FeatureKind kind,
     struct MemoryContext *context;
     struct LDJSON *keyjson;
     const char *key;
-    struct FeatureCollection **set, *current;
+    struct FeatureCollectionItem **set, *current;
 
     LD_ASSERT(rawcontext);
     LD_ASSERT(replacement);
@@ -506,7 +506,7 @@ memoryUpsert(void *const rawcontext, const enum FeatureKind kind,
     if (current) {
         struct LDJSON *currentversion, *replacementversion, *feature;
         struct LDJSONRC *replacementrc;
-        struct FeatureCollection *replacementcollection;
+        struct FeatureCollectionItem *replacementcollection;
 
         feature = LDJSONRCGet(current->feature);
 
@@ -558,7 +558,7 @@ memoryUpsert(void *const rawcontext, const enum FeatureKind kind,
         HASH_ADD_KEYPTR(hh, *set, key, strlen(key), replacementcollection);
     } else {
         struct LDJSONRC *replacementrc;
-        struct FeatureCollection *replacementcollection;
+        struct FeatureCollectionItem *replacementcollection;
 
         if (!(replacementrc = LDJSONRCNew(replacement))) {
             goto error;
@@ -601,7 +601,7 @@ static void
 memoryDestructor(void *const rawcontext)
 {
     struct MemoryContext *const context = rawcontext;
-    struct FeatureCollection *current, *tmp;
+    struct FeatureCollectionItem *current, *tmp;
 
     HASH_ITER(hh, context->flags, current, tmp) {
         HASH_DEL(context->flags, current);
