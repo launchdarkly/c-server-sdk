@@ -729,7 +729,7 @@ LDStoreDestroy(struct LDStore *const store)
             store->destructor(store->context);
         }
 
-        free(store);
+        LDFree(store);
     }
 }
 
