@@ -636,8 +636,9 @@ LDMakeInMemoryStore()
     return store;
 
   error:
-    free(store);
-    free(context);
+    LDFree(store);
+    LDFree(context);
+
     return NULL;
 }
 
