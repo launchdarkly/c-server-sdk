@@ -38,31 +38,48 @@ LDi_parsePath(const char *path, enum FeatureKind *const kind,
 }
 
 static bool
-onPut(struct LDClient *const client, struct LDJSON *const data)
+onPut(struct LDClient *const client, struct LDJSON *const put)
 {
-    struct LDJSON *tmp;
+    struct LDJSON *data, *features;
     bool success;
 
     LD_ASSERT(client);
-    LD_ASSERT(data);
+    LD_ASSERT(put);
 
     success = false;
 
-    if (!(tmp = LDObjectDetachKey(data, "data"))) {
+    if (!(data = LDObjectDetachKey(put, "data"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
         goto cleanup;
     }
 
-    if (LDJSONGetType(tmp) != LDObject) {
+    if (LDJSONGetType(data) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        LDJSONFree(tmp);
+        LDJSONFree(data);
 
         goto cleanup;
     }
 
-    if (!(success = LDStoreInit(client->config->store, tmp))) {
+    if (!(features = LDObjectDetachKey(data, "flags"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        LDJSONFree(data);
+
+        goto cleanup;
+    }
+
+    if (!LDObjectSetKey(data, "features", features)) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(data);
+        LDJSONFree(features);
+
+        goto cleanup;
+    }
+
+    if (!(success = LDStoreInit(client->config->store, data))) {
         LD_LOG(LD_LOG_ERROR, "store error");
 
         goto cleanup;
@@ -71,7 +88,7 @@ onPut(struct LDClient *const client, struct LDJSON *const data)
      success = true;
 
   cleanup:
-    LDJSONFree(data);
+    LDJSONFree(put);
 
     return success;
 }
