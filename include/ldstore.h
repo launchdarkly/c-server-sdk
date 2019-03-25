@@ -12,8 +12,8 @@
 #include "ldinternal.h"
 
 /***************************************************************************//**
- * @name Generic Store Interface
- * Used to provide all interaction with a feature store. Redis, Consul, Dynamo.
+ * @name Reference counted wrapper for JSON
+ * Used as an optimization to reduce allocations.
  * @{
  ******************************************************************************/
 
