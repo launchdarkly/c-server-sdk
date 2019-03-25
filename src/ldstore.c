@@ -80,6 +80,7 @@ LDJSONRCDecrement(struct LDJSONRC *const rc)
 {
     if (rc) {
         LD_ASSERT(LDi_mtxlock(&rc->lock));
+        LD_ASSERT(rc->count > 0);
         rc->count--;
 
         if (rc->count == 0) {
