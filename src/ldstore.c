@@ -644,6 +644,19 @@ LDMakeInMemoryStore()
 
 /* **** Covenience Operations **** */
 
+static const char *
+featureKindToString(const enum FeatureKind kind)
+{
+    switch (kind) {
+        case LD_FLAG:    return LD_SS_FEATURES;
+        case LD_SEGMENT: return LD_SS_SEGMENTS;
+        default:
+            LD_LOG(LD_LOG_FATAL, "invalid feature kind");
+
+            LD_ASSERT(false);
+    }
+}
+
 bool
 LDStoreInit(const struct LDStore *const store, struct LDJSON *const sets)
 {
@@ -657,88 +670,41 @@ bool
 LDStoreGet(const struct LDStore *const store, const enum FeatureKind kind,
     const char *const key, struct LDJSONRC **const result)
 {
-    const char *namespace;
-
     LD_ASSERT(store);
     LD_ASSERT(key);
     LD_ASSERT(result);
 
-    if (kind == LD_FLAG) {
-        namespace = LD_SS_FEATURES;
-    } else if (kind == LD_SEGMENT) {
-        namespace = LD_SS_SEGMENTS;
-    } else {
-        LD_LOG(LD_LOG_FATAL, "invalid feature kind");
-
-        LD_ASSERT(false);
-    }
-
-    return store->get(store->context, namespace, key, result);
+    return store->get(store->context, featureKindToString(kind), key, result);
 }
 
 bool
 LDStoreAll(const struct LDStore *const store, const enum FeatureKind kind,
     struct LDJSONRC ***const result)
 {
-    const char *namespace;
-
     LD_ASSERT(store);
     LD_ASSERT(result);
 
-    if (kind == LD_FLAG) {
-        namespace = LD_SS_FEATURES;
-    } else if (kind == LD_SEGMENT) {
-        namespace = LD_SS_SEGMENTS;
-    } else {
-        LD_LOG(LD_LOG_FATAL, "invalid feature kind");
-
-        LD_ASSERT(false);
-    }
-
-    return store->all(store->context, namespace, result);
+    return store->all(store->context, featureKindToString(kind), result);
 }
 
 bool
 LDStoreDelete(const struct LDStore *const store, const enum FeatureKind kind,
     const char *const key, const unsigned int version)
 {
-    const char *namespace;
-
     LD_ASSERT(store);
 
-    if (kind == LD_FLAG) {
-        namespace = LD_SS_FEATURES;
-    } else if (kind == LD_SEGMENT) {
-        namespace = LD_SS_SEGMENTS;
-    } else {
-        LD_LOG(LD_LOG_FATAL, "invalid feature kind");
-
-        LD_ASSERT(false);
-    }
-
-    return store->delete(store->context, namespace, key, version);
+    return store->delete(store->context, featureKindToString(kind), key,
+        version);
 }
 
 bool
 LDStoreUpsert(const struct LDStore *const store, const enum FeatureKind kind,
     struct LDJSON *const feature)
 {
-    const char *namespace;
-
     LD_ASSERT(store);
     LD_ASSERT(feature);
 
-    if (kind == LD_FLAG) {
-        namespace = LD_SS_FEATURES;
-    } else if (kind == LD_SEGMENT) {
-        namespace = LD_SS_SEGMENTS;
-    } else {
-        LD_LOG(LD_LOG_FATAL, "invalid feature kind");
-
-        LD_ASSERT(false);
-    }
-
-    return store->upsert(store->context, namespace, feature);
+    return store->upsert(store->context, featureKindToString(kind), feature);
 }
 
 bool
