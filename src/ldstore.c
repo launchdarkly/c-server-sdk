@@ -116,8 +116,8 @@ struct FeatureCollection {
     UT_hash_handle hh;
 };
 
-struct FeatureCollectionItem *
-makeFeatureCollection(struct LDJSONRC *feature)
+static struct FeatureCollectionItem *
+makeFeatureCollection(struct LDJSONRC *const feature)
 {
     struct FeatureCollectionItem *result;
 
@@ -142,13 +142,16 @@ struct MemoryContext {
 };
 
 static bool
-addFeatures(struct FeatureCollection **collections,
+addFeatures(struct FeatureCollection **const collections,
     struct LDJSON *const features)
 {
     struct LDJSONRC *rc;
     struct FeatureCollection *collection;
     struct FeatureCollectionItem *item;
     struct LDJSON *iter, *next;
+
+    LD_ASSERT(collections);
+    LD_ASSERT(features);
 
     if (!(collection = LDAlloc(sizeof(struct FeatureCollection)))) {
         return false;
