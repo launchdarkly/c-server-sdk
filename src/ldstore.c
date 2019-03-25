@@ -34,37 +34,6 @@ struct LDJSONRC {
     unsigned int count;
 };
 
-/* Feature Key -> JSON */
-struct FeatureCollectionItem {
-    struct LDJSONRC *feature;
-    UT_hash_handle hh;
-};
-
-/* Namespace -> Feature Set Hashtable */
-struct FeatureCollection {
-    char *namespace;
-    struct FeatureCollectionItem *items;
-    UT_hash_handle hh;
-};
-
-struct FeatureCollectionItem *
-makeFeatureCollection(struct LDJSONRC *feature)
-{
-    struct FeatureCollectionItem *result;
-
-    LD_ASSERT(feature);
-
-    if (!(result = LDAlloc(sizeof(struct FeatureCollectionItem)))) {
-        return NULL;
-    }
-
-    memset(result, 0, sizeof(struct FeatureCollectionItem));
-
-    result->feature = feature;
-
-    return result;
-}
-
 struct LDJSONRC *
 LDJSONRCNew(struct LDJSON *const json)
 {
@@ -130,6 +99,37 @@ LDJSONRCGet(struct LDJSONRC *const rc)
 }
 
 /* **** Memory Implementation **** */
+
+/* Feature Key -> JSON */
+struct FeatureCollectionItem {
+    struct LDJSONRC *feature;
+    UT_hash_handle hh;
+};
+
+/* Namespace -> Feature Set Hashtable */
+struct FeatureCollection {
+    char *namespace;
+    struct FeatureCollectionItem *items;
+    UT_hash_handle hh;
+};
+
+struct FeatureCollectionItem *
+makeFeatureCollection(struct LDJSONRC *feature)
+{
+    struct FeatureCollectionItem *result;
+
+    LD_ASSERT(feature);
+
+    if (!(result = LDAlloc(sizeof(struct FeatureCollectionItem)))) {
+        return NULL;
+    }
+
+    memset(result, 0, sizeof(struct FeatureCollectionItem));
+
+    result->feature = feature;
+
+    return result;
+}
 
 struct MemoryContext {
     bool initialized;

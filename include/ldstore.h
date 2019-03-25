@@ -11,6 +11,12 @@
 #include "ldjson.h"
 #include "ldinternal.h"
 
+/***************************************************************************//**
+ * @name Generic Store Interface
+ * Used to provide all interaction with a feature store. Redis, Consul, Dynamo.
+ * @{
+ ******************************************************************************/
+
 struct LDJSONRC;
 
 struct LDJSONRC *LDJSONRCNew(struct LDJSON *const json);
@@ -21,16 +27,13 @@ void LDJSONRCDecrement(struct LDJSONRC *const rc);
 
 struct LDJSON *LDJSONRCGet(struct LDJSONRC *const rc);
 
+/*@}*/
+
 /***************************************************************************//**
  * @name Generic Store Interface
  * Used to provide all interaction with a feature store. Redis, Consul, Dynamo.
  * @{
  ******************************************************************************/
-
-enum FeatureKind {
-    LD_FLAG,
-    LD_SEGMENT
-};
 
 /** @brief An Interface providing access to a store */
 struct LDStore {
@@ -111,6 +114,11 @@ struct LDStore {
  * Allows treating `LDStore` as more of an object
  * @{
  ******************************************************************************/
+
+ enum FeatureKind {
+    LD_FLAG,
+    LD_SEGMENT
+};
 
 /** @brief A convenience wrapper around `store->init`. */
 bool LDStoreInit(const struct LDStore *const store, struct LDJSON *const sets);
