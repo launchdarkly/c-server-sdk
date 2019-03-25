@@ -54,7 +54,7 @@ makeFeatureCollection(struct LDJSONRC *feature)
 
     LD_ASSERT(feature);
 
-    if (!(result = malloc(sizeof(struct FeatureCollectionItem)))) {
+    if (!(result = LDAlloc(sizeof(struct FeatureCollectionItem)))) {
         return NULL;
     }
 
@@ -70,7 +70,7 @@ LDJSONRCNew(struct LDJSON *const json)
 {
     struct LDJSONRC *result;
 
-    if (!(result = malloc(sizeof(struct LDJSONRC)))) {
+    if (!(result = LDAlloc(sizeof(struct LDJSONRC)))) {
         return NULL;
     }
 
