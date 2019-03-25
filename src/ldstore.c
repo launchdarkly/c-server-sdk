@@ -45,6 +45,8 @@ LDJSONRCNew(struct LDJSON *const json)
 
     if (!LDi_mtxinit(&result->lock)) {
         LDFree(result);
+
+        return NULL;
     }
 
     result->value = json;
