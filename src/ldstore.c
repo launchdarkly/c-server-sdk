@@ -5,18 +5,21 @@
 
 /* **** Forward Declarations **** */
 
+static const char *const LD_SS_FEATURES = "features";
+static const char *const LD_SS_SEGMENTS = "segments";
+
 static bool memoryInit(void *const rawcontext, struct LDJSON *const sets);
 
-static bool memoryGet(void *const rawcontext, const enum FeatureKind kind,
+static bool memoryGet(void *const rawcontext, const char *const kind,
     const char *const key, struct LDJSONRC **const result);
 
-static bool memoryAll(void *const rawcontext, const enum FeatureKind kind,
+static bool memoryAll(void *const rawcontext, const char *const kind,
     struct LDJSONRC ***const result);
 
-static bool memoryDelete(void *const rawcontext, const enum FeatureKind kind,
+static bool memoryDelete(void *const rawcontext, const char *const kind,
     const char *const key, const unsigned int version);
 
-static bool memoryUpsert(void *const rawcontext, const enum FeatureKind kind,
+static bool memoryUpsert(void *const rawcontext, const char *const kind,
     struct LDJSON *const feature);
 
 static bool memoryInitialized(void *const rawcontext);
@@ -31,8 +34,16 @@ struct LDJSONRC {
     unsigned int count;
 };
 
+/* Feature Key -> JSON */
 struct FeatureCollectionItem {
     struct LDJSONRC *feature;
+    UT_hash_handle hh;
+};
+
+/* Namespace -> Feature Set Hashtable */
+struct FeatureCollection {
+    char *namespace;
+    struct FeatureCollectionItem *items;
     UT_hash_handle hh;
 };
 
@@ -122,21 +133,39 @@ LDJSONRCGet(struct LDJSONRC *const rc)
 
 struct MemoryContext {
     bool initialized;
-    struct FeatureCollectionItem *flags;
-    struct FeatureCollectionItem *segments;
+    /* hash table, not single element */
+    struct FeatureCollection *collections;
     ld_rwlock_t lock;
 };
 
 static bool
-addFeatures(struct FeatureCollectionItem **set,
+addFeatures(struct FeatureCollection **collections,
     struct LDJSON *const features)
 {
     struct LDJSONRC *rc;
+    struct FeatureCollection *collection;
     struct FeatureCollectionItem *item;
-    struct LDJSON *keyjson, *iter, *next;
-    const char *key;
+    struct LDJSON *iter, *next;
+
+    if (!(collection = LDAlloc(sizeof(struct FeatureCollection)))) {
+        return false;
+    }
+
+    memset(collection, 0, sizeof(struct FeatureCollection));
+
+    if (!(collection->namespace = LDStrDup(LDIterKey(features)))) {
+        LDFree(collection);
+
+        return false;
+    }
+
+    HASH_ADD_KEYPTR(hh, *collections, collection->namespace,
+        strlen(collection->namespace), collection);
 
     for (iter = LDGetIter(features); iter;) {
+        const char *key;
+        struct LDJSON *keyjson;
+
         next = LDIterNext(iter);
 
         if (!(keyjson = LDObjectLookup(iter, "key"))) {
@@ -163,7 +192,7 @@ addFeatures(struct FeatureCollectionItem **set,
             return false;
         }
 
-        HASH_ADD_KEYPTR(hh, *set, key, strlen(key), item);
+        HASH_ADD_KEYPTR(hh, collection->items, key, strlen(key), item);
 
         iter = next;
     }
@@ -174,35 +203,34 @@ addFeatures(struct FeatureCollectionItem **set,
 static void
 memoryClearCollections(struct MemoryContext *const context)
 {
-    struct FeatureCollectionItem *current, *tmp;
+    struct FeatureCollection *collection, *collectiontmp;
+    struct FeatureCollectionItem *item, *itemtmp;
 
     LD_ASSERT(context);
 
-    HASH_ITER(hh, context->flags, current, tmp) {
-        HASH_DEL(context->flags, current);
+    HASH_ITER(hh, context->collections, collection, collectiontmp) {
+        HASH_DEL(context->collections, collection);
 
-        LDJSONRCDecrement(current->feature);
+        HASH_ITER(hh, collection->items, item, itemtmp) {
+            HASH_DEL(collection->items, item);
 
-        LDFree(current);
+            LDJSONRCDecrement(item->feature);
+
+            LDFree(item);
+        }
+
+        LDFree(collection->namespace);
+        LDFree(collection);
     }
 
-    HASH_ITER(hh, context->segments, current, tmp) {
-        HASH_DEL(context->segments, current);
-
-        LDJSONRCDecrement(current->feature);
-
-        LDFree(current);
-    }
-
-    context->flags    = NULL;
-    context->segments = NULL;
+    context->collections = NULL;
 }
 
 static bool
 memoryInit(void *const rawcontext, struct LDJSON *const sets)
 {
     struct MemoryContext *context;
-    struct LDJSON *flags, *segments;
+    struct LDJSON *iter;
 
     LD_ASSERT(rawcontext);
     LD_ASSERT(sets);
@@ -210,39 +238,7 @@ memoryInit(void *const rawcontext, struct LDJSON *const sets)
 
     context = rawcontext;
 
-    if (!(flags = LDObjectLookup(sets, "flags"))) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        LDJSONFree(sets);
-
-        return false;
-    }
-
-    if (LDJSONGetType(flags) != LDObject) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        LDJSONFree(sets);
-
-        return false;
-    }
-
-    if (!(segments = LDObjectLookup(sets, "segments"))) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        LDJSONFree(sets);
-
-        return false;
-    }
-
-    if (LDJSONGetType(flags) != LDObject) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        LDJSONFree(sets);
-
-        return false;
-    }
-
-    LD_ASSERT(LDi_rdlock(&context->lock));
+    LD_ASSERT(LDi_wrlock(&context->lock));
 
     if (context->initialized){
         memoryClearCollections(context);
@@ -250,29 +246,21 @@ memoryInit(void *const rawcontext, struct LDJSON *const sets)
 
     context->initialized = false;
 
-    if (!addFeatures(&context->flags, flags)) {
-        memoryClearCollections(context);
+    for (iter = LDGetIter(sets); iter; iter = LDIterNext(iter)) {
+        if (!addFeatures(&context->collections, iter)) {
+            memoryClearCollections(context);
 
-        LD_ASSERT(LDi_rdunlock(&context->lock));
+            LD_ASSERT(LDi_wrunlock(&context->lock));
 
-        LDJSONFree(sets);
+            LDJSONFree(sets);
 
-        return false;
-    }
-
-    if (!addFeatures(&context->segments, segments)) {
-        memoryClearCollections(context);
-
-        LD_ASSERT(LDi_rdunlock(&context->lock));
-
-        LDJSONFree(sets);
-
-        return false;
+            return false;
+        }
     }
 
     context->initialized = true;
 
-    LD_ASSERT(LDi_rdunlock(&context->lock));
+    LD_ASSERT(LDi_wrunlock(&context->lock));
 
     LDJSONFree(sets);
 
@@ -293,34 +281,34 @@ LDi_isDeleted(const struct LDJSON *const feature)
 }
 
 static bool
-memoryGet(void *const rawcontext, const enum FeatureKind kind,
+memoryGet(void *const rawcontext, const char *const kind,
     const char *const key, struct LDJSONRC **const result)
 {
-    struct FeatureCollectionItem **set, *current;
+    struct FeatureCollection *collection;
+    struct FeatureCollectionItem *current;
     struct MemoryContext *context;
 
     LD_ASSERT(rawcontext);
     LD_ASSERT(key);
     LD_ASSERT(result);
+    LD_ASSERT(kind);
 
-    set     = NULL;
-    current = NULL;
-    context = rawcontext;
-    *result = NULL;
+    current    = NULL;
+    context    = rawcontext;
+    *result    = NULL;
+    collection = NULL;
 
-    if (kind == LD_FLAG) {
-        set = &context->flags;
-    } else if (kind == LD_SEGMENT) {
-        set = &context->segments;
-    } else {
+    LD_ASSERT(LDi_rdlock(&context->lock));
+
+    HASH_FIND_STR(context->collections, kind, collection);
+
+    if (!collection) {
         LD_LOG(LD_LOG_FATAL, "invalid feature kind");
 
         LD_ASSERT(false);
     }
 
-    LD_ASSERT(LDi_rdlock(&context->lock));
-
-    HASH_FIND_STR(*set, key, current);
+    HASH_FIND_STR(collection->items, key, current);
 
     if (current) {
         if (LDi_isDeleted(LDJSONRCGet(current->feature))) {
@@ -344,11 +332,12 @@ memoryGet(void *const rawcontext, const enum FeatureKind kind,
 }
 
 static bool
-memoryAll(void *const rawcontext, const enum FeatureKind kind,
+memoryAll(void *const rawcontext, const char *const kind,
     struct LDJSONRC ***const result)
 {
     struct MemoryContext *context;
-    struct FeatureCollectionItem **set, *current, *tmp;
+    struct FeatureCollection *set;
+    struct FeatureCollectionItem *current, *tmp;
     struct LDJSONRC **collection, **collectioniter;
     unsigned int count;
 
@@ -359,20 +348,19 @@ memoryAll(void *const rawcontext, const enum FeatureKind kind,
     context    = rawcontext;
     collection = NULL;
     count      = 0;
+    set        = NULL;
 
     LD_ASSERT(LDi_rdlock(&context->lock));
 
-    if (kind == LD_FLAG) {
-        set = &context->flags;
-    } else if (kind == LD_SEGMENT) {
-        set = &context->segments;
-    } else {
+    HASH_FIND_STR(context->collections, kind, set);
+
+    if (!set) {
         LD_LOG(LD_LOG_FATAL, "invalid feature kind");
 
         LD_ASSERT(false);
     }
 
-    HASH_ITER(hh, *set, current, tmp) {
+    HASH_ITER(hh, set->items, current, tmp) {
         if (!LDi_isDeleted(LDJSONRCGet(current->feature))) {
             count++;
         }
@@ -392,7 +380,7 @@ memoryAll(void *const rawcontext, const enum FeatureKind kind,
 
     collectioniter = collection;
 
-    HASH_ITER(hh, *set, current, tmp) {
+    HASH_ITER(hh, set->items, current, tmp) {
         if (!LDi_isDeleted(LDJSONRCGet(current->feature))) {
             *collectioniter = current->feature;
             LDJSONRCIncrement(current->feature);
@@ -410,7 +398,7 @@ memoryAll(void *const rawcontext, const enum FeatureKind kind,
 }
 
 static bool
-memoryDelete(void *const rawcontext, const enum FeatureKind kind,
+memoryDelete(void *const rawcontext, const char *const kind,
     const char *const key, const unsigned int version)
 {
     struct LDJSON *placeholder, *temp;
@@ -462,30 +450,29 @@ memoryDelete(void *const rawcontext, const enum FeatureKind kind,
 }
 
 static bool
-memoryUpsert(void *const rawcontext, const enum FeatureKind kind,
+memoryUpsert(void *const rawcontext, const char *const kind,
     struct LDJSON *const replacement)
 {
     struct MemoryContext *context;
     struct LDJSON *keyjson;
     const char *key;
-    struct FeatureCollectionItem **set, *current;
+    struct FeatureCollection *collection;
+    struct FeatureCollectionItem *current;
 
     LD_ASSERT(rawcontext);
     LD_ASSERT(replacement);
 
-    set     = NULL;
-    current = NULL;
-    keyjson = NULL;
-    context = rawcontext;
-    key     = NULL;
+    current    = NULL;
+    keyjson    = NULL;
+    context    = rawcontext;
+    key        = NULL;
+    collection = NULL;
 
     LD_ASSERT(LDi_wrlock(&context->lock));
 
-    if (kind == LD_FLAG) {
-        set = &context->flags;
-    } else if (kind == LD_SEGMENT) {
-        set = &context->segments;
-    } else {
+    HASH_FIND_STR(context->collections, kind, collection);
+
+    if (!collection) {
         LD_LOG(LD_LOG_FATAL, "invalid feature kind");
 
         LD_ASSERT(false);
@@ -501,7 +488,7 @@ memoryUpsert(void *const rawcontext, const enum FeatureKind kind,
 
     LD_ASSERT(key = LDGetText(keyjson));
 
-    HASH_FIND_STR(*set, key, current);
+    HASH_FIND_STR(collection->items, key, current);
 
     if (current) {
         struct LDJSON *currentversion, *replacementversion, *feature;
@@ -552,10 +539,11 @@ memoryUpsert(void *const rawcontext, const enum FeatureKind kind,
 
         LDJSONRCDecrement(current->feature);
 
-        HASH_DEL(*set, current);
+        HASH_DEL(collection->items, current);
         LDFree(current);
 
-        HASH_ADD_KEYPTR(hh, *set, key, strlen(key), replacementcollection);
+        HASH_ADD_KEYPTR(hh, collection->items, key, strlen(key),
+            replacementcollection);
     } else {
         struct LDJSONRC *replacementrc;
         struct FeatureCollectionItem *replacementcollection;
@@ -572,7 +560,8 @@ memoryUpsert(void *const rawcontext, const enum FeatureKind kind,
             return false;
         }
 
-        HASH_ADD_KEYPTR(hh, *set, key, strlen(key), replacementcollection);
+        HASH_ADD_KEYPTR(hh, collection->items, key, strlen(key),
+            replacementcollection);
     }
 
     LD_ASSERT(LDi_wrunlock(&context->lock));
@@ -601,23 +590,10 @@ static void
 memoryDestructor(void *const rawcontext)
 {
     struct MemoryContext *const context = rawcontext;
-    struct FeatureCollectionItem *current, *tmp;
 
-    HASH_ITER(hh, context->flags, current, tmp) {
-        HASH_DEL(context->flags, current);
+    LD_ASSERT(context);
 
-        LDJSONRCDecrement(current->feature);
-
-        LDFree(current);
-    }
-
-    HASH_ITER(hh, context->segments, current, tmp) {
-        HASH_DEL(context->segments, current);
-
-        LDJSONRCDecrement(current->feature);
-
-        LDFree(current);
-    }
+    memoryClearCollections(context);
 
     LDi_rwlockdestroy(&context->lock);
 
@@ -646,8 +622,7 @@ LDMakeInMemoryStore()
     }
 
     context->initialized = false;
-    context->flags       = NULL;
-    context->segments    = NULL;
+    context->collections = NULL;
 
     store->context       = context;
     store->init          = memoryInit;
@@ -681,40 +656,88 @@ bool
 LDStoreGet(const struct LDStore *const store, const enum FeatureKind kind,
     const char *const key, struct LDJSONRC **const result)
 {
+    const char *namespace;
+
     LD_ASSERT(store);
     LD_ASSERT(key);
     LD_ASSERT(result);
 
-    return store->get(store->context, kind, key, result);
+    if (kind == LD_FLAG) {
+        namespace = LD_SS_FEATURES;
+    } else if (kind == LD_SEGMENT) {
+        namespace = LD_SS_SEGMENTS;
+    } else {
+        LD_LOG(LD_LOG_FATAL, "invalid feature kind");
+
+        LD_ASSERT(false);
+    }
+
+    return store->get(store->context, namespace, key, result);
 }
 
 bool
 LDStoreAll(const struct LDStore *const store, const enum FeatureKind kind,
     struct LDJSONRC ***const result)
 {
+    const char *namespace;
+
     LD_ASSERT(store);
     LD_ASSERT(result);
 
-    return store->all(store->context, kind, result);
+    if (kind == LD_FLAG) {
+        namespace = LD_SS_FEATURES;
+    } else if (kind == LD_SEGMENT) {
+        namespace = LD_SS_SEGMENTS;
+    } else {
+        LD_LOG(LD_LOG_FATAL, "invalid feature kind");
+
+        LD_ASSERT(false);
+    }
+
+    return store->all(store->context, namespace, result);
 }
 
 bool
 LDStoreDelete(const struct LDStore *const store, const enum FeatureKind kind,
     const char *const key, const unsigned int version)
 {
+    const char *namespace;
+
     LD_ASSERT(store);
 
-    return store->delete(store->context, kind, key, version);
+    if (kind == LD_FLAG) {
+        namespace = LD_SS_FEATURES;
+    } else if (kind == LD_SEGMENT) {
+        namespace = LD_SS_SEGMENTS;
+    } else {
+        LD_LOG(LD_LOG_FATAL, "invalid feature kind");
+
+        LD_ASSERT(false);
+    }
+
+    return store->delete(store->context, namespace, key, version);
 }
 
 bool
 LDStoreUpsert(const struct LDStore *const store, const enum FeatureKind kind,
     struct LDJSON *const feature)
 {
+    const char *namespace;
+
     LD_ASSERT(store);
     LD_ASSERT(feature);
 
-    return store->upsert(store->context, kind, feature);
+    if (kind == LD_FLAG) {
+        namespace = LD_SS_FEATURES;
+    } else if (kind == LD_SEGMENT) {
+        namespace = LD_SS_SEGMENTS;
+    } else {
+        LD_LOG(LD_LOG_FATAL, "invalid feature kind");
+
+        LD_ASSERT(false);
+    }
+
+    return store->upsert(store->context, namespace, feature);
 }
 
 bool
@@ -770,7 +793,7 @@ LDStoreInitEmpty(struct LDStore *const store)
         return false;
     }
 
-    if (!(LDObjectSetKey(values, "flags", tmp))) {
+    if (!(LDObjectSetKey(values, "features", tmp))) {
         LDJSONFree(values);
         LDJSONFree(tmp);
 

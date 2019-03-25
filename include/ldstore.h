@@ -53,7 +53,7 @@ struct LDStore {
      * @param[in] key The key to return the value for. May not be NULL (assert).
      * @return Returns the feature, or NULL if it does not exist.
      */
-    bool (*get)(void *const context, const enum FeatureKind kind,
+    bool (*get)(void *const context, const char *const kind,
         const char *const key, struct LDJSONRC **const result);
     /**
      * @brief Fetch all features in a given namespace
@@ -62,7 +62,7 @@ struct LDStore {
      * @param[in] kind The namespace to search in. May not be NULL (assert).
      * @return Returns an object map keys to features, NULL on failure.
      */
-    bool (*all)(void *const context, const enum FeatureKind kind,
+    bool (*all)(void *const context, const char *const kind,
         struct LDJSONRC ***const result);
     /**
      * @brief Mark an existing feature as deleted
@@ -75,7 +75,7 @@ struct LDStore {
      * Only deletes if version is newer than the features.
      * @return True on success, False on failure.
      */
-    bool (*delete)(void *const context, const enum FeatureKind kind,
+    bool (*delete)(void *const context, const char *const kind,
         const char *const key, const unsigned int version);
     /**
      * @brief Replace an existing feature with a newer one
@@ -86,7 +86,7 @@ struct LDStore {
      * is newer. Takes ownership of feature.
      * @return True on success, False on failure.
      */
-    bool (*upsert)(void *const context, const enum FeatureKind kind,
+    bool (*upsert)(void *const context, const char *const kind,
         struct LDJSON *const feature);
     /**
      * @brief Determine if the store is initialized with features yet.
