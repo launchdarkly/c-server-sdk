@@ -188,7 +188,7 @@ isPrivateAttr(struct LDClient *const client, const struct LDUser *const user,
 }
 
 static bool
-addHidden(struct LDJSON **ref, const char *const value){
+addHidden(struct LDJSON **const ref, const char *const value){
     struct LDJSON *text;
 
     LD_ASSERT(ref);
