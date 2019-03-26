@@ -65,8 +65,8 @@ LDJSONRCIncrement(struct LDJSONRC *const rc)
     LD_ASSERT(LDi_mtxunlock(&rc->lock));
 }
 
-void
-LDJSONRCDestroy(struct LDJSONRC *const rc)
+static void
+destroyJSONRC(struct LDJSONRC *const rc)
 {
     if (rc) {
         LDJSONFree(rc->value);
@@ -86,7 +86,7 @@ LDJSONRCDecrement(struct LDJSONRC *const rc)
         if (rc->count == 0) {
             LD_ASSERT(LDi_mtxunlock(&rc->lock));
 
-            LDJSONRCDestroy(rc);
+            destroyJSONRC(rc);
         } else {
             LD_ASSERT(LDi_mtxunlock(&rc->lock));
         }
@@ -193,7 +193,7 @@ addFeatures(struct FeatureCollection **const collections,
         }
 
         if (!(item = makeFeatureCollection(rc))) {
-            LDJSONRCDestroy(rc);
+            destroyJSONRC(rc);
 
             return false;
         }
