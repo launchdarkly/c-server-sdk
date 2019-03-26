@@ -117,7 +117,7 @@ struct FeatureCollection {
 };
 
 static struct FeatureCollectionItem *
-makeFeatureCollection(struct LDJSONRC *const feature)
+makeFeatureCollectionItem(struct LDJSONRC *const feature)
 {
     struct FeatureCollectionItem *result;
 
@@ -192,7 +192,7 @@ addFeatures(struct FeatureCollection **const collections,
             return false;
         }
 
-        if (!(item = makeFeatureCollection(rc))) {
+        if (!(item = makeFeatureCollectionItem(rc))) {
             destroyJSONRC(rc);
 
             return false;
@@ -499,7 +499,7 @@ memoryUpsert(void *const rawcontext, const char *const kind,
     if (current) {
         struct LDJSON *currentversion, *replacementversion, *feature;
         struct LDJSONRC *replacementrc;
-        struct FeatureCollectionItem *replacementcollection;
+        struct FeatureCollectionItem *replacementcollectionitem;
 
         feature = LDJSONRCGet(current->feature);
 
@@ -535,7 +535,9 @@ memoryUpsert(void *const rawcontext, const char *const kind,
             goto error;
         }
 
-        if (!(replacementcollection = makeFeatureCollection(replacementrc))) {
+        if (!(replacementcollectionitem =
+            makeFeatureCollectionItem(replacementrc)))
+        {
             LDJSONRCDecrement(replacementrc);
 
             LDJSONFree(replacement);
@@ -549,16 +551,18 @@ memoryUpsert(void *const rawcontext, const char *const kind,
         LDFree(current);
 
         HASH_ADD_KEYPTR(hh, collection->items, key, strlen(key),
-            replacementcollection);
+            replacementcollectionitem);
     } else {
         struct LDJSONRC *replacementrc;
-        struct FeatureCollectionItem *replacementcollection;
+        struct FeatureCollectionItem *replacementcollectionitem;
 
         if (!(replacementrc = LDJSONRCNew(replacement))) {
             goto error;
         }
 
-        if (!(replacementcollection = makeFeatureCollection(replacementrc))) {
+        if (!(replacementcollectionitem =
+            makeFeatureCollectionItem(replacementrc)))
+        {
             LDJSONRCDecrement(replacementrc);
 
             LDJSONFree(replacement);
@@ -567,7 +571,7 @@ memoryUpsert(void *const rawcontext, const char *const kind,
         }
 
         HASH_ADD_KEYPTR(hh, collection->items, key, strlen(key),
-            replacementcollection);
+            replacementcollectionitem);
     }
 
     LD_ASSERT(LDi_wrunlock(&context->lock));
