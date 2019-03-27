@@ -7,7 +7,7 @@
 static bool
 updateStore(struct LDStore *const store, const char *const rawupdate)
 {
-    struct LDJSON *update;
+    struct LDJSON *update, *features;
 
     LD_ASSERT(store);
     LD_ASSERT(rawupdate);
@@ -18,8 +18,33 @@ updateStore(struct LDStore *const store, const char *const rawupdate)
         return false;
     }
 
+    if (LDJSONGetType(update) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        goto error;
+    }
+
+    if (!(features = LDObjectDetachKey(update, "flags"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        goto error;
+    }
+
+    if (!LDObjectSetKey(update, "features", features)) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(features);
+
+        goto error;
+    }
+
     LD_LOG(LD_LOG_INFO, "running store init");
     return LDStoreInit(store, update);
+
+  error:
+    LDJSONFree(update);
+
+    return false;
 }
 
 struct PollContext {

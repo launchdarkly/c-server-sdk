@@ -116,6 +116,114 @@ LDi_jointhread(ld_thread_t thread)
 }
 
 bool
+LDi_mtxinit(ld_mutex_t *const mutex)
+{
+    #ifdef _WIN32
+        LD_ASSERT(mutex);
+
+        InitializeCriticalSection(mutex);
+
+        return true;
+    #else
+        int status;
+
+        LD_ASSERT(mutex);
+
+        if ((status = pthread_mutex_init(mutex, NULL)) != 0) {
+            char msg[256];
+
+            LD_ASSERT(snprintf(msg, sizeof(msg),
+                "pthread_mutex_init failed: %s", strerror(status)) >= 0);
+
+            LD_LOG(LD_LOG_CRITICAL, msg);
+        }
+
+        return status == 0;
+    #endif
+}
+
+bool
+LDi_mtxdestroy(ld_mutex_t *const mutex)
+{
+    #ifdef _WIN32
+        LD_ASSERT(mutex);
+
+        DeleteCriticalSection(mutex);
+
+        return true;
+    #else
+        int status;
+
+        LD_ASSERT(mutex);
+
+        if ((status = pthread_mutex_destroy(mutex)) != 0) {
+            char msg[256];
+
+            LD_ASSERT(snprintf(msg, sizeof(msg),
+                "pthread_mutex_destroy failed: %s", strerror(status)) >= 0);
+
+            LD_LOG(LD_LOG_CRITICAL, msg);
+        }
+
+        return status == 0;
+    #endif
+}
+
+bool
+LDi_mtxlock(ld_mutex_t *const mutex)
+{
+    #ifdef _WIN32
+        LD_ASSERT(mutex);
+
+        EnterCriticalSection(mutex);
+
+        return true;
+    #else
+        int status;
+
+        LD_ASSERT(mutex);
+
+        if ((status = pthread_mutex_lock(mutex)) != 0) {
+            char msg[256];
+
+            LD_ASSERT(snprintf(msg, sizeof(msg),
+                "pthread_mutex_lock failed: %s", strerror(status)) >= 0);
+
+            LD_LOG(LD_LOG_CRITICAL, msg);
+        }
+
+        return status == 0;
+    #endif
+}
+
+bool
+LDi_mtxunlock(ld_mutex_t *const mutex)
+{
+    #ifdef _WIN32
+        LD_ASSERT(mutex);
+
+        LeaveCriticalSection(lock);
+
+        return true;
+    #else
+        int status;
+
+        LD_ASSERT(mutex);
+
+        if ((status = pthread_mutex_unlock(mutex)) != 0) {
+            char msg[256];
+
+            LD_ASSERT(snprintf(msg, sizeof(msg),
+                "pthread_mutex_unlock failed: %s", strerror(status)) >= 0);
+
+            LD_LOG(LD_LOG_CRITICAL, msg);
+        }
+
+        return status == 0;
+    #endif
+}
+
+bool
 LDi_rwlockinit(ld_rwlock_t *const lock)
 {
     #ifdef _WIN32

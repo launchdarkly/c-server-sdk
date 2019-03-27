@@ -8,7 +8,8 @@
 #include "ldstreaming.h"
 
 bool
-LDi_parsePath(const char *path, char **const kind, char **const key)
+LDi_parsePath(const char *path, enum FeatureKind *const kind,
+    const char **const key)
 {
     size_t segmentlen, flagslen;
     const char *segments, *flags;
@@ -17,7 +18,6 @@ LDi_parsePath(const char *path, char **const kind, char **const key)
     LD_ASSERT(kind);
     LD_ASSERT(key);
 
-    *kind      = NULL;
     *key       = NULL;
     segments   = "/segments/";
     flags      = "/flags/";
@@ -25,67 +25,61 @@ LDi_parsePath(const char *path, char **const kind, char **const key)
     flagslen   = strlen(flags);
 
     if (strncmp(path, segments, segmentlen) == 0) {
-        if (!(*key = LDStrDup(path + segmentlen))) {
-            goto error;
-        }
-
-        if (!(*kind = LDStrNDup(path + 1, segmentlen - 2))) {
-            goto error;
-        }
+        *key = path + segmentlen;
+        *kind = LD_SEGMENT;
     } else if(strncmp(path, flags, flagslen) == 0) {
-        if (!(*key = LDStrDup(path + flagslen))) {
-            goto error;
-        }
-
-        if (!(*kind = LDStrNDup(path + 1, flagslen - 2))) {
-            goto error;
-        }
+        *key = path + flagslen;
+        *kind = LD_FLAG;
     } else {
-        goto error;
+        return false;
     }
 
     return true;
-
-  error:
-    free(*kind);
-    free(*key);
-
-    *kind = NULL;
-    *key  = NULL;
-
-    return false;
 }
 
 static bool
-onPut(struct LDClient *const client, struct LDJSON *const data)
+onPut(struct LDClient *const client, struct LDJSON *const put)
 {
-    struct LDJSON *tmp;
+    struct LDJSON *data, *features;
     bool success;
 
     LD_ASSERT(client);
-    LD_ASSERT(data);
+    LD_ASSERT(put);
 
     success = false;
 
-    if (!(tmp = LDObjectLookup(data, "data"))) {
+    if (!(data = LDObjectDetachKey(put, "data"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
         goto cleanup;
     }
 
-    if (LDJSONGetType(tmp) != LDObject) {
+    if (LDJSONGetType(data) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        goto cleanup;
-    }
-
-    if (!(tmp = LDJSONDuplicate(tmp))) {
-        LD_LOG(LD_LOG_ERROR, "memory error");
+        LDJSONFree(data);
 
         goto cleanup;
     }
 
-    if (!(success = LDStoreInit(client->config->store, tmp))) {
+    if (!(features = LDObjectDetachKey(data, "flags"))) {
+        LD_LOG(LD_LOG_ERROR, "schema error");
+
+        LDJSONFree(data);
+
+        goto cleanup;
+    }
+
+    if (!LDObjectSetKey(data, "features", features)) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(data);
+        LDJSONFree(features);
+
+        goto cleanup;
+    }
+
+    if (!(success = LDStoreInit(client->config->store, data))) {
         LD_LOG(LD_LOG_ERROR, "store error");
 
         goto cleanup;
@@ -94,7 +88,7 @@ onPut(struct LDClient *const client, struct LDJSON *const data)
      success = true;
 
   cleanup:
-    LDJSONFree(data);
+    LDJSONFree(put);
 
     return success;
 }
@@ -103,14 +97,14 @@ static bool
 onPatch(struct LDClient *const client, struct LDJSON *const data)
 {
     struct LDJSON *tmp;
-    char *kind, *key;
+    const char *key;
     bool success;
+    enum FeatureKind kind;
 
     LD_ASSERT(client);
     LD_ASSERT(data);
 
     tmp     = NULL;
-    kind    = NULL;
     key     = NULL;
     success = false;
 
@@ -132,7 +126,7 @@ onPatch(struct LDClient *const client, struct LDJSON *const data)
         goto cleanup;
     }
 
-    if (!(tmp = LDObjectLookup(data, "data"))) {
+    if (!(tmp = LDObjectDetachKey(data, "data"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
         goto cleanup;
@@ -141,11 +135,7 @@ onPatch(struct LDClient *const client, struct LDJSON *const data)
     if (LDJSONGetType(tmp) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        goto cleanup;
-    }
-
-    if (!(tmp = LDJSONDuplicate(tmp))) {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
+        LDJSONFree(tmp);
 
         goto cleanup;
     }
@@ -159,8 +149,6 @@ onPatch(struct LDClient *const client, struct LDJSON *const data)
     success = true;
 
   cleanup:
-    LDFree(kind);
-    LDFree(key);
     LDJSONFree(data);
 
     return success;
@@ -170,14 +158,14 @@ static bool
 onDelete(struct LDClient *const client, struct LDJSON *const data)
 {
     struct LDJSON *tmp;
-    char *kind, *key;
+    const char *key;
     bool success;
+    enum FeatureKind kind;
 
     LD_ASSERT(client);
     LD_ASSERT(data);
 
     tmp     = NULL;
-    kind    = NULL;
     key     = NULL;
     success = false;
 
@@ -220,8 +208,6 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
     success = true;
 
   cleanup:
-    LDFree(kind);
-    LDFree(key);
     LDJSONFree(data);
 
     return success;

@@ -16,6 +16,8 @@ LDDetailsClear(struct LDDetails *const details)
 {
     if (details->reason == LD_RULE_MATCH) {
         LDFree(details->extra.rule.id);
+    } else if (details->reason == LD_PREREQUISITE_FAILED) {
+        LDFree(details->extra.prerequisiteKey);
     }
 
     LDDetailsInit(details);
@@ -150,10 +152,12 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     struct LDStore *store;
     struct LDJSON *flag, *value, *events, *event, *evalue;
     struct LDDetails details, *detailsref;
+    struct LDJSONRC *flagrc;
 
     LD_ASSERT(client);
 
     flag             = NULL;
+    flagrc           = NULL;
     value            = NULL;
     store            = NULL;
     events           = NULL;
@@ -186,11 +190,15 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     LD_ASSERT(store = client->config->store);
 
-    if (!LDStoreGet(store, "flags", key, &flag)) {
+    if (!LDStoreGet(store, LD_FLAG, key, &flagrc)) {
         detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_STORE_ERROR;
 
         status = EVAL_MISS;
+    }
+
+    if (flagrc) {
+        flag = LDJSONRCGet(flagrc);
     }
 
     if (!flag) {
@@ -204,8 +212,8 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
         status = EVAL_MISS;
     } else {
-        status = LDi_evaluate(client, flag, user, store, detailsref, &events,
-            &value, o_details != NULL);
+        status = LDi_evaluate(client, flag, user, store,
+            detailsref, &events, &value, o_details != NULL);
     }
 
     if (status == EVAL_MEM) {
@@ -295,18 +303,18 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     LDJSONFree(event);
     LDJSONFree(fallback);
-    LDJSONFree(flag);
     LDDetailsClear(&details);
     LDJSONFree(events);
+    LDJSONRCDecrement(flagrc);
 
     return value;
 
   error:
-    LDJSONFree(flag);
     LDJSONFree(event);
     LDJSONFree(value);
     LDDetailsClear(&details);
     LDJSONFree(events);
+    LDJSONRCDecrement(flagrc);
 
     return fallback;
 }
@@ -487,12 +495,13 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
 struct LDJSON *
 LDAllFlags(struct LDClient *const client, struct LDUser *const user)
 {
-    struct LDJSON *flag, *rawFlags, *evaluatedFlags;
+    struct LDJSON *evaluatedFlags;
+    struct LDJSONRC **rawFlags, **rawFlagsIter;
 
     LD_ASSERT(client);
 
-    flag           = NULL;
     rawFlags       = NULL;
+    rawFlagsIter   = NULL;
     evaluatedFlags = NULL;
 
     if (client->config->offline) {
@@ -517,30 +526,32 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         }
     }
 
-    if (!LDStoreAll(client->config->store, "flags", &rawFlags)) {
-        LD_LOG(LD_LOG_ERROR, "LDAllFlags failed to fetch flags");
-
-        return NULL;
-    }
-
     if (!(evaluatedFlags = LDNewObject())) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
-        LDJSONFree(rawFlags);
+        return NULL;
+    }
+
+    if (!LDStoreAll(client->config->store, LD_FLAG, &rawFlags)) {
+        LD_LOG(LD_LOG_ERROR, "LDAllFlags failed to fetch flags");
+
+        LDJSONFree(evaluatedFlags);
 
         return NULL;
     }
 
-    /* locally ensured sanity check */
-    LD_ASSERT(LDJSONGetType(rawFlags) == LDObject);
-
-    for (flag = LDGetIter(rawFlags); flag; flag = LDIterNext(flag)) {
+    for (rawFlagsIter = rawFlags; *rawFlagsIter; rawFlagsIter++) {
         struct LDJSON *value, *events;
         EvalStatus status;
         struct LDDetails details;
+        struct LDJSON *flag;
+        const char *key;
 
         value   = NULL;
         events  = NULL;
+        key     = NULL;
+
+        LD_ASSERT(flag = LDJSONRCGet(*rawFlagsIter));
 
         LDDetailsInit(&details);
 
@@ -554,8 +565,10 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
             goto error;
         }
 
+        LD_ASSERT(key = LDGetText(LDObjectLookup(flag, "key")));
+
         if (value) {
-            if (!LDObjectSetKey(evaluatedFlags, LDIterKey(flag), value)) {
+            if (!LDObjectSetKey(evaluatedFlags, key, value)) {
                 LDJSONFree(events);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
@@ -566,14 +579,20 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
 
         LDJSONFree(events);
         LDDetailsClear(&details);
+
+        LDJSONRCDecrement(*rawFlagsIter);
     }
 
-    LDJSONFree(rawFlags);
+    LDFree(rawFlags);
 
     return evaluatedFlags;
 
   error:
-    LDJSONFree(rawFlags);
+    for (;*rawFlagsIter; rawFlagsIter++) {
+        LDJSONRCDecrement(*rawFlagsIter);
+    }
+    LDFree(rawFlags);
+
     LDJSONFree(evaluatedFlags);
 
     return NULL;

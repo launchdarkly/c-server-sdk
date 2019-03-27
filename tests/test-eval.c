@@ -12,20 +12,10 @@ static struct LDStore *
 prepareEmptyStore()
 {
     struct LDStore *store;
-    struct LDJSON *sets, *tmp;
 
     LD_ASSERT(store = LDMakeInMemoryStore());
     LD_ASSERT(!LDStoreInitialized(store));
-
-    LD_ASSERT(sets = LDNewObject());
-
-    LD_ASSERT(tmp = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(sets, "segments", tmp));
-
-    LD_ASSERT(tmp = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(sets, "flags", tmp));
-
-    LD_ASSERT(LDStoreInit(store, sets));
+    LD_ASSERT(LDStoreInitEmpty(store));
     LD_ASSERT(LDStoreInitialized(store));
 
     return store;
@@ -266,7 +256,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
 {
     struct LDUser *user;
     struct LDStore *store;
-    struct LDJSON *flag1, *flag2, *result, *events;
+    struct LDJSON *flag1, *flag2, *result, *events, *eventsiter;
     struct LDDetails details;
 
     events = NULL;
@@ -294,7 +284,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
 
     /* store setup */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
@@ -309,15 +299,15 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
 
     LD_ASSERT(events);
     LD_ASSERT(LDCollectionGetSize(events) == 1);
-    LD_ASSERT(events = LDGetIter(events));
+    LD_ASSERT(eventsiter = LDGetIter(events));
     LD_ASSERT(strcmp("feature1",
-        LDGetText(LDObjectLookup(events, "key"))) == 0);
+        LDGetText(LDObjectLookup(eventsiter, "key"))) == 0);
     LD_ASSERT(strcmp("go",
-        LDGetText(LDObjectLookup(events, "value"))) == 0);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "version")) == 3);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "variation")) == 1);
+        LDGetText(LDObjectLookup(eventsiter, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(eventsiter, "version")) == 3);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(eventsiter, "variation")) == 1);
     LD_ASSERT(strcmp("feature0",
-        LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
+        LDGetText(LDObjectLookup(eventsiter, "prereqOf"))) == 0);
 
     LDJSONFree(flag1);
     LDJSONFree(result);
@@ -332,7 +322,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
 {
     struct LDUser *user;
     struct LDStore *store;
-    struct LDJSON *flag1, *flag2, *result, *events;
+    struct LDJSON *flag1, *flag2, *result, *events, *eventsiter;
     struct LDDetails details;
 
     events = NULL;
@@ -361,7 +351,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
 
     /* store */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
@@ -375,15 +365,15 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
 
     LD_ASSERT(events);
     LD_ASSERT(LDCollectionGetSize(events) == 1);
-    LD_ASSERT(events = LDGetIter(events));
+    LD_ASSERT(eventsiter = LDGetIter(events));
     LD_ASSERT(strcmp("feature1",
-        LDGetText(LDObjectLookup(events, "key"))) == 0);
+        LDGetText(LDObjectLookup(eventsiter, "key"))) == 0);
     LD_ASSERT(strcmp("nogo",
-        LDGetText(LDObjectLookup(events, "value"))) == 0);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "version")) == 2);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "variation")) == 0);
+        LDGetText(LDObjectLookup(eventsiter, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(eventsiter, "version")) == 2);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(eventsiter, "variation")) == 0);
     LD_ASSERT(strcmp("feature0",
-        LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
+        LDGetText(LDObjectLookup(eventsiter, "prereqOf"))) == 0);
 
     LDJSONFree(flag1);
     LDJSONFree(result);
@@ -398,7 +388,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
 {
     struct LDUser *user;
     struct LDStore *store;
-    struct LDJSON *flag1, *flag2, *result, *events;
+    struct LDJSON *flag1, *flag2, *result, *events, *eventsiter;
     struct LDDetails details;
 
     events = NULL;
@@ -427,7 +417,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
 
     /* store */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
@@ -441,15 +431,15 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
 
     LD_ASSERT(events);
     LD_ASSERT(LDCollectionGetSize(events) == 1);
-    LD_ASSERT(events = LDGetIter(events));
+    LD_ASSERT(eventsiter = LDGetIter(events));
     LD_ASSERT(strcmp("feature1",
-        LDGetText(LDObjectLookup(events, "key"))) == 0);
+        LDGetText(LDObjectLookup(eventsiter, "key"))) == 0);
     LD_ASSERT(strcmp("go",
-        LDGetText(LDObjectLookup(events, "value"))) == 0);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "version")) == 3);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "variation")) == 1);
+        LDGetText(LDObjectLookup(eventsiter, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(eventsiter, "version")) == 3);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(eventsiter, "variation")) == 1);
     LD_ASSERT(strcmp("feature0",
-        LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
+        LDGetText(LDObjectLookup(eventsiter, "prereqOf"))) == 0);
 
     LDJSONFree(flag1);
     LDJSONFree(result);
@@ -464,7 +454,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
 {
     struct LDUser *user;
     struct LDStore *store;
-    struct LDJSON *flag1, *flag2, *flag3, *result, *events;
+    struct LDJSON *flag1, *flag2, *flag3, *result, *events, *eventsiter;
     struct LDDetails details;
 
     events = NULL;
@@ -503,8 +493,8 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
 
     /* store */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "flags", flag2));
-    LD_ASSERT(LDStoreUpsert(store, "flags", flag3));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag3));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
@@ -519,25 +509,25 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     LD_ASSERT(events);
     LD_ASSERT(LDCollectionGetSize(events) == 2);
 
-    LD_ASSERT(events = LDGetIter(events));
+    LD_ASSERT(eventsiter = LDGetIter(events));
     LD_ASSERT(strcmp("feature2",
-        LDGetText(LDObjectLookup(events, "key"))) == 0);
+        LDGetText(LDObjectLookup(eventsiter, "key"))) == 0);
     LD_ASSERT(strcmp("go",
-        LDGetText(LDObjectLookup(events, "value"))) == 0);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "version")) == 3);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "variation")) == 1);
+        LDGetText(LDObjectLookup(eventsiter, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(eventsiter, "version")) == 3);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(eventsiter, "variation")) == 1);
     LD_ASSERT(strcmp("feature1",
-        LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
+        LDGetText(LDObjectLookup(eventsiter, "prereqOf"))) == 0);
 
-    LD_ASSERT(events = LDIterNext(events));
+    LD_ASSERT(eventsiter = LDIterNext(eventsiter));
     LD_ASSERT(strcmp("feature1",
-        LDGetText(LDObjectLookup(events, "key"))) == 0);
+        LDGetText(LDObjectLookup(eventsiter, "key"))) == 0);
     LD_ASSERT(strcmp("go",
-        LDGetText(LDObjectLookup(events, "value"))) == 0);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "version")) == 3);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(events, "variation")) == 1);
+        LDGetText(LDObjectLookup(eventsiter, "value"))) == 0);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(eventsiter, "version")) == 3);
+    LD_ASSERT(LDGetNumber(LDObjectLookup(eventsiter, "variation")) == 1);
     LD_ASSERT(strcmp("feature0",
-        LDGetText(LDObjectLookup(events, "prereqOf"))) == 0);
+        LDGetText(LDObjectLookup(eventsiter, "prereqOf"))) == 0);
 
     LDJSONFree(flag1);
     LDJSONFree(events);
@@ -922,7 +912,7 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
 
     /* store */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "segments", segment));
+    LD_ASSERT(LDStoreUpsert(store, LD_SEGMENT, segment));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag, user, store, &details, &events, &result,
@@ -1019,7 +1009,7 @@ testCanMatchJustOneSegmentFromList()
 
     /* store */
     LD_ASSERT(store = prepareEmptyStore());
-    LD_ASSERT(LDStoreUpsert(store, "segments", segment));
+    LD_ASSERT(LDStoreUpsert(store, LD_SEGMENT, segment));
 
     /* run */
     LD_ASSERT(LDi_evaluate(NULL, flag, user, store, &details, &events, &result,

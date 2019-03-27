@@ -9,6 +9,25 @@
 #include <stddef.h>
 
 #include "ldjson.h"
+#include "ldinternal.h"
+
+/***************************************************************************//**
+ * @name Reference counted wrapper for JSON
+ * Used as an optimization to reduce allocations.
+ * @{
+ ******************************************************************************/
+
+struct LDJSONRC;
+
+struct LDJSONRC *LDJSONRCNew(struct LDJSON *const json);
+
+void LDJSONRCIncrement(struct LDJSONRC *const rc);
+
+void LDJSONRCDecrement(struct LDJSONRC *const rc);
+
+struct LDJSON *LDJSONRCGet(struct LDJSONRC *const rc);
+
+/*@}*/
 
 /***************************************************************************//**
  * @name Generic Store Interface
@@ -38,7 +57,7 @@ struct LDStore {
      * @return Returns the feature, or NULL if it does not exist.
      */
     bool (*get)(void *const context, const char *const kind,
-        const char *const key, struct LDJSON **const result);
+        const char *const key, struct LDJSONRC **const result);
     /**
      * @brief Fetch all features in a given namespace
      * @param[in] context Implementation specific context.
@@ -47,7 +66,7 @@ struct LDStore {
      * @return Returns an object map keys to features, NULL on failure.
      */
     bool (*all)(void *const context, const char *const kind,
-        struct LDJSON **const result);
+        struct LDJSONRC ***const result);
     /**
      * @brief Mark an existing feature as deleted
      * (only virtually deletes to maintain version)
@@ -96,25 +115,31 @@ struct LDStore {
  * @{
  ******************************************************************************/
 
+ enum FeatureKind {
+    LD_FLAG,
+    LD_SEGMENT
+};
+
 /** @brief A convenience wrapper around `store->init`. */
 bool LDStoreInit(const struct LDStore *const store, struct LDJSON *const sets);
 
 /** @brief A convenience wrapper around `store->get`. */
 bool LDStoreGet(const struct LDStore *const store,
-    const char *const kind, const char *const key,
-    struct LDJSON **const result);
+    const enum FeatureKind kind, const char *const key,
+    struct LDJSONRC **const result);
 
 /** @brief A convenience wrapper around `store->all`. */
 bool LDStoreAll(const struct LDStore *const store,
-    const char *const kind, struct LDJSON **const result);
+    const enum FeatureKind kind, struct LDJSONRC ***const result);
 
 /** @brief A convenience wrapper around `store->delete`. */
-bool LDStoreDelete(const struct LDStore *const store, const char *const kind,
-    const char *const key, const unsigned int version);
+bool LDStoreDelete(const struct LDStore *const store,
+    const enum FeatureKind kind, const char *const key,
+    const unsigned int version);
 
 /** @brief A convenience wrapper around `store->upsert`. */
-bool LDStoreUpsert(const struct LDStore *const store, const char *const key,
-    struct LDJSON *const feature);
+bool LDStoreUpsert(const struct LDStore *const store,
+    const enum FeatureKind kind, struct LDJSON *const feature);
 
 /** @brief A convenience wrapper around `store->initialized`. */
 bool LDStoreInitialized(const struct LDStore *const store);
