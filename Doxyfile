@@ -1,0 +1,16 @@
+PROJECT_NAME           = "C Client Server-Side"
+PROJECT_BRIEF          = "LaunchDarkly SDK"
+OUTPUT_DIRECTORY       = docs
+ENUM_VALUES_PER_LINE   = 10
+OPTIMIZE_OUTPUT_FOR_C  = YES
+USE_MDFILE_AS_MAINPAGE = README.md
+INPUT                  = \
+    include/ldapi.h \
+    include/ldclient.h \
+    include/ldconfig.h \
+    include/ldjson.h \
+    include/ldlogging.h \
+    include/ldmemory.h \
+    include/ldvariations.h \
+    include/lduser.h \
+    README.md

@@ -1,0 +1,48 @@
+version: 2
+jobs:
+  build-test-linux:
+    docker:
+      - image: circleci/golang:1.9.6
+    steps:
+      - checkout
+      - run:
+          name: Install deps
+          command: sudo apt-get update -y && sudo apt-get install -y libcurl4-openssl-dev cmake libpcre3-dev libgmp-dev
+      - run: mkdir build && cd build && cmake ..
+      - run: cd build && make
+      - run: cd build && CTEST_OUTPUT_ON_FAILURE=1 make test
+      - run:
+          name: Copy Artifacts
+          command: |
+              mkdir -p /tmp/artifacts
+              cp build/libldserverapi.a /tmp/artifacts/linux-gcc-64bit-libldserverapi.a
+              cp build/libldserverapidynamic.so /tmp/artifacts/linux-gcc-64bit-libldserverapi.so
+      - store_artifacts:
+          path: /tmp/artifacts
+
+  build-test-osx:
+    macos:
+      xcode: "9.0"
+    steps:
+      - checkout
+      - run:
+          name: Install deps
+          command: brew install cmake pcre gmp
+      - run: mkdir build && cd build && cmake ..
+      - run: cd build && make
+      - run: cd build && CTEST_OUTPUT_ON_FAILURE=1 make test
+      - run:
+          name: Copy Artifacts
+          command: |
+              mkdir -p /tmp/artifacts
+              cp build/libldserverapi.a /tmp/artifacts/osx-clang-64bit-libldserverapi.a
+              cp build/libldserverapidynamic.dylib /tmp/artifacts/osx-clang-64bit-libldapi.dylib
+      - store_artifacts:
+          path: /tmp/artifacts
+
+workflows:
+  version: 2
+  build_and_test_all:
+    jobs:
+      - build-test-linux
+      - build-test-osx
