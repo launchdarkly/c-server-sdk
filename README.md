@@ -1,7 +1,11 @@
-LaunchDarkly SDK for C / C++
+LaunchDarkly SDK for C / C++ (server-side)
 ===================================
 
 *Warning:* This software is *beta* software and should not be used in a production environment until the general availability release.
+
+The LaunchDarkly C / C++ (server-side) SDK is designed primarily for use in multi-user systems such as web servers and applications. It follows the server-side LaunchDarkly model for multi-user contexts. It is not intended for use in desktop and embedded systems applications.
+
+For using LaunchDarkly in C / C++ client-side applications, refer to our [C / C++ client-side SDK](https://github.com/launchdarkly/c-client).
 
 Quick setup (POSIX)
 -------------------
