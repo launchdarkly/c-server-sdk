@@ -117,6 +117,22 @@ testConcurrency()
     LD_ASSERT(LDi_rwlockdestroy(&context.lock));
 }
 
+/* possible failure but very unlikely */
+static void
+testRNG()
+{
+    unsigned int rng1, rng2;
+
+    rng1 = 0;
+    rng2 = 0;
+
+    LD_ASSERT(LDi_random(&rng1));
+    LD_ASSERT(rng1 != 0);
+    LD_ASSERT(LDi_random(&rng2));
+    LD_ASSERT(rng2 != 0);
+    LD_ASSERT(rng1 != rng2);
+}
+
 int
 main()
 {
@@ -127,6 +143,7 @@ main()
     testThreadStartJoin();
     testRWLock();
     testConcurrency();
+    testRNG();
 
     return 0;
 }

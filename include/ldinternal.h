@@ -124,7 +124,19 @@ bool LDi_sleepMilliseconds(const unsigned long milliseconds);
 bool LDi_getMonotonicMilliseconds(unsigned long *const resultMilliseconds);
 bool LDi_getUnixMilliseconds(unsigned long *const resultMilliseconds);
 
+#ifdef _WIN32
+    #define LD_RAND_MAX UINT_MAX
+#else
+    #define LD_RAND_MAX RAND_MAX
+#endif
+
+/* do not use in cryptographic / security focused contexts */
+bool LDi_random(unsigned int *const result);
+
 bool LDSetString(char **const target, const char *const value);
+
+double LDi_normalize(const double n, const double nmin, const double nmax,
+    const double omin, const double omax);
 
 bool LDi_notNull(const struct LDJSON *const json);
 bool LDi_isDeleted(const struct LDJSON *const feature);

@@ -10,6 +10,34 @@
 #endif
 
 bool
+LDi_random(unsigned int *const result)
+{
+    #ifdef _WIN32
+        LD_ASSERT(result);
+        return rand_s(result) == 0;
+    #else
+        static unsigned int state;
+        static bool init = false;
+        static ld_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
+        LD_ASSERT(result);
+
+        LD_ASSERT(LDi_mtxlock(&lock));
+
+        if (!init) {
+            state = time(NULL);
+            init  = true;
+        }
+
+        *result = rand_r(&state);
+
+        LD_ASSERT(LDi_mtxunlock(&lock));
+
+        return true;
+    #endif
+}
+
+bool
 LDi_sleepMilliseconds(const unsigned long milliseconds)
 {
     int status;

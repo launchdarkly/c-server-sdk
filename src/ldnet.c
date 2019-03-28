@@ -142,7 +142,7 @@ LDi_networkthread(void* const clientref)
                 CURL *handle;
                 /* skip if waiting on backoff */
                 if (interfaces[i]->attempts) {
-                    unsigned long now, backoff;
+                    unsigned long now;
 
                     if (!LDi_getMonotonicMilliseconds(&now)) {
                         LD_LOG(LD_LOG_ERROR, "failed to get time for backoff");
@@ -159,12 +159,30 @@ LDi_networkthread(void* const clientref)
                             continue;
                         }
                     } else {
-                        /* calculate time to wait */
-                        backoff = 1000 * pow(2, interfaces[i]->attempts);
+                        double backoff;
+                        unsigned int rng;
 
+                        /* random value for jitter */
+                        if (!LDi_random(&rng)) {
+                            LD_LOG(LD_LOG_ERROR,
+                                "failed to get rng for jitter calculation");
+
+                            goto cleanup;
+                        }
+
+                        /* calculate time to wait */
+                        backoff = 1000 * pow(2, interfaces[i]->attempts) / 2;
+
+                        /* cap (min not built in) */
                         if (backoff > 3600 * 1000) {
                             backoff = 3600 * 1000;
                         }
+
+                        /* jitter */
+                        backoff /= 2;
+
+                        backoff = backoff +
+                            LDi_normalize(rng, 0, LD_RAND_MAX, 0, backoff);
 
                         interfaces[i]->waitUntil = now + backoff;
                         /* skip because we are waiting */

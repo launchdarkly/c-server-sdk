@@ -26,3 +26,10 @@ LDSetString(char **const target, const char *const value)
         return true;
     }
 }
+
+double
+LDi_normalize(const double n, const double nmin, const double nmax,
+    const double omin, const double omax)
+{
+    return (n - nmin) * (omax - omin) / (nmax - nmin) + omin;
+}
