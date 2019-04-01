@@ -9,10 +9,10 @@ include_directories("include" "third-party/include" ${CURL_INCLUDE_DIR})
 file(GLOB SOURCES "src/*" "third-party/src/*")
 
 add_library(ldserverapi STATIC ${SOURCES})
-target_link_libraries(ldserverapi ${CURL_LIBRARIES} pthread pcre m gmp)
+target_link_libraries(ldserverapi ${CURL_LIBRARIES} pthread pcre m)
 
 add_library(ldserverapidynamic SHARED ${SOURCES})
-target_link_libraries(ldserverapidynamic ${CURL_LIBRARIES} pthread pcre m gmp)
+target_link_libraries(ldserverapidynamic ${CURL_LIBRARIES} pthread pcre m)
 
 file(GLOB TESTS "tests/*")
 foreach(testsource ${TESTS})
