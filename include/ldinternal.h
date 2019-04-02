@@ -116,6 +116,7 @@ struct LDClient {
     struct LDJSON *summaryCounters; /* Object */
     unsigned long summaryStart;
     bool shouldFlush;
+    unsigned long lastServerTime;
 };
 
 /* **** LDUtility **** */

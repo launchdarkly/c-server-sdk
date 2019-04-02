@@ -193,9 +193,7 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     }
 
     if (flag) {
-        tmp = LDObjectLookup(flag, "version");
-
-        if (LDi_notNull(tmp)) {
+        if (LDi_notNull(tmp = LDObjectLookup(flag, "version"))) {
             if (LDJSONGetType(tmp) != LDNumber) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -214,6 +212,52 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
                 LDJSONFree(tmp);
 
                 goto error;
+            }
+        }
+
+        if (LDi_notNull(tmp = LDObjectLookup(flag, "debugEventsUntilDate"))) {
+            if (LDJSONGetType(tmp) != LDNumber) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
+
+                goto error;
+            }
+
+            if (!(tmp = LDJSONDuplicate(tmp))) {
+                LD_LOG(LD_LOG_ERROR, "memory error");
+
+                goto error;
+            }
+
+            if (!LDObjectSetKey(event, "debugEventsUntilDate", tmp)) {
+                LD_LOG(LD_LOG_ERROR, "memory error");
+
+                LDJSONFree(tmp);
+
+                goto error;
+            }
+        }
+
+        if (LDi_notNull(tmp = LDObjectLookup(flag, "trackEvents"))) {
+            if (LDJSONGetType(tmp) != LDBool) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
+
+                goto error;
+            }
+
+            if (LDGetBool(tmp)) {
+                if (!(tmp = LDJSONDuplicate(tmp))) {
+                    LD_LOG(LD_LOG_ERROR, "memory error");
+
+                    goto error;
+                }
+
+                if (!LDObjectSetKey(event, "trackEvents", tmp)) {
+                    LD_LOG(LD_LOG_ERROR, "memory error");
+
+                    LDJSONFree(tmp);
+
+                    goto error;
+                }
             }
         }
     }
@@ -860,6 +904,88 @@ LDi_prepareSummaryEvent(struct LDClient *const client)
     return NULL;
 }
 
+static const char *
+strnchr(const char *str, const char c, size_t len)
+{
+    for (; str && len; len--, str++) {
+        if (*str == c) {
+            return str;
+        }
+    }
+
+    return NULL;
+}
+
+bool
+LDi_parseRFC822(const char *const date, struct tm *tm)
+{
+    return strptime(date, "%a, %d %b %Y %H:%M:%S %Z", tm) != NULL;
+}
+
+/* curl spec says these may not be NULL terminated */
+size_t
+LDi_onHeader(const char *buffer, const size_t size,
+    const size_t itemcount, void *const context)
+{
+    struct LDClient *client;
+    const size_t total = size * itemcount;
+    const char *const dateheader = "Date:";
+    const size_t dateheaderlen = strlen(dateheader);
+    struct tm tm;
+    char datebuffer[128];
+    const char *headerend;
+
+    LD_ASSERT(context);
+
+    client = context;
+
+    /* ensures we do not segfault if not terminated */
+    if (!(headerend = strnchr(buffer, '\r', size))) {
+        LD_LOG(LD_LOG_ERROR, "failed to find end of header");
+
+        return total;
+    }
+
+    /* guard segfault for very short headers */
+    if (total <= dateheaderlen) {
+        return total;
+    }
+
+    /* check if header is the date header */
+    if (strncasecmp(buffer, dateheader, dateheaderlen) != 0) {
+        return total;
+    }
+
+    buffer += dateheaderlen;
+
+    /* skip any spaces or tabs after header type */
+    while (*buffer == ' ' || *buffer == '\t') {
+        buffer++;
+    }
+
+    /* copy just date segment into own buffer */
+    if ((size_t)(headerend - buffer + 1) > sizeof(datebuffer)) {
+        LD_LOG(LD_LOG_ERROR, "not enough room to parse date");
+
+        return total;
+    }
+    strncpy(datebuffer, buffer, headerend - buffer);
+    datebuffer[headerend - buffer] = 0;
+
+    if (!LDi_parseRFC822(datebuffer, &tm)) {
+        LD_LOG(LD_LOG_ERROR, "failed to extract date from server");
+
+        return total;
+    }
+
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    client->lastServerTime = 1000 * (unsigned long)mktime(&tm);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    return total;
+
+}
+
 static CURL *
 poll(struct LDClient *const client, void *const rawcontext)
 {
@@ -944,6 +1070,18 @@ poll(struct LDClient *const client, void *const rawcontext)
     }
 
     if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, context->headers)
+        != CURLE_OK)
+    {
+        goto error;
+    }
+
+    if (curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, LDi_onHeader)
+        != CURLE_OK)
+    {
+        goto error;
+    }
+
+    if (curl_easy_setopt(curl, CURLOPT_HEADERDATA, client)
         != CURLE_OK)
     {
         goto error;

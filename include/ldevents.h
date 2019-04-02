@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <time.h>
 
 #include "ldvariations.h"
 
@@ -37,3 +38,8 @@ bool LDi_summarizeEvent(struct LDClient *const client,
 char *LDi_makeSummaryKey(const struct LDJSON *const event);
 
 struct LDJSON *LDi_prepareSummaryEvent(struct LDClient *const client);
+
+size_t LDi_onHeader(const char *const buffer, const size_t size,
+    const size_t itemcount, void *const context);
+
+bool LDi_parseRFC822(const char *const date, struct tm *tm);
