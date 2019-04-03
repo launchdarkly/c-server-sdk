@@ -3,7 +3,8 @@
 #include "ldinternal.h"
 
 #ifdef _WIN32
-    /* placeholder */
+    #include <windows.h>
+    #define _CRT_RAND_S
 #else
     #include <time.h>
     #include <unistd.h>
@@ -40,56 +41,73 @@ LDi_random(unsigned int *const result)
 bool
 LDi_sleepMilliseconds(const unsigned long milliseconds)
 {
-    int status;
+    #ifdef _WIN32
+        Sleep(milliseconds);
+        return true;
+    #else
+        int status;
 
-    if ((status = usleep(1000 * milliseconds)) != 0) {
-        char msg[256];
+        if ((status = usleep(1000 * milliseconds)) != 0) {
+            char msg[256];
 
-        LD_ASSERT(snprintf(msg, sizeof(msg), "usleep failed with: %s",
-            strerror(status)) >= 0);
+            LD_ASSERT(snprintf(msg, sizeof(msg), "usleep failed with: %s",
+                strerror(status)) >= 0);
 
-        LD_LOG(LD_LOG_CRITICAL, msg);
+            LD_LOG(LD_LOG_CRITICAL, msg);
 
-        return false;
-    }
+            return false;
+        }
 
-    return true;
+        return true;
+    #endif
 }
 
-static bool
-getTime(unsigned long *const resultMilliseconds, clockid_t clockid)
-{
-    int status;
-    struct timespec spec;
+#ifndef _WIN32
+    static bool
+    getTime(unsigned long *const resultMilliseconds, clockid_t clockid)
+    {
+        int status;
+        struct timespec spec;
 
-    LD_ASSERT(resultMilliseconds);
+        LD_ASSERT(resultMilliseconds);
 
-    if ((status = clock_gettime(clockid, &spec)) != 0) {
-        char msg[256];
+        if ((status = clock_gettime(clockid, &spec)) != 0) {
+            char msg[256];
 
-        LD_ASSERT(snprintf(msg, sizeof(msg), "clock_gettime failed with: %s",
-            strerror(status)) >= 0);
+            LD_ASSERT(snprintf(msg, sizeof(msg),
+                "clock_gettime failed with: %s", strerror(status)) >= 0);
 
-        LD_LOG(LD_LOG_CRITICAL, msg);
+            LD_LOG(LD_LOG_CRITICAL, msg);
 
-        return false;
+            return false;
+        }
+
+        *resultMilliseconds = (spec.tv_sec * 1000) + (spec.tv_nsec / 1000000);
+
+        return true;
     }
-
-    *resultMilliseconds = (spec.tv_sec * 1000) + (spec.tv_nsec / 1000000);
-
-    return true;
-}
+#endif
 
 bool
 LDi_getMonotonicMilliseconds(unsigned long *const resultMilliseconds)
 {
-    return getTime(resultMilliseconds, CLOCK_MONOTONIC);
+    #ifdef _WIN32
+        *resultMilliseconds = GetTickCount64();
+        return true;
+    #else
+        return getTime(resultMilliseconds, CLOCK_MONOTONIC);
+    #endif
 }
 
 bool
 LDi_getUnixMilliseconds(unsigned long *const resultMilliseconds)
 {
-    return getTime(resultMilliseconds, CLOCK_REALTIME);
+    #ifdef _WIN32
+        *resultMilliseconds = (double)time(NULL) * 1000.0;
+        return true;
+    #else
+        return getTime(resultMilliseconds, CLOCK_REALTIME);
+    #endif
 }
 
 bool
@@ -97,7 +115,8 @@ LDi_createthread(ld_thread_t *const thread,
     THREAD_RETURN (*const routine)(void *), void *const argument)
 {
     #ifdef _WIN32
-        ld_thread_t attempt = CreateThread(NULL, 0, routine, argument, 0, NULL);
+        ld_thread_t attempt = CreateThread(NULL, 0,
+            (LPTHREAD_START_ROUTINE)routine, argument, 0, NULL);
 
         if (attempt == NULL) {
             return false;
@@ -230,7 +249,7 @@ LDi_mtxunlock(ld_mutex_t *const mutex)
     #ifdef _WIN32
         LD_ASSERT(mutex);
 
-        LeaveCriticalSection(lock);
+        LeaveCriticalSection(mutex);
 
         return true;
     #else

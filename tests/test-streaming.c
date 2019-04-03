@@ -173,7 +173,8 @@ testStreamOperations()
 
     LD_ASSERT(config = LDConfigNew("key"));
     LD_ASSERT(client = LDClientInit(config, 0));
-    LD_ASSERT(context = malloc(sizeof(struct StreamContext)));
+    LD_ASSERT(context = (struct StreamContext *)
+        malloc(sizeof(struct StreamContext)));
     memset(context, 0, sizeof(struct StreamContext));
     context->client = client;
 

@@ -18,11 +18,11 @@ testSleepMinimum()
 
     LD_ASSERT(LDi_getMonotonicMilliseconds(&past));
 
-    LD_ASSERT(LDi_sleepMilliseconds(25));
+    LD_ASSERT(LDi_sleepMilliseconds(50));
 
     LD_ASSERT(LDi_getMonotonicMilliseconds(&present));
-
-    LD_ASSERT(present - past >= 25);
+    /* monotonic clock accurate to within 10 ms */
+    LD_ASSERT(present - past >= 40);
 }
 
 static THREAD_RETURN

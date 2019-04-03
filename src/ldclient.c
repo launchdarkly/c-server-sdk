@@ -14,7 +14,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     LD_ASSERT(config);
 
-    if (!(client = LDAlloc(sizeof(struct LDClient)))) {
+    if (!(client = (struct LDClient *)LDAlloc(sizeof(struct LDClient)))) {
         return NULL;
     }
 

@@ -979,7 +979,7 @@ LDi_clauseMatchesUserNoSegments(const struct LDJSON *const clause,
 {
     OpFn fn;
     const char *operatorText, *attributeText;
-    struct LDJSON *operator, *attributeValue, *attribute;
+    struct LDJSON *operatorJSON, *attributeValue, *attribute;
     const struct LDJSON *values;
     LDJSONType type;
 
@@ -988,7 +988,7 @@ LDi_clauseMatchesUserNoSegments(const struct LDJSON *const clause,
 
     fn             = NULL;
     operatorText   = NULL;
-    operator       = NULL;
+    operatorJSON   = NULL;
     attributeText  = NULL;
     attributeValue = NULL;
     attribute      = NULL;
@@ -1012,19 +1012,19 @@ LDi_clauseMatchesUserNoSegments(const struct LDJSON *const clause,
         return EVAL_SCHEMA;
     }
 
-    if (!(operator = LDObjectLookup(clause, "op"))) {
+    if (!(operatorJSON = LDObjectLookup(clause, "op"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
         return EVAL_SCHEMA;
     }
 
-    if (LDJSONGetType(operator) != LDText) {
+    if (LDJSONGetType(operatorJSON) != LDText) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
         return EVAL_SCHEMA;
     }
 
-    if (!(operatorText = LDGetText(operator))) {
+    if (!(operatorText = LDGetText(operatorJSON))) {
         LD_LOG(LD_LOG_ERROR, "allocation error");
 
         return EVAL_SCHEMA;
@@ -1140,14 +1140,14 @@ LDi_bucketUser(const struct LDUser *const user, const char *const segmentKey,
         if (snprintf(raw, sizeof(raw), "%s.%s.%s", segmentKey,
             salt, bucketable) >= 0)
         {
-            char digest[20], encoded[17];
+            char digest[21], encoded[17];
             const float longScale = 0xFFFFFFFFFFFFFFF;
 
             SHA1(digest, raw, strlen(raw));
 
             /* encodes to hex, and shortens, 16 characters in hex 8 bytes */
             LD_ASSERT(hexify((unsigned char *)digest,
-                sizeof(digest), encoded, sizeof(encoded)) == 16);
+                sizeof(digest) - 1, encoded, sizeof(encoded)) == 16);
 
             encoded[15] = 0;
 

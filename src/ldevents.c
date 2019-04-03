@@ -411,7 +411,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
     if (!(key = LDNewObject())) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
-        return false;
+        return NULL;
     }
 
     tmp = LDObjectLookup(event, "variation");
@@ -424,7 +424,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
 
             LDJSONFree(key);
 
-            return false;
+            return NULL;
         }
 
         if (!LDObjectSetKey(key, "variation", tmp)) {
@@ -433,7 +433,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
             LDJSONFree(key);
             LDJSONFree(tmp);
 
-            return false;
+            return NULL;
         }
     }
 
@@ -447,7 +447,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
 
             LDJSONFree(key);
 
-            return false;
+            return NULL;
         }
 
         if (!LDObjectSetKey(key, "version", tmp)) {
@@ -456,7 +456,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
             LDJSONFree(key);
             LDJSONFree(tmp);
 
-            return false;
+            return NULL;
         }
     }
 
@@ -465,7 +465,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
 
         LDJSONFree(key);
 
-        return false;
+        return NULL;
     }
 
     LDJSONFree(key);
@@ -722,10 +722,12 @@ resetMemory(struct AnalyticsContext *const context)
 static void
 done(struct LDClient *const client, void *const rawcontext, const bool success)
 {
-    struct AnalyticsContext *const context = rawcontext;
+    struct AnalyticsContext *context;
 
     LD_ASSERT(client);
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
+
+    context = (struct AnalyticsContext *)rawcontext;
 
     LD_LOG(LD_LOG_INFO, "done!");
 
@@ -746,9 +748,11 @@ done(struct LDClient *const client, void *const rawcontext, const bool success)
 static void
 destroy(void *const rawcontext)
 {
-    struct AnalyticsContext *const context = rawcontext;
+    struct AnalyticsContext *context;
 
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
+
+    context = (struct AnalyticsContext *)rawcontext;
 
     LD_LOG(LD_LOG_INFO, "analytics destroyed");
 
@@ -1002,7 +1006,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     shouldFlush = false;
     mime        = "Content-Type: application/json";
     schema      = "X-LaunchDarkly-Event-Schema: 3";
-    context     = rawcontext;
+    context     = (struct AnalyticsContext *)rawcontext;
 
     /* decide if events should be sent */
 
@@ -1045,7 +1049,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     {
         LD_LOG(LD_LOG_CRITICAL, "snprintf URL failed");
 
-        return false;
+        return NULL;
     }
 
     {
@@ -1168,19 +1172,23 @@ poll(struct LDClient *const client, void *const rawcontext)
 struct NetworkInterface *
 LDi_constructAnalytics(struct LDClient *const client)
 {
-    struct NetworkInterface *interface;
+    struct NetworkInterface *netInterface;
     struct AnalyticsContext *context;
 
     LD_ASSERT(client);
 
-    interface = NULL;
-    context   = NULL;
+    netInterface = NULL;
+    context      = NULL;
 
-    if (!(interface = LDAlloc(sizeof(struct NetworkInterface)))) {
+    if (!(netInterface =
+        (struct NetworkInterface *)LDAlloc(sizeof(struct NetworkInterface))))
+    {
         goto error;
     }
 
-    if (!(context = LDAlloc(sizeof(struct AnalyticsContext)))) {
+    if (!(context =
+        (struct AnalyticsContext *)LDAlloc(sizeof(struct AnalyticsContext))))
+    {
         goto error;
     }
 
@@ -1191,20 +1199,20 @@ LDi_constructAnalytics(struct LDClient *const client)
     context->buffer     = NULL;
     context->lastFailed = false;
 
-    interface->done      = done;
-    interface->poll      = poll;
-    interface->context   = context;
-    interface->destroy   = destroy;
-    interface->current   = NULL;
-    interface->attempts  = 0;
-    interface->waitUntil = 0;
+    netInterface->done      = done;
+    netInterface->poll      = poll;
+    netInterface->context   = context;
+    netInterface->destroy   = destroy;
+    netInterface->current   = NULL;
+    netInterface->attempts  = 0;
+    netInterface->waitUntil = 0;
 
-    return interface;
+    return netInterface;
 
   error:
     LDFree(context);
 
-    LDFree(interface);
+    LDFree(netInterface);
 
     return NULL;
 }

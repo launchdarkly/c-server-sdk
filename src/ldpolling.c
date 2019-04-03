@@ -65,9 +65,11 @@ writeCallback(void *const contents, const size_t size,
     LD_ASSERT(rawmem);
 
     realsize = size * nmemb;
-    mem      = rawmem;
+    mem      = (struct PollContext *)rawmem;
 
-    if (!(mem->memory = LDRealloc(mem->memory, mem->size + realsize + 1))) {
+    if (!(mem->memory =
+        (char *)LDRealloc(mem->memory, mem->size + realsize + 1)))
+    {
         return 0;
     }
 
@@ -100,7 +102,7 @@ done(struct LDClient *const client, void *const rawcontext, const bool success)
     LD_ASSERT(client);
     LD_ASSERT(rawcontext);
 
-    context = rawcontext;
+    context = (struct PollContext *)rawcontext;
     context->active = false;
 
     if (success) {
@@ -123,7 +125,7 @@ destroy(void *const rawcontext)
 
     LD_ASSERT(rawcontext);
 
-    context = rawcontext;
+    context = (struct PollContext *)rawcontext;
 
     resetMemory(context);
 
@@ -140,7 +142,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     LD_ASSERT(rawcontext);
 
     curl    = NULL;
-    context = rawcontext;
+    context = (struct PollContext *)rawcontext;
 
     if (context->active || client->config->stream) {
         return NULL;
@@ -162,7 +164,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     {
         LD_LOG(LD_LOG_CRITICAL, "snprintf URL failed");
 
-        return false;
+        return NULL;
     }
 
     {
@@ -208,19 +210,23 @@ poll(struct LDClient *const client, void *const rawcontext)
 struct NetworkInterface *
 LDi_constructPolling(struct LDClient *const client)
 {
-    struct NetworkInterface *interface;
+    struct NetworkInterface *netInterface;
     struct PollContext *context;
 
     LD_ASSERT(client);
 
-    interface = NULL;
-    context   = NULL;
+    netInterface = NULL;
+    context      = NULL;
 
-    if (!(interface = LDAlloc(sizeof(struct NetworkInterface)))) {
+    if (!(netInterface =
+        (struct NetworkInterface *)LDAlloc(sizeof(struct NetworkInterface))))
+    {
         goto error;
     }
 
-    if (!(context = LDAlloc(sizeof(struct PollContext)))) {
+    if (!(context =
+        (struct PollContext *)LDAlloc(sizeof(struct PollContext))))
+    {
         goto error;
     }
 
@@ -230,21 +236,21 @@ LDi_constructPolling(struct LDClient *const client)
     context->active   = false;
     context->lastpoll = 0;
 
-    interface->done      = done;
-    interface->poll      = poll;
-    interface->context   = context;
-    interface->destroy   = destroy;
-    interface->context   = context;
-    interface->current   = NULL;
-    interface->attempts  = 0;
-    interface->waitUntil = 0;
+    netInterface->done      = done;
+    netInterface->poll      = poll;
+    netInterface->context   = context;
+    netInterface->destroy   = destroy;
+    netInterface->context   = context;
+    netInterface->current   = NULL;
+    netInterface->attempts  = 0;
+    netInterface->waitUntil = 0;
 
-    return interface;
+    return netInterface;
 
   error:
     LDFree(context);
 
-    LDFree(interface);
+    LDFree(netInterface);
 
     return NULL;
 }

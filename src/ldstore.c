@@ -16,7 +16,7 @@ static bool memoryGet(void *const rawcontext, const char *const kind,
 static bool memoryAll(void *const rawcontext, const char *const kind,
     struct LDJSONRC ***const result);
 
-static bool memoryDelete(void *const rawcontext, const char *const kind,
+static bool memoryRemove(void *const rawcontext, const char *const kind,
     const char *const key, const unsigned int version);
 
 static bool memoryUpsert(void *const rawcontext, const char *const kind,
@@ -39,7 +39,7 @@ LDJSONRCNew(struct LDJSON *const json)
 {
     struct LDJSONRC *result;
 
-    if (!(result = LDAlloc(sizeof(struct LDJSONRC)))) {
+    if (!(result = (struct LDJSONRC *)LDAlloc(sizeof(struct LDJSONRC)))) {
         return NULL;
     }
 
@@ -111,7 +111,7 @@ struct FeatureCollectionItem {
 
 /* Namespace -> Feature Set Hashtable */
 struct FeatureCollection {
-    char *namespace;
+    char *itemNamespace;
     struct FeatureCollectionItem *items;
     UT_hash_handle hh;
 };
@@ -123,7 +123,9 @@ makeFeatureCollectionItem(struct LDJSONRC *const feature)
 
     LD_ASSERT(feature);
 
-    if (!(result = LDAlloc(sizeof(struct FeatureCollectionItem)))) {
+    if (!(result = (struct FeatureCollectionItem *)
+        LDAlloc(sizeof(struct FeatureCollectionItem))))
+    {
         return NULL;
     }
 
@@ -153,20 +155,22 @@ addFeatures(struct FeatureCollection **const collections,
     LD_ASSERT(collections);
     LD_ASSERT(features);
 
-    if (!(collection = LDAlloc(sizeof(struct FeatureCollection)))) {
+    if (!(collection =
+        (struct FeatureCollection *)LDAlloc(sizeof(struct FeatureCollection))))
+    {
         return false;
     }
 
     memset(collection, 0, sizeof(struct FeatureCollection));
 
-    if (!(collection->namespace = LDStrDup(LDIterKey(features)))) {
+    if (!(collection->itemNamespace = LDStrDup(LDIterKey(features)))) {
         LDFree(collection);
 
         return false;
     }
 
-    HASH_ADD_KEYPTR(hh, *collections, collection->namespace,
-        strlen(collection->namespace), collection);
+    HASH_ADD_KEYPTR(hh, *collections, collection->itemNamespace,
+        strlen(collection->itemNamespace), collection);
 
     for (iter = LDGetIter(features); iter;) {
         const char *key;
@@ -225,7 +229,7 @@ memoryClearCollections(struct MemoryContext *const context)
             LDFree(item);
         }
 
-        LDFree(collection->namespace);
+        LDFree(collection->itemNamespace);
         LDFree(collection);
     }
 
@@ -242,7 +246,7 @@ memoryInit(void *const rawcontext, struct LDJSON *const sets)
     LD_ASSERT(sets);
     LD_ASSERT(LDJSONGetType(sets) == LDObject);
 
-    context = rawcontext;
+    context = (struct MemoryContext *)rawcontext;
 
     LD_ASSERT(LDi_wrlock(&context->lock));
 
@@ -300,7 +304,7 @@ memoryGet(void *const rawcontext, const char *const kind,
     LD_ASSERT(kind);
 
     current    = NULL;
-    context    = rawcontext;
+    context    = (struct MemoryContext *)rawcontext;
     *result    = NULL;
     collection = NULL;
 
@@ -351,7 +355,7 @@ memoryAll(void *const rawcontext, const char *const kind,
     LD_ASSERT(result);
 
     *result    = NULL;
-    context    = rawcontext;
+    context    = (struct MemoryContext *)rawcontext;
     collection = NULL;
     count      = 0;
     set        = NULL;
@@ -378,7 +382,9 @@ memoryAll(void *const rawcontext, const char *const kind,
         return true;
     }
 
-    if (!(collection = malloc(sizeof(struct LDJSONRC *) * (count + 1)))) {
+    if (!(collection =
+        (struct LDJSONRC **)malloc(sizeof(struct LDJSONRC *) * (count + 1))))
+    {
         LD_ASSERT(LDi_rdunlock(&context->lock));
 
         return false;
@@ -404,7 +410,7 @@ memoryAll(void *const rawcontext, const char *const kind,
 }
 
 static bool
-memoryDelete(void *const rawcontext, const char *const kind,
+memoryRemove(void *const rawcontext, const char *const kind,
     const char *const key, const unsigned int version)
 {
     struct LDJSON *placeholder, *temp;
@@ -470,7 +476,7 @@ memoryUpsert(void *const rawcontext, const char *const kind,
 
     current    = NULL;
     keyjson    = NULL;
-    context    = rawcontext;
+    context    = (struct MemoryContext *)rawcontext;
     key        = NULL;
     collection = NULL;
 
@@ -589,9 +595,11 @@ memoryUpsert(void *const rawcontext, const char *const kind,
 static bool
 memoryInitialized(void *const rawcontext)
 {
-    struct MemoryContext *const context = rawcontext;
+    struct MemoryContext *context;
 
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
+
+    context = (struct MemoryContext *)rawcontext;
 
     return context->initialized;
 }
@@ -599,9 +607,11 @@ memoryInitialized(void *const rawcontext)
 static void
 memoryDestructor(void *const rawcontext)
 {
-    struct MemoryContext *const context = rawcontext;
+    struct MemoryContext *context;
 
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
+
+    context = (struct MemoryContext *)rawcontext;
 
     memoryClearCollections(context);
 
@@ -619,11 +629,13 @@ LDMakeInMemoryStore()
     context = NULL;
     store   = NULL;
 
-    if (!(store = LDAlloc(sizeof(struct LDStore)))) {
+    if (!(store = (struct LDStore *)LDAlloc(sizeof(struct LDStore)))) {
         goto error;
     }
 
-    if (!(context = LDAlloc(sizeof(struct MemoryContext)))) {
+    if (!(context =
+        (struct MemoryContext *)LDAlloc(sizeof(struct MemoryContext))))
+    {
         goto error;
     }
 
@@ -638,7 +650,7 @@ LDMakeInMemoryStore()
     store->init          = memoryInit;
     store->get           = memoryGet;
     store->all           = memoryAll;
-    store->delete        = memoryDelete;
+    store->remove        = memoryRemove;
     store->upsert        = memoryUpsert;
     store->initialized   = memoryInitialized;
     store->destructor    = memoryDestructor;
@@ -698,12 +710,12 @@ LDStoreAll(const struct LDStore *const store, const enum FeatureKind kind,
 }
 
 bool
-LDStoreDelete(const struct LDStore *const store, const enum FeatureKind kind,
+LDStoreRemove(const struct LDStore *const store, const enum FeatureKind kind,
     const char *const key, const unsigned int version)
 {
     LD_ASSERT(store);
 
-    return store->delete(store->context, featureKindToString(kind), key,
+    return store->remove(store->context, featureKindToString(kind), key,
         version);
 }
 

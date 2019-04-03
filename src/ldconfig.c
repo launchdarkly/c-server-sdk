@@ -11,7 +11,7 @@ LDConfigNew(const char *const key)
 
     LD_ASSERT(key);
 
-    if (!(config = LDAlloc(sizeof(struct LDConfig)))) {
+    if (!(config = (struct LDConfig *)LDAlloc(sizeof(struct LDConfig)))) {
         return NULL;
     }
 

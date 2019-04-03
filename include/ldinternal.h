@@ -27,7 +27,7 @@
 /* **** LDPlatformSpecific **** */
 
 #ifdef _WIN32
-    #define THREAD_RETURN DWORD WINAPI
+    #define THREAD_RETURN DWORD
     #define THREAD_RETURN_DEFAULT 0
     #define ld_thread_t HANDLE
 

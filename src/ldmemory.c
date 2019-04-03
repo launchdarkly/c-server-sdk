@@ -46,7 +46,22 @@ LDCalloc(const size_t nmemb, const size_t size)
     return customCalloc(nmemb, size);
 }
 
-static char *(*customStrNDup)(const char *const str, const size_t n) = strndup;
+static char *
+LDi_strndup(const char *const str, const size_t n)
+{
+    char *result;
+
+    if ((result = (char *)LDAlloc(n + 1))) {
+        memcpy(result, str, n);
+        result[n] = '\0';
+        return result;
+    } else {
+        return NULL;
+    }
+}
+
+static char *(*customStrNDup)(const char *const str, const size_t n) =
+    LDi_strndup;
 
 char *
 LDStrNDup(const char *const str, const size_t n)
