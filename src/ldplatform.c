@@ -10,6 +10,16 @@
     #include <unistd.h>
 #endif
 
+int
+LDi_strncasecmp(const char *const s1, const char *const s2, const size_t n)
+{
+    #ifdef _WIN32
+        return _strnicmp(s1, s2, n);
+    #else
+        return strncasecmp(s1, s2, n);
+    #endif
+}
+
 bool
 LDi_random(unsigned int *const result)
 {

@@ -216,7 +216,7 @@ testParseServerTimeHeaderActual()
     LD_ASSERT(LDi_onHeader(header, total, 1, client) == total);
     LD_ASSERT(LDi_wrlock(&client->lock));
     LD_ASSERT(client->lastServerTime >= 1553880000000);
-    LD_ASSERT(client->lastServerTime <= 1553910000000);
+    LD_ASSERT(client->lastServerTime <= 1553911000000);
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
     LDClientClose(client);
@@ -234,7 +234,7 @@ testParseServerTimeHeaderAlt()
     LD_ASSERT(LDi_onHeader(header, total, 1, client) == total);
     LD_ASSERT(LDi_wrlock(&client->lock));
     LD_ASSERT(client->lastServerTime >= 1553880000000);
-    LD_ASSERT(client->lastServerTime <= 1553910000000);
+    LD_ASSERT(client->lastServerTime <= 1553911000000);
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
     LDClientClose(client);

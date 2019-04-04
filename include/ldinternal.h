@@ -116,7 +116,7 @@ struct LDClient {
     struct LDJSON *summaryCounters; /* Object */
     unsigned long summaryStart;
     bool shouldFlush;
-    unsigned long lastServerTime;
+    unsigned long long lastServerTime;
 };
 
 /* **** LDUtility **** */
@@ -142,6 +142,12 @@ double LDi_normalize(const double n, const double nmin, const double nmax,
 bool LDi_notNull(const struct LDJSON *const json);
 bool LDi_isDeleted(const struct LDJSON *const feature);
 bool LDi_textInArray(const struct LDJSON *const array, const char *const text);
+int LDi_strncasecmp(const char *const s1, const char *const s2, const size_t n);
+
+/* windows does not have strptime */
+#ifdef _WIN32
+    const char *strptime (const char *buf, const char *fmt, struct tm *tm);
+#endif
 
 #define ASSERT_FMT \
     "LD_ASSERT failed: expected condition '%s' aborting\n"

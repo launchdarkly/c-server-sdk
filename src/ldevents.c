@@ -956,7 +956,7 @@ LDi_onHeader(const char *buffer, const size_t size,
     }
 
     /* check if header is the date header */
-    if (strncasecmp(buffer, dateheader, dateheaderlen) != 0) {
+    if (LDi_strncasecmp(buffer, dateheader, dateheaderlen) != 0) {
         return total;
     }
 
@@ -983,7 +983,7 @@ LDi_onHeader(const char *buffer, const size_t size,
     }
 
     LD_ASSERT(LDi_wrlock(&client->lock));
-    client->lastServerTime = 1000 * (unsigned long)mktime(&tm);
+    client->lastServerTime = 1000 * (unsigned long long)mktime(&tm);
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
     return total;
