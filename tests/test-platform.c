@@ -18,11 +18,11 @@ testSleepMinimum()
 
     LD_ASSERT(LDi_getMonotonicMilliseconds(&past));
 
-    LD_ASSERT(LDi_sleepMilliseconds(25));
+    LD_ASSERT(LDi_sleepMilliseconds(50));
 
     LD_ASSERT(LDi_getMonotonicMilliseconds(&present));
-
-    LD_ASSERT(present - past >= 25);
+    /* monotonic clock accurate to within 10 ms */
+    LD_ASSERT(present - past >= 40);
 }
 
 static THREAD_RETURN
@@ -117,6 +117,22 @@ testConcurrency()
     LD_ASSERT(LDi_rwlockdestroy(&context.lock));
 }
 
+/* possible failure but very unlikely */
+static void
+testRNG()
+{
+    unsigned int rng1, rng2;
+
+    rng1 = 0;
+    rng2 = 0;
+
+    LD_ASSERT(LDi_random(&rng1));
+    LD_ASSERT(rng1 != 0);
+    LD_ASSERT(LDi_random(&rng2));
+    LD_ASSERT(rng2 != 0);
+    LD_ASSERT(rng1 != rng2);
+}
+
 int
 main()
 {
@@ -127,6 +143,7 @@ main()
     testThreadStartJoin();
     testRWLock();
     testConcurrency();
+    testRNG();
 
     return 0;
 }

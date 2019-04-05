@@ -5,6 +5,8 @@
 #include "ldjson.h"
 #include "ldevents.h"
 
+#include <time.h>
+
 static struct LDClient *
 makeOfflineClient()
 {
@@ -194,6 +196,74 @@ testCounterForNilVariationIsDistinctFromOthers()
     LDClientClose(client);
 }
 
+void
+testParseHTTPDate()
+{
+    struct tm tm;
+    const char *const header = "Fri, 29 Mar 2019 17:55:35 GMT";
+    LD_ASSERT(LDi_parseRFC822(header, &tm));
+}
+
+void
+testParseServerTimeHeaderActual()
+{
+    struct LDClient *client;
+    const char *const header = "Date: Fri, 29 Mar 2019 17:55:35 GMT\r\n";
+    const size_t total = strlen(header);
+
+    LD_ASSERT(client = makeOfflineClient());
+
+    LD_ASSERT(LDi_onHeader(header, total, 1, client) == total);
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(client->lastServerTime >= 1553880000000);
+    LD_ASSERT(client->lastServerTime <= 1553911000000);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    LDClientClose(client);
+}
+
+void
+testParseServerTimeHeaderAlt()
+{
+    struct LDClient *client;
+    const char *const header = "date:Fri, 29 Mar 2019 17:55:35 GMT   \r\n";
+    const size_t total = strlen(header);
+
+    LD_ASSERT(client = makeOfflineClient());
+
+    LD_ASSERT(LDi_onHeader(header, total, 1, client) == total);
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(client->lastServerTime >= 1553880000000);
+    LD_ASSERT(client->lastServerTime <= 1553911000000);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    LDClientClose(client);
+}
+
+void
+testParseServerTimeHeaderBad()
+{
+    struct LDClient *client;
+    const char *const header1 = "Date: not a valid date\r\n";
+    const size_t total1 = strlen(header1);
+    const char *const header2 = "Date:\r\n";
+    const size_t total2 = strlen(header2);
+
+    LD_ASSERT(client = makeOfflineClient());
+
+    LD_ASSERT(LDi_onHeader(header1, total1, 1, client) == total1);
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(client->lastServerTime == 0);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    LD_ASSERT(LDi_onHeader(header2, total2, 1, client) == total2);
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(client->lastServerTime == 0);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    LDClientClose(client);
+}
+
 int
 main()
 {
@@ -202,6 +272,10 @@ main()
 
     testMakeSummaryKeyIncrementsCounters();
     testCounterForNilVariationIsDistinctFromOthers();
+    testParseHTTPDate();
+    testParseServerTimeHeaderActual();
+    testParseServerTimeHeaderAlt();
+    testParseServerTimeHeaderBad();
 
     return 0;
 }

@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "ldexport.h"
+
 /* **** Forward Declarations **** */
 
 struct LDStore; struct LDConfig;
@@ -18,14 +20,14 @@ struct LDStore; struct LDConfig;
  * it should no longer be modified.
  * @return NULL on failure.
  */
-struct LDConfig *LDConfigNew(const char *const key);
+LD_EXPORT(struct LDConfig *) LDConfigNew(const char *const key);
 
 /**
  * @brief Destroy a config not associated with a client instance.
  * @param[in] config May be NULL.
  * @return Void.
  */
-void LDConfigFree(struct LDConfig *const config);
+LD_EXPORT(void) LDConfigFree(struct LDConfig *const config);
 
 /**
  * @brief Set the base URI for connecting to LaunchDarkly. You probably don't
@@ -35,7 +37,7 @@ void LDConfigFree(struct LDConfig *const config);
  * @param[in] baseURI The new base URI to use. May not be NULL (assert).
  * @return True on success, False on failure
  */
-bool LDConfigSetBaseURI(struct LDConfig *const config,
+LD_EXPORT(bool) LDConfigSetBaseURI(struct LDConfig *const config,
     const char *const baseURI);
 
 /**
@@ -46,7 +48,7 @@ bool LDConfigSetBaseURI(struct LDConfig *const config,
  * @param[in] streamURI The new stream URI to use. May not be NULL (assert).
  * @return True on success, False on failure
  */
-bool LDConfigSetStreamURI(struct LDConfig *const config,
+LD_EXPORT(bool) LDConfigSetStreamURI(struct LDConfig *const config,
     const char *const streamURI);
 
 /**
@@ -57,7 +59,7 @@ bool LDConfigSetStreamURI(struct LDConfig *const config,
  * @param[in] eventsURI The new events URI to use. May not be NULL (assert).
  * @return True on success, False on failure
  */
-bool LDConfigSetEventsURI(struct LDConfig *const config,
+LD_EXPORT(bool) LDConfigSetEventsURI(struct LDConfig *const config,
     const char *const eventsURI);
 
 /**
@@ -69,7 +71,8 @@ bool LDConfigSetEventsURI(struct LDConfig *const config,
  * @param[in] stream True for streaming, False for polling.
  * @return Void.
  */
-void LDConfigSetStream(struct LDConfig *const config, const bool stream);
+LD_EXPORT(void) LDConfigSetStream(struct LDConfig *const config,
+    const bool stream);
 
 /**
  * @brief Sets whether to send analytics events back to LaunchDarkly. By
@@ -79,7 +82,7 @@ void LDConfigSetStream(struct LDConfig *const config, const bool stream);
  * @param[in] sendEvents
  * @return Void.
  */
-void LDConfigSetSendEvents(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetSendEvents(struct LDConfig *const config,
     const bool sendEvents);
 
 /**
@@ -90,7 +93,7 @@ void LDConfigSetSendEvents(struct LDConfig *const config,
  * @param[in] eventsCapacity
  * @return Void.
  */
-void LDConfigSetEventsCapacity(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetEventsCapacity(struct LDConfig *const config,
     const unsigned int eventsCapacity);
 
 /**
@@ -99,7 +102,7 @@ void LDConfigSetEventsCapacity(struct LDConfig *const config,
  * @param[in] milliseconds
  * @return Void.
  */
-void LDConfigSetTimeout(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetTimeout(struct LDConfig *const config,
     const unsigned int milliseconds);
 
 /**
@@ -108,7 +111,7 @@ void LDConfigSetTimeout(struct LDConfig *const config,
  * @param[in] milliseconds
  * @return Void.
  */
-void LDConfigSetFlushInterval(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetFlushInterval(struct LDConfig *const config,
     const unsigned int milliseconds);
 
 /**
@@ -117,7 +120,7 @@ void LDConfigSetFlushInterval(struct LDConfig *const config,
  * @param[in] milliseconds
  * @return Void.
  */
-void LDConfigSetPollInterval(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetPollInterval(struct LDConfig *const config,
     const unsigned int milliseconds);
 
 /**
@@ -128,7 +131,8 @@ void LDConfigSetPollInterval(struct LDConfig *const config,
  * @param[in] offline
  * @return Void.
  */
-void LDConfigSetOffline(struct LDConfig *const config, const bool offline);
+LD_EXPORT(void) LDConfigSetOffline(struct LDConfig *const config,
+    const bool offline);
 
 /**
  * @brief Sets whether this client should use the LaunchDarkly relay
@@ -138,7 +142,8 @@ void LDConfigSetOffline(struct LDConfig *const config, const bool offline);
  * @param[in] useLDD
  * @return Void.
  */
-void LDConfigSetUseLDD(struct LDConfig *const config, const bool useLDD);
+LD_EXPORT(void) LDConfigSetUseLDD(struct LDConfig *const config,
+    const bool useLDD);
 
 /**
  * @brief Sets whether or not all user attributes (other than the key) should be
@@ -148,7 +153,7 @@ void LDConfigSetUseLDD(struct LDConfig *const config, const bool useLDD);
  * @param[in] allAttributesPrivate
  * @return Void.
  */
-void LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
     const bool allAttributesPrivate);
 
 /**
@@ -158,7 +163,7 @@ void LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
  * @param[in] userKeysCapacity
  * @return Void
  */
-void LDConfigSetUserKeysCapacity(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetUserKeysCapacity(struct LDConfig *const config,
     const unsigned int userKeysCapacity);
 
 /**
@@ -168,7 +173,7 @@ void LDConfigSetUserKeysCapacity(struct LDConfig *const config,
  * @param[in] userKeysFlushInterval
  * @return Void
  */
-void LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
     const unsigned int userKeysFlushInterval);
 
 /**
@@ -179,7 +184,7 @@ void LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
  * @param[in] attribute May not be NULL (assert).
  * @return NULL on failure.
  */
-bool LDConfigAddPrivateAttribute(struct LDConfig *const config,
+LD_EXPORT(bool) LDConfigAddPrivateAttribute(struct LDConfig *const config,
     const char *const attribute);
 
 /**
@@ -189,5 +194,5 @@ bool LDConfigAddPrivateAttribute(struct LDConfig *const config,
  * @param[in] store. May not be NULL (assert).
  * @return NULL on failure.
  */
-void LDConfigSetFeatureStore(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetFeatureStore(struct LDConfig *const config,
     struct LDStore *const store);

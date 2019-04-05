@@ -1,0 +1,95 @@
+variables:
+  ld_tool_chain: 'call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat" -host_arch=amd64 -arch=amd64'
+
+jobs:
+  - job: build
+    pool:
+      vmImage: 'vs2017-win2016'
+    steps:
+      - task: PowerShell@2
+        displayName: 'Fetch Curl'
+        inputs:
+          targetType: inline
+          script: iwr -outf curl.zip https://curl.haxx.se/download/curl-7.59.0.zip
+      - task: ExtractFiles@1
+        displayName: 'Extract Curl'
+        inputs:
+          archiveFilePatterns: curl.zip
+          cleanDestinationFolder: false
+      - task: CmdLine@2
+        displayName: 'Build Curl'
+        inputs:
+          script: |
+            %ld_tool_chain%
+            cd curl-7.59.0/winbuild
+            nmake /f Makefile.vc mode=static
+
+      - task: PowerShell@2
+        displayName: 'Fetch PCRE'
+        inputs:
+          targetType: inline
+          script: iwr -outf pcre.zip https://ftp.pcre.org/pub/pcre/pcre-8.43.zip
+      - task: ExtractFiles@1
+        displayName: 'Extract PCRE'
+        inputs:
+          archiveFilePatterns: pcre.zip
+          cleanDestinationFolder: false
+      - task: CmdLine@2
+        displayName: 'Build PCRE'
+        inputs:
+          script: |
+            %ld_tool_chain%
+            cd pcre-8.43
+            mkdir build
+            cd build
+            cmake -G "Visual Studio 15 2017 Win64" ..
+            cmake --build .
+
+      - task: CmdLine@2
+        displayName: 'Build SDK'
+        inputs:
+          script: |
+            %ld_tool_chain%
+            mkdir build
+            cd build
+            cmake -G "Visual Studio 15 2017 Win64" ..
+            cmake --build .
+
+      - task: CmdLine@2
+        displayName: 'Test SDK'
+        inputs:
+          script: |
+            %ld_tool_chain%
+            cd build
+            cmake --build . --target RUN_TESTS
+
+      - task: CopyFiles@2
+        inputs:
+          targetFolder: $(Build.ArtifactStagingDirectory)
+          sourceFolder: $(System.DefaultWorkingDirectory)/build/Debug
+          contents: 'ldserverapidynamic.dll'
+      - task: CopyFiles@2
+        inputs:
+          targetFolder: $(Build.ArtifactStagingDirectory)
+          sourceFolder: $(System.DefaultWorkingDirectory)/build/Debug
+          contents: 'ldserverapidynamic.lib'
+      - task: CopyFiles@2
+        inputs:
+          targetFolder: $(Build.ArtifactStagingDirectory)
+          sourceFolder: $(System.DefaultWorkingDirectory)/build/Debug
+          contents: 'ldserverapi.lib'
+
+      - task: PowerShell@2
+        inputs:
+          targetType: inline
+          script: |
+            Rename-Item -Path "ldserverapidynamic.dll" -NewName "windows-vs-64bit-ldserverapi-dynamic.dll"
+            Rename-Item -Path "ldserverapidynamic.lib" -NewName "windows-vs-64bit-ldserverapi-dynamic.lib"
+            Rename-Item -Path "ldserverapi.lib" -NewName "windows-vs-64bit-ldserverapi-static.lib"
+          workingDirectory: '$(Build.ArtifactStagingDirectory)'
+        displayName: 'Rename Artifacts'
+
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          artifactName: library

@@ -142,6 +142,98 @@ LDReasonToJSON(const struct LDDetails *const details)
     return NULL;
 }
 
+static bool
+convertToDebug(struct LDJSON *const event)
+{
+    struct LDJSON *kind;
+
+    LD_ASSERT(event);
+
+    LDObjectDeleteKey(event, "kind");
+
+    if (!(kind = LDNewText("debug"))) {
+        goto error;
+    }
+
+    if (!LDObjectSetKey(event, "kind", kind)) {
+        LDJSONFree(kind);
+
+        goto error;
+    }
+
+    return true;
+
+  error:
+    return false;
+}
+
+static void
+possiblyQueueEvent(struct LDClient *const client,
+    struct LDJSON *event)
+{
+    bool shouldTrack;
+    struct LDJSON *tmp;
+
+    LD_ASSERT(client);
+    LD_ASSERT(event);
+
+    if (LDi_notNull(tmp = LDObjectLookup(event, "trackEvents"))) {
+        /* validated as Boolean by LDi_newFeatureRequestEvent */
+        shouldTrack = LDGetBool(tmp);
+        /* ensure we don't send trackEvents to LD */
+        LDJSONFree(LDCollectionDetachIter(event, tmp));
+    } else {
+        shouldTrack = false;
+    }
+
+    if (LDi_notNull(tmp = LDObjectLookup(event, "debugEventsUntilDate"))) {
+        unsigned long now;
+        /* validated as Number by LDi_newFeatureRequestEvent */
+        const unsigned long until = LDGetNumber(tmp);
+        /* ensure we don't send debugEventsUntilDate to LD */
+        LDJSONFree(LDCollectionDetachIter(event, tmp));
+
+        if (LDi_getUnixMilliseconds(&now)) {
+            unsigned long servertime;
+
+            LD_ASSERT(LDi_rdlock(&client->lock));
+            servertime = client->lastServerTime;
+            LD_ASSERT(LDi_rdunlock(&client->lock));
+
+            if (now < until && servertime < until) {
+                struct LDJSON *debugEvent = NULL;
+
+                if (shouldTrack) {
+                    debugEvent = LDJSONDuplicate(event);
+                } else {
+                    debugEvent = event;
+                    event      = NULL;
+                }
+
+                if (!debugEvent || !convertToDebug(debugEvent)) {
+                    LDi_addEvent(client, debugEvent);
+                } else {
+                    LDJSONFree(debugEvent);
+
+                    LD_LOG(LD_LOG_WARNING, "failed to allocate debug event");
+                }
+            }
+        } else {
+            LD_LOG(LD_LOG_WARNING,
+                "failed to get time not recording debug event");
+        }
+    }
+
+    if (shouldTrack) {
+        LDi_addEvent(client, event);
+
+        event = NULL;
+    }
+
+    /* consume if neither debug or track */
+    LDJSONFree(event);
+}
+
 static struct LDJSON *
 variation(struct LDClient *const client, const struct LDUser *const user,
     const char *const key, struct LDJSON *const fallback,
@@ -242,7 +334,9 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
         for (iter = LDGetIter(events); iter;) {
             struct LDJSON *const next = LDIterNext(iter);
-            LDi_addEvent(client, LDCollectionDetachIter(events, iter));
+
+            possiblyQueueEvent(client, LDCollectionDetachIter(events, iter));
+
             iter = next;
         }
 
@@ -282,12 +376,8 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (flag) {
-        struct LDJSON *const track = LDObjectLookup(flag, "trackEvents");
-
-        if (LDi_notNull(track) && LDGetBool(track)) {
-            LDi_addEvent(client, event);
-            event = NULL;
-        }
+        possiblyQueueEvent(client, event);
+        event = NULL;
     }
 
     if (!LDi_notNull(value)) {

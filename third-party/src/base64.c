@@ -75,7 +75,7 @@ unsigned char * LDi_base64_encode(const unsigned char *src, size_t len,
 	olen++; /* nul termination */
 	if (olen < len)
 		return NULL; /* integer overflow */
-	out = malloc(olen);
+	out = (unsigned char *)malloc(olen);
 	if (out == NULL)
 		return NULL;
 
@@ -152,7 +152,7 @@ unsigned char * LDi_base64_decode(const unsigned char *src, size_t len,
 		return NULL;
 
 	olen = count / 4 * 3;
-	pos = out = malloc(olen);
+	pos = out = (unsigned char *)malloc(olen);
 	if (out == NULL)
 		return NULL;
 

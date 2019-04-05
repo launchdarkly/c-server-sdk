@@ -68,17 +68,17 @@ struct LDStore {
     bool (*all)(void *const context, const char *const kind,
         struct LDJSONRC ***const result);
     /**
-     * @brief Mark an existing feature as deleted
-     * (only virtually deletes to maintain version)
+     * @brief Mark an existing feature as removed
+     * (only virtually removes to maintain version)
      * @param[in] context Implementation specific context.
      * May not be NULL (assert).
      * @param[in] kind The namespace to search in. May not be NULL (assert).
      * @param[in] key The key to return the value for. May not be NULL (assert).
      * @param[in] version Version of event.
-     * Only deletes if version is newer than the features.
+     * Only remove if version is newer than the features.
      * @return True on success, False on failure.
      */
-    bool (*delete)(void *const context, const char *const kind,
+    bool (*remove)(void *const context, const char *const kind,
         const char *const key, const unsigned int version);
     /**
      * @brief Replace an existing feature with a newer one
@@ -132,8 +132,8 @@ bool LDStoreGet(const struct LDStore *const store,
 bool LDStoreAll(const struct LDStore *const store,
     const enum FeatureKind kind, struct LDJSONRC ***const result);
 
-/** @brief A convenience wrapper around `store->delete`. */
-bool LDStoreDelete(const struct LDStore *const store,
+/** @brief A convenience wrapper around `store->remove`. */
+bool LDStoreRemove(const struct LDStore *const store,
     const enum FeatureKind kind, const char *const key,
     const unsigned int version);
 

@@ -9,7 +9,7 @@ LDUserNew(const char *const key)
 {
     struct LDUser *user;
 
-    if (!(user = LDAlloc(sizeof(struct LDUser)))) {
+    if (!(user = (struct LDUser *)LDAlloc(sizeof(struct LDUser)))) {
         return NULL;
     }
 

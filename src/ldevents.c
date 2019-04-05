@@ -193,9 +193,7 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     }
 
     if (flag) {
-        tmp = LDObjectLookup(flag, "version");
-
-        if (LDi_notNull(tmp)) {
+        if (LDi_notNull(tmp = LDObjectLookup(flag, "version"))) {
             if (LDJSONGetType(tmp) != LDNumber) {
                 LD_LOG(LD_LOG_ERROR, "schema error");
 
@@ -214,6 +212,52 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
                 LDJSONFree(tmp);
 
                 goto error;
+            }
+        }
+
+        if (LDi_notNull(tmp = LDObjectLookup(flag, "debugEventsUntilDate"))) {
+            if (LDJSONGetType(tmp) != LDNumber) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
+
+                goto error;
+            }
+
+            if (!(tmp = LDJSONDuplicate(tmp))) {
+                LD_LOG(LD_LOG_ERROR, "memory error");
+
+                goto error;
+            }
+
+            if (!LDObjectSetKey(event, "debugEventsUntilDate", tmp)) {
+                LD_LOG(LD_LOG_ERROR, "memory error");
+
+                LDJSONFree(tmp);
+
+                goto error;
+            }
+        }
+
+        if (LDi_notNull(tmp = LDObjectLookup(flag, "trackEvents"))) {
+            if (LDJSONGetType(tmp) != LDBool) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
+
+                goto error;
+            }
+
+            if (LDGetBool(tmp)) {
+                if (!(tmp = LDJSONDuplicate(tmp))) {
+                    LD_LOG(LD_LOG_ERROR, "memory error");
+
+                    goto error;
+                }
+
+                if (!LDObjectSetKey(event, "trackEvents", tmp)) {
+                    LD_LOG(LD_LOG_ERROR, "memory error");
+
+                    LDJSONFree(tmp);
+
+                    goto error;
+                }
             }
         }
     }
@@ -367,7 +411,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
     if (!(key = LDNewObject())) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
-        return false;
+        return NULL;
     }
 
     tmp = LDObjectLookup(event, "variation");
@@ -380,7 +424,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
 
             LDJSONFree(key);
 
-            return false;
+            return NULL;
         }
 
         if (!LDObjectSetKey(key, "variation", tmp)) {
@@ -389,7 +433,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
             LDJSONFree(key);
             LDJSONFree(tmp);
 
-            return false;
+            return NULL;
         }
     }
 
@@ -403,7 +447,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
 
             LDJSONFree(key);
 
-            return false;
+            return NULL;
         }
 
         if (!LDObjectSetKey(key, "version", tmp)) {
@@ -412,7 +456,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
             LDJSONFree(key);
             LDJSONFree(tmp);
 
-            return false;
+            return NULL;
         }
     }
 
@@ -421,7 +465,7 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
 
         LDJSONFree(key);
 
-        return false;
+        return NULL;
     }
 
     LDJSONFree(key);
@@ -678,10 +722,12 @@ resetMemory(struct AnalyticsContext *const context)
 static void
 done(struct LDClient *const client, void *const rawcontext, const bool success)
 {
-    struct AnalyticsContext *const context = rawcontext;
+    struct AnalyticsContext *context;
 
     LD_ASSERT(client);
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
+
+    context = (struct AnalyticsContext *)rawcontext;
 
     LD_LOG(LD_LOG_INFO, "done!");
 
@@ -702,9 +748,11 @@ done(struct LDClient *const client, void *const rawcontext, const bool success)
 static void
 destroy(void *const rawcontext)
 {
-    struct AnalyticsContext *const context = rawcontext;
+    struct AnalyticsContext *context;
 
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
+
+    context = (struct AnalyticsContext *)rawcontext;
 
     LD_LOG(LD_LOG_INFO, "analytics destroyed");
 
@@ -860,6 +908,88 @@ LDi_prepareSummaryEvent(struct LDClient *const client)
     return NULL;
 }
 
+static const char *
+strnchr(const char *str, const char c, size_t len)
+{
+    for (; str && len; len--, str++) {
+        if (*str == c) {
+            return str;
+        }
+    }
+
+    return NULL;
+}
+
+bool
+LDi_parseRFC822(const char *const date, struct tm *tm)
+{
+    return strptime(date, "%a, %d %b %Y %H:%M:%S %Z", tm) != NULL;
+}
+
+/* curl spec says these may not be NULL terminated */
+size_t
+LDi_onHeader(const char *buffer, const size_t size,
+    const size_t itemcount, void *const context)
+{
+    struct LDClient *client;
+    const size_t total = size * itemcount;
+    const char *const dateheader = "Date:";
+    const size_t dateheaderlen = strlen(dateheader);
+    struct tm tm;
+    char datebuffer[128];
+    const char *headerend;
+
+    LD_ASSERT(context);
+
+    client = context;
+
+    /* ensures we do not segfault if not terminated */
+    if (!(headerend = strnchr(buffer, '\r', size))) {
+        LD_LOG(LD_LOG_ERROR, "failed to find end of header");
+
+        return total;
+    }
+
+    /* guard segfault for very short headers */
+    if (total <= dateheaderlen) {
+        return total;
+    }
+
+    /* check if header is the date header */
+    if (LDi_strncasecmp(buffer, dateheader, dateheaderlen) != 0) {
+        return total;
+    }
+
+    buffer += dateheaderlen;
+
+    /* skip any spaces or tabs after header type */
+    while (*buffer == ' ' || *buffer == '\t') {
+        buffer++;
+    }
+
+    /* copy just date segment into own buffer */
+    if ((size_t)(headerend - buffer + 1) > sizeof(datebuffer)) {
+        LD_LOG(LD_LOG_ERROR, "not enough room to parse date");
+
+        return total;
+    }
+    strncpy(datebuffer, buffer, headerend - buffer);
+    datebuffer[headerend - buffer] = 0;
+
+    if (!LDi_parseRFC822(datebuffer, &tm)) {
+        LD_LOG(LD_LOG_ERROR, "failed to extract date from server");
+
+        return total;
+    }
+
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    client->lastServerTime = 1000 * (unsigned long long)mktime(&tm);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    return total;
+
+}
+
 static CURL *
 poll(struct LDClient *const client, void *const rawcontext)
 {
@@ -876,7 +1006,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     shouldFlush = false;
     mime        = "Content-Type: application/json";
     schema      = "X-LaunchDarkly-Event-Schema: 3";
-    context     = rawcontext;
+    context     = (struct AnalyticsContext *)rawcontext;
 
     /* decide if events should be sent */
 
@@ -919,7 +1049,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     {
         LD_LOG(LD_LOG_CRITICAL, "snprintf URL failed");
 
-        return false;
+        return NULL;
     }
 
     {
@@ -944,6 +1074,18 @@ poll(struct LDClient *const client, void *const rawcontext)
     }
 
     if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, context->headers)
+        != CURLE_OK)
+    {
+        goto error;
+    }
+
+    if (curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, LDi_onHeader)
+        != CURLE_OK)
+    {
+        goto error;
+    }
+
+    if (curl_easy_setopt(curl, CURLOPT_HEADERDATA, client)
         != CURLE_OK)
     {
         goto error;
@@ -1030,19 +1172,23 @@ poll(struct LDClient *const client, void *const rawcontext)
 struct NetworkInterface *
 LDi_constructAnalytics(struct LDClient *const client)
 {
-    struct NetworkInterface *interface;
+    struct NetworkInterface *netInterface;
     struct AnalyticsContext *context;
 
     LD_ASSERT(client);
 
-    interface = NULL;
-    context   = NULL;
+    netInterface = NULL;
+    context      = NULL;
 
-    if (!(interface = LDAlloc(sizeof(struct NetworkInterface)))) {
+    if (!(netInterface =
+        (struct NetworkInterface *)LDAlloc(sizeof(struct NetworkInterface))))
+    {
         goto error;
     }
 
-    if (!(context = LDAlloc(sizeof(struct AnalyticsContext)))) {
+    if (!(context =
+        (struct AnalyticsContext *)LDAlloc(sizeof(struct AnalyticsContext))))
+    {
         goto error;
     }
 
@@ -1053,20 +1199,20 @@ LDi_constructAnalytics(struct LDClient *const client)
     context->buffer     = NULL;
     context->lastFailed = false;
 
-    interface->done      = done;
-    interface->poll      = poll;
-    interface->context   = context;
-    interface->destroy   = destroy;
-    interface->current   = NULL;
-    interface->attempts  = 0;
-    interface->waitUntil = 0;
+    netInterface->done      = done;
+    netInterface->poll      = poll;
+    netInterface->context   = context;
+    netInterface->destroy   = destroy;
+    netInterface->current   = NULL;
+    netInterface->attempts  = 0;
+    netInterface->waitUntil = 0;
 
-    return interface;
+    return netInterface;
 
   error:
     LDFree(context);
 
-    LDFree(interface);
+    LDFree(netInterface);
 
     return NULL;
 }

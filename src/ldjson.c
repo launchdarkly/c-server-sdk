@@ -44,7 +44,7 @@ LDNewArray()
 bool
 LDSetNumber(struct LDJSON *const rawnode, const double number)
 {
-    struct cJSON *const node = (struct cJSON *const)rawnode;
+    struct cJSON *const node = (struct cJSON *)rawnode;
 
     LD_ASSERT(node);
     LD_ASSERT(cJSON_IsNumber(node));
@@ -71,7 +71,7 @@ LDJSONDuplicate(const struct LDJSON *const input)
 LDJSONType
 LDJSONGetType(const struct LDJSON *const inputraw)
 {
-    const struct cJSON *const input = (const struct cJSON *const)inputraw;
+    const struct cJSON *const input = (const struct cJSON *)inputraw;
 
     LD_ASSERT(input);
 
@@ -97,14 +97,14 @@ LDJSONGetType(const struct LDJSON *const inputraw)
 bool
 LDJSONCompare(const struct LDJSON *const left, const struct LDJSON *const right)
 {
-    return cJSON_Compare((const cJSON *const)left,
-        (const cJSON *const)right, true);
+    return cJSON_Compare((const cJSON *)left,
+        (const cJSON *)right, true);
 }
 
 bool
 LDGetBool(const struct LDJSON *const node)
 {
-    cJSON *const json = (cJSON *const)node;
+    cJSON *const json = (cJSON *)node;
 
     LD_ASSERT(json);
     LD_ASSERT(cJSON_IsBool(json));
@@ -115,7 +115,7 @@ LDGetBool(const struct LDJSON *const node)
 double
 LDGetNumber(const struct LDJSON *const node)
 {
-    cJSON *const json = (cJSON *const)node;
+    cJSON *const json = (cJSON *)node;
 
     LD_ASSERT(json);
     LD_ASSERT(cJSON_IsNumber(json));
@@ -126,7 +126,7 @@ LDGetNumber(const struct LDJSON *const node)
 const char *
 LDGetText(const struct LDJSON *const node)
 {
-    cJSON *const json = (cJSON *const)node;
+    cJSON *const json = (cJSON *)node;
 
     LD_ASSERT(json);
     LD_ASSERT(cJSON_IsString(json));
@@ -137,7 +137,7 @@ LDGetText(const struct LDJSON *const node)
 struct LDJSON *
 LDGetIter(const struct LDJSON *const rawcollection)
 {
-    const cJSON *const collection = (const cJSON *const)rawcollection;
+    const cJSON *const collection = (const cJSON *)rawcollection;
 
     LD_ASSERT(collection);
     LD_ASSERT(cJSON_IsArray(collection) || cJSON_IsObject(collection));
@@ -148,7 +148,7 @@ LDGetIter(const struct LDJSON *const rawcollection)
 struct LDJSON *
 LDIterNext(const struct LDJSON *const rawiter)
 {
-    cJSON *const iter = (cJSON *const)rawiter;
+    cJSON *const iter = (cJSON *)rawiter;
 
     LD_ASSERT(iter);
 
@@ -158,7 +158,7 @@ LDIterNext(const struct LDJSON *const rawiter)
 const char *
 LDIterKey(const struct LDJSON *const rawiter)
 {
-    cJSON *const iter = (cJSON *const)rawiter;
+    cJSON *const iter = (cJSON *)rawiter;
 
     LD_ASSERT(iter);
 
@@ -168,7 +168,7 @@ LDIterKey(const struct LDJSON *const rawiter)
 unsigned int
 LDCollectionGetSize(const struct LDJSON *const rawcollection)
 {
-    cJSON *const collection = (cJSON *const)rawcollection;
+    cJSON *const collection = (cJSON *)rawcollection;
 
     LD_ASSERT(collection);
     LD_ASSERT(cJSON_IsArray(collection) || cJSON_IsObject(collection));
@@ -181,8 +181,8 @@ struct LDJSON *
 LDCollectionDetachIter(struct LDJSON *const rawcollection,
     struct LDJSON *const rawiter)
 {
-    cJSON *const collection = (cJSON *const)rawcollection;
-    cJSON *const iter = (cJSON *const)rawiter;
+    cJSON *const collection = (cJSON *)rawcollection;
+    cJSON *const iter = (cJSON *)rawiter;
 
     LD_ASSERT(collection);
     LD_ASSERT(cJSON_IsArray(collection) || cJSON_IsObject(collection));
@@ -194,7 +194,7 @@ LDCollectionDetachIter(struct LDJSON *const rawcollection,
 struct LDJSON *
 LDArrayLookup(const struct LDJSON *const rawarray, const unsigned int index)
 {
-    cJSON *const array = (cJSON *const)rawarray;
+    cJSON *const array = (cJSON *)rawarray;
 
     LD_ASSERT(array);
     LD_ASSERT(cJSON_IsArray(array));
@@ -205,7 +205,7 @@ LDArrayLookup(const struct LDJSON *const rawarray, const unsigned int index)
 bool
 LDArrayPush(struct LDJSON *const rawarray, struct LDJSON *const item)
 {
-    cJSON *const array = (cJSON *const)rawarray;
+    cJSON *const array = (cJSON *)rawarray;
 
     LD_ASSERT(array);
     LD_ASSERT(cJSON_IsArray(array));
@@ -221,8 +221,8 @@ LDArrayAppend(struct LDJSON *const rawprefix,
     const struct LDJSON *const rawsuffix)
 {
     cJSON *iter;
-    cJSON *const prefix = (cJSON *const)rawprefix;
-    const cJSON *const suffix = (const cJSON *const)rawsuffix;
+    cJSON *const prefix = (cJSON *)rawprefix;
+    const cJSON *const suffix = (const cJSON *)rawsuffix;
 
     LD_ASSERT(prefix);
     LD_ASSERT(cJSON_IsArray(prefix));
@@ -245,7 +245,7 @@ LDArrayAppend(struct LDJSON *const rawprefix,
 struct LDJSON *
 LDObjectLookup(const struct LDJSON *const rawobject, const char *const key)
 {
-    cJSON *const object = (cJSON *const)rawobject;
+    cJSON *const object = (cJSON *)rawobject;
 
     LD_ASSERT(object);
     LD_ASSERT(cJSON_IsObject(object));
@@ -258,7 +258,7 @@ bool
 LDObjectSetKey(struct LDJSON *const rawobject,
     const char *const key, struct LDJSON *const item)
 {
-    cJSON *const object = (cJSON *const)rawobject;
+    cJSON *const object = (cJSON *)rawobject;
 
     LD_ASSERT(object);
     LD_ASSERT(cJSON_IsObject(object));
@@ -275,7 +275,7 @@ LDObjectSetKey(struct LDJSON *const rawobject,
 void
 LDObjectDeleteKey(struct LDJSON *const rawobject, const char *const key)
 {
-    cJSON *const object = (cJSON *const)rawobject;
+    cJSON *const object = (cJSON *)rawobject;
 
     LD_ASSERT(object);
     LD_ASSERT(cJSON_IsObject(object));
@@ -287,7 +287,7 @@ LDObjectDeleteKey(struct LDJSON *const rawobject, const char *const key)
 struct LDJSON *
 LDObjectDetachKey(struct LDJSON *const rawobject, const char *const key)
 {
-    cJSON *const object = (cJSON *const)rawobject;
+    cJSON *const object = (cJSON *)rawobject;
 
     LD_ASSERT(object);
     LD_ASSERT(cJSON_IsObject(object));

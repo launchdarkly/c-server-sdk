@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "ldexport.h"
+
 /* **** Forward Declarations **** */
 
 struct LDJSON;
@@ -38,40 +40,40 @@ typedef enum {
  * @brief Constructs a JSON node of type `LDJSONNull`.
  * @return NULL on failure.
  */
-struct LDJSON *LDNewNull();
+LD_EXPORT(struct LDJSON *) LDNewNull();
 
 /**
  * @brief Constructs a JSON node of type `LDJSONBool`.
  * @param[in] boolean The value to assign the new node
  * @return NULL on failure.
  */
-struct LDJSON *LDNewBool(const bool boolean);
+LD_EXPORT(struct LDJSON *) LDNewBool(const bool boolean);
 
 /**
  * @brief Constructs a JSON node of type `LDJSONumber`.
  * @param[in] number The value to assign the new node
  * @return NULL on failure.
  */
-struct LDJSON *LDNewNumber(const double number);
+LD_EXPORT(struct LDJSON *) LDNewNumber(const double number);
 
 /**
  * @brief Returns a a new constructed JSON node of type `LDJSONText`.
  * @param[in] text The text to copy and then assign the new node
  * @return NULL on failure.
  */
-struct LDJSON *LDNewText(const char *const text);
+LD_EXPORT(struct LDJSON *) LDNewText(const char *const text);
 
 /**
  * @brief Constructs a JSON node of type `LDJSONObject`.
  * @return NULL on failure.
  */
-struct LDJSON *LDNewObject();
+LD_EXPORT(struct LDJSON *) LDNewObject();
 
 /**
  * @brief Constructs a JSON node of type `LDJSONArray`.
  * @return NULL on failure.
  */
-struct LDJSON *LDNewArray();
+LD_EXPORT(struct LDJSON *) LDNewArray();
 
 /*@}*/
 
@@ -81,7 +83,7 @@ struct LDJSON *LDNewArray();
  * @{
  ******************************************************************************/
 
-bool LDSetNumber(struct LDJSON *const node, const double number);
+LD_EXPORT(bool) LDSetNumber(struct LDJSON *const node, const double number);
 
 /*@}*/
 
@@ -96,21 +98,21 @@ bool LDSetNumber(struct LDJSON *const node, const double number);
  * @param[in] json May be NULL.
  * @return Void.
  */
-void LDJSONFree(struct LDJSON *const json);
+LD_EXPORT(void) LDJSONFree(struct LDJSON *const json);
 
 /**
  * @brief Duplicates an existing JSON strucutre. This acts as a deep copy.
  * @param[in] json JSON to be duplicated.
  * @return NULL on failure
  */
-struct LDJSON *LDJSONDuplicate(const struct LDJSON *const json);
+LD_EXPORT(struct LDJSON *) LDJSONDuplicate(const struct LDJSON *const json);
 
 /**
  * @brief Get the type of a JSON structure
  * @param[in] json May be not be NULL (assert)
  * @return The JSON type
  */
-LDJSONType LDJSONGetType(const struct LDJSON *const json);
+LD_EXPORT(LDJSONType) LDJSONGetType(const struct LDJSON *const json);
 
 /**
  * @brief Deep compare to check if two JSON structures are equal
@@ -118,7 +120,7 @@ LDJSONType LDJSONGetType(const struct LDJSON *const json);
  * @param[in] right May be NULL.
  * @return True if equal, false otherwise.
  */
-bool LDJSONCompare(const struct LDJSON *const left,
+LD_EXPORT(bool) LDJSONCompare(const struct LDJSON *const left,
     const struct LDJSON *const right);
 
 /*@}*/
@@ -134,21 +136,21 @@ bool LDJSONCompare(const struct LDJSON *const left,
  * @param[in] node Node to read value from. Must be correct type (assert).
  * @return The boolean nodes value
  */
-bool LDGetBool(const struct LDJSON *const node);
+LD_EXPORT(bool) LDGetBool(const struct LDJSON *const node);
 
 /**
  * @brief Get the value from a node of type `LDJSONNumber`.
  * @param[in] node Node to read value from. Must be correct type (assert).
  * @return The number nodes value
  */
-double LDGetNumber(const struct LDJSON *const node);
+LD_EXPORT(double) LDGetNumber(const struct LDJSON *const node);
 
 /**
  * @brief Get the value from a node of type `LDJSONText`.
  * @param[in] node Node to read value from. Must be correct type (assert).
  * @return The text nodes value. NULL on failure.
  */
-const char *LDGetText(const struct LDJSON *const node);
+LD_EXPORT(const char *) LDGetText(const struct LDJSON *const node);
 
 /*@}*/
 
@@ -163,7 +165,7 @@ const char *LDGetText(const struct LDJSON *const node);
  * @param[in] iter May be not be NULL (assert)
  * @return Item, or NULL if the iterator is finished.
  */
-struct LDJSON *LDIterNext(const struct LDJSON *const iter);
+LD_EXPORT(struct LDJSON *) LDIterNext(const struct LDJSON *const iter);
 
 /**
  * @brief Allows iteration over an array. Modification of the array invalidates
@@ -172,7 +174,7 @@ struct LDJSON *LDIterNext(const struct LDJSON *const iter);
  * must be of type `LDJSONArray` or `LDJSONObject` (assert).
  * @return First child iterator, or NULL if empty
  */
-struct LDJSON *LDGetIter(const struct LDJSON *const collection);
+LD_EXPORT(struct LDJSON *) LDGetIter(const struct LDJSON *const collection);
 
 /**
  * @brief Returns the key associated with the iterator
@@ -181,7 +183,7 @@ struct LDJSON *LDGetIter(const struct LDJSON *const collection);
  * May not be NULL (assert).
  * @return The key on success, or NULL if there is no key (wrong type).
  */
-const char *LDIterKey(const struct LDJSON *const iter);
+LD_EXPORT(const char *) LDIterKey(const struct LDJSON *const iter);
 
 /**
  * @brief Return the size of a JSON collection
@@ -189,7 +191,8 @@ const char *LDIterKey(const struct LDJSON *const iter);
  * must be of type `LDJSONArray` or `LDJSONObject` (assert).
  * @return The size of the collection
  */
-unsigned int LDCollectionGetSize(const struct LDJSON *const collection);
+LD_EXPORT(unsigned int) LDCollectionGetSize(
+    const struct LDJSON *const collection);
 
 /**
  * @brief Remove an iterator from a collection
@@ -198,8 +201,8 @@ unsigned int LDCollectionGetSize(const struct LDJSON *const collection);
  * @param[in] iter May not be NULL (assert).
  * @return The detached iterator
  */
-struct LDJSON *LDCollectionDetachIter(struct LDJSON *const collection,
-    struct LDJSON *const iter);
+LD_EXPORT(struct LDJSON *) LDCollectionDetachIter(
+    struct LDJSON *const collection, struct LDJSON *const iter);
 
 /*@}*/
 
@@ -216,7 +219,7 @@ struct LDJSON *LDCollectionDetachIter(struct LDJSON *const collection,
  * @param[in] index The index to lookup in the array
  * @return Item if it exists, otherwise NULL
  */
-struct LDJSON *LDArrayLookup(const struct LDJSON *const array,
+LD_EXPORT(struct LDJSON *) LDArrayLookup(const struct LDJSON *const array,
     const unsigned int index);
 
 /**
@@ -225,7 +228,8 @@ struct LDJSON *LDArrayLookup(const struct LDJSON *const array,
  * @param[in] item The value to append to the array. This item is consumed.
  * @return True on success, False on failure.
  */
-bool LDArrayPush(struct LDJSON *const array, struct LDJSON *const item);
+LD_EXPORT(bool) LDArrayPush(struct LDJSON *const array,
+    struct LDJSON *const item);
 
 /**
  * @brief Appends the array on the right to the array on the left
@@ -233,7 +237,7 @@ bool LDArrayPush(struct LDJSON *const array, struct LDJSON *const item);
  * @param[in] suffix Must be of type `LDJSONArray` (assert).
  * @return True on success, False on failure.
  */
-bool LDArrayAppend(struct LDJSON *const prefix,
+LD_EXPORT(bool) LDArrayAppend(struct LDJSON *const prefix,
     const struct LDJSON *const suffix);
 
 /***************************************************************************//**
@@ -249,7 +253,7 @@ bool LDArrayAppend(struct LDJSON *const prefix,
  * @param[in] key The key to lookup in the object. May not be NULL (assert),
  * @return The item if it exists, otherwise NULL.
  */
-struct LDJSON *LDObjectLookup(const struct LDJSON *const object,
+LD_EXPORT(struct LDJSON *) LDObjectLookup(const struct LDJSON *const object,
     const char *const key);
 
 /**
@@ -261,8 +265,8 @@ struct LDJSON *LDObjectLookup(const struct LDJSON *const object,
  * @param[in] item The value to assign to key. This item is consumed.
  * @return True on success, False on failure.
  */
-bool LDObjectSetKey(struct LDJSON *const object, const char *const key,
-    struct LDJSON *const item);
+LD_EXPORT(bool) LDObjectSetKey(struct LDJSON *const object,
+    const char *const key, struct LDJSON *const item);
 
 /**
  * @brief Delete the provided key from the given object.
@@ -271,7 +275,8 @@ bool LDObjectSetKey(struct LDJSON *const object, const char *const key,
  * @param[in] key The key to delete from the object. May not be NULL (assert),
  * @return Void
  */
-void LDObjectDeleteKey(struct LDJSON *const object, const char *const key);
+LD_EXPORT(void) LDObjectDeleteKey(struct LDJSON *const object,
+    const char *const key);
 
 /**
  * @brief Detach the provided key from the given object. The returned value is
@@ -281,7 +286,7 @@ void LDObjectDeleteKey(struct LDJSON *const object, const char *const key);
  * @param[in] key The key to detach from the object. May not be NULL (assert),
  * @return The value associated, or NULL if it does not exit
  */
-struct LDJSON *LDObjectDetachKey(struct LDJSON *const object,
+LD_EXPORT(struct LDJSON *) LDObjectDetachKey(struct LDJSON *const object,
     const char *const key);
 
 /**
@@ -291,7 +296,8 @@ struct LDJSON *LDObjectDetachKey(struct LDJSON *const object,
  * @param[in] from Object to copy keys from. May not be NULL (assert).
  * @return True on success, `to` is polluted on failure.
  */
-bool LDObjectMerge(struct LDJSON *const to, const struct LDJSON *const from);
+LD_EXPORT(bool) LDObjectMerge(struct LDJSON *const to,
+    const struct LDJSON *const from);
 
  /*@}*/
 
@@ -307,13 +313,13 @@ bool LDObjectMerge(struct LDJSON *const to, const struct LDJSON *const from);
  * May be NULL depending on implementation.
  * @return NULL on failure
  */
-char *LDJSONSerialize(const struct LDJSON *const json);
+LD_EXPORT(char *) LDJSONSerialize(const struct LDJSON *const json);
 
 /**
  * @brief Deserialize JSON text into a JSON structure.
  * @param[in] text JSON text to deserialize. May not be NULL (ASSERT).
  * @return JSON structure on success, NULL on failure.
  */
-struct LDJSON *LDJSONDeserialize(const char *const text);
+LD_EXPORT(struct LDJSON *) LDJSONDeserialize(const char *const text);
 
 /*@}*/

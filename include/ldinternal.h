@@ -27,7 +27,7 @@
 /* **** LDPlatformSpecific **** */
 
 #ifdef _WIN32
-    #define THREAD_RETURN DWORD WINAPI
+    #define THREAD_RETURN DWORD
     #define THREAD_RETURN_DEFAULT 0
     #define ld_thread_t HANDLE
 
@@ -116,6 +116,7 @@ struct LDClient {
     struct LDJSON *summaryCounters; /* Object */
     unsigned long summaryStart;
     bool shouldFlush;
+    unsigned long long lastServerTime;
 };
 
 /* **** LDUtility **** */
@@ -124,11 +125,29 @@ bool LDi_sleepMilliseconds(const unsigned long milliseconds);
 bool LDi_getMonotonicMilliseconds(unsigned long *const resultMilliseconds);
 bool LDi_getUnixMilliseconds(unsigned long *const resultMilliseconds);
 
+#ifdef _WIN32
+    #define LD_RAND_MAX UINT_MAX
+#else
+    #define LD_RAND_MAX RAND_MAX
+#endif
+
+/* do not use in cryptographic / security focused contexts */
+bool LDi_random(unsigned int *const result);
+
 bool LDSetString(char **const target, const char *const value);
+
+double LDi_normalize(const double n, const double nmin, const double nmax,
+    const double omin, const double omax);
 
 bool LDi_notNull(const struct LDJSON *const json);
 bool LDi_isDeleted(const struct LDJSON *const feature);
 bool LDi_textInArray(const struct LDJSON *const array, const char *const text);
+int LDi_strncasecmp(const char *const s1, const char *const s2, const size_t n);
+
+/* windows does not have strptime */
+#ifdef _WIN32
+    const char *strptime (const char *buf, const char *fmt, struct tm *tm);
+#endif
 
 #define ASSERT_FMT \
     "LD_ASSERT failed: expected condition '%s' aborting\n"

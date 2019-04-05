@@ -9,26 +9,27 @@
 #include <stddef.h>
 
 #include "ldjson.h"
+#include "ldexport.h"
 
 /**
  * @brief Allocate a new empty user Object
  * @return NULL on failure.
  */
-struct LDUser *LDUserNew(const char *const userkey);
+LD_EXPORT(struct LDUser *) LDUserNew(const char *const userkey);
 
 /**
  * @brief Destroy an existing user object
  * @param[in] user The user free, may be NULL.
  * @return Void.
  */
-void LDUserFree(struct LDUser *const user);
+LD_EXPORT(void) LDUserFree(struct LDUser *const user);
 
 /**
  * @brief Mark the user as anonymous.
  * @param[in] user The user to mutate, may not be NULL (assert).
  * @return True on success, False on failure.
  */
-void LDUserSetAnonymous(struct LDUser *const user, const bool anon);
+LD_EXPORT(void) LDUserSetAnonymous(struct LDUser *const user, const bool anon);
 
 /**
  * @brief Set the user's IP.
@@ -36,7 +37,7 @@ void LDUserSetAnonymous(struct LDUser *const user, const bool anon);
  * @param[in] ip The users IP, may be NULL.
  * @return True on success, False on failure.
  */
-bool LDUserSetIP(struct LDUser *const user, const char *const ip);
+LD_EXPORT(bool) LDUserSetIP(struct LDUser *const user, const char *const ip);
 
 /**
  * @brief Set the user's first name.
@@ -44,7 +45,8 @@ bool LDUserSetIP(struct LDUser *const user, const char *const ip);
  * @param[in] firstName The users first name, may be NULL.
  * @return True on success, False on failure.
  */
-bool LDUserSetFirstName(struct LDUser *const user, const char *const firstName);
+LD_EXPORT(bool) LDUserSetFirstName(struct LDUser *const user,
+    const char *const firstName);
 
 /**
  * @brief Set the user's last name
@@ -52,7 +54,8 @@ bool LDUserSetFirstName(struct LDUser *const user, const char *const firstName);
  * @param[in] lastname The users last name, may be NULL.
  * @return True on success, False on failure.
  */
-bool LDUserSetLastName(struct LDUser *const user, const char *const lastName);
+LD_EXPORT(bool) LDUserSetLastName(struct LDUser *const user,
+    const char *const lastName);
 
 /**
  * @brief Set the user's email.
@@ -60,7 +63,8 @@ bool LDUserSetLastName(struct LDUser *const user, const char *const lastName);
  * @param[in] email The users email, may be NULL.
  * @return True on success, False on failure.
  */
-bool LDUserSetEmail(struct LDUser *const user, const char *const email);
+LD_EXPORT(bool) LDUserSetEmail(struct LDUser *const user,
+    const char *const email);
 
 /**
  * @brief Set the user's name.
@@ -68,7 +72,8 @@ bool LDUserSetEmail(struct LDUser *const user, const char *const email);
  * @param[in] name The users name, may be NULL.
  * @return True on success, False on failure.
  */
-bool LDUserSetName(struct LDUser *const user, const char *const name);
+LD_EXPORT(bool) LDUserSetName(struct LDUser *const user,
+    const char *const name);
 
 /**
  * @brief Set the user's avatar.
@@ -76,7 +81,8 @@ bool LDUserSetName(struct LDUser *const user, const char *const name);
  * @param[in] avatar The users avatar, may be NULL.
  * @return True on success, False on failure.
  */
-bool LDUserSetAvatar(struct LDUser *const user, const char *const avatar);
+LD_EXPORT(bool) LDUserSetAvatar(struct LDUser *const user,
+    const char *const avatar);
 
 /**
  * @brief Set the user's country
@@ -84,7 +90,8 @@ bool LDUserSetAvatar(struct LDUser *const user, const char *const avatar);
  * @param[in] avatar The users avatar, may be NULL.
  * @return True on success, False on failure.
  */
-bool LDUserSetCountry(struct LDUser *const user, const char *const country);
+LD_EXPORT(bool) LDUserSetCountry(struct LDUser *const user,
+    const char *const country);
 
 /**
  * @brief Set the user's secondary key.
@@ -92,7 +99,8 @@ bool LDUserSetCountry(struct LDUser *const user, const char *const country);
  * @param[in] secondary The users secondary key, may be NULL.
  * @return True on success, False on failure.
  */
-bool LDUserSetSecondary(struct LDUser *const user, const char *const secondary);
+LD_EXPORT(bool) LDUserSetSecondary(struct LDUser *const user,
+    const char *const secondary);
 
 /**
  * @brief Set the user's custom JSON.
@@ -100,7 +108,8 @@ bool LDUserSetSecondary(struct LDUser *const user, const char *const secondary);
  * @param[in] custom Custom JSON for the user, may be NULL.
  * @return Void.
  */
-void LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom);
+LD_EXPORT(void) LDUserSetCustom(struct LDUser *const user,
+    struct LDJSON *const custom);
 
 /**
  * @brief Mark an attribute as private.
@@ -108,5 +117,5 @@ void LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom);
  * @param[in] attribute Attribute to mark as private, may not be NULL (assert).
  * @return True on success, False on failure.
  */
-bool LDUserAddPrivateAttribute(struct LDUser *const user,
+LD_EXPORT(bool) LDUserAddPrivateAttribute(struct LDUser *const user,
     const char *const attribute);

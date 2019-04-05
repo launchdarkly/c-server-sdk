@@ -10,14 +10,14 @@ For using LaunchDarkly in C / C++ client-side applications, refer to our [C / C+
 Quick setup (POSIX)
 -------------------
 
-The C / C++ SDK requires a POSIX environment, and assumes that `libcurl`, `libpthread`, `libpcre`, and `libgmp` are installed.
+The C / C++ SDK requires a POSIX environment, and assumes that `libcurl`, `libpthread`, and `libpcre` are installed.
 
 Unlike other LaunchDarkly SDKs, the C SDK has no installation steps. To get started, clone [this repository](https://github.com/launchdarkly/c-client-server-side) or download a release archive from the [GitHub Releases](https://github.com/launchdarkly/c-client-server-side/releases) page. You can use the `Makefile` in this repository as a starting point for integrating this SDK into your application.
 
 You can get the required dependencies on Ubuntu Linux with:
 
 ```
-sudo apt-get update && sudo apt-get install build-essential libcurl4-openssl-dev libpcre3-dev libgmp-dev
+sudo apt-get update && sudo apt-get install build-essential libcurl4-openssl-dev libpcre3-dev
 ```
 
 Getting started

@@ -199,7 +199,7 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
         goto cleanup;
     }
 
-    if (!LDStoreDelete(client->config->store, kind, key, LDGetNumber(tmp))) {
+    if (!LDStoreRemove(client->config->store, kind, key, LDGetNumber(tmp))) {
         LD_LOG(LD_LOG_ERROR, "store error");
 
         goto cleanup;
@@ -274,7 +274,7 @@ LDi_onSSE(struct StreamContext *const context, const char *line)
             currentsize = strlen(context->dataBuffer);
         }
 
-        context->dataBuffer = LDRealloc(
+        context->dataBuffer = (char *)LDRealloc(
             context->dataBuffer, linesize + currentsize + nempty + 1);
 
         if (nempty) {
@@ -312,9 +312,11 @@ writeCallback(void *contents, size_t size, size_t nmemb, void *rawcontext)
 
     nl       = NULL;
     realsize = size * nmemb;
-    mem      = rawcontext;
+    mem      = (struct StreamContext *)rawcontext;
 
-    if (!(mem->memory = LDRealloc(mem->memory, mem->size + realsize + 1))) {
+    if (!(mem->memory =
+        (char *)LDRealloc(mem->memory, mem->size + realsize + 1)))
+    {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         return 0;
@@ -325,14 +327,14 @@ writeCallback(void *contents, size_t size, size_t nmemb, void *rawcontext)
     mem->size += realsize;
     mem->memory[mem->size] = 0;
 
-    nl = memchr(mem->memory, '\n', mem->size);
+    nl = (char *)memchr(mem->memory, '\n', mem->size);
     if (nl) {
         size_t eaten = 0;
         while (nl) {
             *nl = 0;
             LDi_onSSE(mem, mem->memory + eaten);
             eaten = nl - mem->memory + 1;
-            nl = memchr(mem->memory + eaten, '\n', mem->size - eaten);
+            nl = (char *)memchr(mem->memory + eaten, '\n', mem->size - eaten);
         }
         mem->size -= eaten;
         memmove(mem->memory, mem->memory + eaten, mem->size);
@@ -360,10 +362,12 @@ resetMemory(struct StreamContext *const context)
 static void
 done(struct LDClient *const client, void *const rawcontext, const bool success)
 {
-    struct StreamContext *const context = rawcontext;
+    struct StreamContext *context;
 
     LD_ASSERT(client);
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
+
+    context = (struct StreamContext *)rawcontext;
 
     context->active = false;
 
@@ -375,9 +379,11 @@ done(struct LDClient *const client, void *const rawcontext, const bool success)
 static void
 destroy(void *const rawcontext)
 {
-    struct StreamContext *const context = rawcontext;
+    struct StreamContext *context;
 
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
+
+    context = (struct StreamContext *)rawcontext;
 
     LD_LOG(LD_LOG_INFO, "streaming destroyed");
 
@@ -391,13 +397,13 @@ poll(struct LDClient *const client, void *const rawcontext)
 {
     CURL *curl;
     char url[4096];
-
-    struct StreamContext *const context = rawcontext;
+    struct StreamContext *context;
 
     LD_ASSERT(client);
-    LD_ASSERT(context);
+    LD_ASSERT(rawcontext);
 
-    curl = NULL;
+    context = (struct StreamContext *)rawcontext;
+    curl    = NULL;
 
     if (context->active || !client->config->stream) {
         return NULL;
@@ -408,7 +414,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     {
         LD_LOG(LD_LOG_CRITICAL, "snprintf URL failed");
 
-        return false;
+        return NULL;
     }
 
     {
@@ -452,19 +458,23 @@ poll(struct LDClient *const client, void *const rawcontext)
 struct NetworkInterface *
 LDi_constructStreaming(struct LDClient *const client)
 {
-    struct NetworkInterface *interface;
+    struct NetworkInterface *netInterface;
     struct StreamContext *context;
 
     LD_ASSERT(client);
 
-    interface = NULL;
-    context   = NULL;
+    netInterface = NULL;
+    context      = NULL;
 
-    if (!(interface = LDAlloc(sizeof(struct NetworkInterface)))) {
+    if (!(netInterface =
+        (struct NetworkInterface *)LDAlloc(sizeof(struct NetworkInterface))))
+    {
         goto error;
     }
 
-    if (!(context = LDAlloc(sizeof(struct StreamContext)))) {
+    if (!(context =
+        (struct StreamContext *)LDAlloc(sizeof(struct StreamContext))))
+    {
         goto error;
     }
 
@@ -476,18 +486,18 @@ LDi_constructStreaming(struct LDClient *const client)
     context->dataBuffer   = NULL;
     context->client       = client;
 
-    interface->done      = done;
-    interface->poll      = poll;
-    interface->context   = context;
-    interface->destroy   = destroy;
-    interface->current   = NULL;
-    interface->attempts  = 0;
-    interface->waitUntil = 0;
+    netInterface->done      = done;
+    netInterface->poll      = poll;
+    netInterface->context   = context;
+    netInterface->destroy   = destroy;
+    netInterface->current   = NULL;
+    netInterface->attempts  = 0;
+    netInterface->waitUntil = 0;
 
-    return interface;
+    return netInterface;
 
   error:
     LDFree(context);
-    LDFree(interface);
+    LDFree(netInterface);
     return NULL;
 }

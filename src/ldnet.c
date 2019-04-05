@@ -81,7 +81,7 @@ LDi_prepareShared(const struct LDConfig *const config, const char *const url,
 THREAD_RETURN
 LDi_networkthread(void* const clientref)
 {
-    struct LDClient *const client = clientref;
+    struct LDClient *const client = (struct LDClient *)clientref;
 
     struct NetworkInterface *interfaces[3];
 
@@ -142,7 +142,7 @@ LDi_networkthread(void* const clientref)
                 CURL *handle;
                 /* skip if waiting on backoff */
                 if (interfaces[i]->attempts) {
-                    unsigned long now, backoff;
+                    unsigned long now;
 
                     if (!LDi_getMonotonicMilliseconds(&now)) {
                         LD_LOG(LD_LOG_ERROR, "failed to get time for backoff");
@@ -159,12 +159,30 @@ LDi_networkthread(void* const clientref)
                             continue;
                         }
                     } else {
-                        /* calculate time to wait */
-                        backoff = 1000 * pow(2, interfaces[i]->attempts);
+                        double backoff;
+                        unsigned int rng;
 
+                        /* random value for jitter */
+                        if (!LDi_random(&rng)) {
+                            LD_LOG(LD_LOG_ERROR,
+                                "failed to get rng for jitter calculation");
+
+                            goto cleanup;
+                        }
+
+                        /* calculate time to wait */
+                        backoff = 1000 * pow(2, interfaces[i]->attempts) / 2;
+
+                        /* cap (min not built in) */
                         if (backoff > 3600 * 1000) {
                             backoff = 3600 * 1000;
                         }
+
+                        /* jitter */
+                        backoff /= 2;
+
+                        backoff = backoff +
+                            LDi_normalize(rng, 0, LD_RAND_MAX, 0, backoff);
 
                         interfaces[i]->waitUntil = now + backoff;
                         /* skip because we are waiting */
@@ -205,7 +223,7 @@ LDi_networkthread(void* const clientref)
             if (info && (info->msg == CURLMSG_DONE)) {
                 long responsecode;
                 CURL *easy = info->easy_handle;
-                struct NetworkInterface *interface = NULL;
+                struct NetworkInterface *netInterface = NULL;
                 bool requestSuccess;
 
                 if (curl_easy_getinfo(
@@ -234,29 +252,29 @@ LDi_networkthread(void* const clientref)
                 }
 
                 if (curl_easy_getinfo(
-                    easy, CURLINFO_PRIVATE, &interface) != CURLE_OK)
+                    easy, CURLINFO_PRIVATE, &netInterface) != CURLE_OK)
                 {
                     LD_LOG(LD_LOG_ERROR, "failed to get context");
 
                     goto cleanup;
                 }
 
-                LD_ASSERT(interface);
-                LD_ASSERT(interface->done);
-                LD_ASSERT(interface->context);
+                LD_ASSERT(netInterface);
+                LD_ASSERT(netInterface->done);
+                LD_ASSERT(netInterface->context);
 
                 requestSuccess = info->data.result == CURLE_OK &&
                     (responsecode == 200 || responsecode == 202);
 
                 if (requestSuccess) {
-                    interface->attempts = 0;
+                    netInterface->attempts = 0;
                 } else {
-                    interface->attempts++;
+                    netInterface->attempts++;
                 }
 
-                interface->done(client, interface->context, requestSuccess);
+                netInterface->done(client, netInterface->context, requestSuccess);
 
-                interface->current = NULL;
+                netInterface->current = NULL;
 
                 LD_ASSERT(curl_multi_remove_handle(
                     multihandle, easy) == CURLM_OK);
@@ -286,17 +304,17 @@ LDi_networkthread(void* const clientref)
         unsigned int i;
 
         for (i = 0; i < interfacecount; i++) {
-            struct NetworkInterface *const interface = interfaces[i];
+            struct NetworkInterface *const netInterface = interfaces[i];
 
-            if (interface->current) {
+            if (netInterface->current) {
                 LD_ASSERT(curl_multi_remove_handle(
-                    multihandle, interface->current) == CURLM_OK);
+                    multihandle, netInterface->current) == CURLM_OK);
 
-                curl_easy_cleanup(interface->current);
+                curl_easy_cleanup(netInterface->current);
             }
 
-            interface->destroy(interface->context);
-            LDFree(interface);
+            netInterface->destroy(netInterface->context);
+            LDFree(netInterface);
         }
     }
 

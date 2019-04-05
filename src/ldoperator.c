@@ -6,7 +6,6 @@
 #include <time.h>
 #include <pcre.h>
 #include <math.h>
-#include <gmp.h>
 
 #define CHECKSTRING(uvalue, cvalue) \
     if (LDJSONGetType(uvalue) != LDText || \
@@ -154,6 +153,11 @@ operatorGreaterThanOrEqualFn(const struct LDJSON *const uvalue,
     return LDGetNumber(uvalue) >= LDGetNumber(cvalue);
 }
 
+static double
+floorAtMagnitude(const double n, const unsigned int magnitude) {
+    return n - fmod(n, magnitude);
+}
+
 bool
 LDi_parseTime(const struct LDJSON *const json, timestamp_t *result)
 {
@@ -161,30 +165,12 @@ LDi_parseTime(const struct LDJSON *const json, timestamp_t *result)
     LD_ASSERT(result);
 
     if (LDJSONGetType(json) == LDNumber) {
-        mpq_t num, sec, nsec, thousand;
+        const double original = LDGetNumber(json);
+        const double rounded  = floorAtMagnitude(original, 1000);
 
-        mpq_init(num);
-        mpq_init(sec);
-        mpq_init(nsec);
-        mpq_init(thousand);
-
-        mpq_set_d(num, LDGetNumber(json));
-        mpq_set_ui(thousand, 1000, 1);
-        mpq_div(num, num, thousand);
-
-        result->sec = floor(mpq_get_d(num));
-
-        mpq_set_ui(sec, result->sec, 1);
-        mpq_sub(nsec, num, sec);
-        mpq_mul(nsec, nsec, thousand);
-        /* resolution hack */
-        result->nsec = mpq_get_d(nsec);
+        result->sec    = rounded / 1000;
+        result->nsec   = (original - rounded) * 1000000;
         result->offset = 0;
-
-        mpq_clear(num);
-        mpq_clear(sec);
-        mpq_clear(nsec);
-        mpq_clear(thousand);
 
         return true;
     } else if (LDJSONGetType(json) == LDText) {
@@ -197,8 +183,6 @@ LDi_parseTime(const struct LDJSON *const json, timestamp_t *result)
 
             return false;
         }
-        /* resolution hack */
-        result->nsec /= 1000000;
 
         return true;
     }

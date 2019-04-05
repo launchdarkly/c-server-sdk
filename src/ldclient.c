@@ -14,7 +14,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     LD_ASSERT(config);
 
-    if (!(client = LDAlloc(sizeof(struct LDClient)))) {
+    if (!(client = (struct LDClient *)LDAlloc(sizeof(struct LDClient)))) {
         return NULL;
     }
 
@@ -32,10 +32,11 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         config->defaultStore = true;
     }
 
-    client->shouldFlush  = false;
-    client->shuttingdown = false;
-    client->config       = config;
-    client->summaryStart = 0;
+    client->shouldFlush    = false;
+    client->shuttingdown   = false;
+    client->config         = config;
+    client->summaryStart   = 0;
+    client->lastServerTime = 0;
 
     if (!LDi_rwlockinit(&client->lock)) {
         goto error;
