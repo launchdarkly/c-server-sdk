@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "ldexport.h"
+
 typedef enum {
     LD_LOG_FATAL = 0,
     LD_LOG_CRITICAL,
@@ -19,10 +21,10 @@ typedef enum {
 } LDLogLevel;
 
 /** @brief Internal: Used for the non macro portion */
-void LDi_log(const LDLogLevel level, const char *const format, ...);
+LD_EXPORT(void) LDi_log(const LDLogLevel level, const char *const format, ...);
 
 /** @brief A provided logger that can be used as a convenient default */
-void LDBasicLogger(const LDLogLevel level, const char *const text);
+LD_EXPORT(void) LDBasicLogger(const LDLogLevel level, const char *const text);
 
 /**
  * @brief Set the logger, and the log level to use. This routine should only be
@@ -33,7 +35,7 @@ void LDBasicLogger(const LDLogLevel level, const char *const text);
  * @param[in] logger The new function to use for all future logging.
  * @return Void.
  */
-void LDConfigureGlobalLogger(const LDLogLevel level,
+LD_EXPORT(void) LDConfigureGlobalLogger(const LDLogLevel level,
     void (*logger)(const LDLogLevel level, const char *const text));
 
 #define LD_LOG(level, text) \
@@ -45,4 +47,4 @@ void LDConfigureGlobalLogger(const LDLogLevel level,
  * @param[in] level The log level to convert.
  * @return A static string on success, NULL on failure.
  */
-const char *LDLogLevelToString(const LDLogLevel level);
+LD_EXPORT(const char *) LDLogLevelToString(const LDLogLevel level);

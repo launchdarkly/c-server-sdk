@@ -10,6 +10,7 @@
 
 #include "lduser.h"
 #include "ldjson.h"
+#include "ldexport.h"
 
 enum LDEvalReason {
     LD_UNKNOWN = 0,
@@ -47,34 +48,37 @@ struct LDDetails {
     } extra;
 };
 
-void LDDetailsInit(struct LDDetails *const details);
+LD_EXPORT(void) LDDetailsInit(struct LDDetails *const details);
 
-void LDDetailsClear(struct LDDetails *const details);
+LD_EXPORT(void) LDDetailsClear(struct LDDetails *const details);
 
-const char *LDEvalReasonKindToString(const enum LDEvalReason kind);
-const char *LDEvalErrorKindToString(const enum LDEvalErrorKind kind);
+LD_EXPORT(const char *) LDEvalReasonKindToString(const enum LDEvalReason kind);
 
-struct LDJSON *LDReasonToJSON(const struct LDDetails *const details);
+LD_EXPORT(const char *) LDEvalErrorKindToString(
+    const enum LDEvalErrorKind kind);
 
-bool LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
-    const char *const key, const bool fallback,
+LD_EXPORT(struct LDJSON *) LDReasonToJSON(
+    const struct LDDetails *const details);
+
+LD_EXPORT(bool) LDBoolVariation(struct LDClient *const client,
+    struct LDUser *const user, const char *const key, const bool fallback,
     struct LDDetails *const details);
 
-int LDIntVariation(struct LDClient *const client, struct LDUser *const user,
-    const char *const key, const int fallback,
+LD_EXPORT(int) LDIntVariation(struct LDClient *const client,
+    struct LDUser *const user, const char *const key, const int fallback,
     struct LDDetails *const details);
 
-double LDDoubleVariation(struct LDClient *const client,
+LD_EXPORT(double) LDDoubleVariation(struct LDClient *const client,
     struct LDUser *const user, const char *const key, const double fallback,
     struct LDDetails *const details);
 
-char *LDStringVariation(struct LDClient *const client,
+LD_EXPORT(char *) LDStringVariation(struct LDClient *const client,
     struct LDUser *const user, const char *const key,
     const char* const fallback, struct LDDetails *const details);
 
-struct LDJSON *LDJSONVariation(struct LDClient *const client,
+LD_EXPORT(struct LDJSON *) LDJSONVariation(struct LDClient *const client,
     struct LDUser *const user, const char *const key,
     const struct LDJSON *const fallback, struct LDDetails *const details);
 
-struct LDJSON *LDAllFlags(struct LDClient *const client,
+LD_EXPORT(struct LDJSON *) LDAllFlags(struct LDClient *const client,
     struct LDUser *const user);

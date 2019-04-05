@@ -10,21 +10,22 @@
 
 #include "ldjson.h"
 #include "lduser.h"
+#include "ldexport.h"
 
-struct LDClient *LDClientInit(struct LDConfig *const config,
+LD_EXPORT(struct LDClient *) LDClientInit(struct LDConfig *const config,
     const unsigned int maxwaitmilli);
 
-void LDClientClose(struct LDClient *const client);
+LD_EXPORT(void) LDClientClose(struct LDClient *const client);
 
-bool LDClientIsInitialized(struct LDClient *const client);
+LD_EXPORT(bool) LDClientIsInitialized(struct LDClient *const client);
 
-bool LDClientTrack(struct LDClient *const client,
+LD_EXPORT(bool) LDClientTrack(struct LDClient *const client,
     const char *const key, const struct LDUser *const user,
     struct LDJSON *const data);
 
-bool LDClientIdentify(struct LDClient *const client,
+LD_EXPORT(bool) LDClientIdentify(struct LDClient *const client,
     const struct LDUser *const user);
 
-bool LDClientIsOffline(struct LDClient *const client);
+LD_EXPORT(bool) LDClientIsOffline(struct LDClient *const client);
 
-void LDClientFlush(struct LDClient *const client);
+LD_EXPORT(void) LDClientFlush(struct LDClient *const client);
