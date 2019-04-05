@@ -7,6 +7,10 @@
 
 #define LD_SDK_VERSION "1.0.0-beta.2"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -17,3 +21,7 @@
 #include "ldclient.h"
 #include "ldvariations.h"
 #include "ldmemory.h"
+
+#ifdef __cplusplus
+}
+#endif
