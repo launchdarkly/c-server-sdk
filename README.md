@@ -7,17 +7,67 @@ The LaunchDarkly C / C++ (server-side) SDK is designed primarily for use in mult
 
 For using LaunchDarkly in C / C++ client-side applications, refer to our [C / C++ client-side SDK](https://github.com/launchdarkly/c-client).
 
-Quick setup (POSIX)
+Quick setup
 -------------------
 
-The C / C++ SDK requires a POSIX environment, and assumes that `libcurl`, `libpthread`, and `libpcre` are installed.
+Unlike other LaunchDarkly SDKs, the C SDK has no installation steps. To get started, clone [this repository](https://github.com/launchdarkly/c-client-server-side) or download a release archive from the [GitHub Releases](https://github.com/launchdarkly/c-client-server-side/releases) page. You can use the `CMakeLists.txt` in this repository as a starting point for integrating this SDK into your application.
 
-Unlike other LaunchDarkly SDKs, the C SDK has no installation steps. To get started, clone [this repository](https://github.com/launchdarkly/c-client-server-side) or download a release archive from the [GitHub Releases](https://github.com/launchdarkly/c-client-server-side/releases) page. You can use the `Makefile` in this repository as a starting point for integrating this SDK into your application.
+After reading the platform specific notes for your environment build the SDK by entering the source directory and running:
+
+```
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+You may need to modify the CMAKE generator (`-G` flag) for your specific environment.
+
+## Ubuntu specific
 
 You can get the required dependencies on Ubuntu Linux with:
 
 ```
 sudo apt-get update && sudo apt-get install build-essential libcurl4-openssl-dev libpcre3-dev
+```
+
+Other Linux distributions are supported but will have different packaging requirements.
+
+## Windows specific
+
+### environment
+
+Visual Studio command prompt can be configured for multiple environments. To ensure that you are using your intended tool chain you can launch an environment with: `call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat" -host_arch=amd64 -arch=amd64`, where `arch` is your target, `host_arch` is the platform you are building on, and the path is your path to `VsDevCmd.bat`. You will need to modify the above command for your specific setup.
+
+### libcurl
+
+You can obtain the libcurl dependency at [curl.haxx.se](https://curl.haxx.se/download/curl-7.59.0.zip). Extract this archive into the SDK source directory. To build libcurl run:
+
+```
+cd curl-7.59.0/winbuild
+nmake /f Makefile.vc mode=static
+```
+
+### libpcre
+
+You can obtain the libpcre dependency at [ftp.pcre.org](https://ftp.pcre.org/pub/pcre/pcre-8.43.zip). Extract this archive into the SDK source directory. To build libpcre run:
+
+```
+cd pcre-8.43
+mkdir build
+cd build
+cmake -G "Visual Studio 15 2017 Win64" ..
+cmake --build .
+```
+
+You may need to modify the CMAKE generator (`-G` flag) for your specific environment.
+
+## OSX specific
+
+You can get the required dependencies on OSX with:
+
+```
+brew install cmake pcre
 ```
 
 Getting started
@@ -53,7 +103,7 @@ Your first feature flag
 2. In your application code, use the feature's key to check whether the flag is on for each user:
 
 ```C
-show_feature = LDBoolVariation(client, user, "your.flag.key", false);
+show_feature = LDBoolVariation(client, user, "your.flag.key", false, NULL);
 if (show_feature) {
     // application code to show the feature
 } else {

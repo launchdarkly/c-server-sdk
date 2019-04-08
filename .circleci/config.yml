@@ -7,7 +7,7 @@ jobs:
       - checkout
       - run:
           name: Install deps
-          command: sudo apt-get update -y && sudo apt-get install -y libcurl4-openssl-dev cmake libpcre3-dev libgmp-dev
+          command: sudo apt-get update -y && sudo apt-get install -y libcurl4-openssl-dev cmake libpcre3-dev
       - run: mkdir build && cd build && cmake ..
       - run: cd build && make
       - run: cd build && CTEST_OUTPUT_ON_FAILURE=1 make test
@@ -27,7 +27,7 @@ jobs:
       - checkout
       - run:
           name: Install deps
-          command: brew install cmake pcre gmp
+          command: brew install cmake pcre
       - run: mkdir build && cd build && cmake ..
       - run: cd build && make
       - run: cd build && CTEST_OUTPUT_ON_FAILURE=1 make test
