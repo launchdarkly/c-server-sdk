@@ -1,12 +1,11 @@
-#include "ldapi.h"
-#include "ldinternal.h"
-#include "lduser.h"
-#include "ldevaluate.h"
-#include "ldstore.h"
-#include "ldvariations.h"
-
 #include <math.h>
 #include <float.h>
+
+#include <launchdarkly/api.h>
+
+#include "store.h"
+#include "evaluate.h"
+#include "misc.h"
 
 static struct LDStore *
 prepareEmptyStore()

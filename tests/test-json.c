@@ -1,5 +1,6 @@
-#include "ldapi.h"
-#include "ldinternal.h"
+#include <launchdarkly/api.h>
+
+#include "misc.h"
 
 static void
 testNull()

@@ -1,7 +1,7 @@
-#include "ldjson.h"
-#include "ldoperators.h"
-#include "ldinternal.h"
-#include "ldevaluate.h"
+#include <launchdarkly/api.h>
+
+#include "evaluate.h"
+#include "misc.h"
 
 static struct LDJSON *
 makeTestSegment(struct LDJSON *const rules)

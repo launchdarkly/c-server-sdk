@@ -78,7 +78,7 @@ Once integrated, you can follow these steps to initialize a client instance:
 1. Include the LaunchDarkly SDK headers:
 
 ```C
-#include "ldapi.h"
+#include <launchdarkly/api.h>
 ```
 
 2. Create a new LDClient instance and user with your SDK key:

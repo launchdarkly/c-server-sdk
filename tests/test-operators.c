@@ -1,6 +1,7 @@
-#include "ldjson.h"
-#include "ldoperators.h"
-#include "ldinternal.h"
+#include <launchdarkly/api.h>
+
+#include "operators.h"
+#include "misc.h"
 
 static struct LDJSON *tests;
 

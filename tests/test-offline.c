@@ -1,8 +1,6 @@
-#include "ldconfig.h"
-#include "ldclient.h"
-#include "ldvariations.h"
-#include "ldinternal.h"
-#include "ldjson.h"
+#include <launchdarkly/api.h>
+
+#include "misc.h"
 
 struct LDClient *
 makeOfflineClient()

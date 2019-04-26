@@ -15,7 +15,7 @@ else()
     set(LD_LIBRARIES pthread m)
 endif(MSVC)
 
-include_directories("include" "third-party/include" ${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR})
+include_directories("src" "include" "third-party/include" ${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR})
 file(GLOB SOURCES "src/*" "third-party/src/*")
 
 set(LD_LIBRARIES ${LD_LIBRARIES} ${CURL_LIBRARIES} ${PCRE_LIBRARIES})
