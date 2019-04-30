@@ -5,12 +5,12 @@ LaunchDarkly SDK for C / C++ (server-side)
 
 The LaunchDarkly C / C++ (server-side) SDK is designed primarily for use in multi-user systems such as web servers and applications. It follows the server-side LaunchDarkly model for multi-user contexts. It is not intended for use in desktop and embedded systems applications.
 
-For using LaunchDarkly in C / C++ client-side applications, refer to our [C / C++ client-side SDK](https://github.com/launchdarkly/c-client).
+For using LaunchDarkly in C / C++ client-side applications, refer to our [C / C++ client-side SDK](https://github.com/launchdarkly/c-client-sdk).
 
 Quick setup
 -------------------
 
-Unlike other LaunchDarkly SDKs, the C SDK has no installation steps. To get started, clone [this repository](https://github.com/launchdarkly/c-client-server-side) or download a release archive from the [GitHub Releases](https://github.com/launchdarkly/c-client-server-side/releases) page. You can use the `CMakeLists.txt` in this repository as a starting point for integrating this SDK into your application.
+Unlike other LaunchDarkly SDKs, the C SDK has no installation steps. To get started, clone [this repository](https://github.com/launchdarkly/c-server-sdk) or download a release archive from the [GitHub Releases](https://github.com/launchdarkly/c-server-sdk/releases) page. You can use the `CMakeLists.txt` in this repository as a starting point for integrating this SDK into your application.
 
 After reading the platform specific notes for your environment build the SDK by entering the source directory and running:
 
