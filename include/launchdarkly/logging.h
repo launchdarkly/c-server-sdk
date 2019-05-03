@@ -10,6 +10,7 @@
 
 #include <launchdarkly/export.h>
 
+/** @brief The log levels compatible with the logging interface */
 typedef enum {
     LD_LOG_FATAL = 0,
     LD_LOG_CRITICAL,
@@ -38,6 +39,7 @@ LD_EXPORT(void) LDBasicLogger(const LDLogLevel level, const char *const text);
 LD_EXPORT(void) LDConfigureGlobalLogger(const LDLogLevel level,
     void (*logger)(const LDLogLevel level, const char *const text));
 
+/** @brief A macro interface that allows convenient logging of line numbers */
 #define LD_LOG(level, text) \
     LDi_log(level, "[%s, %d] %s", __FILE__, __LINE__, text)
 
@@ -45,6 +47,6 @@ LD_EXPORT(void) LDConfigureGlobalLogger(const LDLogLevel level,
  * @brief Convert a verbosity level Enum value to an equivalent static string.
  * This is intended as a convenience operation for building other loggers.
  * @param[in] level The log level to convert.
- * @return A static string on success, NULL on failure.
+ * @return A static string on success, `NULL` on failure.
  */
 LD_EXPORT(const char *) LDLogLevelToString(const LDLogLevel level);

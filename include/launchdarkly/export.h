@@ -5,6 +5,7 @@
 
 #pragma once
 
+/** @brief Used to ensure only intended symbols are exported in the binaries */
 #ifdef DOXYGEN_SHOULD_SKIP_THIS
     #define LD_EXPORT(x) x
 #else
