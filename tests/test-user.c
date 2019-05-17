@@ -1,6 +1,9 @@
-#include "ldinternal.h"
-
 #include <stdio.h>
+
+#include <launchdarkly/api.h>
+
+#include "user.h"
+#include "misc.h"
 
 static struct LDUser *
 constructBasic()

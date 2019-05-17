@@ -1,8 +1,9 @@
-#include "ldapi.h"
-#include "ldinternal.h"
-#include "lduser.h"
-#include "ldevaluate.h"
-#include "ldstore.h"
+#include <launchdarkly/api.h>
+
+#include "client.h"
+#include "config.h"
+#include "evaluate.h"
+#include "misc.h"
 
 static struct LDClient *
 makeTestClient()

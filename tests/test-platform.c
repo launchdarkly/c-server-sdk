@@ -1,4 +1,6 @@
-#include "ldinternal.h"
+#include <launchdarkly/api.h>
+
+#include "misc.h"
 
 static void
 testMonotonic()

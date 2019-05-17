@@ -1,7 +1,11 @@
-#include "ldnetwork.h"
-#include "ldinternal.h"
-#include "ldstreaming.h"
-#include "ldstore.h"
+#include <launchdarkly/api.h>
+
+#include "config.h"
+#include "client.h"
+#include "evaluate.h"
+#include "streaming.h"
+#include "store.h"
+#include "misc.h"
 
 static void
 testParsePathFlags()

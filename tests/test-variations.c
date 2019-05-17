@@ -1,13 +1,13 @@
-#include "ldapi.h"
-#include "ldinternal.h"
-#include "lduser.h"
-#include "ldevaluate.h"
-#include "ldstore.h"
-#include "ldvariations.h"
-#include "ldconfig.h"
-
 #include <math.h>
 #include <float.h>
+
+#include <launchdarkly/api.h>
+
+#include "user.h"
+#include "config.h"
+#include "client.h"
+#include "evaluate.h"
+#include "misc.h"
 
 static void
 setFallthrough(struct LDJSON *const flag, const unsigned int variation)

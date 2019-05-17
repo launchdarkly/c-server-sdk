@@ -1,5 +1,7 @@
-#include "ldinternal.h"
-#include "ldstore.h"
+#include <launchdarkly/api.h>
+
+#include "store.h"
+#include "misc.h"
 
 static struct LDStore *
 prepareEmptyStore()
