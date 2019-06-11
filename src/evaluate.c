@@ -567,6 +567,8 @@ LDi_checkPrerequisites(struct LDClient *const client,
 
                 return EVAL_MEM;
             }
+
+            LDJSONFree(subevents);
         }
 
         if (!LDArrayPush(*events, event)) {
