@@ -2,6 +2,10 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.0.0-beta.4] - 2019-06-11
+### Fixed
+- Memory leak when evaluating flags with prerequisites
+
 ## [1.0.0-beta.3] - 2019-05-17
 ### Added
 - Completed Doxygen coverage
