@@ -49,18 +49,18 @@ void
 LDUserFree(struct LDUser *const user)
 {
     if (user) {
-        LDFree(       user->key                   );
-        LDFree(       user->secondary             );
-        LDFree(       user->ip                    );
-        LDFree(       user->firstName             );
-        LDFree(       user->lastName              );
-        LDFree(       user->email                 );
-        LDFree(       user->name                  );
-        LDFree(       user->avatar                );
-        LDFree(       user->country               );
-        LDJSONFree(   user->custom                );
-        LDJSONFree(   user->privateAttributeNames );
-        LDFree(       user                        );
+        LDFree(     user->key                   );
+        LDFree(     user->secondary             );
+        LDFree(     user->ip                    );
+        LDFree(     user->firstName             );
+        LDFree(     user->lastName              );
+        LDFree(     user->email                 );
+        LDFree(     user->name                  );
+        LDFree(     user->avatar                );
+        LDFree(     user->country               );
+        LDJSONFree( user->custom                );
+        LDJSONFree( user->privateAttributeNames );
+        LDFree(     user                        );
     }
 }
 
@@ -402,4 +402,10 @@ LDi_valueOfAttribute(const struct LDUser *const user,
     }
 
     return NULL;
+}
+
+bool
+LDUserValidate(const struct LDUser *const user)
+{
+    return user != NULL && user->key != NULL;
 }

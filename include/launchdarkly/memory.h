@@ -7,6 +7,8 @@
 
 #include <launchdarkly/export.h>
 
+#include <stddef.h>
+
 /** @brief Equivalent to `malloc` */
 LD_EXPORT(void *) LDAlloc(const size_t bytes);
 /** @brief Equivalent to `free` */

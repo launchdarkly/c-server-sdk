@@ -3,6 +3,7 @@
 #include <launchdarkly/api.h>
 
 #include "misc.h"
+#include "lru.h"
 
 struct LDClient {
     bool initialized;
@@ -15,4 +16,6 @@ struct LDClient {
     unsigned long summaryStart;
     bool shouldFlush;
     unsigned long long lastServerTime;
+    struct LDLRU *userKeys;
+    unsigned long lastUserKeyFlush;
 };

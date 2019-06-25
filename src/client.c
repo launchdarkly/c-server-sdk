@@ -9,6 +9,7 @@
 #include "client.h"
 #include "config.h"
 #include "misc.h"
+#include "user.h"
 
 struct LDClient *
 LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
@@ -41,6 +42,8 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     client->summaryStart   = 0;
     client->lastServerTime = 0;
 
+    LD_ASSERT(LDi_getMonotonicMilliseconds(&client->lastUserKeyFlush));
+
     if (!LDi_rwlockinit(&client->lock)) {
         goto error;
     }
@@ -50,6 +53,10 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     }
 
     if (!(client->summaryCounters = LDNewObject())) {
+        goto error;
+    }
+
+    if (!(client->userKeys = LDLRUInit(config->userKeysCapacity))) {
         goto error;
     }
 
@@ -86,6 +93,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     LDJSONFree(client->events);
     LDJSONFree(client->summaryCounters);
+    LDLRUFree(client->userKeys);
 
     LDFree(client);
 
@@ -108,6 +116,7 @@ LDClientClose(struct LDClient *const client)
         LD_ASSERT(LDi_rwlockdestroy(&client->lock));
         LDJSONFree(client->events);
         LDJSONFree(client->summaryCounters);
+        LDLRUFree(client->userKeys);
 
         if (client->config->defaultStore) {
             LDStoreDestroy(client->config->store);
@@ -129,24 +138,35 @@ LDClientIsInitialized(struct LDClient *const client)
     return LDStoreInitialized(client->config->store);
 }
 
-
 bool
 LDClientTrack(struct LDClient *const client, const char *const key,
     const struct LDUser *const user, struct LDJSON *const data)
 {
-    struct LDJSON *event;
+    struct LDJSON *event, *indexEvent;
 
     LD_ASSERT(client);
-    LD_ASSERT(user);
+    LD_ASSERT(LDUserValidate(user));
     LD_ASSERT(key);
+
+    if (!LDi_maybeMakeIndexEvent(client, user, &indexEvent)) {
+        LD_LOG(LD_LOG_ERROR, "failed to construct index event");
+
+        return false;
+    }
 
     if (!(event = LDi_newCustomEvent(client, user, key, data))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct custom event");
+
+        LDJSONFree(indexEvent);
 
         return false;
     }
 
     LDi_addEvent(client, event);
+
+    if (indexEvent) {
+        LDi_addEvent(client, indexEvent);
+    }
 
     return true;
 }
@@ -157,7 +177,7 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
     struct LDJSON *event;
 
     LD_ASSERT(client);
-    LD_ASSERT(user);
+    LD_ASSERT(LDUserValidate(user));
 
     if (!(event = newIdentifyEvent(client, user))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct identify event");

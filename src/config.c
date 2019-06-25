@@ -48,6 +48,7 @@ LDConfigNew(const char *const key)
     config->offline               = false;
     config->useLDD                = false;
     config->allAttributesPrivate  = false;
+    config->inlineUsersInEvents   = false;
     config->userKeysCapacity      = 1000;
     config->userKeysFlushInterval = 300;
     config->store                 = NULL;
@@ -175,6 +176,15 @@ LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
     LD_ASSERT(config);
 
     config->allAttributesPrivate = allAttributesPrivate;
+}
+
+void
+LDConfigInlineUsersInEvents(struct LDConfig *const config,
+    const bool inlineUsersInEvents)
+{
+    LD_ASSERT(config);
+
+    config->inlineUsersInEvents = inlineUsersInEvents;
 }
 
 void

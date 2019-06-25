@@ -56,7 +56,9 @@ enum LDEvalErrorKind {
     LD_MALFORMED_FLAG,
     /** @brief Indicates that the result value was not of the requested type,
      * e.g. you called `LDBoolVariation` but the value was an integer. */
-    LD_WRONG_TYPE
+    LD_WRONG_TYPE,
+    /** @brief Evaluation failed because the client ran out of memory */
+    LD_OOM
 };
 
 /** @brief Indicates which rule matched a user */

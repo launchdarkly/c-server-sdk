@@ -22,3 +22,5 @@ struct LDJSON *LDi_valueOfAttribute(const struct LDUser *const user,
 
 struct LDJSON *LDUserToJSON(struct LDClient *const client,
     const struct LDUser *const lduser, const bool redact);
+
+bool LDUserValidate(const struct LDUser *const user);

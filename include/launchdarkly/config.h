@@ -158,8 +158,18 @@ LD_EXPORT(void) LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
     const bool allAttributesPrivate);
 
 /**
+ * @brief Set to true if you need to see the full user details in every
+ * analytics event.
+ * @param[in] config The configuration to modify. May not be `NULL` (assert).
+ * @param[in] inlineUsersInEvents
+ * @return Void
+ */
+LD_EXPORT(void) LDConfigInlineUsersInEvents(struct LDConfig *const config,
+    const bool inlineUsersInEvents);
+
+/**
  * @brief The number of user keys that the event processor can remember at an
- * one time, so that duplicate user details will not be sent in analytics..
+ * one time, so that duplicate user details will not be sent in analytics.
  * @param[in] config The configuration to modify. May not be `NULL` (assert).
  * @param[in] userKeysCapacity
  * @return Void

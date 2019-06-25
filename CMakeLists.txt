@@ -29,7 +29,7 @@ add_library(ldserverapidynamic SHARED ${SOURCES})
 set_property(TARGET ldserverapidynamic PROPERTY C_VISIBILITY_PRESET hidden)
 target_link_libraries(ldserverapidynamic ${LD_LIBRARIES})
 
-file(GLOB TESTS "tests/*")
+file(GLOB TESTS "tests/test-*")
 foreach(testsource ${TESTS})
     get_filename_component(testsourceleaf ${testsource} NAME)
     string(REPLACE ".c" "" testexe ${testsourceleaf})

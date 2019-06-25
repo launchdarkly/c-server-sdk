@@ -17,6 +17,7 @@ struct LDConfig {
     bool useLDD;
     bool allAttributesPrivate;
     struct LDJSON *privateAttributeNames; /* Array of Text */
+    bool inlineUsersInEvents;
     unsigned int userKeysCapacity;
     unsigned int userKeysFlushInterval;
     bool defaultStore;
