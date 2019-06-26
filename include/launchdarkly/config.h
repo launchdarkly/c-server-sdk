@@ -185,7 +185,7 @@ LD_EXPORT(void) LDConfigSetUserKeysCapacity(struct LDConfig *const config,
  * @return Void
  */
 LD_EXPORT(void) LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
-    const unsigned int userKeysFlushInterval);
+    const unsigned int milliseconds);
 
 /**
  * @brief Marks a set of user attribute names private. Any users sent to

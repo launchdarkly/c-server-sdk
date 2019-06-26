@@ -1158,7 +1158,7 @@ poll(struct LDClient *const client, void *const rawcontext)
             LD_ASSERT(now >= context->lastFlush);
 
             if (now - context->lastFlush <
-                client->config->flushInterval * 1000)
+                client->config->flushInterval)
             {
                 return NULL;
             }
