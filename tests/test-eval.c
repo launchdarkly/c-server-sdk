@@ -218,11 +218,15 @@ testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
     struct LDUser *user;
     struct LDJSON *flag, *result, *events;
     struct LDDetails details;
+    struct LDClient *client;
+    struct LDConfig *config;
 
     events = NULL;
     result = NULL;
-    LDDetailsInit(&details);
 
+    LDDetailsInit(&details);
+    LD_ASSERT(config = LDConfigNew("abc"));
+    LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
     /* flag */
@@ -234,7 +238,7 @@ testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
     addVariations1(flag);
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag, user, (struct LDStore *)1, &details,
+    LD_ASSERT(LDi_evaluate(client, flag, user, (struct LDStore *)1, &details,
         &events, &result, false) == EVAL_MATCH);
 
     /* validate */
@@ -248,6 +252,7 @@ testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
     LDJSONFree(result);
     LDUserFree(user);
     LDDetailsClear(&details);
+    LDClientClose(client);
 }
 
 static void
@@ -257,11 +262,15 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     struct LDStore *store;
     struct LDJSON *flag1, *flag2, *result, *events, *eventsiter;
     struct LDDetails details;
+    struct LDClient *client;
+    struct LDConfig *config;
 
     events = NULL;
     result = NULL;
-    LDDetailsInit(&details);
 
+    LDDetailsInit(&details);
+    LD_ASSERT(config = LDConfigNew("abc"));
+    LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
     /* flag1 */
@@ -286,7 +295,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
+    LD_ASSERT(LDi_evaluate(client, flag1, user, store, &details, &events,
         &result, false));
 
     /* validate */
@@ -314,6 +323,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     LDStoreDestroy(store);
     LDUserFree(user);
     LDDetailsClear(&details);
+    LDClientClose(client);
 }
 
 static void
@@ -323,11 +333,15 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     struct LDStore *store;
     struct LDJSON *flag1, *flag2, *result, *events, *eventsiter;
     struct LDDetails details;
+    struct LDClient *client;
+    struct LDConfig *config;
 
     events = NULL;
     result = NULL;
-    LDDetailsInit(&details);
 
+    LDDetailsInit(&details);
+    LD_ASSERT(config = LDConfigNew("abc"));
+    LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
     /* flag1 */
@@ -353,7 +367,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
+    LD_ASSERT(LDi_evaluate(client, flag1, user, store, &details, &events,
         &result, false));
 
     /* validate */
@@ -380,6 +394,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     LDStoreDestroy(store);
     LDUserFree(user);
     LDDetailsClear(&details);
+    LDClientClose(client);
 }
 
 static void
@@ -389,11 +404,15 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     struct LDStore *store;
     struct LDJSON *flag1, *flag2, *result, *events, *eventsiter;
     struct LDDetails details;
+    struct LDClient *client;
+    struct LDConfig *config;
 
     events = NULL;
     result = NULL;
-    LDDetailsInit(&details);
 
+    LDDetailsInit(&details);
+    LD_ASSERT(config = LDConfigNew("abc"));
+    LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
     /* flag1 */
@@ -419,7 +438,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
+    LD_ASSERT(LDi_evaluate(client, flag1, user, store, &details, &events,
         &result, false));
 
     /* validate */
@@ -446,6 +465,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     LDStoreDestroy(store);
     LDUserFree(user);
     LDDetailsClear(&details);
+    LDClientClose(client);
 }
 
 static void
@@ -455,11 +475,15 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     struct LDStore *store;
     struct LDJSON *flag1, *flag2, *flag3, *result, *events, *eventsiter;
     struct LDDetails details;
+    struct LDClient *client;
+    struct LDConfig *config;
 
     events = NULL;
     result = NULL;
-    LDDetailsInit(&details);
 
+    LDDetailsInit(&details);
+    LD_ASSERT(config = LDConfigNew("abc"));
+    LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("userKeyA"));
 
     /* flag1 */
@@ -496,7 +520,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag3));
 
     /* run */
-    LD_ASSERT(LDi_evaluate(NULL, flag1, user, store, &details, &events,
+    LD_ASSERT(LDi_evaluate(client, flag1, user, store, &details, &events,
         &result, false));
 
     /* validate */
@@ -534,6 +558,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     LDStoreDestroy(store);
     LDUserFree(user);
     LDDetailsClear(&details);
+    LDClientClose(client);
 }
 
 static void

@@ -8,29 +8,7 @@
 #include "client.h"
 #include "evaluate.h"
 #include "misc.h"
-
-static void
-setFallthrough(struct LDJSON *const flag, const unsigned int variation)
-{
-    struct LDJSON *tmp;
-
-    LD_ASSERT(tmp = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(tmp, "variation", LDNewNumber(variation)));
-    LD_ASSERT(LDObjectSetKey(flag, "fallthrough", tmp));
-}
-
-static void
-addVariation(struct LDJSON *const flag, struct LDJSON *const variation)
-{
-    struct LDJSON *variations;
-
-    if (!(variations = LDObjectLookup(flag, "variations"))) {
-        LD_ASSERT(variations = LDNewArray());
-        LDObjectSetKey(flag, "variations", variations);
-    }
-
-    LD_ASSERT(LDArrayPush(variations, variation));
-}
+#include "util-flags.h"
 
 static struct LDClient *
 makeTestClient()

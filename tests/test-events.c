@@ -5,6 +5,11 @@
 #include "client.h"
 #include "events.h"
 #include "misc.h"
+#include "store.h"
+#include "config.h"
+#include "user.h"
+
+#include "util-flags.h"
 
 static struct LDClient *
 makeOfflineClient()
@@ -20,18 +25,6 @@ makeOfflineClient()
     return client;
 }
 
-static struct LDJSON *
-makeMinimalFlag(const char *const key, const unsigned int version)
-{
-    struct LDJSON *flag;
-
-    LD_ASSERT(flag = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText(key)));
-    LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(version)));
-
-    return flag;
-}
-
 static void
 testMakeSummaryKeyIncrementsCounters()
 {
@@ -45,8 +38,8 @@ testMakeSummaryKeyIncrementsCounters()
 
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(client = makeOfflineClient());
-    LD_ASSERT(flag1 = makeMinimalFlag("key1", 11));
-    LD_ASSERT(flag2 = makeMinimalFlag("key2", 22));
+    LD_ASSERT(flag1 = makeMinimalFlag("key1", 11, true, false));
+    LD_ASSERT(flag2 = makeMinimalFlag("key2", 22, true, false));
 
     LD_ASSERT(value1 = LDNewText("value1"));
     LD_ASSERT(value2 = LDNewText("value2"));
@@ -141,7 +134,7 @@ testCounterForNilVariationIsDistinctFromOthers()
 
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(client = makeOfflineClient());
-    LD_ASSERT(flag = makeMinimalFlag("key1", 11));
+    LD_ASSERT(flag = makeMinimalFlag("key1", 11, true, false));
 
     LD_ASSERT(value1 = LDNewText("value1"));
     LD_ASSERT(value2 = LDNewText("value2"));
@@ -263,6 +256,117 @@ testParseServerTimeHeaderBad()
     LDClientClose(client);
 }
 
+static void
+testIndexEventGeneration()
+{
+    struct LDConfig *config;
+    struct LDClient *client;
+    struct LDJSON *flag, *event, *tmp;
+    struct LDUser *user1, *user2;
+
+    LD_ASSERT(config = LDConfigNew("api_key"));
+    LD_ASSERT(client = LDClientInit(config, 0));
+    LD_ASSERT(user1 = LDUserNew("user1"));
+    LD_ASSERT(user2 = LDUserNew("user2"));
+
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    setFallthrough(flag, 0);
+    addVariation(flag, LDNewNumber(42));
+
+    LD_ASSERT(LDStoreInitEmpty(config->store));
+    LD_ASSERT(LDStoreUpsert(config->store, LD_FLAG, flag));
+
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDCollectionGetSize(client->events) == 0);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    /* evaluation with new user generations index */
+    LD_ASSERT(LDIntVariation(client, user1, "flag", 25, NULL) == 42);
+
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDCollectionGetSize(client->events) == 2);
+    /* index event */
+    LD_ASSERT(event = LDArrayLookup(client->events, 0));
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "index") == 0);
+    LD_ASSERT(tmp = LDUserToJSON(client, user1, true));
+    LD_ASSERT(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
+    LDJSONFree(tmp);
+    /* feature event */
+    LD_ASSERT(event = LDArrayLookup(client->events, 1));
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "userKey")), "user1")
+        == 0);
+    LD_ASSERT(LDObjectLookup(event, "user") == NULL);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    /* second evaluation with same user does not generate another event */
+    LD_ASSERT(LDIntVariation(client, user1, "flag", 25, NULL) == 42);
+
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDCollectionGetSize(client->events) == 3);
+    /* feature event */
+    LD_ASSERT(event = LDArrayLookup(client->events, 2));
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
+    LD_ASSERT(LDObjectLookup(event, "user") == NULL);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    /* evaluation with another user generates a new event */
+    LD_ASSERT(LDIntVariation(client, user2, "flag", 25, NULL) == 42);
+
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDCollectionGetSize(client->events) == 5);
+    LD_ASSERT(event = LDArrayLookup(client->events, 3));
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "index") == 0);
+    LD_ASSERT(tmp = LDUserToJSON(client, user2, true));
+    LD_ASSERT(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
+    LDJSONFree(tmp);
+    LD_ASSERT(event = LDArrayLookup(client->events, 4));
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
+    LD_ASSERT(LDObjectLookup(event, "user") == NULL);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    LDUserFree(user1);
+    LDUserFree(user2);
+    LDClientClose(client);
+}
+
+static void
+testInlineUsersInEvents()
+{
+    struct LDConfig *config;
+    struct LDClient *client;
+    struct LDJSON *flag, *event, *tmp;
+    struct LDUser *user;
+
+    LD_ASSERT(config = LDConfigNew("api_key"));
+    LDConfigInlineUsersInEvents(config, true);
+    LD_ASSERT(client = LDClientInit(config, 0));
+    LD_ASSERT(user = LDUserNew("user"));
+
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    setFallthrough(flag, 0);
+    addVariation(flag, LDNewNumber(51));
+
+    LD_ASSERT(LDStoreInitEmpty(config->store));
+    LD_ASSERT(LDStoreUpsert(config->store, LD_FLAG, flag));
+    LD_ASSERT(LDCollectionGetSize(client->events) == 0);
+
+    /* check that user is embedded in full fidelity event */
+    LD_ASSERT(LDIntVariation(client, user, "flag", 25, NULL) == 51);
+
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDCollectionGetSize(client->events) == 1);
+    LD_ASSERT(event = LDArrayLookup(client->events, 0));
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
+    LD_ASSERT(tmp = LDUserToJSON(client, user, true));
+    LD_ASSERT(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
+    LDJSONFree(tmp);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    LDUserFree(user);
+    LDClientClose(client);
+}
+
 int
 main()
 {
@@ -275,6 +379,8 @@ main()
     testParseServerTimeHeaderActual();
     testParseServerTimeHeaderAlt();
     testParseServerTimeHeaderBad();
+    testIndexEventGeneration();
+    testInlineUsersInEvents();
 
     return 0;
 }

@@ -42,14 +42,15 @@ LDConfigNew(const char *const key)
     config->stream                = true;
     config->sendEvents            = true;
     config->eventsCapacity        = 10000;
-    config->timeout               = 5;
-    config->flushInterval         = 5;
-    config->pollInterval          = 30;
+    config->timeout               = 5000;
+    config->flushInterval         = 5000;
+    config->pollInterval          = 30000;
     config->offline               = false;
     config->useLDD                = false;
     config->allAttributesPrivate  = false;
+    config->inlineUsersInEvents   = false;
     config->userKeysCapacity      = 1000;
-    config->userKeysFlushInterval = 300;
+    config->userKeysFlushInterval = 300000;
     config->store                 = NULL;
 
     return config;
@@ -175,6 +176,15 @@ LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
     LD_ASSERT(config);
 
     config->allAttributesPrivate = allAttributesPrivate;
+}
+
+void
+LDConfigInlineUsersInEvents(struct LDConfig *const config,
+    const bool inlineUsersInEvents)
+{
+    LD_ASSERT(config);
+
+    config->inlineUsersInEvents = inlineUsersInEvents;
 }
 
 void

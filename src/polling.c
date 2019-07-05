@@ -160,7 +160,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
         LD_ASSERT(now >= context->lastpoll);
 
-        if (now - context->lastpoll < client->config->pollInterval * 1000) {
+        if (now - context->lastpoll < client->config->pollInterval) {
             return NULL;
         }
     }

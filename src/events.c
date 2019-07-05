@@ -11,10 +11,119 @@
 #include "client.h"
 #include "config.h"
 #include "misc.h"
+#include "lru.h"
+
+bool
+LDi_maybeMakeIndexEvent(struct LDClient *const client,
+    const struct LDUser *const user, struct LDJSON **result)
+{
+    unsigned long now;
+    struct LDJSON *event, *tmp;
+    enum LDLRUStatus status;
+
+    LD_ASSERT(client);
+    LD_ASSERT(user);
+    LD_ASSERT(result);
+
+    if (client->config->inlineUsersInEvents) {
+        *result = NULL;
+
+        return true;
+    }
+
+    LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+
+    LD_ASSERT(LDi_wrlock(&client->lock));
+    if (now > client->lastUserKeyFlush +
+        client->config->userKeysFlushInterval) {
+        LDLRUClear(client->userKeys);
+
+        client->lastUserKeyFlush = now;
+    }
+    status = LDLRUInsert(client->userKeys, user->key);
+    LD_ASSERT(LDi_wrunlock(&client->lock));
+
+    if (status == LDLRUSTATUS_ERROR) {
+        return false;
+    } else if (status == LDLRUSTATUS_EXISTED) {
+        *result = NULL;
+
+        return true;
+    }
+
+    if (!(event = LDi_newBaseEvent("index"))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        return false;
+    }
+
+    if (!(tmp = LDUserToJSON(client, user, true))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(event);
+
+        return false;
+    }
+
+    if (!(LDObjectSetKey(event, "user", tmp))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(tmp);
+        LDJSONFree(event);
+
+        return false;
+    }
+
+    *result = event;
+
+    return true;
+}
+
+bool
+LDi_addUserInfoToEvent(struct LDJSON *const event,
+    struct LDClient *const client, const struct LDUser *const user)
+{
+    struct LDJSON *tmp;
+
+    LD_ASSERT(event);
+    LD_ASSERT(client);
+    LD_ASSERT(user);
+
+    if (client->config->inlineUsersInEvents) {
+        if (!(tmp = LDUserToJSON(client, user, true))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            return false;
+        }
+
+        if (!(LDObjectSetKey(event, "user", tmp))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(tmp);
+
+            return false;
+        }
+    } else {
+        if (!(tmp = LDNewText(user->key))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            return false;
+        }
+
+        if (!(LDObjectSetKey(event, "userKey", tmp))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(tmp);
+
+            return false;
+        }
+    }
+
+    return true;
+}
 
 struct LDJSON *
-LDi_newBaseEvent(struct LDClient *const client,
-    const struct LDUser *const user, const char *const kind)
+LDi_newBaseEvent(const char *const kind)
 {
     struct LDJSON *tmp, *event;
     unsigned long milliseconds;
@@ -27,22 +136,6 @@ LDi_newBaseEvent(struct LDClient *const client,
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         goto error;
-    }
-
-    if (user) {
-        if (!(tmp = LDUserToJSON(client, user, true))) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            goto error;
-        }
-
-        if (!(LDObjectSetKey(event, "user", tmp))) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            LDJSONFree(tmp);
-
-            goto error;
-        }
     }
 
     if (!LDi_getUnixMilliseconds(&milliseconds)) {
@@ -107,11 +200,18 @@ LDi_newFeatureRequestEvent(struct LDClient *const client,
     struct LDJSON *tmp, *event;
 
     LD_ASSERT(key);
+    LD_ASSERT(user);
 
     tmp   = NULL;
     event = NULL;
 
-    if (!(event = LDi_newBaseEvent(client, user, "feature"))) {
+    if (!(event = LDi_newBaseEvent("feature"))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        goto error;
+    }
+
+    if (!LDi_addUserInfoToEvent(event, client, user)) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         goto error;
@@ -296,14 +396,19 @@ LDi_newCustomEvent(struct LDClient *const client,
 {
     struct LDJSON *tmp, *event;
 
-    LD_ASSERT(user);
     LD_ASSERT(key);
 
     tmp   = NULL;
     event = NULL;
 
-    if (!(event = LDi_newBaseEvent(client, user, "custom"))) {
+    if (!(event = LDi_newBaseEvent("custom"))) {
         LD_LOG(LD_LOG_ERROR, "memory error");
+
+        goto error;
+    }
+
+    if (!LDi_addUserInfoToEvent(event, client, user)) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
 
         goto error;
     }
@@ -344,34 +449,49 @@ newIdentifyEvent(struct LDClient *const client, const struct LDUser *const user)
     struct LDJSON *event, *tmp;
 
     LD_ASSERT(client);
-    LD_ASSERT(user);
+    LD_ASSERT(LDUserValidate(user));
 
     event = NULL;
     tmp   = NULL;
 
-    if (!(event = LDi_newBaseEvent(client, user, "identify"))) {
+    if (!(event = LDi_newBaseEvent("identify"))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct base event");
 
         return NULL;
     }
 
-    if (user->key) {
-        if (!(tmp = LDNewText(user->key))) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
+    if (!(tmp = LDNewText(user->key))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            LDJSONFree(event);
+        LDJSONFree(event);
 
-            return NULL;
-        }
+        return false;
+    }
 
-        if (!LDObjectSetKey(event, "key", tmp)) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
+    if (!(LDObjectSetKey(event, "key", tmp))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            LDJSONFree(tmp);
-            LDJSONFree(event);
+        LDJSONFree(event);
+        LDJSONFree(tmp);
 
-            return NULL;
-        }
+        return false;
+    }
+
+    if (!(tmp = LDUserToJSON(client, user, true))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(event);
+
+        return NULL;
+    }
+
+    if (!(LDObjectSetKey(event, "user", tmp))) {
+        LD_LOG(LD_LOG_ERROR, "alloc error");
+
+        LDJSONFree(tmp);
+        LDJSONFree(event);
+
+        return NULL;
     }
 
     return event;
@@ -947,7 +1067,7 @@ LDi_onHeader(const char *buffer, const size_t size,
     client = context;
 
     /* ensures we do not segfault if not terminated */
-    if (!(headerend = strnchr(buffer, '\r', size))) {
+    if (!(headerend = strnchr(buffer, '\r', total))) {
         LD_LOG(LD_LOG_ERROR, "failed to find end of header");
 
         return total;
@@ -1038,7 +1158,7 @@ poll(struct LDClient *const client, void *const rawcontext)
             LD_ASSERT(now >= context->lastFlush);
 
             if (now - context->lastFlush <
-                client->config->flushInterval * 1000)
+                client->config->flushInterval)
             {
                 return NULL;
             }
@@ -1196,11 +1316,12 @@ LDi_constructAnalytics(struct LDClient *const client)
     }
 
     context->active     = false;
-    context->lastFlush  = 0;
     context->headers    = NULL;
     context->client     = client;
     context->buffer     = NULL;
     context->lastFailed = false;
+
+    LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastFlush));
 
     netInterface->done      = done;
     netInterface->poll      = poll;

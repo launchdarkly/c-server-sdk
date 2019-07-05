@@ -244,23 +244,21 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     const char *const key, struct LDJSON *const fallback,
     const LDJSONType type, struct LDDetails *const o_details)
 {
-    EvalStatus status;
-    unsigned int *variationNumRef;
     struct LDStore *store;
-    struct LDJSON *flag, *value, *events, *event, *evalue;
+    struct LDJSON *flag, *value, *event, *indexEvent;
     struct LDDetails details, *detailsref;
     struct LDJSONRC *flagrc;
+    bool validUser;
 
     LD_ASSERT(client);
 
-    flag             = NULL;
-    flagrc           = NULL;
-    value            = NULL;
-    store            = NULL;
-    events           = NULL;
-    event            = NULL;
-    variationNumRef  = NULL;
-    evalue           = NULL;
+    flag       = NULL;
+    flagrc     = NULL;
+    value      = NULL;
+    store      = NULL;
+    event      = NULL;
+    indexEvent = NULL;
+    validUser  = LDUserValidate(user);
 
     LDDetailsInit(&details);
 
@@ -291,7 +289,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_STORE_ERROR;
 
-        status = EVAL_MISS;
+        goto error;
     }
 
     if (flagrc) {
@@ -301,81 +299,111 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     if (!flag) {
         detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_FLAG_NOT_FOUND;
-
-        status = EVAL_MISS;
-    } else if (!user || !user->key) {
+    } else if (validUser == false) {
         detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_USER_NOT_SPECIFIED;
-
-        status = EVAL_MISS;
     } else {
-        status = LDi_evaluate(client, flag, user, store,
-            detailsref, &events, &value, o_details != NULL);
-    }
+        struct LDJSON *events;
 
-    if (status == EVAL_MEM) {
-        goto error;
-    }
-
-    if (status == EVAL_SCHEMA) {
-        detailsref->reason = LD_ERROR;
-        detailsref->extra.errorKind = LD_MALFORMED_FLAG;
-
-        goto error;
-    }
-
-    if (events) {
-        struct LDJSON *iter;
-        /* local only sanity */
-        LD_ASSERT(LDJSONGetType(events) == LDArray);
-        /* different loop to make cleanup easier */
-        for (iter = LDGetIter(events); iter; iter = LDIterNext(iter)) {
-            if (!LDi_summarizeEvent(client, iter, false)) {
-                LD_LOG(LD_LOG_ERROR, "summary failed");
-
-                goto error;
-            }
-        }
-
-        for (iter = LDGetIter(events); iter;) {
-            struct LDJSON *const next = LDIterNext(iter);
-
-            possiblyQueueEvent(client, LDCollectionDetachIter(events, iter));
-
-            iter = next;
-        }
-
-        LDJSONFree(events);
         events = NULL;
+
+        const EvalStatus status = LDi_evaluate(client, flag, user, store,
+            detailsref, &events, &value, o_details != NULL);
+
+        if (status == EVAL_MEM) {
+            detailsref->reason = LD_ERROR;
+            detailsref->extra.errorKind = LD_OOM;
+
+            LDJSONFree(events);
+
+            goto error;
+        } else if (status == EVAL_SCHEMA) {
+            detailsref->reason = LD_ERROR;
+            detailsref->extra.errorKind = LD_MALFORMED_FLAG;
+
+            LDJSONFree(events);
+
+            goto error;
+        }
+
+        if (events) {
+            struct LDJSON *iter;
+            /* local only sanity */
+            LD_ASSERT(LDJSONGetType(events) == LDArray);
+            /* different loop to make cleanup easier */
+            for (iter = LDGetIter(events); iter; iter = LDIterNext(iter)) {
+                if (!LDi_summarizeEvent(client, iter, false)) {
+                    LD_LOG(LD_LOG_ERROR, "summary failed");
+
+                    LDJSONFree(events);
+
+                    goto error;
+                }
+            }
+
+            for (iter = LDGetIter(events); iter;) {
+                struct LDJSON *const next = LDIterNext(iter);
+
+                possiblyQueueEvent(client, LDCollectionDetachIter(events, iter));
+
+                iter = next;
+            }
+
+            LDJSONFree(events);
+        }
     }
 
-    if (detailsref->hasVariation) {
-        variationNumRef = &detailsref->variationIndex;
-    }
+    if (validUser && !LDi_maybeMakeIndexEvent(client, user, &indexEvent)) {
+        detailsref->reason = LD_ERROR;
+        detailsref->extra.errorKind = LD_OOM;
 
-    if (!LDi_notNull(evalue = value)) {
-        evalue = fallback;
+        goto error;
     }
 
     {
-        struct LDDetails *optionalDetails = NULL;
+        struct LDDetails *optionalDetails;
+        struct LDJSON *evalue;
+        unsigned int *variationNumRef;
+
+        optionalDetails = NULL;
+        evalue = NULL;
+        variationNumRef = NULL;
+
+        if (!LDi_notNull(evalue = value)) {
+            evalue = fallback;
+        }
+
+        if (detailsref->hasVariation) {
+            variationNumRef = &detailsref->variationIndex;
+        }
 
         if (o_details) {
             optionalDetails = detailsref;
         }
 
-        event = LDi_newFeatureRequestEvent(client, key, user, variationNumRef,
-            evalue, fallback, NULL, flag, optionalDetails);
+        event = LDi_newFeatureRequestEvent(client, key, user,
+            variationNumRef, evalue, fallback, NULL, flag, optionalDetails);
+
+        if (!event) {
+            LD_LOG(LD_LOG_ERROR, "failed to build feature request event");
+
+            detailsref->reason = LD_ERROR;
+            detailsref->extra.errorKind = LD_OOM;
+
+            goto error;
+        }
     }
 
-    if (!event) {
-        LD_LOG(LD_LOG_ERROR, "failed to build feature request event");
-
-        goto error;
+    if (indexEvent) {
+        LDi_addEvent(client, indexEvent);
+        indexEvent = NULL;
     }
 
     if (!LDi_summarizeEvent(client, event, !flag)) {
         LD_LOG(LD_LOG_ERROR, "summary failed");
+
+        detailsref->reason = LD_ERROR;
+        detailsref->extra.errorKind = LD_OOM;
 
         goto error;
     }
@@ -397,18 +425,18 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     LDJSONFree(event);
+    LDJSONFree(indexEvent);
     LDJSONFree(fallback);
     LDDetailsClear(&details);
-    LDJSONFree(events);
     LDJSONRCDecrement(flagrc);
 
     return value;
 
   error:
     LDJSONFree(event);
+    LDJSONFree(indexEvent);
     LDJSONFree(value);
     LDDetailsClear(&details);
-    LDJSONFree(events);
     LDJSONRCDecrement(flagrc);
 
     return fallback;
@@ -605,7 +633,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         return NULL;
     }
 
-    if (!user || !user->key) {
+    if (!LDUserValidate(user)) {
         LD_LOG(LD_LOG_WARNING, "LDAllFlags NULL user returning NULL");
 
         return NULL;

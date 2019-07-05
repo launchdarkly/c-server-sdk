@@ -171,7 +171,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     const char *failedKey;
 
     LD_ASSERT(flag);
-    LD_ASSERT(user);
+    LD_ASSERT(LDUserValidate(user));
     LD_ASSERT(store);
     LD_ASSERT(details);
     LD_ASSERT(o_events);

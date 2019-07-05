@@ -12,8 +12,7 @@
 #include <launchdarkly/variations.h>
 
 /* event construction */
-struct LDJSON *LDi_newBaseEvent(struct LDClient *const client,
-    const struct LDUser *const user, const char *const kind);
+struct LDJSON *LDi_newBaseEvent(const char *const kind);
 
 struct LDJSON *LDi_newFeatureRequestEvent(struct LDClient *const client,
     const char *const key, const struct LDUser *const user,
@@ -43,3 +42,9 @@ size_t LDi_onHeader(const char *const buffer, const size_t size,
     const size_t itemcount, void *const context);
 
 bool LDi_parseRFC822(const char *const date, struct tm *tm);
+
+bool LDi_addUserInfoToEvent(struct LDJSON *const event,
+    struct LDClient *const client, const struct LDUser *const user);
+
+bool LDi_maybeMakeIndexEvent(struct LDClient *const client,
+    const struct LDUser *const user, struct LDJSON **result);
