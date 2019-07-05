@@ -1067,7 +1067,7 @@ LDi_onHeader(const char *buffer, const size_t size,
     client = context;
 
     /* ensures we do not segfault if not terminated */
-    if (!(headerend = strnchr(buffer, '\r', size))) {
+    if (!(headerend = strnchr(buffer, '\r', total))) {
         LD_LOG(LD_LOG_ERROR, "failed to find end of header");
 
         return total;
