@@ -17,7 +17,13 @@ else()
     set(LD_LIBRARIES pthread m)
 endif(MSVC)
 
-include_directories("src" "include" "third-party/include" ${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR})
+set(LD_INCLUDE_PATHS "src" "include" "third-party/include" ${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR})
+
+if(APPLE)
+    set(LD_INCLUDE_PATHS ${LD_INCLUDE_PATHS} "/usr/local/include")
+endif(APPLE)
+
+include_directories(${LD_INCLUDE_PATHS})
 file(GLOB SOURCES "src/*" "third-party/src/*")
 
 set(LD_LIBRARIES ${LD_LIBRARIES} ${CURL_LIBRARIES} ${PCRE_LIBRARIES})
