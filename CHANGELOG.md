@@ -2,6 +2,10 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.0.1] - 2019-07-11
+### Fixed
+- Updated CMAKE header search to include `/usr/local/include` for OSX Mojave
+
 ## [1.0.0] - 2019-07-05
 ### Added
 - LRU caching to prevent users being indexed multiple times
