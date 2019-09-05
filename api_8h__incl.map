@@ -1,0 +1,10 @@
+<map id="include/launchdarkly/api.h" name="include/launchdarkly/api.h">
+<area shape="rect" id="node4" href="$json_8h.html" title="Public API Interface for JSON usage. " alt="" coords="407,244,541,271"/>
+<area shape="rect" id="node6" href="$config_8h.html" title="Public API Interface for Configuration. " alt="" coords="33,244,179,271"/>
+<area shape="rect" id="node7" href="$user_8h.html" title="Public API Interface for User construction. " alt="" coords="356,169,491,196"/>
+<area shape="rect" id="node8" href="$client_8h.html" title="Public API Interface for Client operations. " alt="" coords="197,95,338,121"/>
+<area shape="rect" id="node9" href="$memory_8h.html" title="Public API. Operations for managing memory. " alt="" coords="894,244,1051,271"/>
+<area shape="rect" id="node10" href="$logging_8h.html" title="Public API Interface for Logging. " alt="" coords="617,244,768,271"/>
+<area shape="rect" id="node11" href="$variations_8h.html" title="Public API Interface for evaluation variations. " alt="" coords="413,95,580,121"/>
+<area shape="rect" id="node5" href="$export_8h.html" title="Public. Configuration of exported symbols. " alt="" coords="401,319,547,345"/>
+</map>
