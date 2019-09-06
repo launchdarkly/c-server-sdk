@@ -242,7 +242,8 @@ possiblyQueueEvent(struct LDClient *const client,
 static struct LDJSON *
 variation(struct LDClient *const client, const struct LDUser *const user,
     const char *const key, struct LDJSON *const fallback,
-    const LDJSONType type, struct LDDetails *const o_details)
+    bool (*const checkType)(const LDJSONType type),
+    struct LDDetails *const o_details)
 {
     struct LDStore *store;
     struct LDJSON *flag, *value, *event, *indexEvent;
@@ -251,6 +252,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     bool validUser;
 
     LD_ASSERT(client);
+    LD_ASSERT(checkType);
 
     flag       = NULL;
     flagrc     = NULL;
@@ -417,7 +419,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto error;
     }
 
-    if (LDJSONGetType(value) != type) {
+    if (!checkType(LDJSONGetType(value))) {
         detailsref->reason = LD_ERROR;
         detailsref->extra.errorKind = LD_WRONG_TYPE;
 
@@ -442,6 +444,12 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     return fallback;
 }
 
+static bool
+isBool(const LDJSONType type)
+{
+    return type == LDBool;
+}
+
 bool
 LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const bool fallback,
@@ -459,7 +467,7 @@ LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
         return fallback;
     }
 
-    result = variation(client, user, key, fallbackJSON, LDBool, details);
+    result = variation(client, user, key, fallbackJSON, isBool, details);
 
     if (!result) {
         LD_LOG(LD_LOG_ERROR, "LDVariation internal failure");
@@ -472,6 +480,12 @@ LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
     LDJSONFree(result);
 
     return value;
+}
+
+static bool
+isNumber(const LDJSONType type)
+{
+    return type == LDNumber;
 }
 
 int
@@ -491,7 +505,7 @@ LDIntVariation(struct LDClient *const client, struct LDUser *const user,
         return fallback;
     }
 
-    result = variation(client, user, key, fallbackJSON, LDNumber, details);
+    result = variation(client, user, key, fallbackJSON, isNumber, details);
 
     if (!result) {
         LD_LOG(LD_LOG_ERROR, "LDVariation internal failure");
@@ -523,7 +537,7 @@ LDDoubleVariation(struct LDClient *const client, struct LDUser *const user,
         return fallback;
     }
 
-    result = variation(client, user, key, fallbackJSON, LDNumber, details);
+    result = variation(client, user, key, fallbackJSON, isNumber, details);
 
     if (!result) {
         LD_LOG(LD_LOG_ERROR, "LDVariation internal failure");
@@ -536,6 +550,12 @@ LDDoubleVariation(struct LDClient *const client, struct LDUser *const user,
     LDJSONFree(result);
 
     return value;
+}
+
+static bool
+isText(const LDJSONType type)
+{
+    return type == LDText;
 }
 
 char *
@@ -560,7 +580,7 @@ LDStringVariation(struct LDClient *const client, struct LDUser *const user,
         }
     }
 
-    result = variation(client, user, key, fallbackJSON, LDText, details);
+    result = variation(client, user, key, fallbackJSON, isText, details);
 
     if (!result) {
         LD_LOG(LD_LOG_ERROR, "LDVariation internal failure");
@@ -584,6 +604,12 @@ LDStringVariation(struct LDClient *const client, struct LDUser *const user,
     return value;
 }
 
+static bool
+isArrayOrObject(const LDJSONType type)
+{
+    return type == LDArray || type == LDObject;
+}
+
 struct LDJSON *
 LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
     const char *const key, const struct LDJSON *const fallback,
@@ -600,7 +626,7 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
         return NULL;
     }
 
-    result = variation(client, user, key, fallbackJSON, LDObject, details);
+    result = variation(client, user, key, fallbackJSON, isArrayOrObject, details);
 
     if (!result) {
         LD_LOG(LD_LOG_ERROR, "LDVariation internal failure");
