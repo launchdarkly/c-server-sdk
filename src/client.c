@@ -172,6 +172,28 @@ LDClientTrack(struct LDClient *const client, const char *const key,
 }
 
 bool
+LDClientTrackMetric(struct LDClient *const client, const char *const key,
+    const struct LDUser *const user, struct LDJSON *const data,
+    const double metric)
+{
+    struct LDJSON *event;
+
+    LD_ASSERT(client);
+    LD_ASSERT(user);
+    LD_ASSERT(key);
+
+    if (!(event = LDi_newCustomMetricEvent(client, user, key, data, metric))) {
+        LD_LOG(LD_LOG_ERROR, "failed to construct custom event");
+
+        return false;
+    }
+
+    LDi_addEvent(client, event);
+
+    return true;
+}
+
+bool
 LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
 {
     struct LDJSON *event;

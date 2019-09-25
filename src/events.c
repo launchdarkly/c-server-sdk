@@ -444,6 +444,47 @@ LDi_newCustomEvent(struct LDClient *const client,
 }
 
 struct LDJSON *
+LDi_newCustomMetricEvent(struct LDClient *const client,
+    const struct LDUser *const user, const char *const key,
+    struct LDJSON *const data, const double metric)
+{
+    struct LDJSON *tmp, *event;
+
+    LD_ASSERT(user);
+    LD_ASSERT(key);
+
+    tmp   = NULL;
+    event = NULL;
+
+    if (!(event = LDi_newCustomEvent(client, user, key, data))) {
+        LD_LOG(LD_LOG_ERROR, "memory error");
+
+        goto error;
+    }
+
+    if (!(tmp = LDNewNumber(metric))) {
+        LD_LOG(LD_LOG_ERROR, "memory error");
+
+        goto error;
+    }
+
+    if (!LDObjectSetKey(event, "metricValue", tmp)) {
+        LD_LOG(LD_LOG_ERROR, "memory error");
+
+        LDJSONFree(tmp);
+
+        goto error;
+    }
+
+    return event;
+
+  error:
+    LDJSONFree(event);
+
+    return NULL;
+}
+
+struct LDJSON *
 newIdentifyEvent(struct LDClient *const client, const struct LDUser *const user)
 {
     struct LDJSON *event, *tmp;

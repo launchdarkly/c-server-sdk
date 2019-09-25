@@ -58,6 +58,22 @@ LD_EXPORT(bool) LDClientTrack(struct LDClient *const client,
     struct LDJSON *const data);
 
 /**
+ * @brief Reports that a user has performed an event. Custom data, and a metric
+ * can be attached to the event as JSON.
+ * @param[in] client The client to use. May not be `NULL` (assert).
+ * @param[in] key The name of the event
+ * @param[in] user The user to generate the event for. Ownership is not
+ * transferred. May not be `NULL` (assert).
+ * @param[in] data The JSON to attach to the event. Ownership of `data` is
+ * transferred.
+ * @param[in] metric A metric to be assocated with the event
+ * @return true if the event was queued, false on error
+ */
+LD_EXPORT(bool) LDClientTrackMetric(struct LDClient *const client,
+    const char *const key, const struct LDUser *const user,
+    struct LDJSON *const data, const double metric);
+
+/**
  * @brief Generates an identify event for a user.
  * @param[in] client The client to use. May not be `NULL` (assert).
  * @param[in] user The user to generate the event for. Ownership is not
