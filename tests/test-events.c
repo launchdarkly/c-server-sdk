@@ -122,7 +122,7 @@ testMakeSummaryKeyIncrementsCounters()
     LDClientClose(client);
 }
 
-void
+static void
 testCounterForNilVariationIsDistinctFromOthers()
 {
     struct LDUser *user;
@@ -188,7 +188,7 @@ testCounterForNilVariationIsDistinctFromOthers()
     LDClientClose(client);
 }
 
-void
+static void
 testParseHTTPDate()
 {
     struct tm tm;
@@ -196,7 +196,7 @@ testParseHTTPDate()
     LD_ASSERT(LDi_parseRFC822(header, &tm));
 }
 
-void
+static void
 testParseServerTimeHeaderActual()
 {
     struct LDClient *client;
@@ -214,7 +214,7 @@ testParseServerTimeHeaderActual()
     LDClientClose(client);
 }
 
-void
+static void
 testParseServerTimeHeaderAlt()
 {
     struct LDClient *client;
@@ -232,7 +232,7 @@ testParseServerTimeHeaderAlt()
     LDClientClose(client);
 }
 
-void
+static void
 testParseServerTimeHeaderBad()
 {
     struct LDClient *client;
@@ -253,6 +253,36 @@ testParseServerTimeHeaderBad()
     LD_ASSERT(client->lastServerTime == 0);
     LD_ASSERT(LDi_wrunlock(&client->lock));
 
+    LDClientClose(client);
+}
+
+static void
+testTrackMetricQueued()
+{
+    double metric;
+    const char *key;
+    struct LDClient *client;
+    struct LDUser *user;
+    struct LDJSON *event;
+
+    key = "metric-key";
+    metric = 12.5;
+    LD_ASSERT(client = makeOfflineClient());
+    LD_ASSERT(user = LDUserNew("abc"));
+
+    LD_ASSERT(LDClientTrackMetric(client, key, user, NULL, metric));
+
+    LD_ASSERT(client->events);
+    LD_ASSERT(LDJSONGetType(client->events) == LDArray);
+    LD_ASSERT(LDCollectionGetSize(client->events) == 1);
+    LD_ASSERT(event = LDGetIter(client->events));
+    LD_ASSERT(LDJSONGetType(event) == LDObject);
+    LD_ASSERT(strcmp(key, LDGetText(LDObjectLookup(event, "key"))) == 0);
+    LD_ASSERT(!LDObjectLookup(event, "data"));
+    LD_ASSERT(strcmp("custom", LDGetText(LDObjectLookup(event, "kind"))) == 0);
+    LD_ASSERT(metric == LDGetNumber(LDObjectLookup(event, "metricValue")));
+
+    LDUserFree(user);
     LDClientClose(client);
 }
 
@@ -379,6 +409,7 @@ main()
     testParseServerTimeHeaderActual();
     testParseServerTimeHeaderAlt();
     testParseServerTimeHeaderBad();
+    testTrackMetricQueued();
     testIndexEventGeneration();
     testInlineUsersInEvents();
 

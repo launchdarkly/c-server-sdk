@@ -24,6 +24,10 @@ struct LDJSON *LDi_newCustomEvent(struct LDClient *const client,
     const struct LDUser *const user, const char *const key,
     struct LDJSON *const data);
 
+struct LDJSON *LDi_newCustomMetricEvent(struct LDClient *const client,
+    const struct LDUser *const user, const char *const key,
+    struct LDJSON *const data, const double metric);
+
 struct LDJSON *newIdentifyEvent(struct LDClient *const client,
     const struct LDUser *const user);
 
