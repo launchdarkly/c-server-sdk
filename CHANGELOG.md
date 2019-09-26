@@ -5,6 +5,8 @@ All notable changes to the LaunchDarkly C server-side SDK will be documented in 
 ## [1.1.0] - 2019-09-26
 ### Added
 - Added `LDClientTrackMetric` which is an extended version of `LDClientTrack` but with an extra associated metric value.
+### Fixed
+- Corrected `LDReasonToJSON` encoding of the `RULE_MATCH` case.
 
 ## [1.0.2] - 2019-07-26
 ### Fixed

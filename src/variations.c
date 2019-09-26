@@ -121,7 +121,7 @@ LDReasonToJSON(const struct LDDetails *const details)
                 goto error;
             }
 
-            if (!LDObjectSetKey(result, "id", tmp)) {
+            if (!LDObjectSetKey(result, "ruleId", tmp)) {
                 LDJSONFree(tmp);
 
                 goto error;
