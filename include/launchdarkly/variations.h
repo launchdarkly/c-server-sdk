@@ -145,7 +145,7 @@ LD_EXPORT(bool) LDBoolVariation(struct LDClient *const client,
  * @param[out] details A struct where the evaluation explanation will be put.
  * If `NULL` no explanation will be generated.
  * @return The fallback will be returned if `client`, `user`, or `key` are
- * `NULL`.
+ * `NULL`. If the flag value is actually a float the result is truncated.
  */
 LD_EXPORT(int) LDIntVariation(struct LDClient *const client,
     struct LDUser *const user, const char *const key, const int fallback,
