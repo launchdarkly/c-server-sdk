@@ -119,6 +119,39 @@ testDoubleVariation()
 }
 
 static void
+testDoubleVariationAsIntHelper(const int expected, const double flagValue)
+{
+    struct LDJSON *flag;
+    struct LDClient *client;
+    struct LDUser *user;
+    int actual;
+    /* setup */
+    LD_ASSERT(client = makeTestClient());
+    LD_ASSERT(user = LDUserNew("userkey"));
+    /* flag */
+    LD_ASSERT(flag = makeMinimalFlag("validFeatureKey", 1, true, false))
+    setFallthrough(flag, 0);
+    addVariation(flag, LDNewNumber(flagValue));
+    LD_ASSERT(LDStoreInitEmpty(client->config->store));
+    LDStoreUpsert(client->config->store, LD_FLAG, flag);
+    /* run */
+    actual = LDIntVariation(client, user, "validFeatureKey", 0, NULL);
+    /* validate */
+    LD_ASSERT(actual == expected);
+    /* cleanup */
+    LDUserFree(user);
+    LDClientClose(client);
+}
+
+static void
+testDoubleVariationAsInt()
+{
+    testDoubleVariationAsIntHelper(100, 100.01);
+    testDoubleVariationAsIntHelper(99, 99.99);
+    testDoubleVariationAsIntHelper(-1, -1.1);
+}
+
+static void
 testStringVariation()
 {
     struct LDJSON *flag;
@@ -200,6 +233,7 @@ main()
     testBoolVariation();
     testIntVariation();
     testDoubleVariation();
+    testDoubleVariationAsInt();
     testStringVariation();
     testJSONVariation();
 
