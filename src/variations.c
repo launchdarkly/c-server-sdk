@@ -4,7 +4,6 @@
 #include "client.h"
 #include "user.h"
 #include "evaluate.h"
-#include "store.h"
 #include "events.h"
 #include "misc.h"
 

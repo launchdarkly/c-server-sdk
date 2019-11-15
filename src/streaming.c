@@ -3,7 +3,6 @@
 
 #include <launchdarkly/api.h>
 
-#include "store.h"
 #include "network.h"
 #include "streaming.h"
 #include "config.h"

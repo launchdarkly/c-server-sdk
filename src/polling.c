@@ -3,7 +3,6 @@
 
 #include <launchdarkly/api.h>
 
-#include "store.h"
 #include "network.h"
 #include "client.h"
 #include "user.h"

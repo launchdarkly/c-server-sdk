@@ -2,7 +2,6 @@
 
 #include <launchdarkly/api.h>
 
-#include "store.h"
 #include "misc.h"
 
 /* **** Forward Declarations **** */
@@ -17,9 +16,6 @@ static bool memoryGet(void *const rawcontext, const char *const kind,
 
 static bool memoryAll(void *const rawcontext, const char *const kind,
     struct LDJSONRC ***const result);
-
-static bool memoryRemove(void *const rawcontext, const char *const kind,
-    const char *const key, const unsigned int version);
 
 static bool memoryUpsert(void *const rawcontext, const char *const kind,
     struct LDJSON *const feature);
@@ -385,7 +381,7 @@ memoryAll(void *const rawcontext, const char *const kind,
     }
 
     if (!(collection =
-        (struct LDJSONRC **)malloc(sizeof(struct LDJSONRC *) * (count + 1))))
+        (struct LDJSONRC **)LDAlloc(sizeof(struct LDJSONRC *) * (count + 1))))
     {
         LD_ASSERT(LDi_rdunlock(&context->lock));
 
@@ -409,58 +405,6 @@ memoryAll(void *const rawcontext, const char *const kind,
     *result = collection;
 
     return true;
-}
-
-static bool
-memoryRemove(void *const rawcontext, const char *const kind,
-    const char *const key, const unsigned int version)
-{
-    struct LDJSON *placeholder, *temp;
-
-    LD_ASSERT(rawcontext);
-    LD_ASSERT(key);
-
-    placeholder = NULL;
-    temp        = NULL;
-
-    if (!(placeholder = LDNewObject())) {
-        return false;
-    }
-
-    if (!(temp = LDNewBool(true))) {
-        goto error;
-    }
-
-    if (!LDObjectSetKey(placeholder, "deleted", temp)) {
-        goto error;
-    }
-
-    if (!(temp = LDNewText(key))) {
-        goto error;
-    }
-
-    if (!LDObjectSetKey(placeholder, "key", temp)) {
-        LDJSONFree(temp);
-
-        goto error;
-    }
-
-    if (!(temp = LDNewNumber(version))) {
-        goto error;
-    }
-
-    if (!LDObjectSetKey(placeholder, "version", temp)) {
-        LDJSONFree(temp);
-
-        goto error;
-    }
-
-    return memoryUpsert(rawcontext, kind, placeholder);
-
-  error:
-    LDJSONFree(placeholder);
-
-    return false;
 }
 
 static bool
@@ -652,7 +596,6 @@ LDMakeInMemoryStore()
     store->init          = memoryInit;
     store->get           = memoryGet;
     store->all           = memoryAll;
-    store->remove        = memoryRemove;
     store->upsert        = memoryUpsert;
     store->initialized   = memoryInitialized;
     store->destructor    = memoryDestructor;
@@ -715,10 +658,55 @@ bool
 LDStoreRemove(const struct LDStore *const store, const enum FeatureKind kind,
     const char *const key, const unsigned int version)
 {
-    LD_ASSERT(store);
+    struct LDJSON *placeholder, *tmp;
 
-    return store->remove(store->context, featureKindToString(kind), key,
-        version);
+    LD_ASSERT(store);
+    LD_ASSERT(key);
+
+    placeholder = NULL;
+    tmp         = NULL;
+
+    if (!(placeholder = LDNewObject())) {
+        return false;
+    }
+
+    if (!(tmp = LDNewBool(true))) {
+        goto error;
+    }
+
+    if (!LDObjectSetKey(placeholder, "deleted", tmp)) {
+        LDJSONFree(tmp);
+
+        goto error;
+    }
+
+    if (!(tmp = LDNewText(key))) {
+        goto error;
+    }
+
+    if (!LDObjectSetKey(placeholder, "key", tmp)) {
+        LDJSONFree(tmp);
+
+        goto error;
+    }
+
+    if (!(tmp = LDNewNumber(version))) {
+        goto error;
+    }
+
+    if (!LDObjectSetKey(placeholder, "version", tmp)) {
+        LDJSONFree(tmp);
+
+        goto error;
+    }
+
+    return store->upsert(store->context, featureKindToString(kind), placeholder);
+
+  error:
+    LDJSONFree(placeholder);
+    LDJSONFree(tmp);
+
+    return false;
 }
 
 bool

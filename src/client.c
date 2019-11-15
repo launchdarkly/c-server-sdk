@@ -4,7 +4,6 @@
 #include <launchdarkly/api.h>
 
 #include "events.h"
-#include "store.h"
 #include "network.h"
 #include "client.h"
 #include "config.h"

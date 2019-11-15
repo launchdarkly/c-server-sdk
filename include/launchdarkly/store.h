@@ -10,8 +10,6 @@
 
 #include <launchdarkly/json.h>
 
-#include "misc.h"
-
 /***************************************************************************//**
  * @name Reference counted wrapper for JSON
  * Used as an optimization to reduce allocations.
@@ -68,19 +66,6 @@ struct LDStore {
      */
     bool (*all)(void *const context, const char *const kind,
         struct LDJSONRC ***const result);
-    /**
-     * @brief Mark an existing feature as removed
-     * (only virtually removes to maintain version)
-     * @param[in] context Implementation specific context.
-     * May not be NULL (assert).
-     * @param[in] kind The namespace to search in. May not be NULL (assert).
-     * @param[in] key The key to return the value for. May not be NULL (assert).
-     * @param[in] version Version of event.
-     * Only remove if version is newer than the features.
-     * @return True on success, False on failure.
-     */
-    bool (*remove)(void *const context, const char *const kind,
-        const char *const key, const unsigned int version);
     /**
      * @brief Replace an existing feature with a newer one
      * @param[in] context Implementation specific context.

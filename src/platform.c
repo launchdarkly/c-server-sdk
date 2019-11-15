@@ -2,7 +2,6 @@
 
 #include <launchdarkly/api.h>
 
-#include "store.h"
 #include "network.h"
 #include "misc.h"
 
@@ -443,3 +442,44 @@ LDi_wrunlock(ld_rwlock_t *const lock)
         return status == 0;
     #endif
 }
+
+#ifdef _WIN32
+
+void
+LDi_condwait(CONDITION_VARIABLE *cond, CRITICAL_SECTION *mtx, int ms)
+{
+    SleepConditionVariableCS(cond, mtx, ms);
+
+}
+
+void
+LDi_condsignal(CONDITION_VARIABLE *cond)
+{
+    WakeAllConditionVariable(cond);
+}
+
+#else
+
+void
+LDi_condwait(pthread_cond_t *cond, pthread_mutex_t *mtx, int ms)
+{
+    struct timespec ts;
+
+    clock_gettime(CLOCK_REALTIME, &ts);
+    ts.tv_sec += ms / 1000;
+    ts.tv_nsec += (ms % 1000) * 1000 * 1000;
+    if (ts.tv_nsec > 1000 * 1000 * 1000) {
+        ts.tv_sec += 1;
+        ts.tv_nsec -= 1000 * 1000 * 1000;
+    }
+
+    pthread_cond_timedwait(cond, mtx, &ts);
+}
+
+void
+LDi_condsignal(pthread_cond_t *cond)
+{
+    pthread_cond_broadcast(cond);
+}
+
+#endif

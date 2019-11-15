@@ -31,6 +31,11 @@
 
     #define ld_rwlock_t SRWLOCK
     #define ld_mutex_t CRITICAL_SECTION
+
+    #define ld_cond_t CONDITION_VARIABLE
+    #define LD_COND_INIT CONDITION_VARIABLE_INIT
+    #define LDi_condinit(cond) InitializeConditionVariable(cond)
+    #define LDi_conddestroy(cond)
 #else
     #define THREAD_RETURN void *
     #define THREAD_RETURN_DEFAULT NULL
@@ -38,7 +43,15 @@
 
     #define ld_rwlock_t pthread_rwlock_t
     #define ld_mutex_t pthread_mutex_t
+
+    #define ld_cond_t pthread_cond_t
+    #define LD_COND_INIT PTHREAD_COND_INITIALIZER
+    #define LDi_condinit(cond) pthread_cond_init(cond, NULL)
+    #define LDi_conddestroy(cond) pthread_cond_destroy(cond)
 #endif
+
+void LDi_condwait(ld_cond_t *cond, ld_mutex_t *mtx, int ms);
+void LDi_condsignal(ld_cond_t *cond);
 
 bool LDi_jointhread(ld_thread_t thread);
 bool LDi_createthread(ld_thread_t *const thread,

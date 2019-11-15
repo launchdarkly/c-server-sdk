@@ -4,7 +4,6 @@
 #include "client.h"
 #include "evaluate.h"
 #include "streaming.h"
-#include "store.h"
 #include "misc.h"
 
 static void

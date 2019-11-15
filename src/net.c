@@ -86,10 +86,10 @@ LDi_networkthread(void* const clientref)
 {
     struct LDClient *const client = (struct LDClient *)clientref;
 
+    /* allocated to max size */
     struct NetworkInterface *interfaces[3];
-
-    const size_t interfacecount =
-        sizeof(interfaces) / sizeof(struct NetworkInterface *);
+    /* record how many threads are actually running */
+    size_t interfacecount = 0;
 
     CURLM *multihandle;
 
@@ -101,19 +101,21 @@ LDi_networkthread(void* const clientref)
         return THREAD_RETURN_DEFAULT;
     }
 
-    if (!(interfaces[0] = LDi_constructPolling(client))) {
-        LD_LOG(LD_LOG_ERROR, "failed to construct polling");
+    if (!client->config->useLDD) {
+        if (!(interfaces[interfacecount++] = LDi_constructPolling(client))) {
+            LD_LOG(LD_LOG_ERROR, "failed to construct polling");
 
-        return THREAD_RETURN_DEFAULT;
+            return THREAD_RETURN_DEFAULT;
+        }
+
+        if (!(interfaces[interfacecount++] = LDi_constructStreaming(client))) {
+            LD_LOG(LD_LOG_ERROR, "failed to construct streaming");
+
+            return THREAD_RETURN_DEFAULT;
+        }
     }
 
-    if (!(interfaces[1] = LDi_constructStreaming(client))) {
-        LD_LOG(LD_LOG_ERROR, "failed to construct streaming");
-
-        return THREAD_RETURN_DEFAULT;
-    }
-
-    if (!(interfaces[2] = LDi_constructAnalytics(client))) {
+    if (!(interfaces[interfacecount++] = LDi_constructAnalytics(client))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct analytics");
 
         return THREAD_RETURN_DEFAULT;

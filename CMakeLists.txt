@@ -23,17 +23,21 @@ if(APPLE)
     set(LD_INCLUDE_PATHS ${LD_INCLUDE_PATHS} "/usr/local/include")
 endif(APPLE)
 
+if (REDIS_STORE)
+    add_subdirectory(stores/redis)
+endif (REDIS_STORE)
+
 include_directories(${LD_INCLUDE_PATHS})
 file(GLOB SOURCES "src/*" "third-party/src/*")
 
 set(LD_LIBRARIES ${LD_LIBRARIES} ${CURL_LIBRARIES} ${PCRE_LIBRARIES})
 
 add_library(ldserverapi STATIC ${SOURCES})
-target_link_libraries(ldserverapi ${LD_LIBRARIES})
+target_link_libraries(ldserverapi PUBLIC ${LD_LIBRARIES})
 
 add_library(ldserverapidynamic SHARED ${SOURCES})
 set_property(TARGET ldserverapidynamic PROPERTY C_VISIBILITY_PRESET hidden)
-target_link_libraries(ldserverapidynamic ${LD_LIBRARIES})
+target_link_libraries(ldserverapidynamic PUBLIC ${LD_LIBRARIES})
 
 file(GLOB TESTS "tests/test-*")
 foreach(testsource ${TESTS})

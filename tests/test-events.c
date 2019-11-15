@@ -5,7 +5,6 @@
 #include "client.h"
 #include "events.h"
 #include "misc.h"
-#include "store.h"
 #include "config.h"
 #include "user.h"
 

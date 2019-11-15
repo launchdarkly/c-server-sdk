@@ -10,8 +10,7 @@
 
 #include <launchdarkly/json.h>
 #include <launchdarkly/variations.h>
-
-#include "store.h"
+#include <launchdarkly/store.h>
 
 typedef enum {
     EVAL_MEM,

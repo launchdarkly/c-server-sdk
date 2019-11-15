@@ -3,12 +3,13 @@ jobs:
   build-test-linux:
     docker:
       - image: circleci/golang:1.9.6
+      - image: redis
     steps:
       - checkout
       - run:
           name: Install deps
-          command: sudo apt-get update -y && sudo apt-get install -y libcurl4-openssl-dev cmake libpcre3-dev
-      - run: mkdir build && cd build && cmake ..
+          command: sudo apt-get update -y && sudo apt-get install -y libcurl4-openssl-dev cmake libpcre3-dev libhiredis-dev
+      - run: mkdir build && cd build && cmake -D REDIS_STORE="true" ..
       - run: cd build && make
       - run: cd build && CTEST_OUTPUT_ON_FAILURE=1 make test
       - run:

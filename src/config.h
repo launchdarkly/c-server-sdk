@@ -22,4 +22,5 @@ struct LDConfig {
     unsigned int userKeysFlushInterval;
     bool defaultStore;
     struct LDStore *store;
+    bool useLdd;
 };

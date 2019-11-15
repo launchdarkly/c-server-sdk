@@ -3,7 +3,6 @@
 
 #include <launchdarkly/api.h>
 
-#include "store.h"
 #include "evaluate.h"
 #include "misc.h"
 
