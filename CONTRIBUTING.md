@@ -37,7 +37,7 @@ cmake -G "Visual Studio 15 2017 Win64" ..
 cmake --build .
 ```
 
-You may need to modify the CMAKE generator (`-G` flag) for your specific environment.
+You may need to modify the CMAKE generator (`-G` flag) for your specific environment. For Visual Studio 2019, the equivalent is `cmake -G "Visual Studio 16 2019" -A x64`.
 
 The Visual Studio command prompt can be configured for multiple environments. To ensure that you are using your intended tool chain you can launch an environment with: `call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat" -host_arch=amd64 -arch=amd64`, where `arch` is your target, `host_arch` is the platform you are building on, and the path is your path to `VsDevCmd.bat`. You will need to modify the above command for your specific setup.
 
