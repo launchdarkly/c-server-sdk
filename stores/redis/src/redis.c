@@ -5,6 +5,7 @@
 #include "utlist.h"
 #include "misc.h"
 #include "redis.h"
+#include "store.h"
 
 static const char *const defaultHost   = "127.0.0.1";
 static const char *const defaultPrefix = "launchdarkly";
@@ -171,14 +172,30 @@ borrowConnection(struct Context *const context)
 
                 LD_ASSERT(LDi_mtxunlock(&context->lock));
 
-                LD_ASSERT(connection = LDAlloc(sizeof(struct Connection)));
-                connection->next = NULL;
+                if (!(connection = LDAlloc(sizeof(struct Connection)))) {
+                    LD_LOG(LD_LOG_ERROR,
+                        "failed to allocate connection pool item");
 
-                LD_ASSERT(connection->connection =
+                    goto error;
+                }
+
+                connection->next       = NULL;
+                connection->connection = NULL;
+
+                if (!(connection->connection =
                     redisConnect(LDRedisConfigGetHost(context->config),
-                    context->config->port));
+                    context->config->port)))
+                {
+                    LD_LOG(LD_LOG_ERROR, "failed to create redis connection");
 
-                LD_ASSERT(!connection->connection->err);
+                    goto error;
+                }
+
+                if (connection->connection->err) {
+                    LD_LOG(LD_LOG_ERROR, "redis connection had error");
+
+                    goto error;
+                }
             } else {
                 LD_LOG(LD_LOG_TRACE, "waiting on free connection");
 
@@ -188,6 +205,21 @@ borrowConnection(struct Context *const context)
     }
 
     return connection;
+
+  error:
+    LD_ASSERT(LDi_mtxlock(&context->lock));
+    context->count--;
+    LD_ASSERT(LDi_mtxunlock(&context->lock));
+
+    if (connection) {
+        if (connection->connection) {
+            redisFree(connection->connection);
+        }
+
+        LDFree(connection);
+    }
+
+    return NULL;
 }
 
 static void
@@ -195,7 +227,10 @@ returnConnection(struct Context *const context,
     struct Connection *const connection)
 {
     LD_ASSERT(context);
-    LD_ASSERT(connection);
+
+    if (!connection) {
+        return;
+    }
 
     LD_ASSERT(LDi_mtxlock(&context->lock));
 
@@ -216,70 +251,6 @@ returnConnection(struct Context *const context,
     LD_ASSERT(LDi_mtxunlock(&context->lock));
 
     LDi_condsignal(&context->condition);
-}
-
-static const char *
-getFeatureKey(const struct LDJSON *const feature)
-{
-    const struct LDJSON *tmp;
-
-    LD_ASSERT(feature);
-
-    if (!(tmp = LDObjectLookup(feature, "key"))) {
-        LD_LOG(LD_LOG_ERROR, "feature missing key");
-
-        return NULL;
-    }
-
-    if (LDJSONGetType(tmp) != LDText) {
-        LD_LOG(LD_LOG_ERROR, "feature key is not a string");
-
-        return NULL;
-    }
-
-    return LDGetText(tmp);
-}
-
-static unsigned int
-getFeatureVersion(const struct LDJSON *const feature)
-{
-    const struct LDJSON *tmp;
-
-    LD_ASSERT(feature);
-
-    if (!(tmp = LDObjectLookup(feature, "version"))) {
-        LD_LOG(LD_LOG_ERROR, "feature missing version");
-
-        return 0;
-    }
-
-    if (LDJSONGetType(tmp) != LDNumber) {
-        LD_LOG(LD_LOG_ERROR, "feature version is not a number");
-
-        return 0;
-    }
-
-    return LDGetNumber(tmp);
-}
-
-static bool
-isFeatureDeleted(const struct LDJSON *const feature)
-{
-    const struct LDJSON *tmp;
-
-    LD_ASSERT(feature);
-
-    if (!(tmp = LDObjectLookup(feature, "deleted"))) {
-        return false;
-    }
-
-    if (LDJSONGetType(tmp) != LDBool) {
-        LD_LOG(LD_LOG_ERROR, "feature deletion status is not boolean");
-
-        return false;
-    }
-
-    return LDGetBool(tmp);
 }
 
 static bool
@@ -325,26 +296,30 @@ resetReply(redisReply **const reply)
 }
 
 static bool
-storeInit(void *const contextRaw, struct LDJSON *const sets)
+storeInit(void *const contextRaw,
+    const struct LDStoreCollectionState *collections,
+    const unsigned int collectionCount)
 {
     struct Context *context;
     redisReply *reply;
-    struct LDJSON *set, *setItem;
     struct Connection *connection;
     bool success;
+    unsigned int x;
 
     LD_LOG(LD_LOG_TRACE, "redis storeInit");
 
     LD_ASSERT(contextRaw);
-    LD_ASSERT(sets);
+    LD_ASSERT(collections);
+    LD_ASSERT(collectionCount);
 
-    context = (struct Context *)contextRaw;
-    reply   = NULL;
-    set     = NULL;
-    setItem = NULL;
-    success = false;
+    connection = NULL;
+    context    = (struct Context *)contextRaw;
+    reply      = NULL;
+    success    = false;
 
-    connection = borrowConnection(context);
+    if (!(connection = borrowConnection(context))) {
+        goto cleanup;
+    }
 
     reply = redisCommand(connection->connection, "MULTI");
 
@@ -354,9 +329,14 @@ storeInit(void *const contextRaw, struct LDJSON *const sets)
 
     resetReply(&reply);
 
-    for (set = LDGetIter(sets); set; set = LDIterNext(set)) {
+    for (x = 0; x < collectionCount; x++) {
+        const struct LDStoreCollectionState *collection;
+        unsigned int y;
+
+        collection = &(collections[x]);
+
         reply = redisCommand(connection->connection, "DEL %s:%s",
-            LDRedisConfigGetPrefix(context->config), LDIterKey(set));
+            LDRedisConfigGetPrefix(context->config), collection->kind);
 
         if (!redisCheckStatus(reply, "QUEUED")) {
             goto cleanup;
@@ -364,18 +344,14 @@ storeInit(void *const contextRaw, struct LDJSON *const sets)
 
         resetReply(&reply);
 
-        for (setItem = LDGetIter(set); setItem; setItem = LDIterNext(setItem)) {
-            char *serialized;
+        for (y = 0; y < collection->itemCount; y++) {
+            struct LDStoreCollectionStateItem *item;
 
-            if (!(serialized = LDJSONSerialize(setItem))) {
-                goto cleanup;
-            }
+            item = &(collection->items[y]);
 
             reply = redisCommand(connection->connection, "HSET %s:%s %s %s",
-                LDRedisConfigGetPrefix(context->config), LDIterKey(set),
-                LDIterKey(setItem), serialized);
-
-            LDFree(serialized);
+                LDRedisConfigGetPrefix(context->config), collection->kind,
+                item->key, item->item.buffer);
 
             if (!redisCheckStatus(reply, "QUEUED")) {
                 goto cleanup;
@@ -403,9 +379,7 @@ storeInit(void *const contextRaw, struct LDJSON *const sets)
     success = true;
 
   cleanup:
-    freeReplyObject(reply);
-
-    LDJSONFree(sets);
+    resetReply(&reply);
 
     returnConnection(context, connection);
 
@@ -413,76 +387,13 @@ storeInit(void *const contextRaw, struct LDJSON *const sets)
 }
 
 static bool
-storeGetInternal(void *const contextRaw, const char *const kind,
-    const char *const key, struct LDJSONRC **const result,
-    struct Connection *const connection)
-{
-    struct Context *context;
-    redisReply *reply;
-    struct LDJSON *json;
-    bool success;
-
-    LD_LOG(LD_LOG_TRACE, "redis storeGetInternal");
-
-    LD_ASSERT(contextRaw);
-    LD_ASSERT(kind);
-    LD_ASSERT(key);
-    LD_ASSERT(result);
-    LD_ASSERT(connection);
-
-    context = (struct Context *)contextRaw;
-    reply   = NULL;
-    json    = NULL;
-    success = false;
-    *result = NULL;
-
-    reply = redisCommand(connection->connection, "HGET %s:%s %s",
-        LDRedisConfigGetPrefix(context->config), kind, key);
-
-    if (reply->type == REDIS_REPLY_NIL) {
-        success = true;
-
-        goto cleanup;
-    }
-
-    if (!redisCheckReply(reply, REDIS_REPLY_STRING)) {
-        goto cleanup;
-    }
-
-    if (!(json = LDJSONDeserialize(reply->str))) {
-        goto cleanup;
-    }
-
-    resetReply(&reply);
-
-    if (isFeatureDeleted(json)) {
-        success = true;
-
-        LDJSONFree(json);
-
-        goto cleanup;
-    }
-
-    if (!(*result = LDJSONRCNew(json))) {
-        LDJSONFree(json);
-
-        goto cleanup;
-    }
-
-    success = true;
-
-  cleanup:
-    freeReplyObject(reply);
-
-    return success;
-}
-
-static bool
 storeGet(void *const contextRaw, const char *const kind,
-    const char *const key, struct LDJSONRC **const result)
+    const char *const key, struct LDStoreCollectionItem *const result)
 {
     struct Context *context;
     struct Connection *connection;
+    struct LDJSON *feature;
+    redisReply *reply;
     bool success;
 
     LD_LOG(LD_LOG_TRACE, "redis storeGet");
@@ -492,11 +403,49 @@ storeGet(void *const contextRaw, const char *const kind,
     LD_ASSERT(key);
     LD_ASSERT(result);
 
-    context = (struct Context *)contextRaw;
+    context    = (struct Context *)contextRaw;
+    connection = NULL;
+    feature    = NULL;
+    reply      = NULL;
+    success    = false;
 
-    connection = borrowConnection(context);
+    if (!(connection = borrowConnection(context))) {
+        goto cleanup;
+    }
 
-    success = storeGetInternal(contextRaw, kind, key, result, connection);
+    reply = redisCommand(connection->connection, "HGET %s:%s %s",
+        LDRedisConfigGetPrefix(context->config), kind, key);
+
+    if (!reply) {
+        goto cleanup;
+    } else if (reply->type == REDIS_REPLY_NIL) {
+        result->buffer = NULL;
+
+        success = true;
+
+        goto cleanup;
+    } else if (!redisCheckReply(reply, REDIS_REPLY_STRING)) {
+        goto cleanup;
+    } else if (!(feature = LDJSONDeserialize(reply->str))) {
+        goto cleanup;
+    } else if (!(result->buffer = LDStrDup(reply->str))) {
+        goto cleanup;
+    }
+
+    if (result->buffer) {
+        result->bufferSize = strlen(reply->str);
+        result->version    = LDi_getFeatureVersion(feature);
+    } else {
+        result->bufferSize = 0;
+        result->version    = 0;
+    }
+
+    success = true;
+
+  cleanup:
+    LDJSONFree(feature);
+
+    resetReply(&reply);
 
     returnConnection(context, connection);
 
@@ -505,14 +454,17 @@ storeGet(void *const contextRaw, const char *const kind,
 
 static bool
 storeAll(void *const contextRaw, const char *const kind,
-    struct LDJSONRC ***const result)
+    struct LDStoreCollectionItem **const result,
+    unsigned int *const resultCount)
 {
     struct Context *context;
     redisReply *reply;
     struct Connection *connection;
     bool success;
     unsigned int i;
-    struct LDJSONRC **collection, **collectionIter;
+    struct LDStoreCollectionItem *collection, *collectionIter;
+    size_t resultBytes;
+    struct LDJSON *feature;
 
     LD_LOG(LD_LOG_TRACE, "redis storeAll");
 
@@ -520,13 +472,18 @@ storeAll(void *const contextRaw, const char *const kind,
     LD_ASSERT(kind);
     LD_ASSERT(result);
 
-    context    = (struct Context *)contextRaw;
-    reply      = NULL;
-    success    = false;
-    *result    = NULL;
-    collection = NULL;
+    context      = (struct Context *)contextRaw;
+    reply        = NULL;
+    success      = false;
+    *result      = NULL;
+    *resultCount = 0;
+    collection   = NULL;
+    resultBytes  = 0;
+    feature      = NULL;
 
-    connection = borrowConnection(context);
+    if (!(connection = borrowConnection(context))) {
+        goto cleanup;
+    }
 
     reply = redisCommand(connection->connection, "HGETALL %s:%s",
         LDRedisConfigGetPrefix(context->config), kind);
@@ -541,19 +498,21 @@ storeAll(void *const contextRaw, const char *const kind,
         goto cleanup;
     }
 
-    if (!(collection = (struct LDJSONRC **)LDAlloc(sizeof(struct LDJSONRC *) *
-        ((reply->elements) + 1))))
-    {
+    *resultCount = reply->elements / 2;
+    resultBytes = sizeof(struct LDStoreCollectionItem) * (*resultCount);
+
+    if (!(collection = (struct LDStoreCollectionItem *)LDAlloc(resultBytes))) {
         LD_LOG(LD_LOG_ERROR, "LDAlloc failed");
 
-        return false;
+        goto cleanup;
     }
+
+    memset(collection, 0, resultBytes);
 
     collectionIter = collection;
 
     for (i = 0; i < reply->elements; i++) {
-        struct LDJSON *json;
-
+        const char *raw;
         /* skip name field */
         i++;
 
@@ -563,49 +522,53 @@ storeAll(void *const contextRaw, const char *const kind,
             goto cleanup;
         }
 
-        if (!(json = LDJSONDeserialize(reply->element[i]->str))) {
-            LD_LOG(LD_LOG_ERROR, "deserialization failed");
+        LD_ASSERT(raw = reply->element[i]->str);
 
+        if (!(feature = LDJSONDeserialize(raw))) {
             goto cleanup;
         }
 
-        if (!isFeatureDeleted(json)) {
-            struct LDJSONRC *jsonRC;
-
-            if (!(jsonRC = LDJSONRCNew(json))) {
-                LD_LOG(LD_LOG_ERROR, "json RC failed");
-
-                goto cleanup;
-            }
-
-            *collectionIter = jsonRC;
-
-            collectionIter++;
+        if (!(collectionIter->buffer = LDStrDup(raw))) {
+            goto cleanup;
         }
+
+        collectionIter->bufferSize = strlen(raw);
+        collectionIter->version    = LDi_getFeatureVersion(feature);
+
+        LDJSONFree(feature);
+        feature = NULL;
+
+        collectionIter++;
     }
 
-    /* null terminate the list */
-    *collectionIter = NULL;
-
     *result = collection;
-
     success = true;
 
   cleanup:
-    freeReplyObject(reply);
+    LDJSONFree(feature);
 
+    resetReply(&reply);
     returnConnection(context, connection);
+
+    if (!success) {
+        for (i = 0; i < *resultCount; i++) {
+            LDFree(collection[i].buffer);
+        }
+        LDFree(collection);
+    }
 
     return success;
 }
 
 bool
 storeUpsertInternal(void *const contextRaw, const char *const kind,
-    struct LDJSON *const feature, void (*const hook)())
+    const struct LDStoreCollectionItem *const feature,
+    const char *const featureKey,
+    void (*const hook)())
 {
     struct Context *context;
     redisReply *reply;
-    struct LDJSONRC *existing;
+    struct LDJSON *existing;
     struct Connection *connection;
     char *serialized;
     bool success;
@@ -615,18 +578,22 @@ storeUpsertInternal(void *const contextRaw, const char *const kind,
     LD_ASSERT(contextRaw);
     LD_ASSERT(kind);
     LD_ASSERT(feature);
+    LD_ASSERT(featureKey);
 
     context    = (struct Context *)contextRaw;
     reply      = NULL;
     serialized = NULL;
     existing   = NULL;
+    connection = NULL;
     success    = false;
 
-    connection = borrowConnection(context);
+    if (!(connection = borrowConnection(context))) {
+        goto cleanup;
+    }
 
     while (true) {
         reply = redisCommand(connection->connection, "WATCH %s:%s",
-            LDRedisConfigGetPrefix(context->config), getFeatureKey(feature));
+            LDRedisConfigGetPrefix(context->config), featureKey);
 
         if (!redisCheckStatus(reply, "OK")) {
             goto cleanup;
@@ -638,22 +605,53 @@ storeUpsertInternal(void *const contextRaw, const char *const kind,
 
         resetReply(&reply);
 
-        if (!storeGetInternal(contextRaw, kind, getFeatureKey(feature),
-            &existing, connection))
-        {
+        reply = redisCommand(connection->connection, "HGET %s:%s %s",
+            LDRedisConfigGetPrefix(context->config), kind, featureKey);
+
+        if (!reply) {
+            goto cleanup;
+        } else if (reply->type == REDIS_REPLY_NIL) {
+            /* does not exist */
+        } else if (!redisCheckReply(reply, REDIS_REPLY_STRING)) {
+            goto cleanup;
+        } else if ((existing = LDJSONDeserialize(reply->str))) {
+            if (LDi_isFeatureDeleted(existing)) {
+                LDJSONFree(existing);
+
+                existing = NULL;
+            }
+        } else {
             goto cleanup;
         }
 
-        if (existing && (getFeatureVersion(LDJSONRCGet(existing)) >=
-            getFeatureVersion(feature)))
+        resetReply(&reply);
+
+        if (existing && LDi_getFeatureVersion(existing) >=
+            feature->version)
         {
             success = true;
 
             goto cleanup;
         }
 
-        if (!(serialized = LDJSONSerialize(feature))) {
-            goto cleanup;
+        if (feature->buffer) {
+            serialized = feature->buffer;
+        } else {
+            struct LDJSON *placeholder;
+
+            if (!(placeholder =
+                LDi_makeDeleted(featureKey, feature->version)))
+            {
+                goto cleanup;
+            }
+
+            serialized = LDJSONSerialize(placeholder);
+
+            LDJSONFree(placeholder);
+
+            if (!serialized) {
+                goto cleanup;
+            }
         }
 
         reply = redisCommand(connection->connection, "MULTI");
@@ -667,8 +665,8 @@ storeUpsertInternal(void *const contextRaw, const char *const kind,
         resetReply(&reply);
 
         reply = redisCommand(connection->connection, "HSET %s:%s %s %s",
-            LDRedisConfigGetPrefix(context->config), kind,
-            getFeatureKey(feature), serialized);
+            LDRedisConfigGetPrefix(context->config), kind, featureKey,
+            serialized);
 
         if (!redisCheckStatus(reply, "QUEUED")) {
             LD_LOG(LD_LOG_ERROR, "Redis expected OK");
@@ -686,7 +684,7 @@ storeUpsertInternal(void *const contextRaw, const char *const kind,
             } else if (reply->type == REDIS_REPLY_NIL) {
                 LD_LOG(LD_LOG_WARNING, "Redis race detected retrying");
 
-                freeReplyObject(reply);
+                resetReply(&reply);
             } else {
                 LD_LOG(LD_LOG_ERROR, "Redis EXEC incorrect type");
 
@@ -702,11 +700,13 @@ storeUpsertInternal(void *const contextRaw, const char *const kind,
     success = true;
 
   cleanup:
-    LDFree(serialized);
-    LDJSONFree(feature);
-    LDJSONRCDecrement(existing);
+    if ((feature && (serialized != feature->buffer)) || !feature) {
+        LDFree(serialized);
+    }
 
-    freeReplyObject(reply);
+    LDJSONFree(existing);
+
+    resetReply(&reply);
 
     returnConnection(context, connection);
 
@@ -715,13 +715,15 @@ storeUpsertInternal(void *const contextRaw, const char *const kind,
 
 static bool
 storeUpsert(void *const contextRaw, const char *const kind,
-    struct LDJSON *const feature)
+    const struct LDStoreCollectionItem *const feature,
+    const char *const featureKey)
 {
     LD_ASSERT(contextRaw);
     LD_ASSERT(kind);
     LD_ASSERT(feature);
+    LD_ASSERT(featureKey);
 
-    return storeUpsertInternal(contextRaw, kind, feature, NULL);
+    return storeUpsertInternal(contextRaw, kind, feature, featureKey, NULL);
 }
 
 static bool
@@ -736,10 +738,13 @@ storeInitialized(void *const contextRaw)
 
     LD_ASSERT(contextRaw);
 
-    context = (struct Context *)contextRaw;
-    reply   = NULL;
+    context    = (struct Context *)contextRaw;
+    connection = NULL;
+    reply      = NULL;
 
-    connection = borrowConnection(context);
+    if (!(connection = borrowConnection(context))) {
+        return false;
+    }
 
     reply = redisCommand(connection->connection, "EXISTS %s:%s",
         LDRedisConfigGetPrefix(context->config), initedKey);
@@ -747,7 +752,7 @@ storeInitialized(void *const contextRaw)
     initialized = !redisCheckReply(reply, REDIS_REPLY_INTEGER)
         || reply->integer;
 
-    freeReplyObject(reply);
+    resetReply(&reply);
 
     returnConnection(context, connection);
 
@@ -785,10 +790,10 @@ storeDestructor(void *const contextRaw)
     }
 }
 
-struct LDStore *
-LDMakeRedisStore(struct LDRedisConfig *const config)
+struct LDStoreInterface *
+LDStoreInterfaceRedisNew(struct LDRedisConfig *const config)
 {
-    struct LDStore *handle;
+    struct LDStoreInterface *handle;
     struct Context *context;
 
     LD_ASSERT(config);
@@ -800,7 +805,9 @@ LDMakeRedisStore(struct LDRedisConfig *const config)
         goto error;
     }
 
-    if (!(handle = (struct LDStore *)LDAlloc(sizeof(struct LDStore)))) {
+    if (!(handle =
+        (struct LDStoreInterface *)LDAlloc(sizeof(struct LDStoreInterface))))
+    {
         goto error;
     }
 

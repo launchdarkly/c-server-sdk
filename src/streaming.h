@@ -10,6 +10,7 @@
 #include <curl/curl.h>
 
 #include "network.h"
+#include "store.h"
 
 struct StreamContext {
     char *memory;
@@ -25,3 +26,6 @@ bool LDi_parsePath(const char *path, enum FeatureKind *const kind,
     const char **const key);
 
 bool LDi_onSSE(struct StreamContext *const context, const char *line);
+
+size_t LDi_streamWriteCallback(const void *const contents, size_t size,
+    size_t nmemb, void *rawcontext);

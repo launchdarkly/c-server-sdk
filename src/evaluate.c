@@ -10,6 +10,7 @@
 #include "user.h"
 #include "client.h"
 #include "misc.h"
+#include "store.h"
 
 bool
 LDi_isEvalError(const EvalStatus status)

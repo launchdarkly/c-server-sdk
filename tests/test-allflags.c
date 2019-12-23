@@ -5,6 +5,7 @@
 #include "evaluate.h"
 #include "misc.h"
 #include "util-flags.h"
+#include "store.h"
 
 static struct LDClient *
 makeTestClient()
@@ -47,9 +48,9 @@ testAllFlags()
     addVariation(flag2, LDNewText("d"));
 
     /* store */
-    LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LD_ASSERT(LDStoreUpsert(client->config->store, LD_FLAG, flag1));
-    LD_ASSERT(LDStoreUpsert(client->config->store, LD_FLAG, flag2));
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag1));
+    LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag2));
 
     /* test */
     LD_ASSERT(allFlags = LDAllFlags(client, user));
@@ -92,9 +93,9 @@ testAllFlagsReturnsNilIfUserKeyIsNil()
     addVariation(flag2, LDNewText("d"));
 
     /* store */
-    LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LD_ASSERT(LDStoreUpsert(client->config->store, LD_FLAG, flag1));
-    LD_ASSERT(LDStoreUpsert(client->config->store, LD_FLAG, flag2));
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag1));
+    LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag2));
 
     /* test / validation */
     LD_ASSERT(!LDAllFlags(client, NULL));

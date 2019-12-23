@@ -9,7 +9,8 @@ prepareEmptyStore()
 {
     struct LDStore *store;
 
-    LD_ASSERT(store = LDMakeInMemoryStore());
+    LD_ASSERT(store = LDStoreNew(NULL));
+    LD_ASSERT(!LDStoreInitialized(store));
 
     return store;
 }

@@ -20,7 +20,6 @@ struct LDConfig {
     bool inlineUsersInEvents;
     unsigned int userKeysCapacity;
     unsigned int userKeysFlushInterval;
-    bool defaultStore;
-    struct LDStore *store;
+    struct LDStoreInterface *storeBackend;
     bool useLdd;
 };

@@ -7,7 +7,8 @@ extern "C" {
 #include <launchdarkly/store/redis.h>
 
 bool storeUpsertInternal(void *const contextRaw, const char *const kind,
-    struct LDJSON *const feature, void (*const hook)());
+    const struct LDStoreCollectionItem *const feature,
+    const char *const featureKey, void (*const hook)());
 
 #ifdef __cplusplus
 }

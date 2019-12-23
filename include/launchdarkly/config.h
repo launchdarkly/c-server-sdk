@@ -12,7 +12,7 @@
 
 /* **** Forward Declarations **** */
 
-struct LDStore; struct LDConfig;
+struct LDStoreInterface; struct LDConfig;
 
 /**
  * @brief Creates a new default configuration. The configuration object is
@@ -205,5 +205,5 @@ LD_EXPORT(bool) LDConfigAddPrivateAttribute(struct LDConfig *const config,
  * @param[in] store May not be `NULL` (assert).
  * @return `NULL` on failure.
  */
-LD_EXPORT(void) LDConfigSetFeatureStore(struct LDConfig *const config,
-    struct LDStore *const store);
+LD_EXPORT(void) LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
+    struct LDStoreInterface *const backend);

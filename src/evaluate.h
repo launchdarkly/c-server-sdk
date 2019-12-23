@@ -12,6 +12,8 @@
 #include <launchdarkly/variations.h>
 #include <launchdarkly/store.h>
 
+#include "store.h"
+
 typedef enum {
     EVAL_MEM,
     EVAL_SCHEMA,

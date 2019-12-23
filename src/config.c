@@ -51,7 +51,7 @@ LDConfigNew(const char *const key)
     config->inlineUsersInEvents   = false;
     config->userKeysCapacity      = 1000;
     config->userKeysFlushInterval = 300000;
-    config->store                 = NULL;
+    config->storeBackend          = NULL;
 
     return config;
 
@@ -222,10 +222,10 @@ LDConfigAddPrivateAttribute(struct LDConfig *const config,
 }
 
 void
-LDConfigSetFeatureStore(struct LDConfig *const config,
-    struct LDStore *const store)
+LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
+    struct LDStoreInterface *const backend)
 {
     LD_ASSERT(config);
 
-    config->store = store;
+    config->storeBackend = backend;
 }

@@ -26,7 +26,7 @@ LD_EXPORT(bool) LDRedisConfigSetPoolSize(struct LDRedisConfig *const config,
 
 LD_EXPORT(void) LDRedisConfigFree(struct LDRedisConfig *const config);
 
-LD_EXPORT(struct LDStore *) LDMakeRedisStore(
+LD_EXPORT(struct LDStoreInterface *) LDStoreInterfaceRedisNew(
     struct LDRedisConfig *const config);
 
 #ifdef __cplusplus

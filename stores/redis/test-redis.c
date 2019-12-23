@@ -24,13 +24,14 @@ static struct LDStore *
 prepareEmptyStore()
 {
     struct LDStore* store;
+    struct LDStoreInterface *interface;
     struct LDRedisConfig* config;
 
     flushDB();
 
     LD_ASSERT(config = LDRedisConfigNew())
-
-    LD_ASSERT(store = LDMakeRedisStore(config));
+    LD_ASSERT(interface = LDStoreInterfaceRedisNew(config));
+    LD_ASSERT(store = LDStoreNew(interface));
     LD_ASSERT(!LDStoreInitialized(store));
 
     return store;
@@ -53,15 +54,32 @@ testWriteConflict()
 {
     struct LDJSON *flag;
     struct LDJSONRC *lookup;
+    struct LDStoreInterface *interface;
+    struct LDRedisConfig *config;
+    struct LDStoreCollectionItem collectionItem;
+    char *serialized;
 
-    LD_ASSERT(concurrentStore = prepareEmptyStore());
+    flushDB();
+
+    LD_ASSERT(config = LDRedisConfigNew())
+    LD_ASSERT(interface = LDStoreInterfaceRedisNew(config));
+    LD_ASSERT(concurrentStore = LDStoreNew(interface));
+    LD_ASSERT(!LDStoreInitialized(concurrentStore));
+
     LD_ASSERT(flag = makeMinimalFlag("abc", 50, true, false));
 
     LD_ASSERT(LDStoreInitEmpty(concurrentStore));
     LDStoreUpsert(concurrentStore, LD_FLAG, flag);
 
     LD_ASSERT(flag = makeMinimalFlag("abc", 60, true, false));
-    storeUpsertInternal(concurrentStore->context, "features", flag, hook);
+    LD_ASSERT(serialized = LDJSONSerialize(flag));
+    LD_ASSERT(collectionItem.buffer = (void *)serialized);
+    LD_ASSERT(collectionItem.bufferSize = strlen(serialized));
+    collectionItem.version = 60;
+    LDJSONFree(flag);
+    storeUpsertInternal(interface->context, "features", &collectionItem, "abc",
+        hook);
+    LDFree(serialized);
 
     LD_ASSERT(LDStoreGet(concurrentStore, LD_FLAG, "abc", &lookup));
     LD_ASSERT(lookup);

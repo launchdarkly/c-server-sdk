@@ -6,6 +6,7 @@
 #include "evaluate.h"
 #include "events.h"
 #include "misc.h"
+#include "store.h"
 
 void
 LDDetailsInit(struct LDDetails *const details)
@@ -284,7 +285,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto error;
     }
 
-    LD_ASSERT(store = client->config->store);
+    LD_ASSERT(store = client->store);
 
     if (!LDStoreGet(store, LD_FLAG, key, &flagrc)) {
         detailsref->reason = LD_ERROR;
@@ -665,7 +666,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
     }
 
     if (!client->initialized) {
-        if (LDStoreInitialized(client->config->store)) {
+        if (LDStoreInitialized(client->store)) {
             LD_LOG(LD_LOG_WARNING, "LDAllFlags using stale values");
         } else {
             LD_LOG(LD_LOG_WARNING, "LDAllFlags not initialized returning NULL");
@@ -680,7 +681,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         return NULL;
     }
 
-    if (!LDStoreAll(client->config->store, LD_FLAG, &rawFlags)) {
+    if (!LDStoreAll(client->store, LD_FLAG, &rawFlags)) {
         LD_LOG(LD_LOG_ERROR, "LDAllFlags failed to fetch flags");
 
         LDJSONFree(evaluatedFlags);
@@ -703,7 +704,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
 
         LDDetailsInit(&details);
 
-        status = LDi_evaluate(client, flag, user, client->config->store,
+        status = LDi_evaluate(client, flag, user, client->store,
             &details, &events, &value, false);
 
         if (LDi_isEvalError(status)) {

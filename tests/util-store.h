@@ -1,6 +1,7 @@
 #include <launchdarkly/api.h>
 
 #include "misc.h"
+#include "store.h"
 
 static struct LDJSON *
 makeVersioned(const char *const key, const unsigned int version)
@@ -198,6 +199,110 @@ conflictDifferentNamespace(struct LDStore *const store)
     LDJSONFree(feature2Copy);
 }
 
+static void
+testUpsertFeatureNotAnObject(struct LDStore *const store)
+{
+    struct LDJSON *feature;
+    struct LDJSONRC *lookup;
+
+    LD_ASSERT(LDStoreInitEmpty(store));
+
+    LD_ASSERT(feature = LDNewNumber(52));
+
+    LD_ASSERT(!LDStoreUpsert(store, LD_FLAG, feature));
+
+    LD_ASSERT(LDStoreGet(store, LD_FLAG, "my-heap-key", &lookup));
+    LD_ASSERT(!lookup);
+}
+
+static void
+testUpsertFeatureMissingVersion(struct LDStore *const store)
+{
+    struct LDJSON *feature;
+    struct LDJSONRC *lookup;
+
+    LD_ASSERT(LDStoreInitEmpty(store));
+
+    LD_ASSERT(feature = makeVersioned("my-heap-key", 3));
+    LDObjectDeleteKey(feature, "version");
+
+    LD_ASSERT(!LDStoreUpsert(store, LD_FLAG, feature));
+
+    LD_ASSERT(LDStoreGet(store, LD_FLAG, "my-heap-key", &lookup));
+    LD_ASSERT(!lookup);
+}
+
+static void
+testUpsertFeatureVersionNotNumber(struct LDStore *const store)
+{
+    struct LDJSON *feature;
+    struct LDJSONRC *lookup;
+
+    LD_ASSERT(LDStoreInitEmpty(store));
+
+    LD_ASSERT(feature = makeVersioned("my-heap-key", 3));
+    LDObjectDeleteKey(feature, "version");
+    LDObjectSetKey(feature, "version", LDNewText("abc"));
+
+    LD_ASSERT(!LDStoreUpsert(store, LD_FLAG, feature));
+
+    LD_ASSERT(LDStoreGet(store, LD_FLAG, "my-heap-key", &lookup));
+    LD_ASSERT(!lookup);
+}
+
+static void
+testUpsertFeatureMissingKey(struct LDStore *const store)
+{
+    struct LDJSON *feature;
+    struct LDJSONRC *lookup;
+
+    LD_ASSERT(LDStoreInitEmpty(store));
+
+    LD_ASSERT(feature = makeVersioned("my-heap-key", 3));
+    LDObjectDeleteKey(feature, "key");
+
+    LD_ASSERT(!LDStoreUpsert(store, LD_FLAG, feature));
+
+    LD_ASSERT(LDStoreGet(store, LD_FLAG, "my-heap-key", &lookup));
+    LD_ASSERT(!lookup);
+}
+
+static void
+testUpsertFeatureKeyNotText(struct LDStore *const store)
+{
+    struct LDJSON *feature;
+    struct LDJSONRC *lookup;
+
+    LD_ASSERT(LDStoreInitEmpty(store));
+
+    LD_ASSERT(feature = makeVersioned("my-heap-key", 3));
+    LDObjectDeleteKey(feature, "key");
+    LDObjectSetKey(feature, "key", LDNewNumber(52));
+
+    LD_ASSERT(!LDStoreUpsert(store, LD_FLAG, feature));
+
+    LD_ASSERT(LDStoreGet(store, LD_FLAG, "my-heap-key", &lookup));
+    LD_ASSERT(!lookup);
+}
+
+static void
+testUpsertFeatureDeletedNotBool(struct LDStore *const store)
+{
+    struct LDJSON *feature;
+    struct LDJSONRC *lookup;
+
+    LD_ASSERT(LDStoreInitEmpty(store));
+
+    LD_ASSERT(feature = makeVersioned("my-heap-key", 3));
+    LDObjectDeleteKey(feature, "deleted");
+    LDObjectSetKey(feature, "deleted", LDNewNumber(52));
+
+    LD_ASSERT(!LDStoreUpsert(store, LD_FLAG, feature));
+
+    LD_ASSERT(LDStoreGet(store, LD_FLAG, "my-heap-key", &lookup));
+    LD_ASSERT(!lookup);
+}
+
 typedef void (*test)(struct LDStore *const store);
 
 void
@@ -216,7 +321,13 @@ runSharedStoreTests(struct LDStore *(*const prepareEmptyStore)())
         upsertNewer,
         upsertOlder,
         upsertDelete,
-        conflictDifferentNamespace
+        conflictDifferentNamespace,
+        testUpsertFeatureNotAnObject,
+        testUpsertFeatureMissingVersion,
+        testUpsertFeatureVersionNotNumber,
+        testUpsertFeatureMissingKey,
+        testUpsertFeatureKeyNotText,
+        testUpsertFeatureDeletedNotBool
     };
 
     LD_ASSERT(prepareEmptyStore);

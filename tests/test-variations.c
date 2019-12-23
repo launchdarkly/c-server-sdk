@@ -9,6 +9,7 @@
 #include "evaluate.h"
 #include "misc.h"
 #include "util-flags.h"
+#include "store.h"
 
 static struct LDClient *
 makeTestClient()
@@ -41,8 +42,8 @@ testBoolVariation()
     setFallthrough(flag, 1);
     addVariation(flag, LDNewBool(false));
     addVariation(flag, LDNewBool(true));
-    LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LDStoreUpsert(client->config->store, LD_FLAG, flag);
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LDStoreUpsert(client->store, LD_FLAG, flag);
     /* run */
     actual = LDBoolVariation(client, user, "validFeatureKey", false, &details);
     /* validate */
@@ -73,8 +74,8 @@ testIntVariation()
     setFallthrough(flag, 1);
     addVariation(flag, LDNewNumber(-1));
     addVariation(flag, LDNewNumber(100));
-    LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LDStoreUpsert(client->config->store, LD_FLAG, flag);
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LDStoreUpsert(client->store, LD_FLAG, flag);
     /* run */
     actual = LDIntVariation(client, user, "validFeatureKey", 1000, &details);
     /* validate */
@@ -105,8 +106,8 @@ testDoubleVariation()
     setFallthrough(flag, 1);
     addVariation(flag, LDNewNumber(-1));
     addVariation(flag, LDNewNumber(100.01));
-    LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LDStoreUpsert(client->config->store, LD_FLAG, flag);
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LDStoreUpsert(client->store, LD_FLAG, flag);
     /* run */
     actual = LDDoubleVariation(client, user, "validFeatureKey", 0.0, &details);
     /* validate */
@@ -132,8 +133,8 @@ testDoubleVariationAsIntHelper(const int expected, const double flagValue)
     LD_ASSERT(flag = makeMinimalFlag("validFeatureKey", 1, true, false))
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(flagValue));
-    LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LDStoreUpsert(client->config->store, LD_FLAG, flag);
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LDStoreUpsert(client->store, LD_FLAG, flag);
     /* run */
     actual = LDIntVariation(client, user, "validFeatureKey", 0, NULL);
     /* validate */
@@ -170,8 +171,8 @@ testStringVariation()
     setFallthrough(flag, 1);
     addVariation(flag, LDNewText("a"));
     addVariation(flag, LDNewText("b"));
-    LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LDStoreUpsert(client->config->store, LD_FLAG, flag);
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LDStoreUpsert(client->store, LD_FLAG, flag);
     /* run */
     actual = LDStringVariation(client, user, "validFeatureKey", "a", &details);
     /* validate */
@@ -209,8 +210,8 @@ testJSONVariation()
     setFallthrough(flag, 1);
     addVariation(flag, other);
     addVariation(flag, expected);
-    LD_ASSERT(LDStoreInitEmpty(client->config->store));
-    LDStoreUpsert(client->config->store, LD_FLAG, flag);
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LDStoreUpsert(client->store, LD_FLAG, flag);
     /* run */
     actual = LDJSONVariation(client, user, "validFeatureKey", def, &details);
     /* validate */

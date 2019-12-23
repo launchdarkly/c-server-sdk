@@ -8,75 +8,103 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include <launchdarkly/json.h>
-
 /***************************************************************************//**
- * @name Reference counted wrapper for JSON
- * Used as an optimization to reduce allocations.
+ * @name Store collections and individual items.
+ * Used to provide an opaque interface for interacting with feature values.
  * @{
  ******************************************************************************/
 
-struct LDJSONRC;
+/** @brief Opaque value representing an item. */
+struct LDStoreCollectionItem {
+    /** @brief May be NULL to indicate a deleted item */
+    void *buffer;
+    size_t bufferSize;
+    unsigned int version;
+};
 
-struct LDJSONRC *LDJSONRCNew(struct LDJSON *const json);
+/** @brief Stores a single item and its key */
+struct LDStoreCollectionStateItem {
+    const char *key;
+    struct LDStoreCollectionItem item;
+};
 
-void LDJSONRCIncrement(struct LDJSONRC *const rc);
-
-void LDJSONRCDecrement(struct LDJSONRC *const rc);
-
-struct LDJSON *LDJSONRCGet(struct LDJSONRC *const rc);
+/** @brief Stores the set of items in a single namespace */
+struct LDStoreCollectionState {
+    const char *kind;
+    struct LDStoreCollectionStateItem *items;
+    unsigned int itemCount;
+};
 
 /*@}*/
 
 /***************************************************************************//**
  * @name Generic Store Interface
  * Used to provide all interaction with a feature store. Redis, Consul, Dynamo.
+ *
+ * The associated functions use a boolean result to indicate success, or error
+ * outside of expected functionality. For example a memory allocation error
+ * would return false, but `get` on a non existant item would return true.
  * @{
  ******************************************************************************/
 
 /** @brief An Interface providing access to a store */
-struct LDStore {
+struct LDStoreInterface {
     /**
      * @brief Used to store implementation specific data
      */
     void *context;
     /**
      * @brief Initialize the feature store with a new data set
-     * @param[in] sets A JSON object containing the new feature values.
-     * This routine takes ownership of sets.
+     * @param[in] context Implementation specific context.
+     * @param[in] collections An array of namespaces of store items.
+     * @param[in] collectionCount The number of items in the array.
      * @return True on success, False on failure.
      */
-    bool (*init)(void *const context, struct LDJSON *const sets);
+    bool (*init)(void *const context,
+        const struct LDStoreCollectionState *collections,
+        const unsigned int collectionCount);
     /**
      * @brief Fetch a feature from the store
      * @param[in] context Implementation specific context.
      * May not be NULL (assert).
-     * @param[in] kind The namespace to search in. May not be NULL (assert).
-     * @param[in] key The key to return the value for. May not be NULL (assert).
-     * @return Returns the feature, or NULL if it does not exist.
+     * @param[in] kind The namespace to search in.
+     * May not be NULL (assert).
+     * @param[in] featureKey The key to return the value for.
+     * May not be NULL (assert).
+     * @param[out] result Returns the feature, or NULL if it does not exist.
+     * @return True on success, False on failure.
      */
     bool (*get)(void *const context, const char *const kind,
-        const char *const key, struct LDJSONRC **const result);
+        const char *const featureKey,
+        struct LDStoreCollectionItem *const result);
     /**
      * @brief Fetch all features in a given namespace
      * @param[in] context Implementation specific context.
      * May not be NULL (assert).
-     * @param[in] kind The namespace to search in. May not be NULL (assert).
-     * @return Returns an object map keys to features, NULL on failure.
+     * @param[in] kind The namespace to search in.
+     * May not be NULL (assert).
+     * @param[out] result Returns an array of raw items.
+     * @param[out] result Count Returns the number of items in the result array.
+     * @return True on success, False on failure.
      */
     bool (*all)(void *const context, const char *const kind,
-        struct LDJSONRC ***const result);
+        struct LDStoreCollectionItem **const result,
+        unsigned int *const resultCount);
     /**
-     * @brief Replace an existing feature with a newer one
+     * @brief Replace an existing feature with a newer one or delete a feature
      * @param[in] context Implementation specific context.
      * May not be NULL (assert).
-     * @param[in] kind The namespace to search in. May not be NULL (assert).
+     * @param[in] kind The namespace to search in.
+     * May not be NULL (assert).
      * @param[in] feature The updated feature. Only deletes current if version
-     * is newer. Takes ownership of feature.
+     * is newer. This is also used to delete a feature. May not be NULL
+     * (assert).
+     * @param[in] featureKey Key of the new item.
      * @return True on success, False on failure.
      */
     bool (*upsert)(void *const context, const char *const kind,
-        struct LDJSON *const feature);
+        const struct LDStoreCollectionItem *const feature,
+        const char *const featureKey);
     /**
      * @brief Determine if the store is initialized with features yet.
      * @param[in] context Implementation specific context.
@@ -92,62 +120,5 @@ struct LDStore {
      */
     void (*destructor)(void *const context);
 };
-
-/*@}*/
-
-/***************************************************************************//**
- * @name Store convenience functions
- * Allows treating `LDStore` as more of an object
- * @{
- ******************************************************************************/
-
- enum FeatureKind {
-    LD_FLAG,
-    LD_SEGMENT
-};
-
-/** @brief A convenience wrapper around `store->init`. */
-bool LDStoreInit(const struct LDStore *const store, struct LDJSON *const sets);
-
-/** @brief A convenience wrapper around `store->get`. */
-bool LDStoreGet(const struct LDStore *const store,
-    const enum FeatureKind kind, const char *const key,
-    struct LDJSONRC **const result);
-
-/** @brief A convenience wrapper around `store->all`. */
-bool LDStoreAll(const struct LDStore *const store,
-    const enum FeatureKind kind, struct LDJSONRC ***const result);
-
-/** @brief A convenience wrapper around `store->remove`. */
-bool LDStoreRemove(const struct LDStore *const store,
-    const enum FeatureKind kind, const char *const key,
-    const unsigned int version);
-
-/** @brief A convenience wrapper around `store->upsert`. */
-bool LDStoreUpsert(const struct LDStore *const store,
-    const enum FeatureKind kind, struct LDJSON *const feature);
-
-/** @brief A convenience wrapper around `store->initialized`. */
-bool LDStoreInitialized(const struct LDStore *const store);
-
-/** @brief A convenience wrapper around `store->destructor.` */
-void LDStoreDestroy(struct LDStore *const store);
-
-/** @brief Calls LDStoreInit with empty sets. */
-bool LDStoreInitEmpty(struct LDStore *const store);
-
-/*@}*/
-
-/***************************************************************************//**
- * @name Memory store
- * The default feature store with no external storage.
- * @{
- ******************************************************************************/
-
- /**
-  * @brief The default store type.
-  * @return The newly allocated store, or NULL on failure.
-  */
-struct LDStore *LDMakeInMemoryStore();
 
 /*@}*/
