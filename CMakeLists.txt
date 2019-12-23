@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 2.8.8)
 
+option(REDIS_STORE "Build optional redis store support" OFF)
+option(COVERAGE "Add support for generating coverage reports" OFF)
+
 enable_testing() # CTEST_OUTPUT_ON_FAILURE=1 make test
+
+if (COVERAGE)
+    include(CMakeFiles/CodeCoverage.cmake)
+    append_coverage_compiler_flags()
+    setup_target_for_coverage_gcovr_html(NAME coverage)
+endif (COVERAGE)
 
 if(MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MD")
