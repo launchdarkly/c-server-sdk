@@ -1177,17 +1177,19 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
     const struct LDUser *const user, const char *const key,
     const char *const salt, const struct LDJSON **const index)
 {
-    struct LDJSON *variation, *rollout, *variations;
+    struct LDJSON *variation, *rollout, *variations, *weight, *subvariation;
     float userBucket, sum;
 
     LD_ASSERT(varOrRoll);
     LD_ASSERT(index);
 
-    variation  = NULL;
-    rollout    = NULL;
-    variations = NULL;
-    userBucket = 0;
-    sum        = 0;
+    variation    = NULL;
+    rollout      = NULL;
+    variations   = NULL;
+    userBucket   = 0;
+    sum          = 0;
+    weight       = NULL;
+    subvariation = NULL;
 
     variation = LDObjectLookup(varOrRoll, "variation");
 
@@ -1249,8 +1251,6 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
     }
 
     for (; variation; variation = LDIterNext(variation)) {
-        struct LDJSON *weight;
-
         weight = LDObjectLookup(variation, "weight");
 
         if (!LDi_notNull(weight)) {
@@ -1267,30 +1267,39 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
 
         sum += LDGetNumber(weight) / 100000.0;
 
+        subvariation = LDObjectLookup(variation, "variation");
+
+        if (!LDi_notNull(subvariation)) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
+        if (LDJSONGetType(subvariation) != LDNumber) {
+            LD_LOG(LD_LOG_ERROR, "schema error");
+
+            return false;
+        }
+
         if (userBucket < sum) {
-            struct LDJSON *subvariation;
-
-            subvariation = LDObjectLookup(variation, "variation");
-
-            if (!LDi_notNull(subvariation)) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
-
-                return false;
-            }
-
-            if (LDJSONGetType(subvariation) != LDNumber) {
-                LD_LOG(LD_LOG_ERROR, "schema error");
-
-                return false;
-            }
-
             *index = subvariation;
 
             return true;
         }
     }
 
-    return false;
+    /* The user's bucket value was greater than or equal to the end of the last
+    bucket. This could happen due to a rounding error, or due to the fact that
+    we are scaling to 100000 rather than 99999, or the flag data could contain
+    buckets that don't actually add up to 100000. Rather than returning an error
+    in this case (or changing the scaling, which would potentially change the
+    results for *all* users), we will simply put the user in the last bucket.
+    The loop ensures subvariation is the last element, and a size check above
+    ensures there is at least one element. */
+
+    *index = subvariation;
+
+    return true;
 }
 
 bool
