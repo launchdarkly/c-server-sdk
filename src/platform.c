@@ -13,6 +13,11 @@
     #include <unistd.h>
 #endif
 
+#ifdef __APPLE__
+    #include <mach/clock.h>
+    #include <mach/mach.h>
+#endif
+
 int
 LDi_strncasecmp(const char *const s1, const char *const s2, const size_t n)
 {
@@ -76,26 +81,51 @@ LDi_sleepMilliseconds(const unsigned long milliseconds)
 }
 
 #ifndef _WIN32
-    static bool
-    getTime(unsigned long *const resultMilliseconds, clockid_t clockid)
+    #ifdef __APPLE__
+        #define ld_clock_t clock_id_t
+        #define LD_CLOCK_MONOTONIC SYSTEM_CLOCK
+        #define LD_CLOCK_REALTIME CALENDAR_CLOCK
+    #else
+        #define ld_clock_t clockid_t
+        #define LD_CLOCK_MONOTONIC CLOCK_MONOTONIC
+        #define LD_CLOCK_REALTIME CLOCK_REALTIME
+    #endif
+
+    static unsigned long
+    LDi_timeSpecToMilliseconds(const struct timespec ts)
     {
-        int status;
-        struct timespec spec;
+        return (ts.tv_sec * 1000) + (ts.tv_nsec / 1000000);
+    }
 
-        LD_ASSERT(resultMilliseconds);
+    static bool
+    LDi_clockGetTime(struct timespec *const ts, ld_clock_t clockid)
+    {
+        #ifdef __APPLE__
+            kern_return_t status;
+            clock_serv_t clock_serve;
+            mach_timespec_t mach_timespec;
 
-        if ((status = clock_gettime(clockid, &spec)) != 0) {
-            char msg[256];
+            status = host_get_clock_service(mach_host_self(), clockid,
+                &clock_serve);
 
-            LD_ASSERT(snprintf(msg, sizeof(msg),
-                "clock_gettime failed with: %s", strerror(status)) >= 0);
+            if (status != KERN_SUCCESS) {
+                return false;
+            }
 
-            LD_LOG(LD_LOG_CRITICAL, msg);
+            status = clock_get_time(clock_serve, &mach_timespec);
+            mach_port_deallocate(mach_task_self(), clock_serve);
 
-            return false;
-        }
+            if (status != KERN_SUCCESS) {
+                return false;
+            }
 
-        *resultMilliseconds = (spec.tv_sec * 1000) + (spec.tv_nsec / 1000000);
+            ts->tv_sec  = mach_timespec.tv_sec;
+            ts->tv_nsec = mach_timespec.tv_nsec;
+        #else
+            if (clock_gettime(clockid, ts) != 0) {
+                return false;
+            }
+        #endif
 
         return true;
     }
@@ -108,7 +138,13 @@ LDi_getMonotonicMilliseconds(unsigned long *const resultMilliseconds)
         *resultMilliseconds = GetTickCount64();
         return true;
     #else
-        return getTime(resultMilliseconds, CLOCK_MONOTONIC);
+        struct timespec ts;
+        if (LDi_clockGetTime(&ts, LD_CLOCK_MONOTONIC)) {
+            *resultMilliseconds = LDi_timeSpecToMilliseconds(ts);
+            return true;
+        } else {
+            return false;
+        }
     #endif
 }
 
@@ -119,7 +155,13 @@ LDi_getUnixMilliseconds(unsigned long *const resultMilliseconds)
         *resultMilliseconds = (double)time(NULL) * 1000.0;
         return true;
     #else
-        return getTime(resultMilliseconds, CLOCK_REALTIME);
+        struct timespec ts;
+        if (LDi_clockGetTime(&ts, LD_CLOCK_REALTIME)) {
+            *resultMilliseconds = LDi_timeSpecToMilliseconds(ts);
+            return true;
+        } else {
+            return false;
+        }
     #endif
 }
 
@@ -445,11 +487,10 @@ LDi_wrunlock(ld_rwlock_t *const lock)
 
 #ifdef _WIN32
 
-void
+bool
 LDi_condwait(CONDITION_VARIABLE *cond, CRITICAL_SECTION *mtx, int ms)
 {
-    SleepConditionVariableCS(cond, mtx, ms);
-
+    return SleepConditionVariableCS(cond, mtx, ms);
 }
 
 void
@@ -460,12 +501,15 @@ LDi_condsignal(CONDITION_VARIABLE *cond)
 
 #else
 
-void
+bool
 LDi_condwait(pthread_cond_t *cond, pthread_mutex_t *mtx, int ms)
 {
     struct timespec ts;
 
-    clock_gettime(CLOCK_REALTIME, &ts);
+    if (!LDi_clockGetTime(&ts, LD_CLOCK_REALTIME)) {
+        return false;
+    }
+
     ts.tv_sec += ms / 1000;
     ts.tv_nsec += (ms % 1000) * 1000 * 1000;
     if (ts.tv_nsec > 1000 * 1000 * 1000) {
@@ -473,7 +517,11 @@ LDi_condwait(pthread_cond_t *cond, pthread_mutex_t *mtx, int ms)
         ts.tv_nsec -= 1000 * 1000 * 1000;
     }
 
-    pthread_cond_timedwait(cond, mtx, &ts);
+    if (pthread_cond_timedwait(cond, mtx, &ts) != 0) {
+        return false;
+    }
+
+    return true;
 }
 
 void

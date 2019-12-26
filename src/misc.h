@@ -50,7 +50,7 @@
     #define LDi_conddestroy(cond) pthread_cond_destroy(cond)
 #endif
 
-void LDi_condwait(ld_cond_t *cond, ld_mutex_t *mtx, int ms);
+bool LDi_condwait(ld_cond_t *cond, ld_mutex_t *mtx, int ms);
 void LDi_condsignal(ld_cond_t *cond);
 
 bool LDi_jointhread(ld_thread_t thread);

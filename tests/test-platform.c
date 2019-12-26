@@ -14,6 +14,13 @@ testMonotonic()
 }
 
 static void
+testGetUnixMilliseconds()
+{
+    unsigned long now;
+    LD_ASSERT(LDi_getUnixMilliseconds(&now));
+}
+
+static void
 testSleepMinimum()
 {
     unsigned long past, present;
@@ -135,17 +142,54 @@ testRNG()
     LD_ASSERT(rng1 != rng2);
 }
 
+static ld_mutex_t conditionTestLock;
+
+static THREAD_RETURN
+threadSignalCondition(void *const condition)
+{
+    LD_ASSERT(condition);
+
+    LD_ASSERT(LDi_mtxlock(&conditionTestLock));
+    LD_ASSERT(LDi_mtxunlock(&conditionTestLock));
+
+    LDi_condsignal((ld_cond_t *)condition);
+
+    return THREAD_RETURN_DEFAULT;
+}
+
+static void
+testConditionVars()
+{
+    ld_cond_t condition;
+    ld_thread_t thread;
+
+    LD_ASSERT(LDi_mtxinit(&conditionTestLock));
+    LDi_condinit(&condition);
+
+    LD_ASSERT(LDi_mtxlock(&conditionTestLock));
+    LD_ASSERT(LDi_createthread(&thread, threadSignalCondition, &condition));
+
+    LD_ASSERT(LDi_condwait(&condition, &conditionTestLock, 1000));
+    LD_ASSERT(LDi_mtxunlock(&conditionTestLock));
+
+    LDi_conddestroy(&condition);
+    LD_ASSERT(LDi_mtxdestroy(&conditionTestLock));
+    LD_ASSERT(LDi_jointhread(thread));
+}
+
 int
 main()
 {
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
 
     testMonotonic();
+    testGetUnixMilliseconds();
     testSleepMinimum();
     testThreadStartJoin();
     testRWLock();
     testConcurrency();
     testRNG();
+    testConditionVars();
 
     return 0;
 }
