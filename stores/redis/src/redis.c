@@ -593,14 +593,10 @@ storeUpsertInternal(void *const contextRaw, const char *const kind,
 
     while (true) {
         reply = redisCommand(connection->connection, "WATCH %s:%s",
-            LDRedisConfigGetPrefix(context->config), featureKey);
+            LDRedisConfigGetPrefix(context->config), kind);
 
         if (!redisCheckStatus(reply, "OK")) {
             goto cleanup;
-        }
-
-        if (hook) {
-            hook();
         }
 
         resetReply(&reply);
@@ -634,6 +630,9 @@ storeUpsertInternal(void *const contextRaw, const char *const kind,
             goto cleanup;
         }
 
+        LDJSONFree(existing);
+        existing = NULL;
+
         if (feature->buffer) {
             serialized = feature->buffer;
         } else {
@@ -652,6 +651,10 @@ storeUpsertInternal(void *const contextRaw, const char *const kind,
             if (!serialized) {
                 goto cleanup;
             }
+        }
+
+        if (hook) {
+            hook();
         }
 
         reply = redisCommand(connection->connection, "MULTI");
