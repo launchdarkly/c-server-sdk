@@ -869,6 +869,7 @@ struct AnalyticsContext {
     struct LDClient *client;
     char *buffer;
     bool lastFailed;
+    char payloadId[LD_UUID_SIZE + 1];
 };
 
 static void
@@ -1181,6 +1182,11 @@ poll(struct LDClient *const client, void *const rawcontext)
     }
 
     if (!context->lastFailed) {
+        struct LDJSON *nextEvents, *nextSummaryCounters;
+
+        nextEvents          = NULL;
+        nextSummaryCounters = NULL;
+
         LD_ASSERT(LDi_wrlock(&client->lock));
         if (LDCollectionGetSize(client->events) == 0 &&
             LDCollectionGetSize(client->summaryCounters) == 0)
@@ -1205,6 +1211,67 @@ poll(struct LDClient *const client, void *const rawcontext)
             {
                 return NULL;
             }
+        }
+
+        /* serialize events */
+
+        if (!(nextEvents = LDNewArray())) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            return NULL;
+        }
+
+        if (!(nextSummaryCounters = LDNewObject())) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LDJSONFree(nextEvents);
+
+            return NULL;
+        }
+
+        LD_ASSERT(LDi_wrlock(&client->lock));
+
+        if (!(summaryEvent = LDi_prepareSummaryEvent(client))) {
+            LD_LOG(LD_LOG_ERROR, "failed to prepare summary");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            LDJSONFree(nextEvents);
+            LDJSONFree(nextSummaryCounters);
+
+            return NULL;
+        }
+
+        LDArrayPush(client->events, summaryEvent);
+
+        if (!(context->buffer = LDJSONSerialize(client->events))) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
+
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+
+            LDJSONFree(nextEvents);
+            LDJSONFree(nextSummaryCounters);
+
+            return NULL;
+        }
+
+        LDJSONFree(client->events);
+        LDJSONFree(client->summaryCounters);
+
+        client->summaryStart    = 0;
+        client->events          = nextEvents;
+        client->summaryCounters = nextSummaryCounters;
+
+        LD_ASSERT(LDi_wrunlock(&client->lock));
+
+        /* Only generate a UUID once per payload. We want the header to remain
+        the same during a retry */
+        context->payloadId[LD_UUID_SIZE] = 0;
+
+        if (!LDi_UUIDv4(context->payloadId)) {
+            LD_LOG(LD_LOG_ERROR, "failed to generate payload identifier");
+
+            goto error;
         }
     }
 
@@ -1239,6 +1306,26 @@ poll(struct LDClient *const client, void *const rawcontext)
         goto error;
     }
 
+    {
+        /* This is done as a macro so that the string is a literal */
+        #define LD_PAYLOAD_ID_HEADER "X-LaunchDarkly-Payload-ID: "
+
+        /* do not need to add space for null termination because of sizeof */
+        char payloadIdHeader[sizeof(LD_PAYLOAD_ID_HEADER) + LD_UUID_SIZE];
+
+        LD_ASSERT(snprintf(payloadIdHeader, sizeof(payloadIdHeader),
+            "%s%s", LD_PAYLOAD_ID_HEADER, context->payloadId) ==
+            sizeof(payloadIdHeader) - 1);
+
+        #undef LD_PAYLOAD_ID_HEADER
+
+        if (!(context->headers = curl_slist_append(context->headers,
+            payloadIdHeader)))
+        {
+            goto error;
+        }
+    }
+
     if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, context->headers)
         != CURLE_OK)
     {
@@ -1255,64 +1342,6 @@ poll(struct LDClient *const client, void *const rawcontext)
         != CURLE_OK)
     {
         goto error;
-    }
-
-    /* serialize events */
-
-    if (!context->lastFailed) {
-        struct LDJSON *nextEvents, *nextSummaryCounters;
-
-        nextEvents          = NULL;
-        nextSummaryCounters = NULL;
-
-        if (!(nextEvents = LDNewArray())) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            goto error;
-        }
-
-        if (!(nextSummaryCounters = LDNewObject())) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            LDJSONFree(nextEvents);
-
-            goto error;
-        }
-
-        LD_ASSERT(LDi_wrlock(&client->lock));
-
-        if (!(summaryEvent = LDi_prepareSummaryEvent(client))) {
-            LD_LOG(LD_LOG_ERROR, "failed to prepare summary");
-
-            LD_ASSERT(LDi_wrunlock(&client->lock));
-
-            LDJSONFree(nextEvents);
-            LDJSONFree(nextSummaryCounters);
-
-            goto error;
-        }
-
-        LDArrayPush(client->events, summaryEvent);
-
-        if (!(context->buffer = LDJSONSerialize(client->events))) {
-            LD_LOG(LD_LOG_ERROR, "alloc error");
-
-            LD_ASSERT(LDi_wrunlock(&client->lock));
-
-            LDJSONFree(nextEvents);
-            LDJSONFree(nextSummaryCounters);
-
-            goto error;
-        }
-
-        LDJSONFree(client->events);
-        LDJSONFree(client->summaryCounters);
-
-        client->summaryStart    = 0;
-        client->events          = nextEvents;
-        client->summaryCounters = nextSummaryCounters;
-
-        LD_ASSERT(LDi_wrunlock(&client->lock));
     }
 
     /* add outgoing buffer */
