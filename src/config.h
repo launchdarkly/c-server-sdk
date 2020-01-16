@@ -21,5 +21,5 @@ struct LDConfig {
     unsigned int userKeysCapacity;
     unsigned int userKeysFlushInterval;
     struct LDStoreInterface *storeBackend;
-    bool useLdd;
+    unsigned int storeCacheMilliseconds;
 };

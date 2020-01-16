@@ -1,3 +1,4 @@
+#include <launchdarkly/api.h>
 #include <launchdarkly/store/redis.h>
 
 #include "misc.h"
@@ -25,14 +26,19 @@ prepareEmptyStore()
 {
     struct LDStore* store;
     struct LDStoreInterface *interface;
-    struct LDRedisConfig* config;
+    struct LDRedisConfig* redisConfig;
+    struct LDConfig *config;
 
     flushDB();
 
-    LD_ASSERT(config = LDRedisConfigNew())
-    LD_ASSERT(interface = LDStoreInterfaceRedisNew(config));
-    LD_ASSERT(store = LDStoreNew(interface));
+    LD_ASSERT(config = LDConfigNew(""));
+    LD_ASSERT(redisConfig = LDRedisConfigNew())
+    LD_ASSERT(interface = LDStoreInterfaceRedisNew(redisConfig));
+    LDConfigSetFeatureStoreBackend(config, interface);
+    LD_ASSERT(store = LDStoreNew(config));
+    config->storeBackend = NULL;
     LD_ASSERT(!LDStoreInitialized(store));
+    LDConfigFree(config);
 
     return store;
 }
@@ -55,15 +61,19 @@ testWriteConflict()
     struct LDJSON *flag;
     struct LDJSONRC *lookup;
     struct LDStoreInterface *interface;
-    struct LDRedisConfig *config;
+    struct LDRedisConfig *redisConfig;
     struct LDStoreCollectionItem collectionItem;
+    struct LDConfig *config;
     char *serialized;
 
     flushDB();
 
-    LD_ASSERT(config = LDRedisConfigNew())
-    LD_ASSERT(interface = LDStoreInterfaceRedisNew(config));
-    LD_ASSERT(concurrentStore = LDStoreNew(interface));
+    LD_ASSERT(config = LDConfigNew(""));
+    LD_ASSERT(redisConfig = LDRedisConfigNew())
+    LD_ASSERT(interface = LDStoreInterfaceRedisNew(redisConfig));
+    LDConfigSetFeatureStoreBackend(config, interface);
+    LD_ASSERT(concurrentStore = LDStoreNew(config));
+    config->storeBackend = NULL;
     LD_ASSERT(!LDStoreInitialized(concurrentStore));
 
     LD_ASSERT(flag = makeMinimalFlag("abc", 50, true, false));
@@ -89,6 +99,7 @@ testWriteConflict()
     LDJSONRCDecrement(lookup);
 
     LDStoreDestroy(concurrentStore);
+    LDConfigFree(config);
 }
 
 int

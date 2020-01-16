@@ -39,7 +39,7 @@ static void
 getAll(struct LDStore *const store)
 {
     struct LDJSON *all, *category;
-    struct LDJSONRC **rawFlags, **rawFlagsIter;
+    struct LDJSONRC *rawFlags;
 
     LD_ASSERT(!LDStoreInitialized(store));
 
@@ -52,13 +52,45 @@ getAll(struct LDStore *const store)
     LD_ASSERT(LDStoreInit(store, all));
 
     LD_ASSERT(LDStoreAll(store, LD_FLAG, &rawFlags));
-
-    for (rawFlagsIter = rawFlags; *rawFlagsIter; rawFlagsIter++) {
-        LDJSONRCDecrement(*rawFlagsIter);
-    }
-    LDFree(rawFlags);
+    LDJSONRCDecrement(rawFlags);
 
     LD_ASSERT(LDStoreInitialized(store));
+}
+
+static void
+testUpsertUpdatesAll(struct LDStore *const store)
+{
+    struct LDJSONRC *result;
+    struct LDJSON *flag1, *flag1Dupe, *flag2, *flag2Dupe, *all;
+
+    LD_ASSERT(all = LDNewObject());
+
+    LD_ASSERT(flag1 = makeVersioned("a", 52));
+    LD_ASSERT(flag1Dupe = LDJSONDuplicate(flag1));
+    LD_ASSERT(LDObjectSetKey(all, "a", flag1Dupe));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag1));
+
+    LD_ASSERT(LDStoreAll(store, LD_FLAG, &result));
+    LD_ASSERT(LDJSONCompare(LDJSONRCGet(result), all));
+    LDJSONRCDecrement(result);
+
+    LD_ASSERT(flag2 = makeVersioned("b", 30));
+    LD_ASSERT(flag2Dupe = LDJSONDuplicate(flag2));
+    LD_ASSERT(LDObjectSetKey(all, "b", flag2Dupe));
+    LD_ASSERT(LDStoreUpsert(store, LD_FLAG, flag2));
+
+    LD_ASSERT(LDStoreAll(store, LD_FLAG, &result));
+    LD_ASSERT(LDJSONCompare(LDJSONRCGet(result), all));
+    LDJSONRCDecrement(result);
+
+    LDObjectDeleteKey(all, "a");
+
+    LDStoreRemove(store, LD_FLAG, "a", 60);
+    LD_ASSERT(LDStoreAll(store, LD_FLAG, &result));
+    LD_ASSERT(LDJSONCompare(LDJSONRCGet(result), all));
+    LDJSONRCDecrement(result);
+
+    LDJSONFree(all);
 }
 
 static void
@@ -66,6 +98,7 @@ deletedOnly(struct LDStore *const store)
 {
     struct LDJSONRC *lookup;
 
+    LD_ASSERT(!LDStoreInitialized(store));
     LD_ASSERT(LDStoreInitEmpty(store));
 
     LD_ASSERT(LDStoreRemove(store, LD_FLAG, "abc", 123))
@@ -315,6 +348,7 @@ runSharedStoreTests(struct LDStore *(*const prepareEmptyStore)())
         allocateAndFree,
         initializeEmpty,
         getAll,
+        testUpsertUpdatesAll,
         deletedOnly,
         basicExists,
         basicDoesNotExist,

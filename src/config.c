@@ -39,19 +39,20 @@ LDConfigNew(const char *const key)
         goto error;
     }
 
-    config->stream                = true;
-    config->sendEvents            = true;
-    config->eventsCapacity        = 10000;
-    config->timeout               = 5000;
-    config->flushInterval         = 5000;
-    config->pollInterval          = 30000;
-    config->offline               = false;
-    config->useLDD                = false;
-    config->allAttributesPrivate  = false;
-    config->inlineUsersInEvents   = false;
-    config->userKeysCapacity      = 1000;
-    config->userKeysFlushInterval = 300000;
-    config->storeBackend          = NULL;
+    config->stream                 = true;
+    config->sendEvents             = true;
+    config->eventsCapacity         = 10000;
+    config->timeout                = 5000;
+    config->flushInterval          = 5000;
+    config->pollInterval           = 30000;
+    config->offline                = false;
+    config->useLDD                 = false;
+    config->allAttributesPrivate   = false;
+    config->inlineUsersInEvents    = false;
+    config->userKeysCapacity       = 1000;
+    config->userKeysFlushInterval  = 300000;
+    config->storeBackend           = NULL;
+    config->storeCacheMilliseconds = 30 * 1000;
 
     return config;
 
@@ -65,6 +66,14 @@ void
 LDConfigFree(struct LDConfig *const config)
 {
     if (config) {
+        if (config->storeBackend) {
+            if (config->storeBackend->destructor) {
+                config->storeBackend->destructor(config->storeBackend->context);
+            }
+
+            LDFree(config->storeBackend);
+        }
+
         LDFree(     config->key                   );
         LDFree(     config->baseURI               );
         LDFree(     config->streamURI             );
@@ -228,4 +237,12 @@ LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
     LD_ASSERT(config);
 
     config->storeBackend = backend;
+}
+
+void LDConfigSetFeatureStoreBackendCacheTTL(struct LDConfig *const config,
+    const unsigned int milliseconds)
+{
+    LD_ASSERT(config);
+
+    config->storeCacheMilliseconds = milliseconds;
 }

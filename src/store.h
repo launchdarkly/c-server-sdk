@@ -2,6 +2,8 @@
 
 #include <launchdarkly/api.h>
 
+#include "config.h"
+
 /***************************************************************************//**
  * @name Reference counted wrapper for JSON
  * Used as an optimization to reduce allocations.
@@ -24,7 +26,7 @@ struct LDJSON *LDJSONRCGet(struct LDJSONRC *const rc);
 
 struct LDStore;
 
-struct LDStore *LDStoreNew(struct LDStoreInterface *const storeInterface);
+struct LDStore *LDStoreNew(const struct LDConfig *const config);
 
 /* **** Flag Utilities **** */
 
@@ -41,6 +43,9 @@ unsigned int LDi_getFeatureVersion(const struct LDJSON *const feature);
 /** @brief Get version of a validated feature value */
 unsigned int LDi_getFeatureVersionTrusted(const struct LDJSON *const feature);
 
+/** @briefUsed for testing */
+void LDi_expireAll(struct LDStore *const store);
+
 /***************************************************************************//**
  * @name Store convenience functions
  * Allows treating `LDStore` as more of an object
@@ -56,19 +61,19 @@ enum FeatureKind {
  *
  * Input is consumed even on failure.
  */
-bool LDStoreInit(const struct LDStore *const store, struct LDJSON *const sets);
+bool LDStoreInit(struct LDStore *const store, struct LDJSON *const sets);
 
 /** @brief A convenience wrapper around `store->get`. */
-bool LDStoreGet(const struct LDStore *const store,
+bool LDStoreGet(struct LDStore *const store,
     const enum FeatureKind kind, const char *const key,
     struct LDJSONRC **const result);
 
 /** @brief A convenience wrapper around `store->all`. */
-bool LDStoreAll(const struct LDStore *const store,
-    const enum FeatureKind kind, struct LDJSONRC ***const result);
+bool LDStoreAll(struct LDStore *const store,
+    const enum FeatureKind kind, struct LDJSONRC **const result);
 
 /** @brief A convenience wrapper around `store->remove`. */
-bool LDStoreRemove(const struct LDStore *const store,
+bool LDStoreRemove(struct LDStore *const store,
     const enum FeatureKind kind, const char *const key,
     const unsigned int version);
 
@@ -76,11 +81,11 @@ bool LDStoreRemove(const struct LDStore *const store,
  *
  * Input is consumed even on failure.
  */
-bool LDStoreUpsert(const struct LDStore *const store,
+bool LDStoreUpsert(struct LDStore *const store,
     const enum FeatureKind kind, struct LDJSON *const feature);
 
 /** @brief A convenience wrapper around `store->initialized`. */
-bool LDStoreInitialized(const struct LDStore *const store);
+bool LDStoreInitialized(struct LDStore *const store);
 
 /** @brief A convenience wrapper around `store->destructor.` */
 void LDStoreDestroy(struct LDStore *const store);

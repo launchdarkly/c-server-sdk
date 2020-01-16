@@ -11,11 +11,15 @@ static struct LDStore *
 prepareEmptyStore()
 {
     struct LDStore *store;
+    struct LDConfig *config;
 
-    LD_ASSERT(store = LDStoreNew(NULL));
+    LD_ASSERT(config = LDConfigNew(""));
+    LD_ASSERT(store = LDStoreNew(config));
     LD_ASSERT(!LDStoreInitialized(store));
     LD_ASSERT(LDStoreInitEmpty(store));
     LD_ASSERT(LDStoreInitialized(store));
+
+    LDConfigFree(config);
 
     return store;
 }

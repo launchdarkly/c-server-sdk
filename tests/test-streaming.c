@@ -372,28 +372,6 @@ testPutDataSegmentsNotAnObject(struct StreamContext *const context)
 }
 
 static void
-testOperationBeforeInitialized(struct StreamContext *const context)
-{
-    struct LDJSONRC *flag;
-
-    const char *const event =
-        "event: patch\n"
-        "data: {\"path\": \"/flags/my-flag\", \"data\": "
-        "{\"key\": \"my-flag\", \"version\": 3}}\n\n";
-
-    LD_ASSERT(context);
-
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
-
-    LD_ASSERT(!LDStoreGet(
-        context->client->store, LD_FLAG, "my-flag", &flag));
-    LD_ASSERT(!flag);
-
-    LDJSONRCDecrement(flag);
-}
-
-
-static void
 testSSEUnknownEventType(struct StreamContext *const context)
 {
     LD_ASSERT(context);
@@ -450,7 +428,6 @@ main()
     testStreamContext(testPutDataFlagsNotAnObject);
     testStreamContext(testPutDataMissingSegmentsField);
     testStreamContext(testPutDataSegmentsNotAnObject);
-    testStreamContext(testOperationBeforeInitialized);
     testStreamContext(testSSEUnknownEventType);
     testStreamContext(testSSENoData);
     testStreamContext(testSSENoEventType);

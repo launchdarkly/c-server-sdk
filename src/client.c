@@ -24,11 +24,14 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     memset(client, 0, sizeof(struct LDClient));
 
-    if (!(client->store = LDStoreNew(config->storeBackend))) {
+    if (!(client->store = LDStoreNew(config))) {
         LDFree(client);
 
         return NULL;
     }
+
+    /* construction of store takes ownership of backend */
+    config->storeBackend   = NULL;
 
     client->shouldFlush    = false;
     client->shuttingdown   = false;

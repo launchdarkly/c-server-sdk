@@ -309,8 +309,7 @@ storeInit(void *const contextRaw,
     LD_LOG(LD_LOG_TRACE, "redis storeInit");
 
     LD_ASSERT(contextRaw);
-    LD_ASSERT(collections);
-    LD_ASSERT(collectionCount);
+    LD_ASSERT(collections || collectionCount == 0);
 
     connection = NULL;
     context    = (struct Context *)contextRaw;

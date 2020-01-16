@@ -644,13 +644,14 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
 struct LDJSON *
 LDAllFlags(struct LDClient *const client, struct LDUser *const user)
 {
-    struct LDJSON *evaluatedFlags;
-    struct LDJSONRC **rawFlags, **rawFlagsIter;
+    struct LDJSON *evaluatedFlags, *rawFlags, *rawFlagsIter;
+    struct LDJSONRC *rawFlagsRC;
 
     LD_ASSERT(client);
 
     rawFlags       = NULL;
     rawFlagsIter   = NULL;
+    rawFlagsRC     = NULL;
     evaluatedFlags = NULL;
 
     if (client->config->offline) {
@@ -681,7 +682,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         return NULL;
     }
 
-    if (!LDStoreAll(client->store, LD_FLAG, &rawFlags)) {
+    if (!LDStoreAll(client->store, LD_FLAG, &rawFlagsRC)) {
         LD_LOG(LD_LOG_ERROR, "LDAllFlags failed to fetch flags");
 
         LDJSONFree(evaluatedFlags);
@@ -689,7 +690,11 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         return NULL;
     }
 
-    for (rawFlagsIter = rawFlags; *rawFlagsIter; rawFlagsIter++) {
+    LD_ASSERT(rawFlags = LDJSONRCGet(rawFlagsRC));
+
+    for (rawFlagsIter = LDGetIter(rawFlags); rawFlagsIter;
+        rawFlagsIter = LDIterNext(rawFlagsIter))
+    {
         struct LDJSON *value, *events;
         EvalStatus status;
         struct LDDetails details;
@@ -700,7 +705,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         events  = NULL;
         key     = NULL;
 
-        LD_ASSERT(flag = LDJSONRCGet(*rawFlagsIter));
+        LD_ASSERT(flag = rawFlagsIter);
 
         LDDetailsInit(&details);
 
@@ -728,20 +733,14 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
 
         LDJSONFree(events);
         LDDetailsClear(&details);
-
-        LDJSONRCDecrement(*rawFlagsIter);
     }
 
-    LDFree(rawFlags);
+    LDJSONRCDecrement(rawFlagsRC);
 
     return evaluatedFlags;
 
   error:
-    for (;*rawFlagsIter; rawFlagsIter++) {
-        LDJSONRCDecrement(*rawFlagsIter);
-    }
-    LDFree(rawFlags);
-
+    LDJSONRCDecrement(rawFlagsRC);
     LDJSONFree(evaluatedFlags);
 
     return NULL;
