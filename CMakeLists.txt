@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.8)
 
 option(REDIS_STORE "Build optional redis store support" OFF)
 option(COVERAGE "Add support for generating coverage reports" OFF)
+option(SKIP_DATABASE_TESTS "Do not test external store integrations" OFF)
 
 enable_testing() # CTEST_OUTPUT_ON_FAILURE=1 make test
 

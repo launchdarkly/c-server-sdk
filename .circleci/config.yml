@@ -20,7 +20,10 @@ jobs:
       - checkout
       - run:
           name: Build
-          command: ./.ldrelease/build.sh
+          command: |
+            mkdir build && cd build
+            cmake -D REDIS_STORE=ON ..
+            cmake --build .
       - run:
           name: Test
           command: ./.ldrelease/test.sh
@@ -31,15 +34,21 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install prerequisites
-          command: ./.ldrelease/mac-prepare.sh
+          name: Install redis
+          command: HOMEBREW_NO_AUTO_UPDATE=1 brew install redis
       - run:
           name: Start Redis
           command: redis-server
           background: true
       - run:
+          name: Install prerequisites
+          command: ./.ldrelease/mac-prepare.sh
+      - run:
           name: Build
-          command: ./.ldrelease/build.sh
+          command: |
+            mkdir build && cd build
+            cmake -D REDIS_STORE=ON ..
+            cmake --build .
       - run:
           name: Test
           command: ./.ldrelease/test.sh

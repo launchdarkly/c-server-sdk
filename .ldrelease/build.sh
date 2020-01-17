@@ -7,6 +7,6 @@ set -e
 
 mkdir build
 cd build
-cmake -D REDIS_STORE="true" ..
+cmake -D REDIS_STORE=ON -D SKIP_DATABASE_TESTS=ON ..
 
 make

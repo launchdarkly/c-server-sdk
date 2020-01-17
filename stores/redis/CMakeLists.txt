@@ -8,6 +8,8 @@ add_library(ldserverapi-redis STATIC src/redis.c)
 
 target_link_libraries(ldserverapi-redis PUBLIC hiredis)
 
-add_executable(test-store-redis test-redis.c)
-target_link_libraries(test-store-redis ldserverapi ldserverapi-redis)
-add_test(test-store-redis test-store-redis)
+if (NOT SKIP_DATABASE_TESTS)
+    add_executable(test-store-redis test-redis.c)
+    target_link_libraries(test-store-redis ldserverapi ldserverapi-redis)
+    add_test(test-store-redis test-store-redis)
+endif (NOT SKIP_DATABASE_TESTS)
