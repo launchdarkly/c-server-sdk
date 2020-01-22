@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['hasvariation',['hasVariation',['../structLDDetails.html#a38cb690f08c76fff8d6c961399d06377',1,'LDDetails']]]
+  ['buffer',['buffer',['../structLDStoreCollectionItem.html#aec57dae62a638b47f2ded2a87f1e522e',1,'LDStoreCollectionItem']]]
 ];

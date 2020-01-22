@@ -109,10 +109,6 @@ Include dependency graph for client.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="client_8h__incl.png" border="0" usemap="#include_2launchdarkly_2client_8h" alt=""/></div>
 <map name="include_2launchdarkly_2client_8h" id="include_2launchdarkly_2client_8h">
-<area shape="rect" id="node4" href="config_8h.html" title="Public API Interface for Configuration. " alt="" coords="297,169,442,196"/>
-<area shape="rect" id="node5" href="export_8h.html" title="Public. Configuration of exported symbols. " alt="" coords="351,244,497,271"/>
-<area shape="rect" id="node6" href="user_8h.html" title="Public API Interface for User construction. " alt="" coords="37,95,171,121"/>
-<area shape="rect" id="node7" href="json_8h.html" title="Public API Interface for JSON usage. " alt="" coords="138,169,273,196"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -120,7 +116,6 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="client_8h__dep__incl.png" border="0" usemap="#include_2launchdarkly_2client_8hdep" alt=""/></div>
 <map name="include_2launchdarkly_2client_8hdep" id="include_2launchdarkly_2client_8hdep">
-<area shape="rect" id="node2" href="api_8h.html" title="Public API. Include this for every public operation. " alt="" coords="5,95,145,136"/>
 </map>
 </div>
 </div>
@@ -140,6 +135,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a09279c34f8773f08da90f84c318567a8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="client_8h.html#a09279c34f8773f08da90f84c318567a8">LDClientTrack</a> (struct LDClient *const client, const char *const key, const struct LDUser *const user, struct LDJSON *const data)</td></tr>
 <tr class="memdesc:a09279c34f8773f08da90f84c318567a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reports that a user has performed an event. Custom data can be attached to the event as JSON.  <a href="#a09279c34f8773f08da90f84c318567a8">More...</a><br /></td></tr>
 <tr class="separator:a09279c34f8773f08da90f84c318567a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff323ce45abf1bf77cfd07d0a1ecc9e0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="client_8h.html#aff323ce45abf1bf77cfd07d0a1ecc9e0">LDClientTrackMetric</a> (struct LDClient *const client, const char *const key, const struct LDUser *const user, struct LDJSON *const data, const double metric)</td></tr>
+<tr class="memdesc:aff323ce45abf1bf77cfd07d0a1ecc9e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reports that a user has performed an event. Custom data, and a metric can be attached to the event as JSON.  <a href="#aff323ce45abf1bf77cfd07d0a1ecc9e0">More...</a><br /></td></tr>
+<tr class="separator:aff323ce45abf1bf77cfd07d0a1ecc9e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e9a0a7f8702307dae23b35218465734"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="client_8h.html#a7e9a0a7f8702307dae23b35218465734">LDClientIdentify</a> (struct LDClient *const client, const struct LDUser *const user)</td></tr>
 <tr class="memdesc:a7e9a0a7f8702307dae23b35218465734"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates an identify event for a user.  <a href="#a7e9a0a7f8702307dae23b35218465734">More...</a><br /></td></tr>
 <tr class="separator:a7e9a0a7f8702307dae23b35218465734"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -382,6 +380,65 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The name of the event </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to generate the event for. Ownership is not transferred. May not be <code>NULL</code> (assert). </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>The JSON to attach to the event. Ownership of <code>data</code> is transferred. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the event was queued, false on error </dd></dl>
+
+</div>
+</div>
+<a id="aff323ce45abf1bf77cfd07d0a1ecc9e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff323ce45abf1bf77cfd07d0a1ecc9e0">&#9670;&nbsp;</a></span>LDClientTrackMetric()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool LDClientTrackMetric </td>
+          <td>(</td>
+          <td class="paramtype">struct LDClient *const&#160;</td>
+          <td class="paramname"><em>client</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const struct LDUser *const&#160;</td>
+          <td class="paramname"><em>user</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct LDJSON *const&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>metric</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reports that a user has performed an event. Custom data, and a metric can be attached to the event as JSON. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. May not be <code>NULL</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The name of the event </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to generate the event for. Ownership is not transferred. May not be <code>NULL</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>The JSON to attach to the event. Ownership of <code>data</code> is transferred. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">metric</td><td>A metric to be assocated with the event </td></tr>
   </table>
   </dd>
 </dl>

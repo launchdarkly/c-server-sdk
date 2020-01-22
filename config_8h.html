@@ -106,7 +106,6 @@ Include dependency graph for config.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="config_8h__incl.png" border="0" usemap="#include_2launchdarkly_2config_8h" alt=""/></div>
 <map name="include_2launchdarkly_2config_8h" id="include_2launchdarkly_2config_8h">
-<area shape="rect" id="node4" href="export_8h.html" title="Public. Configuration of exported symbols. " alt="" coords="197,95,344,121"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -114,8 +113,6 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="config_8h__dep__incl.png" border="0" usemap="#include_2launchdarkly_2config_8hdep" alt=""/></div>
 <map name="include_2launchdarkly_2config_8hdep" id="include_2launchdarkly_2config_8hdep">
-<area shape="rect" id="node2" href="api_8h.html" title="Public API. Include this for every public operation. " alt="" coords="5,184,145,225"/>
-<area shape="rect" id="node3" href="client_8h.html" title="Public API Interface for Client operations. " alt="" coords="60,95,200,136"/>
 </map>
 </div>
 </div>
@@ -177,9 +174,12 @@ Functions</h2></td></tr>
 <tr class="memitem:abc583983232a42954bac2e54aa6a0df6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8h.html#abc583983232a42954bac2e54aa6a0df6">LDConfigAddPrivateAttribute</a> (struct LDConfig *const config, const char *const attribute)</td></tr>
 <tr class="memdesc:abc583983232a42954bac2e54aa6a0df6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks a set of user attribute names private. Any users sent to LaunchDarkly with this configuration active will have attributes with these names removed.  <a href="#abc583983232a42954bac2e54aa6a0df6">More...</a><br /></td></tr>
 <tr class="separator:abc583983232a42954bac2e54aa6a0df6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad595e7d1550199ea3bf7d3e22e8b4943"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8h.html#ad595e7d1550199ea3bf7d3e22e8b4943">LDConfigSetFeatureStore</a> (struct LDConfig *const config, struct LDStore *const store)</td></tr>
-<tr class="memdesc:ad595e7d1550199ea3bf7d3e22e8b4943"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the implementation of FeatureStore for holding feature flags and related data received from LaunchDarkly.  <a href="#ad595e7d1550199ea3bf7d3e22e8b4943">More...</a><br /></td></tr>
-<tr class="separator:ad595e7d1550199ea3bf7d3e22e8b4943"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c68a8fba5b4ec2908cc6fe637d5d582"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8h.html#a6c68a8fba5b4ec2908cc6fe637d5d582">LDConfigSetFeatureStoreBackend</a> (struct LDConfig *const config, struct <a class="el" href="structLDStoreInterface.html">LDStoreInterface</a> *const backend)</td></tr>
+<tr class="memdesc:a6c68a8fba5b4ec2908cc6fe637d5d582"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the implementation of FeatureStore for holding feature flags and related data received from LaunchDarkly.  <a href="#a6c68a8fba5b4ec2908cc6fe637d5d582">More...</a><br /></td></tr>
+<tr class="separator:a6c68a8fba5b4ec2908cc6fe637d5d582"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b24cd675d59814e6373a9cfa672fa91"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8h.html#a4b24cd675d59814e6373a9cfa672fa91">LDConfigSetFeatureStoreBackendCacheTTL</a> (struct LDConfig *const config, const unsigned int milliseconds)</td></tr>
+<tr class="memdesc:a4b24cd675d59814e6373a9cfa672fa91"><td class="mdescLeft">&#160;</td><td class="mdescRight">When a feature store backend is provided, configure how long items will be cached in memory. Set the value to zero to always hit the external store backend. If no backend exists this value is ignored. The default cache time is 30 seconds.  <a href="#a4b24cd675d59814e6373a9cfa672fa91">More...</a><br /></td></tr>
+<tr class="separator:a4b24cd675d59814e6373a9cfa672fa91"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Public API Interface for Configuration. </p>
@@ -460,14 +460,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad595e7d1550199ea3bf7d3e22e8b4943"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad595e7d1550199ea3bf7d3e22e8b4943">&#9670;&nbsp;</a></span>LDConfigSetFeatureStore()</h2>
+<a id="a6c68a8fba5b4ec2908cc6fe637d5d582"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c68a8fba5b4ec2908cc6fe637d5d582">&#9670;&nbsp;</a></span>LDConfigSetFeatureStoreBackend()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void LDConfigSetFeatureStore </td>
+          <td class="memname">void LDConfigSetFeatureStoreBackend </td>
           <td>(</td>
           <td class="paramtype">struct LDConfig *const&#160;</td>
           <td class="paramname"><em>config</em>, </td>
@@ -475,8 +475,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct LDStore *const&#160;</td>
-          <td class="paramname"><em>store</em>&#160;</td>
+          <td class="paramtype">struct <a class="el" href="structLDStoreInterface.html">LDStoreInterface</a> *const&#160;</td>
+          <td class="paramname"><em>backend</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -494,7 +494,45 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd><code>NULL</code> on failure. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Void </dd></dl>
+
+</div>
+</div>
+<a id="a4b24cd675d59814e6373a9cfa672fa91"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b24cd675d59814e6373a9cfa672fa91">&#9670;&nbsp;</a></span>LDConfigSetFeatureStoreBackendCacheTTL()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void LDConfigSetFeatureStoreBackendCacheTTL </td>
+          <td>(</td>
+          <td class="paramtype">struct LDConfig *const&#160;</td>
+          <td class="paramname"><em>config</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>milliseconds</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>When a feature store backend is provided, configure how long items will be cached in memory. Set the value to zero to always hit the external store backend. If no backend exists this value is ignored. The default cache time is 30 seconds. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">config</td><td>The configuration to modify. May not be <code>NULL</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">milliseconds</td><td>How long the cache should live. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Void </dd></dl>
 
 </div>
 </div>

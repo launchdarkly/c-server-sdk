@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['reason',['reason',['../structLDDetails.html#aa1172f2a4e636bf26af281f760270cf8',1,'LDDetails']]],
-  ['rule',['rule',['../structLDDetails.html#add0572356ea48c4b2db8709fd58e6afb',1,'LDDetails']]],
-  ['ruleindex',['ruleIndex',['../structLDDetailsRule.html#aee92d30f267753f6d076aadd020bbd4b',1,'LDDetailsRule']]]
+  ['errorkind',['errorKind',['../structLDDetails.html#a5a728361c981a2c21bc6da76b788d4db',1,'LDDetails']]],
+  ['extra',['extra',['../structLDDetails.html#a81064b2eab9d0933d12041f36d73e9ab',1,'LDDetails']]]
 ];
