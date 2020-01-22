@@ -35,3 +35,5 @@ struct NetworkInterface *LDi_constructStreaming(struct LDClient *const client);
 struct NetworkInterface *LDi_constructAnalytics(struct LDClient *const client);
 
 THREAD_RETURN LDi_networkthread(void *const clientref);
+
+bool validatePutBody(const struct LDJSON *const put);

@@ -18,4 +18,5 @@ struct LDClient {
     unsigned long long lastServerTime;
     struct LDLRU *userKeys;
     unsigned long lastUserKeyFlush;
+    struct LDStore *store;
 };

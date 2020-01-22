@@ -3,19 +3,23 @@
 
 #include <launchdarkly/api.h>
 
-#include "store.h"
 #include "evaluate.h"
 #include "misc.h"
+#include "store.h"
 
 static struct LDStore *
 prepareEmptyStore()
 {
     struct LDStore *store;
+    struct LDConfig *config;
 
-    LD_ASSERT(store = LDMakeInMemoryStore());
+    LD_ASSERT(config = LDConfigNew(""));
+    LD_ASSERT(store = LDStoreNew(config));
     LD_ASSERT(!LDStoreInitialized(store));
     LD_ASSERT(LDStoreInitEmpty(store));
     LD_ASSERT(LDStoreInitialized(store));
+
+    LDConfigFree(config);
 
     return store;
 }
@@ -922,6 +926,7 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
     LD_ASSERT(segment = LDNewObject());
     LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("segkey")));
     LD_ASSERT(LDObjectSetKey(segment, "included", included));
+    LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(3)));
 
     /* flag */
     LD_ASSERT(values = LDNewArray());
@@ -1018,6 +1023,7 @@ testCanMatchJustOneSegmentFromList()
     LD_ASSERT(segment = LDNewObject());
     LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("segkey")));
     LD_ASSERT(LDObjectSetKey(segment, "included", included));
+    LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(3)));
 
     /* flag */
     LD_ASSERT(values = LDNewArray());

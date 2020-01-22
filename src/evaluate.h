@@ -10,6 +10,7 @@
 
 #include <launchdarkly/json.h>
 #include <launchdarkly/variations.h>
+#include <launchdarkly/store.h>
 
 #include "store.h"
 

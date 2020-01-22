@@ -24,6 +24,7 @@ extern "C" {
 #include <launchdarkly/memory.h>
 #include <launchdarkly/logging.h>
 #include <launchdarkly/variations.h>
+#include <launchdarkly/store.h>
 
 #ifdef __cplusplus
 }

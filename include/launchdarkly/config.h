@@ -12,7 +12,7 @@
 
 /* **** Forward Declarations **** */
 
-struct LDStore; struct LDConfig;
+struct LDStoreInterface; struct LDConfig;
 
 /**
  * @brief Creates a new default configuration. The configuration object is
@@ -203,7 +203,19 @@ LD_EXPORT(bool) LDConfigAddPrivateAttribute(struct LDConfig *const config,
  * related data received from LaunchDarkly.
  * @param[in] config The configuration to modify. May not be `NULL` (assert).
  * @param[in] store May not be `NULL` (assert).
- * @return `NULL` on failure.
+ * @return Void
  */
-LD_EXPORT(void) LDConfigSetFeatureStore(struct LDConfig *const config,
-    struct LDStore *const store);
+LD_EXPORT(void) LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
+    struct LDStoreInterface *const backend);
+
+/**
+ * @brief When a feature store backend is provided, configure how long items
+ * will be cached in memory. Set the value to zero to always hit the external
+ * store backend. If no backend exists this value is ignored. The default cache
+ * time is 30 seconds.
+ * @param[in] config The configuration to modify. May not be `NULL` (assert).
+ * @param[in] milliseconds How long the cache should live.
+ * @return Void
+ */
+ LD_EXPORT(void) LDConfigSetFeatureStoreBackendCacheTTL(
+     struct LDConfig *const config, const unsigned int milliseconds);

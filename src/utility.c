@@ -35,3 +35,36 @@ LDi_normalize(const double n, const double nmin, const double nmax,
 {
     return (n - nmin) * (omax - omin) / (nmax - nmin) + omin;
 }
+
+bool
+LDi_randomHex(char *const buffer, const size_t bufferSize)
+{
+    const char *const alphabet = "0123456789ABCDEF";
+
+    for (size_t i = 0; i < bufferSize; i++) {
+        unsigned int rng = 0;
+        if (LDi_random(&rng)) {
+            buffer[i] = alphabet[rng % 16];
+        }
+        else {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+LDi_UUIDv4(char *const buffer)
+{
+    if (!LDi_randomHex(buffer, LD_UUID_SIZE)) {
+        return false;
+    }
+
+    buffer[8]  = '-';
+    buffer[13] = '-';
+    buffer[18] = '-';
+    buffer[23] = '-';
+
+    return true;
+}

@@ -3,7 +3,6 @@
 
 #include <launchdarkly/api.h>
 
-#include "store.h"
 #include "network.h"
 #include "streaming.h"
 #include "config.h"
@@ -42,6 +41,79 @@ LDi_parsePath(const char *path, enum FeatureKind *const kind,
 }
 
 static bool
+getEventPath(const struct LDJSON *const event, enum FeatureKind *const kind,
+    const char **const key)
+{
+    struct LDJSON *tmp;
+
+    LD_ASSERT(event);
+    LD_ASSERT(LDJSONGetType(event) == LDObject);
+    LD_ASSERT(kind);
+    LD_ASSERT(key);
+
+    if (!(tmp = LDObjectLookup(event, "path"))) {
+        LD_LOG(LD_LOG_ERROR, "event does not have a path");
+
+        return false;
+    }
+
+    if (LDJSONGetType(tmp) != LDText) {
+        LD_LOG(LD_LOG_ERROR, "event path is not a string");
+
+        return false;
+    }
+
+    if (!LDi_parsePath(LDGetText(tmp), kind, key)) {
+        LD_LOG(LD_LOG_ERROR, "event path is not recognized");
+
+        return false;
+    }
+
+    return true;
+}
+
+bool
+validatePutBody(const struct LDJSON *const put)
+{
+    struct LDJSON *tmp;
+
+    LD_ASSERT(put);
+
+    if (LDJSONGetType(put) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "put is not an object");
+
+        return false;
+    }
+
+    if (!(tmp = LDObjectLookup(put, "flags"))) {
+        LD_LOG(LD_LOG_ERROR, "put.flags does not exist");
+
+        return false;
+    }
+
+    if (LDJSONGetType(tmp) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "put.flags is not an object");
+
+        return false;
+    }
+
+    if (!(tmp = LDObjectLookup(put, "segments"))) {
+        LD_LOG(LD_LOG_ERROR, "put.segments does not exist");
+
+        return false;
+    }
+
+    if (LDJSONGetType(tmp) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "put.segments is not an object");
+
+        return false;
+    }
+
+    return true;
+}
+
+/* consumes input even on failure */
+static bool
 onPut(struct LDClient *const client, struct LDJSON *const put)
 {
     struct LDJSON *data, *features;
@@ -49,54 +121,53 @@ onPut(struct LDClient *const client, struct LDJSON *const put)
 
     LD_ASSERT(client);
     LD_ASSERT(put);
+    LD_ASSERT(LDJSONGetType(put) == LDObject);
 
-    success = false;
+    data     = NULL;
+    features = NULL;
+    success  = false;
 
     if (!(data = LDObjectDetachKey(put, "data"))) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
+        LD_LOG(LD_LOG_ERROR, "put.data does not exist");
 
         goto cleanup;
     }
 
-    if (LDJSONGetType(data) != LDObject) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        LDJSONFree(data);
+    if (!validatePutBody(data)) {
+        LD_LOG(LD_LOG_ERROR, "put.data failed validation");
 
         goto cleanup;
     }
 
-    if (!(features = LDObjectDetachKey(data, "flags"))) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        LDJSONFree(data);
-
-        goto cleanup;
-    }
+    LD_ASSERT(features = LDObjectDetachKey(data, "flags"));
 
     if (!LDObjectSetKey(data, "features", features)) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
-        LDJSONFree(data);
-        LDJSONFree(features);
-
         goto cleanup;
     }
+    features = NULL;
 
-    if (!(success = LDStoreInit(client->config->store, data))) {
-        LD_LOG(LD_LOG_ERROR, "store error");
+    if (!(success = LDStoreInit(client->store, data))) {
+        LD_LOG(LD_LOG_ERROR, "LDStoreInit error");
+
+        data = NULL;
 
         goto cleanup;
      }
+     data = NULL;
 
      success = true;
 
   cleanup:
     LDJSONFree(put);
+    LDJSONFree(data);
+    LDJSONFree(features);
 
     return success;
 }
 
+/* consumes input even on failure */
 static bool
 onPatch(struct LDClient *const client, struct LDJSON *const data)
 {
@@ -107,45 +178,28 @@ onPatch(struct LDClient *const client, struct LDJSON *const data)
 
     LD_ASSERT(client);
     LD_ASSERT(data);
+    LD_ASSERT(LDJSONGetType(data) == LDObject);
 
     tmp     = NULL;
     key     = NULL;
     success = false;
 
-    if (!(tmp = LDObjectLookup(data, "path"))) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        goto cleanup;
-    }
-
-    if (LDJSONGetType(tmp) != LDText) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        goto cleanup;
-    }
-
-    if (!LDi_parsePath(LDGetText(tmp), &kind, &key)) {
-        LD_LOG(LD_LOG_ERROR, "failed to parse path");
+    if (!getEventPath(data, &kind, &key)) {
+        LD_LOG(LD_LOG_ERROR, "patch failed to get path");
 
         goto cleanup;
     }
 
     if (!(tmp = LDObjectDetachKey(data, "data"))) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
+        LD_LOG(LD_LOG_ERROR, "patch.data does not exist");
 
         goto cleanup;
     }
 
-    if (LDJSONGetType(tmp) != LDObject) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        LDJSONFree(tmp);
-
-        goto cleanup;
-    }
-
-    if (!LDStoreUpsert(client->config->store, kind, tmp)) {
+    if (!LDStoreUpsert(client->store, kind, tmp)) {
         LD_LOG(LD_LOG_ERROR, "store error");
+
+        /* tmp is consumed even on failure */
 
         goto cleanup;
     }
@@ -158,6 +212,7 @@ onPatch(struct LDClient *const client, struct LDJSON *const data)
     return success;
 }
 
+/* consumes input even on failure */
 static bool
 onDelete(struct LDClient *const client, struct LDJSON *const data)
 {
@@ -168,25 +223,14 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
 
     LD_ASSERT(client);
     LD_ASSERT(data);
+    LD_ASSERT(LDJSONGetType(data) == LDObject);
 
     tmp     = NULL;
     key     = NULL;
     success = false;
 
-    if (!(tmp = LDObjectLookup(data, "path"))) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        goto cleanup;
-    }
-
-    if (LDJSONGetType(tmp) != LDText) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        goto cleanup;
-    }
-
-    if (!LDi_parsePath(LDGetText(tmp), &kind, &key)) {
-        LD_LOG(LD_LOG_ERROR, "failed to parse path");
+    if (!getEventPath(data, &kind, &key)) {
+        LD_LOG(LD_LOG_ERROR, "patch failed to get path");
 
         goto cleanup;
     }
@@ -203,7 +247,7 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
         goto cleanup;
     }
 
-    if (!LDStoreRemove(client->config->store, kind, key, LDGetNumber(tmp))) {
+    if (!LDStoreRemove(client->store, kind, key, LDGetNumber(tmp))) {
         LD_LOG(LD_LOG_ERROR, "store error");
 
         goto cleanup;
@@ -238,7 +282,11 @@ LDi_onSSE(struct StreamContext *const context, const char *line)
             LD_LOG(LD_LOG_WARNING,
                 "streamcallback got dispatch but data was never set");
         } else if ((json = LDJSONDeserialize(context->dataBuffer))) {
-            if (strcmp(context->eventName, "put") == 0) {
+            if (LDJSONGetType(json) != LDObject) {
+                LDJSONFree(json);
+
+                LD_LOG(LD_LOG_ERROR, "event should be object, discarding");
+            } else if (strcmp(context->eventName, "put") == 0) {
                 status = onPut(context->client, json);
             } else if (strcmp(context->eventName, "patch") == 0) {
                 status = onPatch(context->client, json);
@@ -252,6 +300,8 @@ LDi_onSSE(struct StreamContext *const context, const char *line)
                     context->eventName) >= 0);
 
                 LD_LOG(LD_LOG_ERROR, msg);
+
+                LDJSONFree(json);
             }
         }
 
@@ -305,8 +355,9 @@ LDi_onSSE(struct StreamContext *const context, const char *line)
     return true;
 }
 
-static size_t
-writeCallback(void *contents, size_t size, size_t nmemb, void *rawcontext)
+size_t
+LDi_streamWriteCallback(const void *const contents, size_t size, size_t nmemb,
+    void *rawcontext)
 {
     char *nl;
     size_t realsize;
@@ -440,7 +491,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         goto error;
     }
 
-    if (curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback)
+    if (curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, LDi_streamWriteCallback)
         != CURLE_OK)
     {
         LD_LOG(LD_LOG_CRITICAL,

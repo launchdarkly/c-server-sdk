@@ -4,12 +4,12 @@
 #include <launchdarkly/api.h>
 
 #include "events.h"
-#include "store.h"
 #include "network.h"
 #include "client.h"
 #include "config.h"
 #include "misc.h"
 #include "user.h"
+#include "store.h"
 
 struct LDClient *
 LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
@@ -24,17 +24,14 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     memset(client, 0, sizeof(struct LDClient));
 
-    if (config->store) {
-        config->defaultStore = false;
-    } else {
-        if (!(config->store = LDMakeInMemoryStore())) {
-            LDFree(client);
+    if (!(client->store = LDStoreNew(config))) {
+        LDFree(client);
 
-            return NULL;
-        }
-
-        config->defaultStore = true;
+        return NULL;
     }
+
+    /* construction of store takes ownership of backend */
+    config->storeBackend   = NULL;
 
     client->shouldFlush    = false;
     client->shuttingdown   = false;
@@ -87,9 +84,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     return client;
 
   error:
-    if (config->defaultStore && config->store) {
-        LDStoreDestroy(config->store);
-    }
+    LDStoreDestroy(client->store);
 
     LDJSONFree(client->events);
     LDJSONFree(client->summaryCounters);
@@ -118,9 +113,7 @@ LDClientClose(struct LDClient *const client)
         LDJSONFree(client->summaryCounters);
         LDLRUFree(client->userKeys);
 
-        if (client->config->defaultStore) {
-            LDStoreDestroy(client->config->store);
-        }
+        LDStoreDestroy(client->store);
 
         LDConfigFree(client->config);
 
@@ -135,7 +128,7 @@ LDClientIsInitialized(struct LDClient *const client)
 {
     LD_ASSERT(client);
 
-    return LDStoreInitialized(client->config->store);
+    return LDStoreInitialized(client->store);
 }
 
 bool

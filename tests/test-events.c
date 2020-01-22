@@ -5,9 +5,9 @@
 #include "client.h"
 #include "events.h"
 #include "misc.h"
-#include "store.h"
 #include "config.h"
 #include "user.h"
+#include "store.h"
 
 #include "util-flags.h"
 
@@ -303,8 +303,8 @@ testIndexEventGeneration()
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(42));
 
-    LD_ASSERT(LDStoreInitEmpty(config->store));
-    LD_ASSERT(LDStoreUpsert(config->store, LD_FLAG, flag));
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag));
 
     LD_ASSERT(LDi_wrlock(&client->lock));
     LD_ASSERT(LDCollectionGetSize(client->events) == 0);
@@ -377,8 +377,8 @@ testInlineUsersInEvents()
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(51));
 
-    LD_ASSERT(LDStoreInitEmpty(config->store));
-    LD_ASSERT(LDStoreUpsert(config->store, LD_FLAG, flag));
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag));
     LD_ASSERT(LDCollectionGetSize(client->events) == 0);
 
     /* check that user is embedded in full fidelity event */

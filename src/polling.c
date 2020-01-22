@@ -3,12 +3,12 @@
 
 #include <launchdarkly/api.h>
 
-#include "store.h"
 #include "network.h"
 #include "client.h"
 #include "user.h"
 #include "config.h"
 #include "misc.h"
+#include "store.h"
 
 static bool
 updateStore(struct LDStore *const store, const char *const rawupdate)
@@ -21,20 +21,18 @@ updateStore(struct LDStore *const store, const char *const rawupdate)
     update = NULL;
 
     if (!(update = LDJSONDeserialize(rawupdate))) {
+        LD_LOG(LD_LOG_ERROR, "failed to deserialize put");
+
         return false;
     }
 
-    if (LDJSONGetType(update) != LDObject) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
+    if (!validatePutBody(update)) {
+        LD_LOG(LD_LOG_ERROR, "failed to validate put");
 
         goto error;
     }
 
-    if (!(features = LDObjectDetachKey(update, "flags"))) {
-        LD_LOG(LD_LOG_ERROR, "schema error");
-
-        goto error;
-    }
+    LD_ASSERT(features = LDObjectDetachKey(update, "flags"));
 
     if (!LDObjectSetKey(update, "features", features)) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -112,11 +110,13 @@ done(struct LDClient *const client, void *const rawcontext, const bool success)
     context->active = false;
 
     if (success) {
-        LD_ASSERT(updateStore(client->config->store, context->memory));
-
-        LD_ASSERT(LDi_wrlock(&client->lock));
-        client->initialized = true;
-        LD_ASSERT(LDi_wrunlock(&client->lock));
+        if (updateStore(client->store, context->memory)) {
+            LD_ASSERT(LDi_wrlock(&client->lock));
+            client->initialized = true;
+            LD_ASSERT(LDi_wrunlock(&client->lock));
+        } else {
+            LD_LOG(LD_LOG_ERROR, "polling failed to update store");
+        }
 
         LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastpoll));
     }
