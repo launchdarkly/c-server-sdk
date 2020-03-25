@@ -242,14 +242,12 @@ LDi_constructPolling(struct LDClient *const client)
     context->active   = false;
     context->lastpoll = 0;
 
-    netInterface->done      = done;
-    netInterface->poll      = poll;
-    netInterface->context   = context;
-    netInterface->destroy   = destroy;
-    netInterface->context   = context;
-    netInterface->current   = NULL;
-    netInterface->attempts  = 0;
-    netInterface->waitUntil = 0;
+    netInterface->done     = done;
+    netInterface->poll     = poll;
+    netInterface->context  = context;
+    netInterface->destroy  = destroy;
+    netInterface->context  = context;
+    netInterface->current  = NULL;
 
     return netInterface;
 

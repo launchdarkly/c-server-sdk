@@ -145,55 +145,6 @@ LDi_networkthread(void* const clientref)
         if (!offline) {
             for (i = 0; i < interfacecount; i++) {
                 CURL *handle;
-                /* skip if waiting on backoff */
-                if (interfaces[i]->attempts) {
-                    unsigned long now;
-
-                    if (!LDi_getMonotonicMilliseconds(&now)) {
-                        LD_LOG(LD_LOG_ERROR, "failed to get time for backoff");
-
-                        goto cleanup;
-                    }
-
-                    if (interfaces[i]->waitUntil) {
-                        if (now >= interfaces[i]->waitUntil) {
-                            interfaces[i]->waitUntil = 0;
-                            /* fallthrough to polling */
-                        } else {
-                            /* still waiting on this interface */
-                            continue;
-                        }
-                    } else {
-                        double backoff;
-                        unsigned int rng;
-
-                        /* random value for jitter */
-                        if (!LDi_random(&rng)) {
-                            LD_LOG(LD_LOG_ERROR,
-                                "failed to get rng for jitter calculation");
-
-                            goto cleanup;
-                        }
-
-                        /* calculate time to wait */
-                        backoff = 1000 * pow(2, interfaces[i]->attempts) / 2;
-
-                        /* cap (min not built in) */
-                        if (backoff > 3600 * 1000) {
-                            backoff = 3600 * 1000;
-                        }
-
-                        /* jitter */
-                        backoff /= 2;
-
-                        backoff = backoff +
-                            LDi_normalize(rng, 0, LD_RAND_MAX, 0, backoff);
-
-                        interfaces[i]->waitUntil = now + backoff;
-                        /* skip because we are waiting */
-                        continue;
-                    }
-                }
 
                 /* not waiting on backoff */
                 handle = interfaces[i]->poll(client, interfaces[i]->context);
@@ -271,13 +222,8 @@ LDi_networkthread(void* const clientref)
                 requestSuccess = info->data.result == CURLE_OK &&
                     (responsecode == 200 || responsecode == 202);
 
-                if (requestSuccess) {
-                    netInterface->attempts = 0;
-                } else {
-                    netInterface->attempts++;
-                }
-
-                netInterface->done(client, netInterface->context, requestSuccess);
+                netInterface->done(client, netInterface->context,
+                    requestSuccess);
 
                 netInterface->current = NULL;
 

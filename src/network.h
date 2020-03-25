@@ -20,10 +20,6 @@ struct NetworkInterface {
     void *context;
     /* active handle */
     CURL *current;
-    /* used for tracking retry */
-    unsigned int attempts;
-    /* point in future to backoff until */
-    unsigned long waitUntil;
 };
 
 bool LDi_prepareShared(const struct LDConfig *const config,
