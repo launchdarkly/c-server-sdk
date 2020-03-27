@@ -13,7 +13,7 @@ struct NetworkInterface {
     /* get next handle */
     CURL *(*poll)(struct LDClient *const client, void *context);
     /* called when handle is ready */
-    void (*done)(struct LDClient *const client, void *context, bool success);
+    void (*done)(struct LDClient *const client, void *context, int responseCode);
     /* final action destroy */
     void (*destroy)(void *context);
     /* stores any private implementation data */

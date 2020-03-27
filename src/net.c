@@ -177,20 +177,19 @@ LDi_networkthread(void* const clientref)
             info = curl_multi_info_read(multihandle, &inqueue);
 
             if (info && (info->msg == CURLMSG_DONE)) {
-                long responsecode;
+                long responseCode;
                 CURL *easy = info->easy_handle;
                 struct NetworkInterface *netInterface = NULL;
-                bool requestSuccess;
 
                 if (curl_easy_getinfo(
-                    easy, CURLINFO_RESPONSE_CODE, &responsecode) != CURLE_OK)
+                    easy, CURLINFO_RESPONSE_CODE, &responseCode) != CURLE_OK)
                 {
                     LD_LOG(LD_LOG_ERROR, "failed to get response code");
 
                     goto cleanup;
                 }
 
-                if (responsecode == 401 || responsecode == 403) {
+                if (responseCode == 401 || responseCode == 403) {
                     LD_LOG(LD_LOG_ERROR, "LaunchDarkly API Access Denied");
 
                     goto cleanup;
@@ -202,7 +201,7 @@ LDi_networkthread(void* const clientref)
                     LD_ASSERT(snprintf(msg, sizeof(msg),
                         "message done code %s %ld",
                         curl_easy_strerror(info->data.result),
-                        responsecode) >= 0);
+                        responseCode) >= 0);
 
                     LD_LOG(LD_LOG_TRACE, msg);
                 }
@@ -219,11 +218,8 @@ LDi_networkthread(void* const clientref)
                 LD_ASSERT(netInterface->done);
                 LD_ASSERT(netInterface->context);
 
-                requestSuccess = info->data.result == CURLE_OK &&
-                    (responsecode == 200 || responsecode == 202);
-
                 netInterface->done(client, netInterface->context,
-                    requestSuccess);
+                    info->data.result == CURLE_OK ? responseCode : 0);
 
                 netInterface->current = NULL;
 

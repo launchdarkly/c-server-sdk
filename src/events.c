@@ -887,9 +887,11 @@ resetMemory(struct AnalyticsContext *const context)
 }
 
 static void
-done(struct LDClient *const client, void *const rawcontext, const bool success)
+done(struct LDClient *const client, void *const rawcontext,
+    const int responseCode)
 {
     struct AnalyticsContext *context;
+    const bool success = responseCode == 200 || responseCode == 202;
 
     LD_ASSERT(client);
     LD_ASSERT(rawcontext);

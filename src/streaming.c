@@ -416,9 +416,11 @@ resetMemory(struct StreamContext *const context)
 }
 
 static void
-done(struct LDClient *const client, void *const rawcontext, const bool success)
+done(struct LDClient *const client, void *const rawcontext,
+    const int responseCode)
 {
     struct StreamContext *context;
+    bool success;
 
     LD_ASSERT(client);
     LD_ASSERT(rawcontext);
@@ -426,6 +428,20 @@ done(struct LDClient *const client, void *const rawcontext, const bool success)
     context = (struct StreamContext *)rawcontext;
 
     context->active = false;
+
+    if (responseCode == 200) {
+        success = true;
+    } else{
+        success = false;
+        /* Most 4xx unrecoverable */
+        if (responseCode >= 400 && responseCode < 500){
+            if (responseCode != 400 && responseCode != 408
+                && responseCode != 429)
+            {
+                context->permanentFailure = true;
+            }
+        }
+    }
 
     if (success) {
         unsigned long now;
@@ -474,7 +490,9 @@ poll(struct LDClient *const client, void *const rawcontext)
     context = (struct StreamContext *)rawcontext;
     curl    = NULL;
 
-    if (context->active || !client->config->stream) {
+    if (context->active || !client->config->stream
+        || context->permanentFailure)
+    {
         return NULL;
     }
 
@@ -602,16 +620,17 @@ LDi_constructStreaming(struct LDClient *const client)
         goto error;
     }
 
-    context->memory       = NULL;
-    context->size         = 0;
-    context->active       = false;
-    context->headers      = NULL;
-    context->eventName[0] = 0;
-    context->dataBuffer   = NULL;
-    context->client       = client;
-    context->attempts     = 0;
-    context->waitUntil    = 0;
-    context->startedOn    = 0;
+    context->memory           = NULL;
+    context->size             = 0;
+    context->active           = false;
+    context->headers          = NULL;
+    context->eventName[0]     = 0;
+    context->dataBuffer       = NULL;
+    context->client           = client;
+    context->attempts         = 0;
+    context->waitUntil        = 0;
+    context->startedOn        = 0;
+    context->permanentFailure = false;
 
     netInterface->done    = done;
     netInterface->poll    = poll;

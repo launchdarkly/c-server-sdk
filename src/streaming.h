@@ -26,6 +26,8 @@ struct StreamContext {
     unsigned long waitUntil;
     /* record when stream started for backoff purposes */
     unsigned long startedOn;
+    /* if stream should never retry */
+    bool permanentFailure;
 };
 
 bool LDi_parsePath(const char *path, enum FeatureKind *const kind,
