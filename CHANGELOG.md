@@ -2,6 +2,12 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.2.1] - 2020-03-31
+### Fixed:
+- Standardized polling retry behavior. It now simply waits until the next poll interval.
+- Standardized event delivery retry behavior. It now retries delivery after one second, a single time.
+- Standardized streaming retry behavior. It now correctly follows exponential back-off, changed how status codes are interpreted, and resets back-off after 60 seconds of being successfully connected.
+
 ## [1.2.0] - 2020-01-22
 ### Added:
 - Added support for utilizing external feature stores. See the new `launchdarkly/store.h` file for details on implementing a store. You can configure usage of a specific store with `LDConfigSetFeatureStoreBackend`.
