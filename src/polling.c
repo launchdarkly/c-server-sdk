@@ -99,9 +99,11 @@ resetMemory(struct PollContext *const context)
 }
 
 static void
-done(struct LDClient *const client, void *const rawcontext, const bool success)
+done(struct LDClient *const client, void *const rawcontext,
+    const int responseCode)
 {
     struct PollContext *context;
+    const bool success = responseCode == 200;
 
     LD_ASSERT(client);
     LD_ASSERT(rawcontext);
@@ -242,14 +244,12 @@ LDi_constructPolling(struct LDClient *const client)
     context->active   = false;
     context->lastpoll = 0;
 
-    netInterface->done      = done;
-    netInterface->poll      = poll;
-    netInterface->context   = context;
-    netInterface->destroy   = destroy;
-    netInterface->context   = context;
-    netInterface->current   = NULL;
-    netInterface->attempts  = 0;
-    netInterface->waitUntil = 0;
+    netInterface->done     = done;
+    netInterface->poll     = poll;
+    netInterface->context  = context;
+    netInterface->destroy  = destroy;
+    netInterface->context  = context;
+    netInterface->current  = NULL;
 
     return netInterface;
 

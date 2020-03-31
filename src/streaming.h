@@ -20,6 +20,14 @@ struct StreamContext {
     char eventName[256];
     char *dataBuffer;
     struct LDClient *client;
+    /* used for tracking retry */
+    unsigned int attempts;
+    /* point in future to backoff until */
+    unsigned long waitUntil;
+    /* record when stream started for backoff purposes */
+    unsigned long startedOn;
+    /* if stream should never retry */
+    bool permanentFailure;
 };
 
 bool LDi_parsePath(const char *path, enum FeatureKind *const kind,

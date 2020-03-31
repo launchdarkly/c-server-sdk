@@ -868,7 +868,7 @@ struct AnalyticsContext {
     struct curl_slist *headers;
     struct LDClient *client;
     char *buffer;
-    bool lastFailed;
+    unsigned int failureTime;
     char payloadId[LD_UUID_SIZE + 1];
 };
 
@@ -882,24 +882,29 @@ resetMemory(struct AnalyticsContext *const context)
 
     LDFree(context->buffer);
     context->buffer = NULL;
+
+    context->failureTime = 0;
 }
 
 static void
-done(struct LDClient *const client, void *const rawcontext, const bool success)
+done(struct LDClient *const client, void *const rawcontext,
+    const int responseCode)
 {
     struct AnalyticsContext *context;
+    const bool success = responseCode == 200 || responseCode == 202;
 
     LD_ASSERT(client);
     LD_ASSERT(rawcontext);
 
     context = (struct AnalyticsContext *)rawcontext;
 
-    LD_LOG(LD_LOG_INFO, "done!");
+    context->active = false;
 
-    context->active     = false;
-    context->lastFailed = !success;
+    LD_LOG(LD_LOG_TRACE, "events network interface called done");
 
     if (success) {
+        LD_LOG(LD_LOG_TRACE, "event batch send successful");
+
         LD_ASSERT(LDi_wrlock(&client->lock));
         client->shouldFlush = false;
         LD_ASSERT(LDi_wrunlock(&client->lock));
@@ -907,6 +912,24 @@ done(struct LDClient *const client, void *const rawcontext, const bool success)
         LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastFlush));
 
         resetMemory(context);
+    } else {
+        unsigned long now;
+
+        /* failed twice so just discard the payload */
+        if (context->failureTime) {
+            LD_LOG(LD_LOG_ERROR, "failed sending events twice, discarding");
+
+            resetMemory(context);
+        } else {
+            LD_LOG(LD_LOG_WARNING, "failed sending events, retrying");
+            /* setup waiting and retry logic */
+            LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+
+            context->failureTime = now;
+
+            curl_slist_free_all(context->headers);
+            context->headers = NULL;
+        }
     }
 }
 
@@ -1166,6 +1189,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     const char *mime, *schema;
     bool shouldFlush;
     struct LDJSON *summaryEvent;
+    bool lastFailed;
 
     LD_ASSERT(rawcontext);
 
@@ -1174,6 +1198,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     mime        = "Content-Type: application/json";
     schema      = "X-LaunchDarkly-Event-Schema: 3";
     context     = (struct AnalyticsContext *)rawcontext;
+    lastFailed  = context->failureTime != 0;
 
     /* decide if events should be sent */
 
@@ -1181,7 +1206,18 @@ poll(struct LDClient *const client, void *const rawcontext)
         return NULL;
     }
 
-    if (!context->lastFailed) {
+    if (context->failureTime) {
+        unsigned long now;
+
+        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+
+        /* wait for one second before retrying send */
+        if (now <= context->failureTime + 1000) {
+            return NULL;
+        }
+    }
+
+    if (!lastFailed) {
         struct LDJSON *nextEvents, *nextSummaryCounters;
 
         nextEvents          = NULL;
@@ -1387,21 +1423,19 @@ LDi_constructAnalytics(struct LDClient *const client)
         goto error;
     }
 
-    context->active     = false;
-    context->headers    = NULL;
-    context->client     = client;
-    context->buffer     = NULL;
-    context->lastFailed = false;
+    context->active      = false;
+    context->headers     = NULL;
+    context->client      = client;
+    context->buffer      = NULL;
+    context->failureTime = 0;
 
     LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastFlush));
 
-    netInterface->done      = done;
-    netInterface->poll      = poll;
-    netInterface->context   = context;
-    netInterface->destroy   = destroy;
-    netInterface->current   = NULL;
-    netInterface->attempts  = 0;
-    netInterface->waitUntil = 0;
+    netInterface->done     = done;
+    netInterface->poll     = poll;
+    netInterface->context  = context;
+    netInterface->destroy  = destroy;
+    netInterface->current  = NULL;
 
     return netInterface;
 

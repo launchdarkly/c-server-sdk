@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 #include <launchdarkly/api.h>
 
@@ -415,9 +416,11 @@ resetMemory(struct StreamContext *const context)
 }
 
 static void
-done(struct LDClient *const client, void *const rawcontext, const bool success)
+done(struct LDClient *const client, void *const rawcontext,
+    const int responseCode)
 {
     struct StreamContext *context;
+    bool success;
 
     LD_ASSERT(client);
     LD_ASSERT(rawcontext);
@@ -426,7 +429,34 @@ done(struct LDClient *const client, void *const rawcontext, const bool success)
 
     context->active = false;
 
-    (void)success;
+    if (responseCode == 200) {
+        success = true;
+    } else{
+        success = false;
+        /* Most 4xx unrecoverable */
+        if (responseCode >= 400 && responseCode < 500){
+            if (responseCode != 400 && responseCode != 408
+                && responseCode != 429)
+            {
+                context->permanentFailure = true;
+            }
+        }
+    }
+
+    if (success) {
+        unsigned long now;
+
+        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+
+        /* if closed within 60 seconds of start count as a failure */
+        if (now >= context->startedOn + (60 * 1000)) {
+            context->attempts = 0;
+        } else {
+            context->attempts++;
+        }
+    } else {
+        context->attempts++;
+    }
 
     resetMemory(context);
 }
@@ -460,8 +490,65 @@ poll(struct LDClient *const client, void *const rawcontext)
     context = (struct StreamContext *)rawcontext;
     curl    = NULL;
 
-    if (context->active || !client->config->stream) {
+    if (context->active || !client->config->stream
+        || context->permanentFailure)
+    {
         return NULL;
+    }
+
+    /* logic for checking backoff wait */
+    if (context->attempts) {
+        unsigned long now;
+
+        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+
+        if (context->waitUntil) {
+            if (now >= context->waitUntil) {
+                /* done waiting */
+                context->waitUntil = 0;
+
+                context->startedOn = now;
+            } else {
+                /* continue waiting */
+                return NULL;
+            }
+        } else {
+            double backoff;
+            unsigned int rng;
+
+            /* explicit one second wait for first try */
+            if (context->attempts == 1) {
+                context->waitUntil = now + 1000;
+                /* skip because we are waiting */
+                return NULL;
+            }
+
+            /* random value for jitter */
+            if (!LDi_random(&rng)) {
+                LD_LOG(LD_LOG_ERROR,
+                    "failed to get rng for jitter calculation");
+
+                return NULL;
+            }
+
+            /* calculate time to wait */
+            backoff = 1000 * pow(2, context->attempts) / 2;
+
+            /* cap (min not built in) */
+            if (backoff > 30 * 1000) {
+                backoff = 30 * 1000;
+            }
+
+            /* jitter */
+            backoff /= 2;
+
+            backoff = backoff +
+                LDi_normalize(rng, 0, LD_RAND_MAX, 0, backoff);
+
+            context->waitUntil = now + backoff;
+            /* skip because we are waiting */
+            return NULL;
+        }
     }
 
     if (snprintf(url, sizeof(url), "%s/all",
@@ -533,21 +620,23 @@ LDi_constructStreaming(struct LDClient *const client)
         goto error;
     }
 
-    context->memory       = NULL;
-    context->size         = 0;
-    context->active       = false;
-    context->headers      = NULL;
-    context->eventName[0] = 0;
-    context->dataBuffer   = NULL;
-    context->client       = client;
+    context->memory           = NULL;
+    context->size             = 0;
+    context->active           = false;
+    context->headers          = NULL;
+    context->eventName[0]     = 0;
+    context->dataBuffer       = NULL;
+    context->client           = client;
+    context->attempts         = 0;
+    context->waitUntil        = 0;
+    context->startedOn        = 0;
+    context->permanentFailure = false;
 
-    netInterface->done      = done;
-    netInterface->poll      = poll;
-    netInterface->context   = context;
-    netInterface->destroy   = destroy;
-    netInterface->current   = NULL;
-    netInterface->attempts  = 0;
-    netInterface->waitUntil = 0;
+    netInterface->done    = done;
+    netInterface->poll    = poll;
+    netInterface->context = context;
+    netInterface->destroy = destroy;
+    netInterface->current = NULL;
 
     return netInterface;
 
