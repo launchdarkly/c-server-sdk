@@ -33,7 +33,7 @@ LDi_maybeMakeIndexEvent(struct LDClient *const client,
 
     LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
     if (now > client->lastUserKeyFlush +
         client->config->userKeysFlushInterval) {
         LDLRUClear(client->userKeys);
@@ -41,7 +41,7 @@ LDi_maybeMakeIndexEvent(struct LDClient *const client,
         client->lastUserKeyFlush = now;
     }
     status = LDLRUInsert(client->userKeys, user->key);
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     if (status == LDLRUSTATUS_ERROR) {
         return false;
@@ -544,7 +544,7 @@ LDi_addEvent(struct LDClient *const client, struct LDJSON *const event)
     LD_ASSERT(client);
     LD_ASSERT(event);
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
 
     /* sanity check */
     LD_ASSERT(LDJSONGetType(client->events) == LDArray);
@@ -552,11 +552,11 @@ LDi_addEvent(struct LDClient *const client, struct LDJSON *const event)
     if (LDCollectionGetSize(client->events) >= client->config->eventsCapacity) {
         LD_LOG(LD_LOG_WARNING, "event capacity exceeded, dropping event");
 
-        LD_ASSERT(LDi_wrunlock(&client->lock));
+        LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
     } else {
         LDArrayPush(client->events, event);
 
-        LD_ASSERT(LDi_wrunlock(&client->lock));
+        LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
     }
 }
 
@@ -667,7 +667,7 @@ LDi_summarizeEvent(struct LDClient *const client,
         return false;
     }
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
 
     if (client->summaryStart == 0) {
         unsigned long now;
@@ -855,7 +855,7 @@ LDi_summarizeEvent(struct LDClient *const client,
     success = true;
 
   cleanup:
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     LDFree(keytext);
 
@@ -905,9 +905,9 @@ done(struct LDClient *const client, void *const rawcontext,
     if (success) {
         LD_LOG(LD_LOG_TRACE, "event batch send successful");
 
-        LD_ASSERT(LDi_wrlock(&client->lock));
+        LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
         client->shouldFlush = false;
-        LD_ASSERT(LDi_wrunlock(&client->lock));
+        LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
         LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastFlush));
 
@@ -1172,9 +1172,9 @@ LDi_onHeader(const char *buffer, const size_t size,
         return total;
     }
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
     client->lastServerTime = 1000 * (unsigned long long)mktime(&tm);
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     return total;
 
@@ -1223,18 +1223,18 @@ poll(struct LDClient *const client, void *const rawcontext)
         nextEvents          = NULL;
         nextSummaryCounters = NULL;
 
-        LD_ASSERT(LDi_wrlock(&client->lock));
+        LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
         if (LDCollectionGetSize(client->events) == 0 &&
             LDCollectionGetSize(client->summaryCounters) == 0)
         {
-            LD_ASSERT(LDi_wrunlock(&client->lock));
+            LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
             client->shouldFlush = false;
 
             return NULL;
         }
         shouldFlush = client->shouldFlush;
-        LD_ASSERT(LDi_wrunlock(&client->lock));
+        LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
         if (!shouldFlush) {
             unsigned long now;
@@ -1265,12 +1265,12 @@ poll(struct LDClient *const client, void *const rawcontext)
             return NULL;
         }
 
-        LD_ASSERT(LDi_wrlock(&client->lock));
+        LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
 
         if (!(summaryEvent = LDi_prepareSummaryEvent(client))) {
             LD_LOG(LD_LOG_ERROR, "failed to prepare summary");
 
-            LD_ASSERT(LDi_wrunlock(&client->lock));
+            LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
             LDJSONFree(nextEvents);
             LDJSONFree(nextSummaryCounters);
@@ -1283,7 +1283,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         if (!(context->buffer = LDJSONSerialize(client->events))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            LD_ASSERT(LDi_wrunlock(&client->lock));
+            LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
             LDJSONFree(nextEvents);
             LDJSONFree(nextSummaryCounters);
@@ -1298,7 +1298,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         client->events          = nextEvents;
         client->summaryCounters = nextSummaryCounters;
 
-        LD_ASSERT(LDi_wrunlock(&client->lock));
+        LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
         /* Only generate a UUID once per payload. We want the header to remain
         the same during a retry */

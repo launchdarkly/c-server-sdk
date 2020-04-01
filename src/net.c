@@ -131,14 +131,14 @@ LDi_networkthread(void* const clientref)
         running_handles = 0;
         active_events   = 0;
 
-        LD_ASSERT(LDi_rdlock(&client->lock));
+        LD_ASSERT(LDi_rwlock_rdlock(&client->lock));
         if (client->shuttingdown) {
-            LD_ASSERT(LDi_rdunlock(&client->lock));
+            LD_ASSERT(LDi_rwlock_rdunlock(&client->lock));
 
             break;
         }
         offline = client->config->offline;
-        LD_ASSERT(LDi_rdunlock(&client->lock));
+        LD_ASSERT(LDi_rwlock_rdunlock(&client->lock));
 
         curl_multi_perform(multihandle, &running_handles);
 

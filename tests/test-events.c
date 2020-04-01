@@ -65,9 +65,9 @@ testMakeSummaryKeyIncrementsCounters()
     LD_ASSERT(LDi_summarizeEvent(client, event4, false));
     LD_ASSERT(LDi_summarizeEvent(client, event5, false));
 
-    LD_ASSERT(LDi_rdlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_rdlock(&client->lock));
     LD_ASSERT(summary = LDi_prepareSummaryEvent(client));
-    LD_ASSERT(LDi_rdunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_rdunlock(&client->lock));
     LD_ASSERT(features = LDObjectLookup(summary, "features"))
 
     LD_ASSERT(summaryEntry = LDObjectLookup(features, "key1"))
@@ -151,9 +151,9 @@ testCounterForNilVariationIsDistinctFromOthers()
     LD_ASSERT(LDi_summarizeEvent(client, event2, false));
     LD_ASSERT(LDi_summarizeEvent(client, event3, false));
 
-    LD_ASSERT(LDi_rdlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_rdlock(&client->lock));
     LD_ASSERT(summary = LDi_prepareSummaryEvent(client));
-    LD_ASSERT(LDi_rdunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_rdunlock(&client->lock));
     LD_ASSERT(features = LDObjectLookup(summary, "features"))
 
     LD_ASSERT(summaryEntry = LDObjectLookup(features, "key1"))
@@ -206,10 +206,10 @@ testParseServerTimeHeaderActual()
     LD_ASSERT(client = makeOfflineClient());
 
     LD_ASSERT(LDi_onHeader(header, total, 1, client) == total);
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
     LD_ASSERT(client->lastServerTime >= 1553880000000);
     LD_ASSERT(client->lastServerTime <= 1553911000000);
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     LDClientClose(client);
 }
@@ -224,10 +224,10 @@ testParseServerTimeHeaderAlt()
     LD_ASSERT(client = makeOfflineClient());
 
     LD_ASSERT(LDi_onHeader(header, total, 1, client) == total);
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
     LD_ASSERT(client->lastServerTime >= 1553880000000);
     LD_ASSERT(client->lastServerTime <= 1553911000000);
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     LDClientClose(client);
 }
@@ -244,14 +244,14 @@ testParseServerTimeHeaderBad()
     LD_ASSERT(client = makeOfflineClient());
 
     LD_ASSERT(LDi_onHeader(header1, total1, 1, client) == total1);
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
     LD_ASSERT(client->lastServerTime == 0);
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     LD_ASSERT(LDi_onHeader(header2, total2, 1, client) == total2);
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
     LD_ASSERT(client->lastServerTime == 0);
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     LDClientClose(client);
 }
@@ -306,14 +306,14 @@ testIndexEventGeneration()
     LD_ASSERT(LDStoreInitEmpty(client->store));
     LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag));
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
     LD_ASSERT(LDCollectionGetSize(client->events) == 0);
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     /* evaluation with new user generations index */
     LD_ASSERT(LDIntVariation(client, user1, "flag", 25, NULL) == 42);
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
     LD_ASSERT(LDCollectionGetSize(client->events) == 2);
     /* index event */
     LD_ASSERT(event = LDArrayLookup(client->events, 0));
@@ -327,23 +327,23 @@ testIndexEventGeneration()
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "userKey")), "user1")
         == 0);
     LD_ASSERT(LDObjectLookup(event, "user") == NULL);
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     /* second evaluation with same user does not generate another event */
     LD_ASSERT(LDIntVariation(client, user1, "flag", 25, NULL) == 42);
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
     LD_ASSERT(LDCollectionGetSize(client->events) == 3);
     /* feature event */
     LD_ASSERT(event = LDArrayLookup(client->events, 2));
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
     LD_ASSERT(LDObjectLookup(event, "user") == NULL);
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     /* evaluation with another user generates a new event */
     LD_ASSERT(LDIntVariation(client, user2, "flag", 25, NULL) == 42);
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
     LD_ASSERT(LDCollectionGetSize(client->events) == 5);
     LD_ASSERT(event = LDArrayLookup(client->events, 3));
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "index") == 0);
@@ -353,7 +353,7 @@ testIndexEventGeneration()
     LD_ASSERT(event = LDArrayLookup(client->events, 4));
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
     LD_ASSERT(LDObjectLookup(event, "user") == NULL);
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     LDUserFree(user1);
     LDUserFree(user2);
@@ -384,14 +384,14 @@ testInlineUsersInEvents()
     /* check that user is embedded in full fidelity event */
     LD_ASSERT(LDIntVariation(client, user, "flag", 25, NULL) == 51);
 
-    LD_ASSERT(LDi_wrlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
     LD_ASSERT(LDCollectionGetSize(client->events) == 1);
     LD_ASSERT(event = LDArrayLookup(client->events, 0));
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
     LD_ASSERT(tmp = LDUserToJSON(client, user, true));
     LD_ASSERT(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
     LDJSONFree(tmp);
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
 
     LDUserFree(user);
     LDClientClose(client);

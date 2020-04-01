@@ -113,9 +113,9 @@ done(struct LDClient *const client, void *const rawcontext,
 
     if (success) {
         if (updateStore(client->store, context->memory)) {
-            LD_ASSERT(LDi_wrlock(&client->lock));
+            LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
             client->initialized = true;
-            LD_ASSERT(LDi_wrunlock(&client->lock));
+            LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
         } else {
             LD_LOG(LD_LOG_ERROR, "polling failed to update store");
         }

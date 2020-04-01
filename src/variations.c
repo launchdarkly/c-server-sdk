@@ -201,9 +201,9 @@ possiblyQueueEvent(struct LDClient *const client,
         if (LDi_getUnixMilliseconds(&now)) {
             unsigned long servertime;
 
-            LD_ASSERT(LDi_rdlock(&client->lock));
+            LD_ASSERT(LDi_rwlock_rdlock(&client->lock));
             servertime = client->lastServerTime;
-            LD_ASSERT(LDi_rdunlock(&client->lock));
+            LD_ASSERT(LDi_rwlock_rdunlock(&client->lock));
 
             if (now < until && servertime < until) {
                 struct LDJSON *debugEvent = NULL;

@@ -47,8 +47,8 @@ testThreadStartJoin()
 {
     ld_thread_t thread;
 
-    LD_ASSERT(LDi_createthread(&thread, threadDoNothing, NULL));
-    LD_ASSERT(LDi_jointhread(thread));
+    LD_ASSERT(LDi_thread_create(&thread, threadDoNothing, NULL));
+    LD_ASSERT(LDi_thread_join(&thread));
 }
 
 static void
@@ -56,15 +56,15 @@ testRWLock()
 {
     ld_rwlock_t lock;
 
-    LD_ASSERT(LDi_rwlockinit(&lock));
+    LD_ASSERT(LDi_rwlock_init(&lock));
 
-    LD_ASSERT(LDi_rdlock(&lock));
-    LD_ASSERT(LDi_rdunlock(&lock));
+    LD_ASSERT(LDi_rwlock_rdlock(&lock));
+    LD_ASSERT(LDi_rwlock_rdunlock(&lock));
 
-    LD_ASSERT(LDi_wrlock(&lock));
-    LD_ASSERT(LDi_wrunlock(&lock))
+    LD_ASSERT(LDi_rwlock_wrlock(&lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&lock))
 
-    LD_ASSERT(LDi_rwlockdestroy(&lock));
+    LD_ASSERT(LDi_rwlock_destroy(&lock));
 }
 
 struct Context {
@@ -78,13 +78,13 @@ threadGoAwait(void *const rawcontext)
     struct Context *context = (struct Context *)rawcontext;
 
     while (true) {
-        LD_ASSERT(LDi_wrlock(&context->lock));
+        LD_ASSERT(LDi_rwlock_wrlock(&context->lock));
         if (context->flag) {
             context->flag = false;
-            LD_ASSERT(LDi_wrunlock(&context->lock));
+            LD_ASSERT(LDi_rwlock_wrunlock(&context->lock));
             break;
         }
-        LD_ASSERT(LDi_wrunlock(&context->lock));
+        LD_ASSERT(LDi_rwlock_wrunlock(&context->lock));
 
         LD_ASSERT(LDi_sleepMilliseconds(1));
     }
@@ -100,20 +100,20 @@ testConcurrency()
     struct Context context;
     context.flag = false;
 
-    LD_ASSERT(LDi_rwlockinit(&context.lock));
-    LD_ASSERT(LDi_createthread(&thread, threadGoAwait, &context));
+    LD_ASSERT(LDi_rwlock_init(&context.lock));
+    LD_ASSERT(LDi_thread_create(&thread, threadGoAwait, &context));
 
     LD_ASSERT(LDi_sleepMilliseconds(25));
-    LD_ASSERT(LDi_wrlock(&context.lock));
+    LD_ASSERT(LDi_rwlock_wrlock(&context.lock));
     context.flag = true;
-    LD_ASSERT(LDi_wrunlock(&context.lock));
+    LD_ASSERT(LDi_rwlock_wrunlock(&context.lock));
 
     while (true) {
         bool status;
 
-        LD_ASSERT(LDi_wrlock(&context.lock));
+        LD_ASSERT(LDi_rwlock_wrlock(&context.lock));
         status = context.flag;
-        LD_ASSERT(LDi_wrunlock(&context.lock));
+        LD_ASSERT(LDi_rwlock_wrunlock(&context.lock));
 
         if (!status) {
             break;
@@ -122,8 +122,8 @@ testConcurrency()
         LD_ASSERT(LDi_sleepMilliseconds(1));
     }
 
-    LD_ASSERT(LDi_jointhread(thread));
-    LD_ASSERT(LDi_rwlockdestroy(&context.lock));
+    LD_ASSERT(LDi_thread_join(&thread));
+    LD_ASSERT(LDi_rwlock_destroy(&context.lock));
 }
 
 /* possible failure but very unlikely */
@@ -149,10 +149,10 @@ threadSignalCondition(void *const condition)
 {
     LD_ASSERT(condition);
 
-    LD_ASSERT(LDi_mtxlock(&conditionTestLock));
-    LD_ASSERT(LDi_mtxunlock(&conditionTestLock));
+    LD_ASSERT(LDi_mutex_lock(&conditionTestLock));
+    LD_ASSERT(LDi_mutex_unlock(&conditionTestLock));
 
-    LDi_condsignal((ld_cond_t *)condition);
+    LDi_cond_signal((ld_cond_t *)condition);
 
     return THREAD_RETURN_DEFAULT;
 }
@@ -163,25 +163,24 @@ testConditionVars()
     ld_cond_t condition;
     ld_thread_t thread;
 
-    LD_ASSERT(LDi_mtxinit(&conditionTestLock));
-    LDi_condinit(&condition);
+    LD_ASSERT(LDi_mutex_init(&conditionTestLock));
+    LDi_cond_init(&condition);
 
-    LD_ASSERT(LDi_mtxlock(&conditionTestLock));
-    LD_ASSERT(LDi_createthread(&thread, threadSignalCondition, &condition));
+    LD_ASSERT(LDi_mutex_lock(&conditionTestLock));
+    LD_ASSERT(LDi_thread_create(&thread, threadSignalCondition, &condition));
 
-    LD_ASSERT(LDi_condwait(&condition, &conditionTestLock, 1000));
-    LD_ASSERT(LDi_mtxunlock(&conditionTestLock));
+    LD_ASSERT(LDi_cond_wait(&condition, &conditionTestLock, 1000));
+    LD_ASSERT(LDi_mutex_unlock(&conditionTestLock));
 
-    LDi_conddestroy(&condition);
-    LD_ASSERT(LDi_mtxdestroy(&conditionTestLock));
-    LD_ASSERT(LDi_jointhread(thread));
+    LDi_cond_destroy(&condition);
+    LD_ASSERT(LDi_mutex_destroy(&conditionTestLock));
+    LD_ASSERT(LDi_thread_join(&thread));
 }
 
 int
 main()
 {
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
-
     testMonotonic();
     testGetUnixMilliseconds();
     testSleepMinimum();
