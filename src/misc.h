@@ -28,6 +28,7 @@
 #include <launchdarkly/api.h>
 
 #include "concurrency.h"
+#include "assertion.h"
 
 /* **** LDUtility **** */
 
@@ -76,12 +77,3 @@ int LDi_strncasecmp(const char *const s1, const char *const s2, const size_t n);
 #ifdef _WIN32
     const char *strptime (const char *buf, const char *fmt, struct tm *tm);
 #endif
-
-#define ASSERT_FMT \
-    "LD_ASSERT failed: expected condition '%s' aborting\n"
-
-#define LD_ASSERT(condition) \
-    if (!(condition)) { \
-        LD_LOG(LD_LOG_FATAL, "LD_ASSERT failed: " #condition " aborting"); \
-        abort(); \
-    }

@@ -66,8 +66,8 @@ LDRedisConfigSetHost(struct LDRedisConfig *const config, const char *const host)
 {
     char *hostCopy;
 
-    LD_ASSERT(config);
-    LD_ASSERT(host);
+    LD_ASSERT_API(config);
+    LD_ASSERT_API(host);
 
     if (!(hostCopy = LDStrDup(host))) {
         return false;
@@ -83,7 +83,7 @@ LDRedisConfigSetHost(struct LDRedisConfig *const config, const char *const host)
 bool
 LDRedisConfigSetPort(struct LDRedisConfig *const config, const uint16_t port)
 {
-    LD_ASSERT(config);
+    LD_ASSERT_API(config);
 
     config->port = port;
 
@@ -96,8 +96,8 @@ LDRedisConfigSetPrefix(struct LDRedisConfig *const config,
 {
     char *prefixCopy;
 
-    LD_ASSERT(config);
-    LD_ASSERT(prefix);
+    LD_ASSERT_API(config);
+    LD_ASSERT_API(prefix);
 
     if (!(prefixCopy = LDStrDup(prefix))) {
         return false;
@@ -114,7 +114,7 @@ bool
 LDRedisConfigSetPoolSize(struct LDRedisConfig *const config,
     const unsigned int poolSize)
 {
-    LD_ASSERT(config);
+    LD_ASSERT_API(config);
 
     config->poolSize = poolSize;
 
@@ -798,7 +798,7 @@ LDStoreInterfaceRedisNew(struct LDRedisConfig *const config)
     struct LDStoreInterface *handle;
     struct Context *context;
 
-    LD_ASSERT(config);
+    LD_ASSERT_API(config);
 
     handle  = NULL;
     context = NULL;

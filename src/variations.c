@@ -11,6 +11,8 @@
 void
 LDDetailsInit(struct LDDetails *const details)
 {
+    LD_ASSERT_API(details);
+
     details->variationIndex = 0;
     details->hasVariation   = false;
     details->reason         = LD_UNKNOWN;
@@ -19,6 +21,8 @@ LDDetailsInit(struct LDDetails *const details)
 void
 LDDetailsClear(struct LDDetails *const details)
 {
+    LD_ASSERT_API(details);
+
     if (details->reason == LD_RULE_MATCH) {
         LDFree(details->extra.rule.id);
     } else if (details->reason == LD_PREREQUISITE_FAILED) {
@@ -63,7 +67,7 @@ LDReasonToJSON(const struct LDDetails *const details)
     struct LDJSON *result, *tmp;
     const char *kind;
 
-    LD_ASSERT(details);
+    LD_ASSERT_API(details);
 
     result = NULL;
 
@@ -458,6 +462,10 @@ LDBoolVariation(struct LDClient *const client, struct LDUser *const user,
     bool value;
     struct LDJSON *result, *fallbackJSON;
 
+    LD_ASSERT_API(client);
+    LD_ASSERT_API(user);
+    LD_ASSERT_API(key);
+
     result       = NULL;
     fallbackJSON = NULL;
 
@@ -496,6 +504,10 @@ LDIntVariation(struct LDClient *const client, struct LDUser *const user,
     int value;
     struct LDJSON *result, *fallbackJSON;
 
+    LD_ASSERT_API(client);
+    LD_ASSERT_API(user);
+    LD_ASSERT_API(key);
+
     result       = NULL;
     fallbackJSON = NULL;
 
@@ -527,6 +539,10 @@ LDDoubleVariation(struct LDClient *const client, struct LDUser *const user,
 {
     double value;
     struct LDJSON *result, *fallbackJSON;
+
+    LD_ASSERT_API(client);
+    LD_ASSERT_API(user);
+    LD_ASSERT_API(key);
 
     result       = NULL;
     fallbackJSON = NULL;
@@ -565,6 +581,11 @@ LDStringVariation(struct LDClient *const client, struct LDUser *const user,
 {
     char *value;
     struct LDJSON *result, *fallbackJSON;
+
+    LD_ASSERT_API(client);
+    LD_ASSERT_API(user);
+    LD_ASSERT_API(key);
+    LD_ASSERT_API(fallback);
 
     result       = NULL;
     fallbackJSON = NULL;
@@ -617,6 +638,11 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
 {
     struct LDJSON *result, *fallbackJSON;
 
+    LD_ASSERT_API(client);
+    LD_ASSERT_API(user);
+    LD_ASSERT_API(key);
+    LD_ASSERT_API(fallback);
+
     result       = NULL;
     fallbackJSON = NULL;
 
@@ -647,7 +673,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
     struct LDJSON *evaluatedFlags, *rawFlags, *rawFlagsIter;
     struct LDJSONRC *rawFlagsRC;
 
-    LD_ASSERT(client);
+    LD_ASSERT_API(client);
 
     rawFlags       = NULL;
     rawFlagsIter   = NULL;
