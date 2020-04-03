@@ -446,7 +446,7 @@ done(struct LDClient *const client, void *const rawcontext,
     if (success) {
         unsigned long now;
 
-        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+        LDi_getMonotonicMilliseconds(&now);
 
         /* if closed within 60 seconds of start count as a failure */
         if (now >= context->startedOn + (60 * 1000)) {
@@ -500,7 +500,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     if (context->attempts) {
         unsigned long now;
 
-        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+        LDi_getMonotonicMilliseconds(&now);
 
         if (context->waitUntil) {
             if (now >= context->waitUntil) {

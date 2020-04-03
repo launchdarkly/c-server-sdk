@@ -28,7 +28,10 @@ LDi_random(unsigned int *const result)
 {
     #ifdef _WIN32
         LD_ASSERT(result);
-        return rand_s(result) == 0;
+        errno_t status;
+        status = rand_s(result);
+        LD_ASSERT(status == 0);
+        return status == 0;
     #else
         static unsigned int state;
         static bool init = false;
@@ -36,7 +39,7 @@ LDi_random(unsigned int *const result)
 
         LD_ASSERT(result);
 
-        LD_ASSERT(LDi_mutex_lock(&lock));
+        LDi_mutex_lock(&lock);
 
         if (!init) {
             state = time(NULL);
@@ -45,7 +48,7 @@ LDi_random(unsigned int *const result)
 
         *result = rand_r(&state);
 
-        LD_ASSERT(LDi_mutex_unlock(&lock));
+        LDi_mutex_unlock(&lock);
 
         return true;
     #endif
@@ -67,6 +70,8 @@ LDi_sleepMilliseconds(const unsigned long milliseconds)
                 strerror(status)) >= 0);
 
             LD_LOG(LD_LOG_CRITICAL, msg);
+
+            LD_ASSERT(false);
 
             return false;
         }
@@ -128,6 +133,7 @@ LDi_getMonotonicMilliseconds(unsigned long *const resultMilliseconds)
             *resultMilliseconds = LDi_timeSpecToMilliseconds(ts);
             return true;
         } else {
+            LD_ASSERT(false);
             return false;
         }
     #endif
@@ -145,6 +151,7 @@ LDi_getUnixMilliseconds(unsigned long *const resultMilliseconds)
             *resultMilliseconds = LDi_timeSpecToMilliseconds(ts);
             return true;
         } else {
+            LD_ASSERT(false);
             return false;
         }
     #endif

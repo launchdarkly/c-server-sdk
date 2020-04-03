@@ -27,6 +27,8 @@ else()
     set(LD_LIBRARIES pthread m)
 endif(MSVC)
 
+add_definitions(-D LAUNCHDARKLY_CONCURRENCY_ABORT)
+
 set(LD_INCLUDE_PATHS "src" "include" "third-party/include" ${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR})
 
 if(APPLE)

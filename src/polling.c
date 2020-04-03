@@ -113,14 +113,14 @@ done(struct LDClient *const client, void *const rawcontext,
 
     if (success) {
         if (updateStore(client->store, context->memory)) {
-            LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
+            LDi_rwlock_wrlock(&client->lock);
             client->initialized = true;
-            LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
+            LDi_rwlock_wrunlock(&client->lock);
         } else {
             LD_LOG(LD_LOG_ERROR, "polling failed to update store");
         }
 
-        LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastpoll));
+        LDi_getMonotonicMilliseconds(&context->lastpoll);
     }
 
     resetMemory(context);
@@ -159,7 +159,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     {
         unsigned long now;
 
-        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+        LDi_getMonotonicMilliseconds(&now);
         LD_ASSERT(now >= context->lastpoll);
 
         if (now - context->lastpoll < client->config->pollInterval) {

@@ -154,7 +154,7 @@ borrowConnection(struct Context *const context)
 
     connection = NULL;
 
-    LD_ASSERT(LDi_mutex_lock(&context->lock));
+    LDi_mutex_lock(&context->lock);
     while (!connection) {
         if (context->connections) {
             LD_LOG(LD_LOG_TRACE, "using existing redis connection");
@@ -163,14 +163,14 @@ borrowConnection(struct Context *const context)
 
             LL_DELETE(context->connections, context->connections);
 
-            LD_ASSERT(LDi_mutex_unlock(&context->lock));
+            LDi_mutex_unlock(&context->lock);
         } else {
             if (context->count < context->config->poolSize) {
                 LD_LOG(LD_LOG_TRACE, "opening new redis connection");
 
                 context->count++; /* pre increment before attempt */
 
-                LD_ASSERT(LDi_mutex_unlock(&context->lock));
+                LDi_mutex_unlock(&context->lock);
 
                 if (!(connection = LDAlloc(sizeof(struct Connection)))) {
                     LD_LOG(LD_LOG_ERROR,
@@ -207,9 +207,9 @@ borrowConnection(struct Context *const context)
     return connection;
 
   error:
-    LD_ASSERT(LDi_mutex_lock(&context->lock));
+    LDi_mutex_lock(&context->lock);
     context->count--;
-    LD_ASSERT(LDi_mutex_unlock(&context->lock));
+    LDi_mutex_unlock(&context->lock);
 
     if (connection) {
         if (connection->connection) {
@@ -232,7 +232,7 @@ returnConnection(struct Context *const context,
         return;
     }
 
-    LD_ASSERT(LDi_mutex_lock(&context->lock));
+    LDi_mutex_lock(&context->lock);
 
     if (connection->connection->err == 0) {
         LD_LOG(LD_LOG_TRACE, "returning redis connection");
@@ -248,7 +248,7 @@ returnConnection(struct Context *const context,
         LDFree(connection);
     }
 
-    LD_ASSERT(LDi_mutex_unlock(&context->lock));
+    LDi_mutex_unlock(&context->lock);
 
     LDi_cond_signal(&context->condition);
 }
@@ -783,7 +783,7 @@ storeDestructor(void *const contextRaw)
             LDFree(tmp);
         }
 
-        LD_ASSERT(LDi_mutex_destroy(&context->lock));
+        LDi_mutex_destroy(&context->lock);
         LDi_cond_destroy(&context->condition);
 
         LDRedisConfigFree(context->config);
@@ -817,7 +817,7 @@ LDStoreInterfaceRedisNew(struct LDRedisConfig *const config)
     context->connections = NULL;
     context->config      = config;
 
-    LD_ASSERT(LDi_mutex_init(&context->lock));
+    LDi_mutex_init(&context->lock);
     LDi_cond_init(&context->condition);
 
     handle->context     = context;

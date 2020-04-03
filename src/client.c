@@ -40,11 +40,8 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     client->summaryStart   = 0;
     client->lastServerTime = 0;
 
-    LD_ASSERT(LDi_getMonotonicMilliseconds(&client->lastUserKeyFlush));
-
-    if (!LDi_rwlock_init(&client->lock)) {
-        goto error;
-    }
+    LDi_getMonotonicMilliseconds(&client->lastUserKeyFlush);
+    LDi_rwlock_init(&client->lock);
 
     if (!(client->events = LDNewArray())) {
         goto error;
@@ -58,26 +55,24 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         goto error;
     }
 
-    if (!LDi_thread_create(&client->thread, LDi_networkthread, client)) {
-        goto error;
-    }
+    LDi_thread_create(&client->thread, LDi_networkthread, client);
 
     LD_LOG(LD_LOG_INFO, "waiting to initialize");
     if (maxwaitmilli){
         unsigned long start, diff, now;
 
-        LD_ASSERT(LDi_getMonotonicMilliseconds(&start));
+        LDi_getMonotonicMilliseconds(&start);
         do {
-            LD_ASSERT(LDi_rwlock_rdlock(&client->lock));
+            LDi_rwlock_rdlock(&client->lock);
             if (client->initialized) {
-                LD_ASSERT(LDi_rwlock_rdunlock(&client->lock));
+                LDi_rwlock_rdunlock(&client->lock);
                 break;
             }
-            LD_ASSERT(LDi_rwlock_rdunlock(&client->lock));
+            LDi_rwlock_rdunlock(&client->lock);
 
             LDi_sleepMilliseconds(5);
 
-            LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+            LDi_getMonotonicMilliseconds(&now);
         } while ((diff = now - start) < maxwaitmilli);
     }
     LD_LOG(LD_LOG_INFO, "initialized");
@@ -101,15 +96,15 @@ LDClientClose(struct LDClient *const client)
 {
     if (client) {
         /* signal shutdown to background */
-        LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
+        LDi_rwlock_wrlock(&client->lock);
         client->shuttingdown = true;
-        LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
+        LDi_rwlock_wrunlock(&client->lock);
 
         /* wait until background exits */
-        LD_ASSERT(LDi_thread_join(&client->thread));
+        LDi_thread_join(&client->thread);
 
         /* cleanup resources */
-        LD_ASSERT(LDi_rwlock_destroy(&client->lock));
+        LDi_rwlock_destroy(&client->lock);
         LDJSONFree(client->events);
         LDJSONFree(client->summaryCounters);
         LDLRUFree(client->userKeys);
@@ -218,7 +213,7 @@ void
 LDClientFlush(struct LDClient *const client)
 {
     LD_ASSERT(client);
-    LD_ASSERT(LDi_rwlock_wrlock(&client->lock));
+    LDi_rwlock_wrlock(&client->lock);
     client->shouldFlush = true;
-    LD_ASSERT(LDi_rwlock_wrunlock(&client->lock));
+    LDi_rwlock_wrunlock(&client->lock);
 }
