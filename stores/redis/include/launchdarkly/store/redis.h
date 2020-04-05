@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-#include <hiredis/hiredis.h>
+#include <stdint.h>
 
 #include <launchdarkly/api.h>
 

@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+#include <hiredis/hiredis.h>
+
 #include <launchdarkly/store/redis.h>
 
 bool storeUpsertInternal(void *const contextRaw, const char *const kind,
