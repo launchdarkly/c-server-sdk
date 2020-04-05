@@ -1292,6 +1292,11 @@ LDStoreAll(struct LDStore *const store, const enum FeatureKind kind,
 
         return tryGetAllBackend(store, featureKindToString(kind), result);
     }
+
+    /* work around invalid warning, execution should never get here  */
+    LD_ASSERT(false);
+
+    return false;
 }
 
 bool
