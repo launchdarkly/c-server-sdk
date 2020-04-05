@@ -10,6 +10,7 @@
 #include "client.h"
 #include "user.h"
 #include "misc.h"
+#include "logging.h"
 
 bool
 LDi_parsePath(const char *path, enum FeatureKind *const kind,
@@ -140,7 +141,8 @@ onPut(struct LDClient *const client, struct LDJSON *const put)
         goto cleanup;
     }
 
-    LD_ASSERT(features = LDObjectDetachKey(data, "flags"));
+    features = LDObjectDetachKey(data, "flags");
+    LD_ASSERT(features);
 
     if (!LDObjectSetKey(data, "features", features)) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -294,13 +296,8 @@ LDi_onSSE(struct StreamContext *const context, const char *line)
             } else if (strcmp(context->eventName, "delete") == 0) {
                 status = onDelete(context->client, json);
             } else {
-                char msg[256];
-
-                LD_ASSERT(snprintf(msg, sizeof(msg),
-                    "streamcallback unknown event name: %s",
-                    context->eventName) >= 0);
-
-                LD_LOG(LD_LOG_ERROR, msg);
+                LD_LOG_1(LD_LOG_ERROR, "streamcallback unknown event name: %s",
+                    context->eventName);
 
                 LDJSONFree(json);
             }

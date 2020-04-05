@@ -521,7 +521,8 @@ storeAll(void *const contextRaw, const char *const kind,
             goto cleanup;
         }
 
-        LD_ASSERT(raw = reply->element[i]->str);
+        raw = reply->element[i]->str;
+        LD_ASSERT(raw);
 
         if (!(feature = LDJSONDeserialize(raw))) {
             goto cleanup;
@@ -774,7 +775,8 @@ storeDestructor(void *const contextRaw)
         while (context->connections) {
             struct Connection *tmp;
 
-            LD_ASSERT(tmp = context->connections);
+            tmp = context->connections;
+            LD_ASSERT(tmp);
 
             redisFree(tmp->connection);
 

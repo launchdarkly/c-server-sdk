@@ -289,7 +289,8 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         goto error;
     }
 
-    LD_ASSERT(store = client->store);
+    store = client->store;
+    LD_ASSERT(store);
 
     if (!LDStoreGet(store, LD_FLAG, key, &flagrc)) {
         detailsref->reason = LD_ERROR;
@@ -372,7 +373,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         unsigned int *variationNumRef;
 
         optionalDetails = NULL;
-        evalue = NULL;
+        evalue          = NULL;
         variationNumRef = NULL;
 
         if (!LDi_notNull(evalue = value)) {
@@ -652,7 +653,8 @@ LDJSONVariation(struct LDClient *const client, struct LDUser *const user,
         return NULL;
     }
 
-    result = variation(client, user, key, fallbackJSON, isArrayOrObject, details);
+    result = variation(client, user, key, fallbackJSON, isArrayOrObject,
+        details);
 
     if (!result) {
         LD_LOG(LD_LOG_ERROR, "LDVariation internal failure");
@@ -716,7 +718,8 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         return NULL;
     }
 
-    LD_ASSERT(rawFlags = LDJSONRCGet(rawFlagsRC));
+    rawFlags = LDJSONRCGet(rawFlagsRC);
+    LD_ASSERT(rawFlags);
 
     for (rawFlagsIter = LDGetIter(rawFlags); rawFlagsIter;
         rawFlagsIter = LDIterNext(rawFlagsIter))
@@ -731,7 +734,8 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         events  = NULL;
         key     = NULL;
 
-        LD_ASSERT(flag = rawFlagsIter);
+        flag = rawFlagsIter;
+        LD_ASSERT(flag);
 
         LDDetailsInit(&details);
 
@@ -745,7 +749,8 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
             goto error;
         }
 
-        LD_ASSERT(key = LDGetText(LDObjectLookup(flag, "key")));
+        key = LDGetText(LDObjectLookup(flag, "key"));
+        LD_ASSERT(key);
 
         if (value) {
             if (!LDObjectSetKey(evaluatedFlags, key, value)) {

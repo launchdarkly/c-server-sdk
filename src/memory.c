@@ -99,11 +99,13 @@ LDGlobalInit()
 
     if (first) {
         struct cJSON_Hooks hooks;
+        CURLcode status;
 
         first = false;
 
-        LD_ASSERT(!curl_global_init_mem(CURL_GLOBAL_DEFAULT, LDAlloc, LDFree,
-            LDRealloc, LDStrDup, LDCalloc));
+        status = curl_global_init_mem(CURL_GLOBAL_DEFAULT, LDAlloc, LDFree,
+            LDRealloc, LDStrDup, LDCalloc);
+        LD_ASSERT(!status);
 
         hooks.malloc_fn = LDAlloc;
         hooks.free_fn   = LDFree;

@@ -1148,14 +1148,16 @@ LDi_bucketUser(const struct LDUser *const user, const char *const segmentKey,
         if (snprintf(raw, sizeof(raw), "%s.%s.%s", segmentKey,
             salt, bucketable) >= 0)
         {
+            int status;
             char digest[21], encoded[17];
             const float longScale = 0xFFFFFFFFFFFFFFF;
 
             SHA1(digest, raw, strlen(raw));
 
             /* encodes to hex, and shortens, 16 characters in hex 8 bytes */
-            LD_ASSERT(hexify((unsigned char *)digest,
-                sizeof(digest) - 1, encoded, sizeof(encoded)) == 16);
+            status = hexify((unsigned char *)digest,
+                sizeof(digest) - 1, encoded, sizeof(encoded));
+            LD_ASSERT(status == 16);
 
             encoded[15] = 0;
 
@@ -1242,7 +1244,8 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
         return false;
     }
 
-    LD_ASSERT(variation = LDGetIter(variations));
+    variation = LDGetIter(variations);
+    LD_ASSERT(variation);
 
     if (!LDi_bucketUser(user, key, "key", salt, &userBucket)) {
         LD_LOG(LD_LOG_ERROR, "failed to bucket user");

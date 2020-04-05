@@ -32,7 +32,8 @@ updateStore(struct LDStore *const store, const char *const rawupdate)
         goto error;
     }
 
-    LD_ASSERT(features = LDObjectDetachKey(update, "flags"));
+    features = LDObjectDetachKey(update, "flags");
+    LD_ASSERT(features);
 
     if (!LDObjectSetKey(update, "features", features)) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -175,14 +176,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         return NULL;
     }
 
-    {
-        char msg[256];
-
-        LD_ASSERT(snprintf(msg, sizeof(msg),
-            "connection to polling url: %s", url) >= 0);
-
-        LD_LOG(LD_LOG_INFO, msg);
-    }
+    LD_LOG_1(LD_LOG_INFO, "connection to polling url: %s", url);
 
     if (!LDi_prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;

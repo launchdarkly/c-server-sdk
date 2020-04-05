@@ -64,12 +64,8 @@ LDi_sleepMilliseconds(const unsigned long milliseconds)
         int status;
 
         if ((status = usleep(1000 * milliseconds)) != 0) {
-            char msg[256];
-
-            LD_ASSERT(snprintf(msg, sizeof(msg), "usleep failed with: %s",
-                strerror(status)) >= 0);
-
-            LD_LOG(LD_LOG_CRITICAL, msg);
+            LD_LOG_1(LD_LOG_CRITICAL, "usleep failed with: %s",
+                strerror(status));
 
             LD_ASSERT(false);
 

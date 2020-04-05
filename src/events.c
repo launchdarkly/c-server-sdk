@@ -653,9 +653,11 @@ LDi_summarizeEvent(struct LDClient *const client,
     counters    = NULL;
     success     = false;
 
-    LD_ASSERT(tmp = LDObjectLookup(event, "key"));
+    tmp = LDObjectLookup(event, "key");
+    LD_ASSERT(tmp);
     LD_ASSERT(LDJSONGetType(tmp) == LDText);
-    LD_ASSERT(flagKey = LDGetText(tmp));
+    flagKey = LDGetText(tmp);
+    LD_ASSERT(flagKey);
 
     if (!(keytext = LDi_makeSummaryKey(event))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -727,7 +729,8 @@ LDi_summarizeEvent(struct LDClient *const client,
         }
     }
 
-    LD_ASSERT(counters = LDObjectLookup(flagContext, "counters"));
+    counters = LDObjectLookup(flagContext, "counters");
+    LD_ASSERT(counters);
     LD_ASSERT(LDJSONGetType(counters) == LDObject);
 
     if (!(entry = LDObjectLookup(counters, keytext))) {
@@ -844,8 +847,11 @@ LDi_summarizeEvent(struct LDClient *const client,
             goto cleanup;
         }
     } else {
-        LD_ASSERT(tmp = LDObjectLookup(entry, "count"));
-        LD_ASSERT(LDSetNumber(tmp, LDGetNumber(tmp) + 1));
+        bool status;
+        tmp = LDObjectLookup(entry, "count");
+        LD_ASSERT(tmp);
+        status = LDSetNumber(tmp, LDGetNumber(tmp) + 1);
+        LD_ASSERT(status);
     }
 
     success = true;
@@ -1052,7 +1058,8 @@ LDi_prepareSummaryEvent(struct LDClient *const client)
     for (iter = LDGetIter(counters); iter; iter = LDIterNext(iter)) {
         struct LDJSON *countersObject, *countersArray;
 
-        LD_ASSERT(countersObject = LDObjectDetachKey(iter, "counters"));
+        countersObject = LDObjectDetachKey(iter, "counters");
+        LD_ASSERT(countersObject);
 
         if (!(countersArray = objectToArray(countersObject))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -1313,14 +1320,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         return NULL;
     }
 
-    {
-        char msg[256];
-
-        LD_ASSERT(snprintf(msg, sizeof(msg),
-            "connection to analytics url: %s", url) >= 0);
-
-        LD_LOG(LD_LOG_INFO, msg);
-    }
+    LD_LOG_1(LD_LOG_INFO, "connection to analytics url: %s", url);
 
     if (!LDi_prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;
@@ -1335,15 +1335,16 @@ poll(struct LDClient *const client, void *const rawcontext)
     }
 
     {
+        int status;
         /* This is done as a macro so that the string is a literal */
         #define LD_PAYLOAD_ID_HEADER "X-LaunchDarkly-Payload-ID: "
 
         /* do not need to add space for null termination because of sizeof */
         char payloadIdHeader[sizeof(LD_PAYLOAD_ID_HEADER) + LD_UUID_SIZE];
 
-        LD_ASSERT(snprintf(payloadIdHeader, sizeof(payloadIdHeader),
-            "%s%s", LD_PAYLOAD_ID_HEADER, context->payloadId) ==
-            sizeof(payloadIdHeader) - 1);
+        status = snprintf(payloadIdHeader, sizeof(payloadIdHeader),
+            "%s%s", LD_PAYLOAD_ID_HEADER, context->payloadId);
+        LD_ASSERT(status == sizeof(payloadIdHeader) - 1);
 
         #undef LD_PAYLOAD_ID_HEADER
 

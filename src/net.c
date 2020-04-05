@@ -180,6 +180,7 @@ LDi_networkthread(void* const clientref)
                 long responseCode;
                 CURL *easy = info->easy_handle;
                 struct NetworkInterface *netInterface = NULL;
+                CURLMcode status;
 
                 if (curl_easy_getinfo(
                     easy, CURLINFO_RESPONSE_CODE, &responseCode) != CURLE_OK)
@@ -195,16 +196,9 @@ LDi_networkthread(void* const clientref)
                     goto cleanup;
                 }
 
-                {
-                    char msg[256];
-
-                    LD_ASSERT(snprintf(msg, sizeof(msg),
-                        "message done code %s %ld",
-                        curl_easy_strerror(info->data.result),
-                        responseCode) >= 0);
-
-                    LD_LOG(LD_LOG_TRACE, msg);
-                }
+                LD_LOG_2(LD_LOG_TRACE, "message done code %s %ld",
+                    curl_easy_strerror(info->data.result),
+                    responseCode);
 
                 if (curl_easy_getinfo(
                     easy, CURLINFO_PRIVATE, &netInterface) != CURLE_OK)
@@ -223,8 +217,8 @@ LDi_networkthread(void* const clientref)
 
                 netInterface->current = NULL;
 
-                LD_ASSERT(curl_multi_remove_handle(
-                    multihandle, easy) == CURLM_OK);
+                status = curl_multi_remove_handle(multihandle, easy);
+                LD_ASSERT(status == CURLM_OK);
 
                 curl_easy_cleanup(easy);
             }
@@ -240,7 +234,7 @@ LDi_networkthread(void* const clientref)
 
         if (!active_events) {
             /* if curl is not doing anything wait so we don't burn CPU */
-            LD_ASSERT(LDi_sleepMilliseconds(10));
+            LDi_sleepMilliseconds(10);
         }
     }
 
@@ -248,14 +242,17 @@ LDi_networkthread(void* const clientref)
     LD_LOG(LD_LOG_INFO, "cleanup up networking thread");
 
     {
+        CURLMcode status;
         unsigned int i;
 
         for (i = 0; i < interfacecount; i++) {
             struct NetworkInterface *const netInterface = interfaces[i];
 
             if (netInterface->current) {
-                LD_ASSERT(curl_multi_remove_handle(
-                    multihandle, netInterface->current) == CURLM_OK);
+                status = curl_multi_remove_handle(multihandle,
+                    netInterface->current);
+
+                LD_ASSERT(status == CURLM_OK);
 
                 curl_easy_cleanup(netInterface->current);
             }
@@ -263,9 +260,11 @@ LDi_networkthread(void* const clientref)
             netInterface->destroy(netInterface->context);
             LDFree(netInterface);
         }
-    }
 
-    LD_ASSERT(curl_multi_cleanup(multihandle) == CURLM_OK);
+        status = curl_multi_cleanup(multihandle);
+
+        LD_ASSERT(status == CURLM_OK);
+    }
 
     return THREAD_RETURN_DEFAULT;
 }

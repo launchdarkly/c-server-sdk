@@ -244,7 +244,7 @@ destroyJSONRC(struct LDJSONRC *const rc)
 {
     if (rc) {
         LDJSONFree(rc->value);
-        LD_ASSERT(LDi_mutex_destroy(&rc->lock));
+        LDi_mutex_destroy(&rc->lock);
         LDFree(rc);
     }
 }
@@ -370,6 +370,7 @@ featureStoreCacheKey(const char *const kind, const char *const key)
 {
     char *result;
     int bytes;
+    int status;
 
     LD_ASSERT(kind);
     LD_ASSERT(key);
@@ -380,7 +381,8 @@ featureStoreCacheKey(const char *const kind, const char *const key)
         return NULL;
     }
 
-    LD_ASSERT(snprintf(result, bytes, "%s:%s", kind, key) == bytes - 1);
+    status = snprintf(result, bytes, "%s:%s", kind, key);
+    LD_ASSERT(status == bytes - 1);
 
     return result;
 }
@@ -390,6 +392,7 @@ featureStoreAllCacheKey(const char *const kind)
 {
     char *result;
     int bytes;
+    int status;
 
     LD_ASSERT(kind);
 
@@ -399,7 +402,8 @@ featureStoreAllCacheKey(const char *const kind)
         return NULL;
     }
 
-    LD_ASSERT(snprintf(result, bytes, "all:%s", kind) == bytes - 1);
+    status = snprintf(result, bytes, "all:%s", kind);
+    LD_ASSERT(status == bytes - 1);
 
     return result;
 }
@@ -426,10 +430,12 @@ upsertMemory(struct LDStore *const store, const char *const kind,
     cacheKey           = NULL;
     weakReplacementRef = replacement;
 
-    LD_ASSERT(allCacheKey = featureStoreAllCacheKey(kind));
+    allCacheKey = featureStoreAllCacheKey(kind);
+    LD_ASSERT(allCacheKey);
 
-    LD_ASSERT(cacheKey =
-        featureStoreCacheKey(kind, LDi_getFeatureKeyTrusted(replacement)));
+    cacheKey = featureStoreCacheKey(kind,
+        LDi_getFeatureKeyTrusted(replacement));
+    LD_ASSERT(cacheKey);
 
     HASH_FIND_STR(store->cache->items, cacheKey, currentItem);
 
@@ -444,7 +450,8 @@ upsertMemory(struct LDStore *const store, const char *const kind,
             goto cleanup;
         }
 
-        LD_ASSERT(current = LDJSONRCGet(currentItem->feature));
+        current = LDJSONRCGet(currentItem->feature);
+        LD_ASSERT(current);
 
         if (expired == 0 && LDi_getFeatureVersionTrusted(current) >=
             LDi_getFeatureVersionTrusted(replacement))
@@ -797,16 +804,17 @@ tryGetAllBackend(struct LDStore *const store, const char *const kind,
             continue;
         }
 
-        LD_ASSERT(key = LDGetText(LDObjectLookup(deserialized, "key")));
+        key = LDGetText(LDObjectLookup(deserialized, "key"));
+        LD_ASSERT(key);
 
         if (!LDObjectSetKey(rawFeatures, key, deserialized)) {
             goto cleanup;
         }
     }
 
-    LD_ASSERT(LDi_rwlock_wrlock(&store->cache->lock));
+    LDi_rwlock_wrlock(&store->cache->lock);
     if (!filterAndCacheItems(store, kind, rawFeatures, &active)) {
-        LD_ASSERT(LDi_rwlock_wrunlock(&store->cache->lock));
+        LDi_rwlock_wrunlock(&store->cache->lock);
         rawFeatures = NULL;
         goto cleanup;
     }
@@ -828,7 +836,7 @@ tryGetAllBackend(struct LDStore *const store, const char *const kind,
     HASH_ADD_KEYPTR(hh, store->cache->items, cacheItem->key,
         strlen(cacheItem->key), cacheItem);
 
-    LD_ASSERT(LDi_rwlock_wrunlock(&store->cache->lock));
+    LDi_rwlock_wrunlock(&store->cache->lock);
 
     if (!(activeRC = LDJSONRCNew(active))) {
         goto cleanup;
@@ -1333,6 +1341,7 @@ LDStoreUpsert(struct LDStore *const store, const enum FeatureKind kind,
     struct LDJSON *const feature)
 {
     bool status;
+
     LD_ASSERT(store);
     LD_ASSERT(feature);
 

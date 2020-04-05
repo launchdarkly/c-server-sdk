@@ -27,7 +27,7 @@ else()
     set(LD_LIBRARIES pthread m)
 endif(MSVC)
 
-add_definitions(-D LAUNCHDARKLY_CONCURRENCY_ABORT)
+add_definitions(-D LAUNCHDARKLY_CONCURRENCY_ABORT -D LAUNCHDARKLY_USE_ASSERT)
 
 set(LD_INCLUDE_PATHS "src" "include" "third-party/include" ${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR})
 
@@ -58,4 +58,5 @@ foreach(testsource ${TESTS})
     add_executable(${testexe} ${testsource})
     target_link_libraries(${testexe} ldserverapi)
     add_test(NAME ${testexe} COMMAND ${CMAKE_BINARY_DIR}/${testexe})
+    target_compile_definitions(${testexe} PRIVATE -D LAUNCHDARKLY_USE_ASSERT)
 endforeach(testsource)
