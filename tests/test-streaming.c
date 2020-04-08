@@ -1,10 +1,11 @@
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "config.h"
 #include "client.h"
 #include "evaluate.h"
 #include "streaming.h"
-#include "misc.h"
+#include "utility.h"
 
 static void
 testParsePathFlags()

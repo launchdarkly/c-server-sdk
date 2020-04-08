@@ -4,12 +4,13 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "network.h"
 #include "streaming.h"
 #include "config.h"
 #include "client.h"
 #include "user.h"
-#include "misc.h"
+#include "utility.h"
 #include "logging.h"
 
 bool

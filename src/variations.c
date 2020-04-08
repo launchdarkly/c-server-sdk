@@ -1,11 +1,12 @@
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "config.h"
 #include "client.h"
 #include "user.h"
 #include "evaluate.h"
 #include "events.h"
-#include "misc.h"
+#include "utility.h"
 #include "store.h"
 
 void

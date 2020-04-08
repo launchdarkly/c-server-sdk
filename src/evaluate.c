@@ -3,13 +3,14 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "network.h"
 #include "operators.h"
 #include "events.h"
 #include "evaluate.h"
 #include "user.h"
 #include "client.h"
-#include "misc.h"
+#include "utility.h"
 #include "store.h"
 
 bool

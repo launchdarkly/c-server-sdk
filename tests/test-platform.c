@@ -1,6 +1,8 @@
 #include <launchdarkly/api.h>
 
-#include "misc.h"
+#include "assertion.h"
+#include "concurrency.h"
+#include "utility.h"
 
 static void
 testMonotonic()

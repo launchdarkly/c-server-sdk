@@ -1,7 +1,8 @@
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "operators.h"
-#include "misc.h"
+#include "utility.h"
 
 static struct LDJSON *tests;
 

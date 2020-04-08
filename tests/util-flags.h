@@ -1,5 +1,7 @@
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
+
 struct LDJSON *
 makeMinimalFlag(const char *const key, const unsigned int version,
     const bool on, const bool trackEvents)

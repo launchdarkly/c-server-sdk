@@ -1,6 +1,6 @@
 #pragma once
 
-#include <launchdarkly/api.h>
+#include <launchdarkly/logging.h>
 
 #define LD_LOG_1(level, format, x) \
     LDi_log(level, "[%s, %d] " format, __FILE__, __LINE__, x)

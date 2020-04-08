@@ -1,7 +1,7 @@
 #include <launchdarkly/api.h>
 #include <launchdarkly/store/redis.h>
 
-#include "misc.h"
+#include "utility.h"
 #include "src/redis.h"
 
 #include "util-store.h"

@@ -2,7 +2,8 @@
 
 #include <launchdarkly/api.h>
 
-#include "misc.h"
+#include "assertion.h"
+#include "utility.h"
 
 struct LDJSON *
 LDNewNull()

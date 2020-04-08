@@ -12,23 +12,12 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <curl/curl.h>
-
-#ifdef _WIN32
-    #include <windows.h>
-#else
-    #include <pthread.h>
-#endif
-
 #ifdef __APPLE__
     #include <mach/clock.h>
     #include <mach/mach.h>
 #endif
 
-#include <launchdarkly/api.h>
-
-#include "concurrency.h"
-#include "assertion.h"
+#include <launchdarkly/json.h>
 
 /* **** LDUtility **** */
 

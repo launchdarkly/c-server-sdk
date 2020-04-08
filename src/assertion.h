@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <stdlib.h>
+
 #include "logging.h"
 
 #ifdef LAUNCHDARKLY_USE_ASSERT

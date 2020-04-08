@@ -3,8 +3,9 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "config.h"
-#include "misc.h"
+#include "utility.h"
 
 struct LDConfig *
 LDConfigNew(const char *const key)

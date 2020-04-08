@@ -3,10 +3,11 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "client.h"
 #include "user.h"
 #include "config.h"
-#include "misc.h"
+#include "utility.h"
 
 struct LDUser *
 LDUserNew(const char *const key)

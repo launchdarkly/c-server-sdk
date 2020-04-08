@@ -5,12 +5,13 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "events.h"
 #include "network.h"
 #include "user.h"
 #include "client.h"
 #include "config.h"
-#include "misc.h"
+#include "utility.h"
 #include "lru.h"
 
 bool

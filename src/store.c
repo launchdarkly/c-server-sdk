@@ -2,7 +2,9 @@
 
 #include <launchdarkly/api.h>
 
-#include "misc.h"
+#include "assertion.h"
+#include "concurrency.h"
+#include "utility.h"
 #include "store.h"
 
 /* **** Forward Declarations **** */

@@ -2,8 +2,10 @@
 
 #include <launchdarkly/store/redis.h>
 
+#include "assertion.h"
+#include "concurrency.h"
 #include "utlist.h"
-#include "misc.h"
+#include "utility.h"
 #include "redis.h"
 #include "store.h"
 

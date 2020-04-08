@@ -1,11 +1,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <curl/curl.h>
+
 #include "cJSON.h"
 
-#include <launchdarkly/api.h>
+#include <launchdarkly/memory.h>
 
-#include "misc.h"
+#include "assertion.h"
 
 static void *(*customAlloc)(const size_t bytes) = malloc;
 

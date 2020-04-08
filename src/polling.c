@@ -3,11 +3,12 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "network.h"
 #include "client.h"
 #include "user.h"
 #include "config.h"
-#include "misc.h"
+#include "utility.h"
 #include "store.h"
 
 static bool

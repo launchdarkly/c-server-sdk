@@ -1,6 +1,6 @@
 #pragma once
 
-#include <launchdarkly/api.h>
+#include <launchdarkly/json.h>
 
 struct LDUser {
     char *key;

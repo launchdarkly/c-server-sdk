@@ -1,7 +1,8 @@
 #include <launchdarkly/memory.h>
 
+#include "assertion.h"
 #include "lru.h"
-#include "misc.h"
+#include "utility.h"
 
 #include "utlist.h"
 #include "uthash.h"

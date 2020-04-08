@@ -2,9 +2,10 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "client.h"
 #include "events.h"
-#include "misc.h"
+#include "utility.h"
 #include "config.h"
 #include "user.h"
 #include "store.h"

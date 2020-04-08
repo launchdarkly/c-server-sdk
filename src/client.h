@@ -1,8 +1,8 @@
 #pragma once
 
-#include <launchdarkly/api.h>
+#include <launchdarkly/json.h>
 
-#include "misc.h"
+#include "concurrency.h"
 #include "lru.h"
 
 struct LDClient {

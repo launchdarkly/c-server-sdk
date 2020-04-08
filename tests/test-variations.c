@@ -3,11 +3,12 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "user.h"
 #include "config.h"
 #include "client.h"
 #include "evaluate.h"
-#include "misc.h"
+#include "utility.h"
 #include "util-flags.h"
 #include "store.h"
 

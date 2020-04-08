@@ -3,11 +3,12 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "events.h"
 #include "network.h"
 #include "client.h"
 #include "config.h"
-#include "misc.h"
+#include "utility.h"
 #include "user.h"
 #include "store.h"
 #include "concurrency.h"

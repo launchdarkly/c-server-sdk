@@ -23,7 +23,9 @@ if(NOT DEFINED MSVC)
     set(LD_LIBRARIES pthread m)
 endif()
 
-set(LD_INCLUDE_PATHS "src" "third-party/include" ${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR})
+set(LD_INCLUDE_PATHS
+    "src" "third-party/include" ${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR}
+)
 
 if(APPLE)
     set(LD_INCLUDE_PATHS ${LD_INCLUDE_PATHS} "/usr/local/include")

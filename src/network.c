@@ -4,10 +4,11 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "network.h"
 #include "config.h"
 #include "client.h"
-#include "misc.h"
+#include "utility.h"
 
 #define LD_USER_AGENT "User-Agent: CServerClient/" LD_SDK_VERSION
 
