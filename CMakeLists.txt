@@ -8,22 +8,20 @@ option(SKIP_DATABASE_TESTS "Do not test external store integrations" OFF)
 
 enable_testing() # CTEST_OUTPUT_ON_FAILURE=1 make test
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeFiles")
+
 if (COVERAGE)
     include(CMakeFiles/CodeCoverage.cmake)
     append_coverage_compiler_flags()
     setup_target_for_coverage_gcovr_html(NAME coverage)
 endif (COVERAGE)
 
-if(MSVC)
-    set(CURL_LIBRARIES ../curl-7.59.0/builds/libcurl-vc-x64-release-static-ipv6-sspi-winssl/lib/libcurl_a)
-    set(CURL_INCLUDE_DIR curl-7.59.0/builds/libcurl-vc-x64-release-static-ipv6-sspi-winssl/include)
-    set(PCRE_LIBRARIES ../pcre-8.43/build/Debug/pcred)
-    set(PCRE_INCLUDE_DIR pcre-8.43/build)
-else()
-    find_package(CURL REQUIRED)
-    set(PCRE_LIBRARIES pcre)
+find_package(CURL REQUIRED)
+find_package(PCRE REQUIRED)
+
+if(NOT DEFINED MSVC)
     set(LD_LIBRARIES pthread m)
-endif(MSVC)
+endif()
 
 set(LD_INCLUDE_PATHS "src" "third-party/include" ${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR})
 

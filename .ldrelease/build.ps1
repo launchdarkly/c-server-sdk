@@ -32,6 +32,13 @@ Write-Host Building SDK
 Push-Location
 New-Item -ItemType Directory -Force -Path .\build
 cd build
-ExecuteOrFail { cmake -G "Visual Studio 16 2019" -A x64 .. }
+ExecuteOrFail {
+    cmake -G "Visual Studio 16 2019" -A x64 `
+        -D CURL_LIBRARY="C:/Users/circleci/project/curl-7.59.0/builds/libcurl-vc-x64-release-static-ipv6-sspi-winssl/lib/libcurl_a.lib" `
+        -D CURL_INCLUDE_DIR="C:/Users/circleci/project/curl-7.59.0/builds/libcurl-vc-x64-release-static-ipv6-sspi-winssl/include" `
+        -D PCRE_LIBRARY="C:/Users/circleci/project/pcre-8.43/build/Debug/pcred.lib" `
+        -D PCRE_INCLUDE_DIR="C:/Users/circleci/project/pcre-8.43/build" `
+        ..
+}
 ExecuteOrFail { cmake --build . }
 Pop-Location
