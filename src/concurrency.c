@@ -3,8 +3,8 @@
 #include "logging.h"
 #include "concurrency.h"
 
-bool
-LDi_thread_join(ld_thread_t *const thread)
+static bool
+LDi_thread_join_imp(ld_thread_t *const thread)
 {
     int status;
 
@@ -38,8 +38,8 @@ LDi_thread_join(ld_thread_t *const thread)
     return status == 0;
 }
 
-bool
-LDi_thread_create(ld_thread_t *const thread,
+static bool
+LDi_thread_create_imp(ld_thread_t *const thread,
     THREAD_RETURN (*const routine)(void *), void *const argument)
 {
     int status;
@@ -76,8 +76,8 @@ LDi_thread_create(ld_thread_t *const thread,
     return status == 0;
 }
 
-bool
-LDi_mutex_init(ld_mutex_t *const mutex)
+static bool
+LDi_mutex_init_imp(ld_mutex_t *const mutex)
 {
     int status;
 
@@ -145,8 +145,8 @@ LDi_mutex_init(ld_mutex_t *const mutex)
     return status == 0;
 }
 
-bool
-LDi_mutex_destroy(ld_mutex_t *const mutex)
+static bool
+LDi_mutex_destroy_imp(ld_mutex_t *const mutex)
 {
     int status;
 
@@ -178,8 +178,8 @@ LDi_mutex_destroy(ld_mutex_t *const mutex)
     return status == 0;
 }
 
-bool
-LDi_mutex_lock(ld_mutex_t *const mutex)
+static bool
+LDi_mutex_lock_imp(ld_mutex_t *const mutex)
 {
     int status;
 
@@ -211,8 +211,8 @@ LDi_mutex_lock(ld_mutex_t *const mutex)
     return status == 0;
 }
 
-bool
-LDi_mutex_unlock(ld_mutex_t *const mutex)
+static bool
+LDi_mutex_unlock_imp(ld_mutex_t *const mutex)
 {
     int status;
 
@@ -244,8 +244,8 @@ LDi_mutex_unlock(ld_mutex_t *const mutex)
     return status == 0;
 }
 
-bool
-LDi_rwlock_init(ld_rwlock_t *const lock)
+static bool
+LDi_rwlock_init_imp(ld_rwlock_t *const lock)
 {
     int status;
 
@@ -281,8 +281,8 @@ LDi_rwlock_init(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-bool
-LDi_rwlock_destroy(ld_rwlock_t *const lock)
+static bool
+LDi_rwlock_destroy_imp(ld_rwlock_t *const lock)
 {
     int status;
 
@@ -318,8 +318,8 @@ LDi_rwlock_destroy(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-bool
-LDi_rwlock_rdlock(ld_rwlock_t *const lock)
+static bool
+LDi_rwlock_rdlock_imp(ld_rwlock_t *const lock)
 {
     int status;
 
@@ -355,8 +355,8 @@ LDi_rwlock_rdlock(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-bool
-LDi_rwlock_wrlock(ld_rwlock_t *const lock)
+static bool
+LDi_rwlock_wrlock_imp(ld_rwlock_t *const lock)
 {
     int status;
 
@@ -392,8 +392,8 @@ LDi_rwlock_wrlock(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-bool
-LDi_rwlock_rdunlock(ld_rwlock_t *const lock)
+static bool
+LDi_rwlock_rdunlock_imp(ld_rwlock_t *const lock)
 {
     int status;
 
@@ -429,8 +429,8 @@ LDi_rwlock_rdunlock(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-bool
-LDi_rwlock_wrunlock(ld_rwlock_t *const lock)
+static bool
+LDi_rwlock_wrunlock_imp(ld_rwlock_t *const lock)
 {
     int status;
 
@@ -466,8 +466,8 @@ LDi_rwlock_wrunlock(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-bool
-LDi_cond_wait(ld_cond_t *const cond, ld_mutex_t *const mutex,
+static bool
+LDi_cond_wait_imp(ld_cond_t *const cond, ld_mutex_t *const mutex,
     const int milliseconds)
 {
     int status;
@@ -519,8 +519,8 @@ LDi_cond_wait(ld_cond_t *const cond, ld_mutex_t *const mutex,
     return status == 0;
 }
 
-bool
-LDi_cond_signal(ld_cond_t *const cond)
+static bool
+LDi_cond_signal_imp(ld_cond_t *const cond)
 {
     int status;
 
@@ -552,8 +552,8 @@ LDi_cond_signal(ld_cond_t *const cond)
     return status == 0;
 }
 
-bool
-LDi_cond_destroy(ld_cond_t *const cond)
+static bool
+LDi_cond_destroy_imp(ld_cond_t *const cond)
 {
     int status;
 
@@ -584,8 +584,8 @@ LDi_cond_destroy(ld_cond_t *const cond)
     return status == 0;
 }
 
-bool
-LDi_cond_init(ld_cond_t *const cond)
+static bool
+LDi_cond_init_imp(ld_cond_t *const cond)
 {
     int status;
 
@@ -616,3 +616,23 @@ LDi_cond_init(ld_cond_t *const cond)
 
     return status == 0;
 }
+
+ld_mutex_unary_t   LDi_mutex_init      = LDi_mutex_init_imp;
+ld_mutex_unary_t   LDi_mutex_destroy   = LDi_mutex_destroy_imp;
+ld_mutex_unary_t   LDi_mutex_lock      = LDi_mutex_lock_imp;
+ld_mutex_unary_t   LDi_mutex_unlock    = LDi_mutex_unlock_imp;
+
+ld_thread_join_t   LDi_thread_join     = LDi_thread_join_imp;
+ld_thread_create_t LDi_thread_create   = LDi_thread_create_imp;
+
+ld_rwlock_unary_t  LDi_rwlock_init     = LDi_rwlock_init_imp;
+ld_rwlock_unary_t  LDi_rwlock_destroy  = LDi_rwlock_destroy_imp;
+ld_rwlock_unary_t  LDi_rwlock_rdlock   = LDi_rwlock_rdlock_imp;
+ld_rwlock_unary_t  LDi_rwlock_wrlock   = LDi_rwlock_wrlock_imp;
+ld_rwlock_unary_t  LDi_rwlock_rdunlock = LDi_rwlock_rdunlock_imp;
+ld_rwlock_unary_t  LDi_rwlock_wrunlock = LDi_rwlock_wrunlock_imp;
+
+ld_cond_unary_t    LDi_cond_init       = LDi_cond_init_imp;
+ld_cond_wait_t     LDi_cond_wait       = LDi_cond_wait_imp;
+ld_cond_unary_t    LDi_cond_signal     = LDi_cond_signal_imp;
+ld_cond_unary_t    LDi_cond_destroy    = LDi_cond_destroy_imp;

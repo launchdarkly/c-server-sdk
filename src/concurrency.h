@@ -36,24 +36,34 @@
     #endif
 #endif
 
-bool LDi_thread_join(ld_thread_t *const thread);
-bool LDi_thread_create(ld_thread_t *const thread,
+typedef bool (*ld_mutex_unary_t)(ld_mutex_t *const mutex);
+
+typedef bool (*ld_thread_join_t)(ld_thread_t *const thread);
+typedef bool (*ld_thread_create_t)(ld_thread_t *const thread,
     THREAD_RETURN (*const routine)(void *), void *const argument);
 
-bool LDi_mutex_init(ld_mutex_t *const mutex);
-bool LDi_mutex_destroy(ld_mutex_t *const mutex);
-bool LDi_mutex_lock(ld_mutex_t *const mutex);
-bool LDi_mutex_unlock(ld_mutex_t *const mutex);
+typedef bool (*ld_rwlock_unary_t)(ld_rwlock_t *const lock);
 
-bool LDi_rwlock_init(ld_rwlock_t *const lock);
-bool LDi_rwlock_destroy(ld_rwlock_t *const lock);
-bool LDi_rwlock_rdlock(ld_rwlock_t *const lock);
-bool LDi_rwlock_wrlock(ld_rwlock_t *const lock);
-bool LDi_rwlock_rdunlock(ld_rwlock_t *const lock);
-bool LDi_rwlock_wrunlock(ld_rwlock_t *const lock);
-
-bool LDi_cond_init(ld_cond_t *const cond);
-bool LDi_cond_wait(ld_cond_t *const cond, ld_mutex_t *const mutex,
+typedef bool (*ld_cond_unary_t)(ld_cond_t *const cond);
+typedef bool (*ld_cond_wait_t)(ld_cond_t *const cond, ld_mutex_t *const mutex,
     const int milliseconds);
-bool LDi_cond_signal(ld_cond_t *const cond);
-bool LDi_cond_destroy(ld_cond_t *const cond);
+
+extern ld_mutex_unary_t   LDi_mutex_init;
+extern ld_mutex_unary_t   LDi_mutex_destroy;
+extern ld_mutex_unary_t   LDi_mutex_lock;
+extern ld_mutex_unary_t   LDi_mutex_unlock;
+
+extern ld_thread_join_t   LDi_thread_join;
+extern ld_thread_create_t LDi_thread_create;
+
+extern ld_rwlock_unary_t  LDi_rwlock_init;
+extern ld_rwlock_unary_t  LDi_rwlock_destroy;
+extern ld_rwlock_unary_t  LDi_rwlock_rdlock;
+extern ld_rwlock_unary_t  LDi_rwlock_wrlock;
+extern ld_rwlock_unary_t  LDi_rwlock_rdunlock;
+extern ld_rwlock_unary_t  LDi_rwlock_wrunlock;
+
+extern ld_cond_unary_t    LDi_cond_init;
+extern ld_cond_wait_t     LDi_cond_wait;
+extern ld_cond_unary_t    LDi_cond_signal;
+extern ld_cond_unary_t    LDi_cond_destroy;
