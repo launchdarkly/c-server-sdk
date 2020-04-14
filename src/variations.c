@@ -5,7 +5,6 @@
 #include "client.h"
 #include "user.h"
 #include "evaluate.h"
-#include "events.h"
 #include "utility.h"
 #include "store.h"
 
@@ -152,98 +151,6 @@ LDReasonToJSON(const struct LDDetails *const details)
     return NULL;
 }
 
-static bool
-convertToDebug(struct LDJSON *const event)
-{
-    struct LDJSON *kind;
-
-    LD_ASSERT(event);
-
-    LDObjectDeleteKey(event, "kind");
-
-    if (!(kind = LDNewText("debug"))) {
-        goto error;
-    }
-
-    if (!LDObjectSetKey(event, "kind", kind)) {
-        LDJSONFree(kind);
-
-        goto error;
-    }
-
-    return true;
-
-  error:
-    return false;
-}
-
-static void
-possiblyQueueEvent(struct LDClient *const client,
-    struct LDJSON *event)
-{
-    bool shouldTrack;
-    struct LDJSON *tmp;
-
-    LD_ASSERT(client);
-    LD_ASSERT(event);
-
-    if (LDi_notNull(tmp = LDObjectLookup(event, "trackEvents"))) {
-        /* validated as Boolean by LDi_newFeatureRequestEvent */
-        shouldTrack = LDGetBool(tmp);
-        /* ensure we don't send trackEvents to LD */
-        LDJSONFree(LDCollectionDetachIter(event, tmp));
-    } else {
-        shouldTrack = false;
-    }
-
-    if (LDi_notNull(tmp = LDObjectLookup(event, "debugEventsUntilDate"))) {
-        unsigned long now;
-        /* validated as Number by LDi_newFeatureRequestEvent */
-        const unsigned long until = LDGetNumber(tmp);
-        /* ensure we don't send debugEventsUntilDate to LD */
-        LDJSONFree(LDCollectionDetachIter(event, tmp));
-
-        if (LDi_getUnixMilliseconds(&now)) {
-            unsigned long servertime;
-
-            LDi_rwlock_rdlock(&client->lock);
-            servertime = client->lastServerTime;
-            LDi_rwlock_rdunlock(&client->lock);
-
-            if (now < until && servertime < until) {
-                struct LDJSON *debugEvent = NULL;
-
-                if (shouldTrack) {
-                    debugEvent = LDJSONDuplicate(event);
-                } else {
-                    debugEvent = event;
-                    event      = NULL;
-                }
-
-                if (!debugEvent || !convertToDebug(debugEvent)) {
-                    LDi_addEvent(client, debugEvent);
-                } else {
-                    LDJSONFree(debugEvent);
-
-                    LD_LOG(LD_LOG_WARNING, "failed to allocate debug event");
-                }
-            }
-        } else {
-            LD_LOG(LD_LOG_WARNING,
-                "failed to get time not recording debug event");
-        }
-    }
-
-    if (shouldTrack) {
-        LDi_addEvent(client, event);
-
-        event = NULL;
-    }
-
-    /* consume if neither debug or track */
-    LDJSONFree(event);
-}
-
 static struct LDJSON *
 variation(struct LDClient *const client, const struct LDUser *const user,
     const char *const key, struct LDJSON *const fallback,
@@ -251,8 +158,9 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     struct LDDetails *const o_details)
 {
     struct LDStore *store;
-    struct LDJSON *flag, *value, *event, *indexEvent;
-    struct LDDetails details, *detailsref;
+    const struct LDJSON *flag;
+    struct LDJSON *value, *subEvents;
+    struct LDDetails details, *detailsRef;
     struct LDJSONRC *flagrc;
     bool validUser;
 
@@ -263,29 +171,28 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     flagrc     = NULL;
     value      = NULL;
     store      = NULL;
-    event      = NULL;
-    indexEvent = NULL;
     validUser  = LDUserValidate(user);
+    subEvents  = NULL;
 
     LDDetailsInit(&details);
 
     if (o_details) {
-        detailsref = o_details;
-        LDDetailsInit(detailsref);
+        detailsRef = o_details;
+        LDDetailsInit(detailsRef);
     } else {
-        detailsref = &details;
+        detailsRef = &details;
     }
 
     if (!LDClientIsInitialized(client)) {
-        detailsref->reason = LD_ERROR;
-        detailsref->extra.errorKind = LD_CLIENT_NOT_READY;
+        detailsRef->reason = LD_ERROR;
+        detailsRef->extra.errorKind = LD_CLIENT_NOT_READY;
 
         goto error;
     }
 
     if (!key) {
-        detailsref->reason = LD_ERROR;
-        detailsref->extra.errorKind = LD_NULL_KEY;
+        detailsRef->reason = LD_ERROR;
+        detailsRef->extra.errorKind = LD_NULL_KEY;
 
         goto error;
     }
@@ -294,8 +201,8 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     LD_ASSERT(store);
 
     if (!LDStoreGet(store, LD_FLAG, key, &flagrc)) {
-        detailsref->reason = LD_ERROR;
-        detailsref->extra.errorKind = LD_STORE_ERROR;
+        detailsRef->reason = LD_ERROR;
+        detailsRef->extra.errorKind = LD_STORE_ERROR;
 
         goto error;
     }
@@ -305,147 +212,72 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!flag) {
-        detailsref->reason = LD_ERROR;
-        detailsref->extra.errorKind = LD_FLAG_NOT_FOUND;
+        detailsRef->reason = LD_ERROR;
+        detailsRef->extra.errorKind = LD_FLAG_NOT_FOUND;
     } else if (validUser == false) {
-        detailsref->reason = LD_ERROR;
-        detailsref->extra.errorKind = LD_USER_NOT_SPECIFIED;
+        detailsRef->reason = LD_ERROR;
+        detailsRef->extra.errorKind = LD_USER_NOT_SPECIFIED;
     } else {
-        struct LDJSON *events;
-
-        events = NULL;
-
         const EvalStatus status = LDi_evaluate(client, flag, user, store,
-            detailsref, &events, &value, o_details != NULL);
+            detailsRef, &subEvents, &value, o_details != NULL);
 
         if (status == EVAL_MEM) {
-            detailsref->reason = LD_ERROR;
-            detailsref->extra.errorKind = LD_OOM;
+            detailsRef->reason = LD_ERROR;
+            detailsRef->extra.errorKind = LD_OOM;
 
-            LDJSONFree(events);
+            LDJSONFree(subEvents);
 
             goto error;
         } else if (status == EVAL_SCHEMA) {
-            detailsref->reason = LD_ERROR;
-            detailsref->extra.errorKind = LD_MALFORMED_FLAG;
+            detailsRef->reason = LD_ERROR;
+            detailsRef->extra.errorKind = LD_MALFORMED_FLAG;
 
-            LDJSONFree(events);
-
-            goto error;
-        }
-
-        if (events) {
-            struct LDJSON *iter;
-            /* local only sanity */
-            LD_ASSERT(LDJSONGetType(events) == LDArray);
-            /* different loop to make cleanup easier */
-            for (iter = LDGetIter(events); iter; iter = LDIterNext(iter)) {
-                if (!LDi_summarizeEvent(client, iter, false)) {
-                    LD_LOG(LD_LOG_ERROR, "summary failed");
-
-                    LDJSONFree(events);
-
-                    goto error;
-                }
-            }
-
-            for (iter = LDGetIter(events); iter;) {
-                struct LDJSON *const next = LDIterNext(iter);
-
-                possiblyQueueEvent(client, LDCollectionDetachIter(events, iter));
-
-                iter = next;
-            }
-
-            LDJSONFree(events);
-        }
-    }
-
-    if (validUser && !LDi_maybeMakeIndexEvent(client, user, &indexEvent)) {
-        detailsref->reason = LD_ERROR;
-        detailsref->extra.errorKind = LD_OOM;
-
-        goto error;
-    }
-
-    {
-        struct LDDetails *optionalDetails;
-        struct LDJSON *evalue;
-        unsigned int *variationNumRef;
-
-        optionalDetails = NULL;
-        evalue          = NULL;
-        variationNumRef = NULL;
-
-        if (!LDi_notNull(evalue = value)) {
-            evalue = fallback;
-        }
-
-        if (detailsref->hasVariation) {
-            variationNumRef = &detailsref->variationIndex;
-        }
-
-        if (o_details) {
-            optionalDetails = detailsref;
-        }
-
-        event = LDi_newFeatureRequestEvent(client, key, user,
-            variationNumRef, evalue, fallback, NULL, flag, optionalDetails);
-
-        if (!event) {
-            LD_LOG(LD_LOG_ERROR, "failed to build feature request event");
-
-            detailsref->reason = LD_ERROR;
-            detailsref->extra.errorKind = LD_OOM;
+            LDJSONFree(subEvents);
 
             goto error;
         }
     }
 
-    if (indexEvent) {
-        LDi_addEvent(client, indexEvent);
-        indexEvent = NULL;
-    }
-
-    if (!LDi_summarizeEvent(client, event, !flag)) {
-        LD_LOG(LD_LOG_ERROR, "summary failed");
-
-        detailsref->reason = LD_ERROR;
-        detailsref->extra.errorKind = LD_OOM;
+    if (!LDi_processEvaluation(
+        client->eventProcessor,
+        user,
+        subEvents,
+        key,
+        value,
+        fallback,
+        flag,
+        detailsRef,
+        o_details != NULL
+    )) {
+        subEvents = NULL;
 
         goto error;
     }
-
-    if (flag) {
-        possiblyQueueEvent(client, event);
-        event = NULL;
-    }
+    subEvents = NULL;
 
     if (!LDi_notNull(value)) {
         goto error;
     }
 
     if (!checkType(LDJSONGetType(value))) {
-        detailsref->reason = LD_ERROR;
-        detailsref->extra.errorKind = LD_WRONG_TYPE;
+        detailsRef->reason = LD_ERROR;
+        detailsRef->extra.errorKind = LD_WRONG_TYPE;
 
         goto error;
     }
 
-    LDJSONFree(event);
-    LDJSONFree(indexEvent);
     LDJSONFree(fallback);
     LDDetailsClear(&details);
     LDJSONRCDecrement(flagrc);
+    LDJSONFree(subEvents);
 
     return value;
 
   error:
-    LDJSONFree(event);
-    LDJSONFree(indexEvent);
     LDJSONFree(value);
     LDDetailsClear(&details);
     LDJSONRCDecrement(flagrc);
+    LDJSONFree(subEvents);
 
     return fallback;
 }

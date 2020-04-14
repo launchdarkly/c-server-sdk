@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <launchdarkly/client.h>
 #include <launchdarkly/user.h>
 #include <launchdarkly/json.h>
 #include <launchdarkly/export.h>

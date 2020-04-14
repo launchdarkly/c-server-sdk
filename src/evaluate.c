@@ -6,12 +6,12 @@
 #include "assertion.h"
 #include "network.h"
 #include "operators.h"
-#include "events.h"
 #include "evaluate.h"
 #include "user.h"
 #include "client.h"
 #include "utility.h"
 #include "store.h"
+#include "event_processor.h"
 
 bool
 LDi_isEvalError(const EvalStatus status)
@@ -443,6 +443,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         const char *keyText;
         struct LDDetails details, *detailsRef;
         struct LDJSONRC *preflagrc;
+        unsigned long now;
 
         value            = NULL;
         preflag          = NULL;
@@ -456,6 +457,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         preflagrc        = NULL;
 
         LDDetailsInit(&details);
+        LDi_getUnixMilliseconds(&now);
 
         if (LDJSONGetType(iter) != LDObject) {
             LD_LOG(LD_LOG_ERROR, "schema error");
@@ -530,9 +532,9 @@ LDi_checkPrerequisites(struct LDClient *const client,
             detailsRef = &details;
         }
 
-        event = LDi_newFeatureRequestEvent(client,
+        event = LDi_newFeatureRequestEvent(client->eventProcessor,
             keyText, user, variationNumRef, value, NULL,
-            LDGetText(LDObjectLookup(flag, "key")), preflag, detailsRef);
+            LDGetText(LDObjectLookup(flag, "key")), preflag, detailsRef, now);
 
         if (!event) {
             LDJSONRCDecrement(preflagrc);

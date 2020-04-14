@@ -179,14 +179,16 @@ LDi_textInArray(const struct LDJSON *const array, const char *const text)
 }
 
 static bool
-isPrivateAttr(struct LDClient *const client, const struct LDUser *const user,
-    const char *const key)
-{
+isPrivateAttr(
+    const struct LDConfig *const config,
+    const struct LDUser *const   user,
+    const char *const            key
+) {
     bool global = false;
 
-    if (client) {
-        global = client->config->allAttributesPrivate ||
-            LDi_textInArray(client->config->privateAttributeNames, key);
+    if (config) {
+        global = config->allAttributesPrivate ||
+            LDi_textInArray(config->privateAttributeNames, key);
     }
 
     return global || LDi_textInArray(user->privateAttributeNames, key);
@@ -219,9 +221,11 @@ addHidden(struct LDJSON **const ref, const char *const value){
 }
 
 struct LDJSON *
-LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
-    const bool redact)
-{
+LDUserToJSON(
+    const struct LDConfig *const config,
+    const struct LDUser *const   lduser,
+    const bool                   redact
+) {
     struct LDJSON *hidden, *json, *temp;
 
     LD_ASSERT(lduser);
@@ -266,7 +270,7 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
 
     #define addstring(field)                                                   \
         if (lduser->field) {                                                   \
-            if (redact && isPrivateAttr(client, lduser, #field)) {             \
+            if (redact && isPrivateAttr(config, lduser, #field)) {             \
                 if (!addHidden(&hidden, #field)) {                             \
                     LDJSONFree(json);                                          \
                                                                                \
@@ -313,7 +317,7 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
                 /* must record next to make delete safe */
                 struct LDJSON *const next = LDIterNext(item);
 
-                if (isPrivateAttr(client, lduser, LDIterKey(item))) {
+                if (isPrivateAttr(config, lduser, LDIterKey(item))) {
                     if (!addHidden(&hidden, LDIterKey(item))) {
                         LDJSONFree(json);
                         LDJSONFree(custom);

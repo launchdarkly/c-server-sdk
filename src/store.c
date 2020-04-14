@@ -625,6 +625,9 @@ memoryCacheFlush(struct MemoryContext *const context)
 
     LD_ASSERT(context);
 
+    item    = NULL;
+    itemTmp = NULL;
+
     HASH_ITER(hh, context->items, item, itemTmp) {
         deleteAndRemoveCacheItem(&context->items, item);
     }
@@ -983,6 +986,9 @@ LDi_expireAll(struct LDStore *const store)
     struct CacheItem *item, *itemTmp;
 
     LD_ASSERT(store);
+
+    item    = NULL;
+    itemTmp = NULL;
 
     LD_ASSERT(LDi_rwlock_wrlock(&store->cache->lock));
 

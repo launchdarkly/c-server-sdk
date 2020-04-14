@@ -20,7 +20,7 @@ struct LDUser {
 struct LDJSON *LDi_valueOfAttribute(const struct LDUser *const user,
     const char *const attribute);
 
-struct LDJSON *LDUserToJSON(struct LDClient *const client,
+struct LDJSON *LDUserToJSON(const struct LDConfig *const config,
     const struct LDUser *const lduser, const bool redact);
 
 bool LDUserValidate(const struct LDUser *const user);
