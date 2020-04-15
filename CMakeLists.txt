@@ -8,7 +8,7 @@ option(SKIP_DATABASE_TESTS "Do not test external store integrations" OFF)
 
 enable_testing() # CTEST_OUTPUT_ON_FAILURE=1 make test
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeFiles")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeFiles")
 
 if (COVERAGE)
     include(CMakeFiles/CodeCoverage.cmake)
@@ -95,12 +95,28 @@ INSTALL(
 
 # test targets ----------------------------------------------------------------
 
+file(GLOB TEST_UTILS_SRC "test-utils/src/*")
+
+add_library(test-utils STATIC ${TEST_UTILS_SRC})
+
+target_link_libraries(test-utils ldserverapi)
+
+target_include_directories(test-utils
+    PUBLIC ${LD_INCLUDE_PATHS}
+           "test-utils/include"
+)
+
+target_compile_definitions(test-utils
+    PRIVATE -D LAUNCHDARKLY_USE_ASSERT
+            -D LAUNCHDARKLY_CONCURRENCY_ABORT
+)
+
 file(GLOB TESTS "tests/test-*")
 foreach(testsource ${TESTS})
     get_filename_component(testsourceleaf ${testsource} NAME)
     string(REPLACE ".c" "" testexe ${testsourceleaf})
     add_executable(${testexe} ${testsource})
-    target_link_libraries(${testexe} ldserverapi)
+    target_link_libraries(${testexe} ldserverapi test-utils)
     target_include_directories(${testexe} PRIVATE ${LD_INCLUDE_PATHS})
     add_test(NAME ${testexe} COMMAND ${CMAKE_BINARY_DIR}/${testexe})
     target_compile_definitions(${testexe}

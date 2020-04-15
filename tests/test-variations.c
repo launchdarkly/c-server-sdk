@@ -9,20 +9,10 @@
 #include "client.h"
 #include "evaluate.h"
 #include "utility.h"
-#include "util-flags.h"
 #include "store.h"
 
-static struct LDClient *
-makeTestClient()
-{
-    struct LDClient *client;
-    struct LDConfig *config;
-
-    LD_ASSERT(config = LDConfigNew("key"));
-    LD_ASSERT(client = LDClientInit(config, 0));
-
-    return client;
-}
+#include "test-utils/flags.h"
+#include "test-utils/client.h"
 
 static void
 testBoolVariation()

@@ -3,19 +3,7 @@
 #include "assertion.h"
 #include "utility.h"
 
-struct LDClient *
-makeOfflineClient()
-{
-    struct LDConfig *config;
-    struct LDClient *client;
-
-    LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigSetOffline(config, true);
-
-    LD_ASSERT(client = LDClientInit(config, 0));
-
-    return client;
-}
+#include "test-utils/client.h"
 
 static void
 testBoolVariationDefaultValueOffline()

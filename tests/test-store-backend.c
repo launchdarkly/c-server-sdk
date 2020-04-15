@@ -4,7 +4,7 @@
 #include "utility.h"
 #include "store.h"
 
-#include "util-flags.h"
+#include "test-utils/flags.h"
 
 static bool
 mockFailInit(void *const context,

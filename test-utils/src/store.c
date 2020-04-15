@@ -4,6 +4,8 @@
 #include "utility.h"
 #include "store.h"
 
+#include "test-utils/store.h"
+
 static struct LDJSON *
 makeVersioned(const char *const key, const unsigned int version)
 {

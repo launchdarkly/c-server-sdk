@@ -21,7 +21,7 @@ target_include_directories(ldserverapi-redis
 if (NOT SKIP_DATABASE_TESTS)
     add_executable(test-store-redis test-redis.c)
 
-    target_link_libraries(test-store-redis ldserverapi ldserverapi-redis)
+    target_link_libraries(test-store-redis ldserverapi ldserverapi-redis test-utils)
 
     add_test(test-store-redis test-store-redis)
 

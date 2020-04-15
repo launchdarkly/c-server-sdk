@@ -1,11 +1,12 @@
 #include <launchdarkly/api.h>
 #include <launchdarkly/store/redis.h>
 
+#include "assertion.h"
 #include "utility.h"
 #include "src/redis.h"
 
-#include "util-store.h"
-#include "util-flags.h"
+#include "test-utils/store.h"
+#include "test-utils/flags.h"
 
 static void
 flushDB()
