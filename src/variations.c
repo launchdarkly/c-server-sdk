@@ -162,7 +162,6 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     struct LDJSON *value, *subEvents;
     struct LDDetails details, *detailsRef;
     struct LDJSONRC *flagrc;
-    EvalStatus status;
 
     LD_ASSERT(client);
     LD_ASSERT(checkType);
@@ -214,34 +213,28 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     if (!flag) {
         detailsRef->reason = LD_ERROR;
         detailsRef->extra.errorKind = LD_FLAG_NOT_FOUND;
-
-        goto error;
-    }
-
-    if (!user) {
+    } else if (!user) {
         detailsRef->reason = LD_ERROR;
         detailsRef->extra.errorKind = LD_USER_NOT_SPECIFIED;
+    } else {
+        const EvalStatus status = LDi_evaluate(client, flag, user, store,
+            detailsRef, &subEvents, &value, o_details != NULL);
 
-        goto error;
-    }
+        if (status == EVAL_MEM) {
+            detailsRef->reason = LD_ERROR;
+            detailsRef->extra.errorKind = LD_OOM;
 
-    status = LDi_evaluate(client, flag, user, store, detailsRef, &subEvents,
-        &value, o_details != NULL);
+            LDJSONFree(subEvents);
 
-    if (status == EVAL_MEM) {
-        detailsRef->reason = LD_ERROR;
-        detailsRef->extra.errorKind = LD_OOM;
+            goto error;
+        } else if (status == EVAL_SCHEMA) {
+            detailsRef->reason = LD_ERROR;
+            detailsRef->extra.errorKind = LD_MALFORMED_FLAG;
 
-        LDJSONFree(subEvents);
+            LDJSONFree(subEvents);
 
-        goto error;
-    } else if (status == EVAL_SCHEMA) {
-        detailsRef->reason = LD_ERROR;
-        detailsRef->extra.errorKind = LD_MALFORMED_FLAG;
-
-        LDJSONFree(subEvents);
-
-        goto error;
+            goto error;
+        }
     }
 
     if (!LDi_processEvaluation(
