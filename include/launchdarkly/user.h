@@ -13,9 +13,10 @@
 
 /**
  * @brief Allocate a new empty user Object
+ * @param[in] key A string that identifies the user, may not be `NULL` (assert).
  * @return `NULL` on failure.
  */
-LD_EXPORT(struct LDUser *) LDUserNew(const char *const userkey);
+LD_EXPORT(struct LDUser *) LDUserNew(const char *const key);
 
 /**
  * @brief Destroy an existing user object

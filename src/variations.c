@@ -162,7 +162,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     struct LDJSON *value, *subEvents;
     struct LDDetails details, *detailsRef;
     struct LDJSONRC *flagrc;
-    bool validUser;
+    EvalStatus status;
 
     LD_ASSERT(client);
     LD_ASSERT(checkType);
@@ -171,7 +171,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     flagrc     = NULL;
     value      = NULL;
     store      = NULL;
-    validUser  = LDUserValidate(user);
+    value      = NULL;
     subEvents  = NULL;
 
     LDDetailsInit(&details);
@@ -214,28 +214,34 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     if (!flag) {
         detailsRef->reason = LD_ERROR;
         detailsRef->extra.errorKind = LD_FLAG_NOT_FOUND;
-    } else if (validUser == false) {
+
+        goto error;
+    }
+
+    if (!user) {
         detailsRef->reason = LD_ERROR;
         detailsRef->extra.errorKind = LD_USER_NOT_SPECIFIED;
-    } else {
-        const EvalStatus status = LDi_evaluate(client, flag, user, store,
-            detailsRef, &subEvents, &value, o_details != NULL);
 
-        if (status == EVAL_MEM) {
-            detailsRef->reason = LD_ERROR;
-            detailsRef->extra.errorKind = LD_OOM;
+        goto error;
+    }
 
-            LDJSONFree(subEvents);
+    status = LDi_evaluate(client, flag, user, store, detailsRef, &subEvents,
+        &value, o_details != NULL);
 
-            goto error;
-        } else if (status == EVAL_SCHEMA) {
-            detailsRef->reason = LD_ERROR;
-            detailsRef->extra.errorKind = LD_MALFORMED_FLAG;
+    if (status == EVAL_MEM) {
+        detailsRef->reason = LD_ERROR;
+        detailsRef->extra.errorKind = LD_OOM;
 
-            LDJSONFree(subEvents);
+        LDJSONFree(subEvents);
 
-            goto error;
-        }
+        goto error;
+    } else if (status == EVAL_SCHEMA) {
+        detailsRef->reason = LD_ERROR;
+        detailsRef->extra.errorKind = LD_MALFORMED_FLAG;
+
+        LDJSONFree(subEvents);
+
+        goto error;
     }
 
     if (!LDi_processEvaluation(
@@ -521,7 +527,7 @@ LDAllFlags(struct LDClient *const client, struct LDUser *const user)
         return NULL;
     }
 
-    if (!LDUserValidate(user)) {
+    if (!user) {
         LD_LOG(LD_LOG_WARNING, "LDAllFlags NULL user returning NULL");
 
         return NULL;

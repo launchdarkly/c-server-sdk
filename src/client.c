@@ -112,7 +112,7 @@ LDClientTrack(struct LDClient *const client, const char *const key,
     const struct LDUser *const user, struct LDJSON *const data)
 {
     LD_ASSERT(client);
-    LD_ASSERT(LDUserValidate(user));
+    LD_ASSERT(user);
     LD_ASSERT(key);
 
     return LDi_track(client->eventProcessor, user, key, data, 0, false);
@@ -134,7 +134,7 @@ bool
 LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
 {
     LD_ASSERT(client);
-    LD_ASSERT(LDUserValidate(user));
+    LD_ASSERT(user);
 
     return LDi_identify(client->eventProcessor, user);
 }

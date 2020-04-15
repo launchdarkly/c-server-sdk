@@ -124,8 +124,7 @@ LDi_processEvaluation(
         return false;
     }
 
-    if (LDUserValidate(user) &&
-        !LDi_maybeMakeIndexEvent(context, user, now, &indexEvent))
+    if (!LDi_maybeMakeIndexEvent(context, user, now, &indexEvent))
     {
         LDJSONFree(featureEvent);
         LDFree(subEvents);
@@ -217,7 +216,7 @@ LDi_summarizeEvent(struct EventProcessor *const context,
     flagKey = LDGetText(tmp);
     LD_ASSERT(flagKey);
 
-    if (!(keytext = LDi_makeSummaryKey2(event))) {
+    if (!(keytext = LDi_makeSummaryKey(event))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         return false;
@@ -882,7 +881,7 @@ LDi_addUserInfoToEvent(
 }
 
 char *
-LDi_makeSummaryKey2(const struct LDJSON *const event)
+LDi_makeSummaryKey(const struct LDJSON *const event)
 {
     char *keytext;
     struct LDJSON *key, *tmp;
@@ -995,7 +994,7 @@ LDi_newIdentifyEvent(
     struct LDJSON *event, *tmp;
 
     LD_ASSERT(context);
-    LD_ASSERT(LDUserValidate(user));
+    LD_ASSERT(user);
 
     event = NULL;
     tmp   = NULL;

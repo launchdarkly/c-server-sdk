@@ -44,7 +44,7 @@ LDi_addUserInfoToEvent(
     const struct LDUser *const         user
 );
 
-char *LDi_makeSummaryKey2(const struct LDJSON *const event);
+char *LDi_makeSummaryKey(const struct LDJSON *const event);
 
 struct LDJSON *
 LDi_newIdentifyEvent(

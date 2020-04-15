@@ -14,6 +14,8 @@ LDUserNew(const char *const key)
 {
     struct LDUser *user;
 
+    LD_ASSERT(key);
+
     if (!(user = (struct LDUser *)LDAlloc(sizeof(struct LDUser)))) {
         return NULL;
     }
@@ -238,19 +240,17 @@ LDUserToJSON(
         return NULL;
     }
 
-    if (lduser->key) {
-        if (!(temp = LDNewText(lduser->key))) {
-            LDJSONFree(json);
+    if (!(temp = LDNewText(lduser->key))) {
+        LDJSONFree(json);
 
-            return NULL;
-        }
+        return NULL;
+    }
 
-        if (!LDObjectSetKey(json, "key", temp)) {
-            LDJSONFree(temp);
-            LDJSONFree(json);
+    if (!LDObjectSetKey(json, "key", temp)) {
+        LDJSONFree(temp);
+        LDJSONFree(json);
 
-            return NULL;
-        }
+        return NULL;
     }
 
     if (lduser->anonymous) {
@@ -407,10 +407,4 @@ LDi_valueOfAttribute(const struct LDUser *const user,
     }
 
     return NULL;
-}
-
-bool
-LDUserValidate(const struct LDUser *const user)
-{
-    return user != NULL && user->key != NULL;
 }
