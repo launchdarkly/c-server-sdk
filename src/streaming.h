@@ -11,14 +11,12 @@
 
 #include "network.h"
 #include "store.h"
+#include "sse.h"
 
 struct StreamContext {
-    char *memory;
-    size_t size;
+    struct LDSSEParser parser;
     bool active;
     struct curl_slist *headers;
-    char eventName[256];
-    char *dataBuffer;
     struct LDClient *client;
     /* used for tracking retry */
     unsigned int attempts;
@@ -33,7 +31,9 @@ struct StreamContext {
 bool LDi_parsePath(const char *path, enum FeatureKind *const kind,
     const char **const key);
 
-bool LDi_onSSE(struct StreamContext *const context, const char *line);
-
 size_t LDi_streamWriteCallback(const void *const contents, size_t size,
     size_t nmemb, void *rawcontext);
+
+struct StreamContext *LDi_constructStreamContext(struct LDClient *const client);
+
+void resetMemory(struct StreamContext *const context);
