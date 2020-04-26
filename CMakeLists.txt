@@ -37,7 +37,6 @@ if (REDIS_STORE)
 endif (REDIS_STORE)
 
 file(GLOB SOURCES "src/*" "third-party/src/*")
-file(GLOB P "include/*")
 
 if(NOT DEFINED MSVC)
     list(REMOVE_ITEM SOURCES
@@ -67,6 +66,7 @@ if(MSVC)
     target_compile_definitions(ldserverapi
         PRIVATE -D CURL_STATICLIB
                 -D PCRE_STATIC
+                -D _CRT_SECURE_NO_WARNINGS
     )
 else()
     target_compile_definitions(ldserverapi
@@ -75,7 +75,13 @@ else()
     )
 
     target_compile_options(ldserverapi
-        PRIVATE -fno-omit-frame-pointer -pedantic -Wall -Wextra
+        PRIVATE -fno-omit-frame-pointer
+                -pedantic
+                -Wall
+                -Wextra
+                -Wstrict-prototypes
+                -Wmissing-prototypes
+                -Wmissing-declarations
     )
 endif(MSVC)
 

@@ -40,7 +40,7 @@ typedef enum {
  * @brief Constructs a JSON node of type `LDJSONNull`.
  * @return `NULL` on failure.
  */
-LD_EXPORT(struct LDJSON *) LDNewNull();
+LD_EXPORT(struct LDJSON *) LDNewNull(void);
 
 /**
  * @brief Constructs a JSON node of type `LDJSONBool`.
@@ -67,13 +67,13 @@ LD_EXPORT(struct LDJSON *) LDNewText(const char *const text);
  * @brief Constructs a JSON node of type `LDJSONObject`.
  * @return `NULL` on failure.
  */
-LD_EXPORT(struct LDJSON *) LDNewObject();
+LD_EXPORT(struct LDJSON *) LDNewObject(void);
 
 /**
  * @brief Constructs a JSON node of type `LDJSONArray`.
  * @return `NULL` on failure.
  */
-LD_EXPORT(struct LDJSON *) LDNewArray();
+LD_EXPORT(struct LDJSON *) LDNewArray(void);
 
 /*@}*/
 

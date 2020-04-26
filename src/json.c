@@ -6,7 +6,7 @@
 #include "utility.h"
 
 struct LDJSON *
-LDNewNull()
+LDNewNull(void)
 {
     return (struct LDJSON *)cJSON_CreateNull();
 }
@@ -32,13 +32,13 @@ LDNewText(const char *const text)
 }
 
 struct LDJSON *
-LDNewObject()
+LDNewObject(void)
 {
     return (struct LDJSON *)cJSON_CreateObject();
 }
 
 struct LDJSON *
-LDNewArray()
+LDNewArray(void)
 {
     return (struct LDJSON *)cJSON_CreateArray();
 }

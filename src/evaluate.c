@@ -49,58 +49,6 @@ maybeNegate(const struct LDJSON *const clause, const EvalStatus status)
     return status;
 }
 
-struct LDJSON *
-LDi_addReason(struct LDJSON **const result, const char *const reason)
-{
-    struct LDJSON *tmpcollection, *tmp;
-
-    LD_ASSERT(reason);
-
-    tmpcollection = NULL;
-    tmp           = NULL;
-
-    if (!(*result)) {
-        if (!(*result = LDNewObject())) {
-            LD_LOG(LD_LOG_ERROR, "allocation error");
-
-            return NULL;
-        }
-    }
-
-    if (!(tmpcollection = LDNewObject())) {
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        return NULL;
-    }
-
-    if (!(tmp = LDNewText(reason))) {
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        LDJSONFree(tmpcollection);
-
-        return NULL;
-    }
-
-    if (!LDObjectSetKey(tmpcollection, "kind", tmp)) {
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        LDJSONFree(tmp);
-        LDJSONFree(tmpcollection);
-
-        return NULL;
-    }
-
-    if (!LDObjectSetKey(*result, "reason", tmpcollection)) {
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        LDJSONFree(tmpcollection);
-
-        return NULL;
-    }
-
-    return tmpcollection;
-}
-
 static bool
 addValue(const struct LDJSON *const flag, struct LDJSON **result,
     struct LDDetails *const details, const struct LDJSON *const index)
@@ -965,7 +913,7 @@ LDi_segmentRuleMatchUser(const struct LDJSON *const segmentRule,
     }
 }
 
-EvalStatus
+static EvalStatus
 matchAny(OpFn f, const struct LDJSON *const value,
     const struct LDJSON *const values)
 {

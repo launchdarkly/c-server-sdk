@@ -1,4 +1,9 @@
 #include <string.h>
+#include <time.h>
+
+#ifdef _WIN32
+    #define _CRT_RAND_S
+#endif
 #include <stdlib.h>
 
 #include <launchdarkly/api.h>
@@ -9,9 +14,7 @@
 
 #ifdef _WIN32
     #include <windows.h>
-    #define _CRT_RAND_S
 #else
-    #include <time.h>
     #include <unistd.h>
 #endif
 

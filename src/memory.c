@@ -95,7 +95,7 @@ LDSetMemoryRoutines(void *(*const newMalloc)(const size_t),
 }
 
 void
-LDGlobalInit()
+LDGlobalInit(void)
 {
     static bool first = true;
 
