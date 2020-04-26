@@ -52,6 +52,9 @@ enum LDEvalErrorKind {
     LD_FLAG_NOT_FOUND,
     /** @brief Indicates that a `NULL` user was passed for the user parameter */
     LD_USER_NOT_SPECIFIED,
+    /** @brief Indicates that a `NULL` client was passed for the client
+     * parameter */
+    LD_CLIENT_NOT_SPECIFIED,
     /** @brief Indicates that there was an internal inconsistency in the flag
      * data, a rule specified a nonexistent variation. */
     LD_MALFORMED_FLAG,
@@ -124,90 +127,87 @@ LD_EXPORT(struct LDJSON *) LDReasonToJSON(
 
 /**
  * @brief Evaluate a boolean flag
- * @param[in] client The client to use.
- * @param[in] user The user to evaluate the flag against.
- * @param[in] key The key of the flag to evaluate.
+ * @param[in] client The client to use. May not be `NULL`.
+ * @param[in] user The user to evaluate the flag against. May not be `NULL`.
+ * @param[in] key The key of the flag to evaluate. May not be `NULL`.
  * @param[in] fallback The value to return on error
  * @param[out] details A struct where the evaluation explanation will be put.
  * If `NULL` no explanation will be generated.
- * @return The fallback will be returned if `client`, `user`, or `key` are
- * `NULL`.
+ * @return The fallback will be returned on any error.
  */
 LD_EXPORT(bool) LDBoolVariation(struct LDClient *const client,
-    struct LDUser *const user, const char *const key, const bool fallback,
+    const struct LDUser *const user, const char *const key, const bool fallback,
     struct LDDetails *const details);
 
 /**
  * @brief Evaluate a integer flag
- * @param[in] client The client to use.
- * @param[in] user The user to evaluate the flag against.
- * @param[in] key The key of the flag to evaluate.
+ * @param[in] client The client to use. May not be `NULL`.
+ * @param[in] user The user to evaluate the flag against. May not be `NULL`.
+ * @param[in] key The key of the flag to evaluate. May not be `NULL`.
  * @param[in] fallback The value to return on error
  * @param[out] details A struct where the evaluation explanation will be put.
  * If `NULL` no explanation will be generated.
- * @return The fallback will be returned if `client`, `user`, or `key` are
- * `NULL`. If the flag value is actually a float the result is truncated.
+ * @return The fallback will be returned on any error.
  */
 LD_EXPORT(int) LDIntVariation(struct LDClient *const client,
-    struct LDUser *const user, const char *const key, const int fallback,
+    const struct LDUser *const user, const char *const key, const int fallback,
     struct LDDetails *const details);
 
 /**
  * @brief Evaluate a double flag
- * @param[in] client The client to use.
- * @param[in] user The user to evaluate the flag against.
- * @param[in] key The key of the flag to evaluate.
+ * @param[in] client The client to use. May not be `NULL`.
+ * @param[in] user The user to evaluate the flag against. May not be `NULL`.
+ * @param[in] key The key of the flag to evaluate. May not be `NULL`.
  * @param[in] fallback The value to return on error
  * @param[out] details A struct where the evaluation explanation will be put.
  * If `NULL` no explanation will be generated.
- * @return The fallback will be returned if `client`, `user`, or `key` are
- * `NULL`.
+ * @return The fallback will be returned on any error.
  */
 LD_EXPORT(double) LDDoubleVariation(struct LDClient *const client,
-    struct LDUser *const user, const char *const key, const double fallback,
-    struct LDDetails *const details);
+    const struct LDUser *const user, const char *const key,
+    const double fallback, struct LDDetails *const details);
 
 /**
  * @brief Evaluate a text flag
- * @param[in] client The client to use.
- * @param[in] user The user to evaluate the flag against.
- * @param[in] key The key of the flag to evaluate.
+ * @param[in] client The client to use. May not be `NULL`.
+ * @param[in] user The user to evaluate the flag against. May not be `NULL`.
+ * @param[in] key The key of the flag to evaluate. May not be `NULL`.
  * @param[in] fallback The value to return on error. Ownership is not
- * transferred.
+ * transferred. May be `NULL`.
  * @param[out] details A struct where the evaluation explanation will be put.
  * If `NULL` no explanation will be generated.
- * @return The fallback will be returned if `client`, `user`, or `key` are
- * `NULL`.
+ * @return The fallback will be returned on any error but may be `NULL` on
+ * allocation failure.
  * The result must be cleaned up with `LDFree`.
  */
 LD_EXPORT(char *) LDStringVariation(struct LDClient *const client,
-    struct LDUser *const user, const char *const key,
+    const struct LDUser *const user, const char *const key,
     const char* const fallback, struct LDDetails *const details);
 
 /**
  * @brief Evaluate a JSON flag
- * @param[in] client The client to use.
- * @param[in] user The user to evaluate the flag against.
- * @param[in] key The key of the flag to evaluate.
+ * @param[in] client The client to use. May not be `NULL`.
+ * @param[in] user The user to evaluate the flag against. May not be `NULL`.
+ * @param[in] key The key of the flag to evaluate. May not be `NULL``
  * @param[in] fallback The fallback to return on error. Ownership is not
- * transferred.
+ * transferred. May be `NULL`.
  * @param[out] details A struct where the evaluation explanation will be put.
  * If `NULL` no explanation will be generated.
- * @return The fallback will be returned if `client`, `user`, or `key` are
- * `NULL`.
+ * @return The fallback will be returned on any error but may be `NULL` on
+ * allocation failure.
  * The result must be cleanud up with `LDJSONFree`.
  */
 LD_EXPORT(struct LDJSON *) LDJSONVariation(struct LDClient *const client,
-    struct LDUser *const user, const char *const key,
+    const struct LDUser *const user, const char *const key,
     const struct LDJSON *const fallback, struct LDDetails *const details);
 
 /**
  * @brief Returns a map from feature flag keys to values for a given user.
  * This does not send analytics events back to LaunchDarkly.
- * @param[in] client The client to use. May not be `NULL` (assert).
+ * @param[in] client The client to use. May not be `NULL`.
  * @param[in] user The user to evaluate flags for. Ownership is not transferred.
- * May not be `NULL` (assert).
- * @return A JSON object, or `NULL` on `malloc` failure.
+ * May not be `NULL`.
+ * @return A JSON object, or `NULL` on failure.
  */
 LD_EXPORT(struct LDJSON *) LDAllFlags(struct LDClient *const client,
-    struct LDUser *const user);
+    const struct LDUser *const user);

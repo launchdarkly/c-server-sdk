@@ -20,6 +20,12 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     LD_ASSERT(config);
 
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (config == NULL) {
+            return NULL;
+        }
+    #endif
+
     if (!(client = (struct LDClient *)LDAlloc(sizeof(struct LDClient)))) {
         return NULL;
     }
@@ -73,7 +79,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     return client;
 }
 
-void
+bool
 LDClientClose(struct LDClient *const client)
 {
     if (client) {
@@ -97,12 +103,20 @@ LDClientClose(struct LDClient *const client)
 
         LD_LOG(LD_LOG_INFO, "trace client cleanup");
     }
+
+    return true;
 }
 
 bool
 LDClientIsInitialized(struct LDClient *const client)
 {
     LD_ASSERT(client);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client == NULL) {
+            return false;
+        }
+    #endif
 
     return LDStoreInitialized(client->store);
 }
@@ -112,8 +126,14 @@ LDClientTrack(struct LDClient *const client, const char *const key,
     const struct LDUser *const user, struct LDJSON *const data)
 {
     LD_ASSERT(client);
-    LD_ASSERT(user);
     LD_ASSERT(key);
+    LD_ASSERT(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client == NULL || key == NULL || user == NULL) {
+            return false;
+        }
+    #endif
 
     return LDi_track(client->eventProcessor, user, key, data, 0, false);
 }
@@ -124,8 +144,14 @@ LDClientTrackMetric(struct LDClient *const client, const char *const key,
     const double metric)
 {
     LD_ASSERT(client);
-    LD_ASSERT(user);
     LD_ASSERT(key);
+    LD_ASSERT(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client == NULL || key == NULL) {
+            return false;
+        }
+    #endif
 
     return LDi_track(client->eventProcessor, user, key, data, metric, true);
 }
@@ -136,6 +162,12 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
     LD_ASSERT(client);
     LD_ASSERT(user);
 
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client == NULL || user == NULL) {
+            return false;
+        }
+    #endif
+
     return LDi_identify(client->eventProcessor, user);
 }
 
@@ -144,14 +176,29 @@ LDClientIsOffline(struct LDClient *const client)
 {
     LD_ASSERT(client);
 
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client) {
+            return false;
+        }
+    #endif
+
     return client->config->offline;
 }
 
-void
+bool
 LDClientFlush(struct LDClient *const client)
 {
     LD_ASSERT(client);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client == NULL) {
+            return false;
+        }
+    #endif
+
     LDi_rwlock_wrlock(&client->lock);
     client->shouldFlush = true;
     LDi_rwlock_wrunlock(&client->lock);
+
+    return true;
 }

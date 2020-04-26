@@ -14,7 +14,13 @@ LDUserNew(const char *const key)
 {
     struct LDUser *user;
 
-    LD_ASSERT(key);
+    LD_ASSERT_API(key);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (key == NULL) {
+            return NULL;
+        }
+    #endif
 
     if (!(user = (struct LDUser *)LDAlloc(sizeof(struct LDUser)))) {
         return NULL;
@@ -67,18 +73,32 @@ LDUserFree(struct LDUser *const user)
     }
 }
 
-void
+bool
 LDUserSetAnonymous(struct LDUser *const user, const bool anon)
 {
     LD_ASSERT_API(user);
 
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            return false;
+        }
+    #endif
+
     user->anonymous = anon;
+
+    return true;
 }
 
 bool
 LDUserSetIP(struct LDUser *const user, const char *const ip)
 {
     LD_ASSERT_API(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            return false;
+        }
+    #endif
 
     return LDSetString(&user->ip, ip);
 }
@@ -96,6 +116,12 @@ LDUserSetLastName(struct LDUser *const user, const char *const lastName)
 {
     LD_ASSERT_API(user);
 
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            return false;
+        }
+    #endif
+
     return LDSetString(&user->lastName, lastName);
 }
 
@@ -103,6 +129,12 @@ bool
 LDUserSetEmail(struct LDUser *const user, const char *const email)
 {
     LD_ASSERT_API(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            return false;
+        }
+    #endif
 
     return LDSetString(&user->email, email);
 }
@@ -112,6 +144,12 @@ LDUserSetName(struct LDUser *const user, const char *const name)
 {
     LD_ASSERT_API(user);
 
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            return false;
+        }
+    #endif
+
     return LDSetString(&user->name, name);
 }
 
@@ -119,6 +157,12 @@ bool
 LDUserSetAvatar(struct LDUser *const user, const char *const avatar)
 {
     LD_ASSERT_API(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            return false;
+        }
+    #endif
 
     return LDSetString(&user->avatar, avatar);
 }
@@ -136,15 +180,29 @@ LDUserSetSecondary(struct LDUser *const user, const char *const secondary)
 {
     LD_ASSERT_API(user);
 
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            return false;
+        }
+    #endif
+
     return LDSetString(&user->secondary, secondary);
 }
 
-void
+bool
 LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom)
 {
     LD_ASSERT_API(custom);
 
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            return false;
+        }
+    #endif
+
     user->custom = custom;
+
+    return true;
 }
 
 bool
@@ -155,6 +213,12 @@ LDUserAddPrivateAttribute(struct LDUser *const user,
 
     LD_ASSERT_API(user);
     LD_ASSERT_API(attribute);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL || attribute == NULL) {
+            return false;
+        }
+    #endif
 
     if ((temp = LDNewText(attribute))) {
         return LDArrayPush(user->privateAttributeNames, temp);

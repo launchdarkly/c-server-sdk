@@ -1,5 +1,5 @@
 /*!
- * @file ldstore.h
+ * @file store.h
  * @brief Public API Interface for Store implementatons
  */
 
@@ -47,7 +47,11 @@ struct LDStoreCollectionState {
  * @{
  ******************************************************************************/
 
-/** @brief An Interface providing access to a store */
+/**
+ * @struct LDStoreInterface
+ * @brief An opaque client object.
+ */
+
 struct LDStoreInterface {
     /**
      * @brief Used to store implementation specific data
