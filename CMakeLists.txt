@@ -5,8 +5,9 @@ project(ldserverapi)
 option(REDIS_STORE "Build optional redis store support" OFF)
 option(COVERAGE "Add support for generating coverage reports" OFF)
 option(SKIP_DATABASE_TESTS "Do not test external store integrations" OFF)
+option(SKIP_BASE_INSTALL "Do not install the base library on install" OFF)
 
-enable_testing() # CTEST_OUTPUT_ON_FAILURE=1 make test
+include(CTest)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeFiles")
 
@@ -82,45 +83,49 @@ if(BUILD_SHARED_LIBS)
     set_property(TARGET ldserverapi PROPERTY C_VISIBILITY_PRESET hidden)
 endif(BUILD_SHARED_LIBS)
 
-INSTALL(
-    TARGETS     ldserverapi
-    DESTINATION lib
-)
+if(NOT SKIP_BASE_INSTALL)
+    INSTALL(
+        TARGETS     ldserverapi
+        DESTINATION lib
+    )
 
-INSTALL(
-    DIRECTORY              ${CMAKE_SOURCE_DIR}/include/
-    DESTINATION            include
-    FILES_MATCHING PATTERN "*.h*"
-)
+    INSTALL(
+        DIRECTORY              ${PROJECT_SOURCE_DIR}/include/
+        DESTINATION            include
+        FILES_MATCHING PATTERN "*.h*"
+    )
+endif()
 
 # test targets ----------------------------------------------------------------
 
-file(GLOB TEST_UTILS_SRC "test-utils/src/*")
+if(BUILD_TESTING)
+    file(GLOB TEST_UTILS_SRC "test-utils/src/*")
 
-add_library(test-utils STATIC ${TEST_UTILS_SRC})
+    add_library(test-utils STATIC ${TEST_UTILS_SRC})
 
-target_link_libraries(test-utils ldserverapi)
+    target_link_libraries(test-utils ldserverapi)
 
-target_include_directories(test-utils
-    PUBLIC ${LD_INCLUDE_PATHS}
-           "test-utils/include"
-)
+    target_include_directories(test-utils
+        PUBLIC ${LD_INCLUDE_PATHS}
+               "test-utils/include"
+    )
 
-target_compile_definitions(test-utils
-    PRIVATE -D LAUNCHDARKLY_USE_ASSERT
-            -D LAUNCHDARKLY_CONCURRENCY_ABORT
-)
-
-file(GLOB TESTS "tests/test-*")
-foreach(testsource ${TESTS})
-    get_filename_component(testsourceleaf ${testsource} NAME)
-    string(REPLACE ".c" "" testexe ${testsourceleaf})
-    add_executable(${testexe} ${testsource})
-    target_link_libraries(${testexe} ldserverapi test-utils)
-    target_include_directories(${testexe} PRIVATE ${LD_INCLUDE_PATHS})
-    add_test(NAME ${testexe} COMMAND ${CMAKE_BINARY_DIR}/${testexe})
-    target_compile_definitions(${testexe}
+    target_compile_definitions(test-utils
         PRIVATE -D LAUNCHDARKLY_USE_ASSERT
                 -D LAUNCHDARKLY_CONCURRENCY_ABORT
     )
-endforeach(testsource)
+
+    file(GLOB TESTS "tests/test-*")
+    foreach(testsource ${TESTS})
+        get_filename_component(testsourceleaf ${testsource} NAME)
+        string(REPLACE ".c" "" testexe ${testsourceleaf})
+        add_executable(${testexe} ${testsource})
+        target_link_libraries(${testexe} ldserverapi test-utils)
+        target_include_directories(${testexe} PRIVATE ${LD_INCLUDE_PATHS})
+        add_test(NAME ${testexe} COMMAND ${CMAKE_BINARY_DIR}/${testexe})
+        target_compile_definitions(${testexe}
+            PRIVATE -D LAUNCHDARKLY_USE_ASSERT
+                    -D LAUNCHDARKLY_CONCURRENCY_ABORT
+        )
+    endforeach(testsource)
+endif()

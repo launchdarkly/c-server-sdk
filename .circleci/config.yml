@@ -28,7 +28,9 @@ jobs:
             cmake --build .
       - run:
           name: Test
-          command: ./.ldrelease/test.sh
+          command: |
+            cd build
+            CTEST_OUTPUT_ON_FAILURE=1 make test
 
   build-test-osx:
     macos:
@@ -55,7 +57,9 @@ jobs:
             cmake --build .
       - run:
           name: Test
-          command: ./.ldrelease/test.sh
+          command: |
+           cd build
+           CTEST_OUTPUT_ON_FAILURE=1 make test
 
   build-test-windows:
     executor:
