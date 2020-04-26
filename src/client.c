@@ -22,6 +22,8 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientInit NULL config");
+
             return NULL;
         }
     #endif
@@ -114,6 +116,8 @@ LDClientIsInitialized(struct LDClient *const client)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientIsInitialized NULL client");
+
             return false;
         }
     #endif
@@ -130,7 +134,21 @@ LDClientTrack(struct LDClient *const client, const char *const key,
     LD_ASSERT(user);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL || key == NULL || user == NULL) {
+        if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL client");
+
+            return false;
+        }
+
+        if (key == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL key");
+
+            return false;
+        }
+
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL user");
+
             return false;
         }
     #endif
@@ -148,7 +166,21 @@ LDClientTrackMetric(struct LDClient *const client, const char *const key,
     LD_ASSERT(user);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL || key == NULL) {
+        if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL client");
+
+            return false;
+        }
+
+        if (key == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL key");
+
+            return false;
+        }
+
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL user");
+
             return false;
         }
     #endif
@@ -163,7 +195,15 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
     LD_ASSERT(user);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL || user == NULL) {
+        if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientIdentify NULL client");
+
+            return false;
+        }
+
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientIdentify NULL user");
+
             return false;
         }
     #endif
@@ -178,6 +218,8 @@ LDClientIsOffline(struct LDClient *const client)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (client) {
+            LD_LOG(LD_LOG_WARNING, "LDClientIsOffline NULL client");
+
             return false;
         }
     #endif
@@ -192,6 +234,8 @@ LDClientFlush(struct LDClient *const client)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientFlush NULL client");
+
             return false;
         }
     #endif

@@ -13,6 +13,12 @@ LDDetailsInit(struct LDDetails *const details)
 {
     LD_ASSERT_API(details);
 
+    if (details == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDDetailsInit NULL details");
+
+        return;
+    }
+
     details->variationIndex = 0;
     details->hasVariation   = false;
     details->reason         = LD_UNKNOWN;
@@ -21,15 +27,15 @@ LDDetailsInit(struct LDDetails *const details)
 void
 LDDetailsClear(struct LDDetails *const details)
 {
-    LD_ASSERT_API(details);
+    if (details) {
+        if (details->reason == LD_RULE_MATCH) {
+            LDFree(details->extra.rule.id);
+        } else if (details->reason == LD_PREREQUISITE_FAILED) {
+            LDFree(details->extra.prerequisiteKey);
+        }
 
-    if (details->reason == LD_RULE_MATCH) {
-        LDFree(details->extra.rule.id);
-    } else if (details->reason == LD_PREREQUISITE_FAILED) {
-        LDFree(details->extra.prerequisiteKey);
+        LDDetailsInit(details);
     }
-
-    LDDetailsInit(details);
 }
 
 const char *
@@ -69,6 +75,12 @@ LDReasonToJSON(const struct LDDetails *const details)
     const char *kind;
 
     LD_ASSERT_API(details);
+
+    if (details == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDReasonToJSON NULL details");
+
+        return NULL;
+    }
 
     result = NULL;
 
@@ -198,16 +210,22 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "variation NULL client");
+
             detailsRef->reason = LD_ERROR;
             detailsRef->extra.errorKind = LD_CLIENT_NOT_SPECIFIED;
 
             goto error;
         } else if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "variation NULL user");
+
             detailsRef->reason = LD_ERROR;
             detailsRef->extra.errorKind = LD_USER_NOT_SPECIFIED;
 
             goto error;
         } else if (key == NULL) {
+            LD_LOG(LD_LOG_WARNING, "variation NULL key");
+
             detailsRef->reason = LD_ERROR;
             detailsRef->extra.errorKind = LD_NULL_KEY;
 
@@ -494,7 +512,15 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
     evaluatedFlags = NULL;
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL || user == NULL) {
+        if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDAllFlags NULL client");
+
+            return NULL;
+        }
+
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDAllFlags NULL user");
+
             return NULL;
         }
     #endif

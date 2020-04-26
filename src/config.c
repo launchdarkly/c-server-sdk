@@ -16,6 +16,8 @@ LDConfigNew(const char *const key)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (key == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigNew NULL key");
+
             return NULL;
         }
     #endif
@@ -97,7 +99,15 @@ LDConfigSetBaseURI(struct LDConfig *const config, const char *const baseURI)
     LD_ASSERT_API(baseURI);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (config == NULL || baseURI == NULL) {
+        if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetBaseURI NULL config");
+
+            return false;
+        }
+
+        if (baseURI == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetBaseURI NULL baseURI");
+
             return false;
         }
     #endif
@@ -112,7 +122,15 @@ LDConfigSetStreamURI(struct LDConfig *const config, const char *const streamURI)
     LD_ASSERT_API(streamURI);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (config == NULL || streamURI == NULL) {
+        if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetStreamURI NULL config");
+
+            return false;
+        }
+
+        if (streamURI == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetStreamURI NULL streamURI");
+
             return false;
         }
     #endif
@@ -127,7 +145,15 @@ LDConfigSetEventsURI(struct LDConfig *const config, const char *const eventsURI)
     LD_ASSERT_API(eventsURI);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (config == NULL || eventsURI == NULL) {
+        if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetEventsURI NULL config");
+
+            return false;
+        }
+
+        if (eventsURI == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetEventsURI NULL eventsURI");
+
             return false;
         }
     #endif
@@ -142,6 +168,8 @@ LDConfigSetStream(struct LDConfig *const config, const bool stream)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetStream NULL config");
+
             return false;
         }
     #endif
@@ -158,6 +186,8 @@ LDConfigSetSendEvents(struct LDConfig *const config, const bool sendEvents)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetSendEvents NULL config");
+
             return false;
         }
     #endif
@@ -175,6 +205,8 @@ LDConfigSetEventsCapacity(struct LDConfig *const config,
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetEventsCapacity NULL config");
+
             return false;
         }
     #endif
@@ -192,6 +224,8 @@ LDConfigSetTimeout(struct LDConfig *const config,
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetTimeout NULL config");
+
             return false;
         }
     #endif
@@ -209,6 +243,8 @@ LDConfigSetFlushInterval(struct LDConfig *const config,
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetFlushInterval NULL config");
+
             return false;
         }
     #endif
@@ -226,6 +262,8 @@ LDConfigSetPollInterval(struct LDConfig *const config,
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetPollInterval NULL config");
+
             return false;
         }
     #endif
@@ -242,6 +280,8 @@ LDConfigSetOffline(struct LDConfig *const config, const bool offline)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetOffline NULL config");
+
             return false;
         }
     #endif
@@ -258,6 +298,8 @@ LDConfigSetUseLDD(struct LDConfig *const config, const bool useLDD)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetUseLDD NULL config");
+
             return false;
         }
     #endif
@@ -275,6 +317,9 @@ LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING,
+                "LDConfigSetAllAttributesPrivate NULL config");
+
             return false;
         }
     #endif
@@ -292,6 +337,9 @@ LDConfigInlineUsersInEvents(struct LDConfig *const config,
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING,
+                "LDConfigSetInlineUsersInEvents NULL config");
+
             return false;
         }
     #endif
@@ -309,6 +357,8 @@ LDConfigSetUserKeysCapacity(struct LDConfig *const config,
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetUserKeysCapacity NULL config");
+
             return false;
         }
     #endif
@@ -326,6 +376,9 @@ LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING,
+                "LDConfigSetUserKeysFlushInterval NULL config");
+
             return false;
         }
     #endif
@@ -345,7 +398,16 @@ LDConfigAddPrivateAttribute(struct LDConfig *const config,
     LD_ASSERT_API(attribute);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (config == NULL || attribute == NULL) {
+        if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigAddPrivateAttribute NULL config");
+
+            return false;
+        }
+
+        if (attribute == NULL) {
+            LD_LOG(LD_LOG_WARNING,
+                "LDConfigAddPrivateAttribute NULL attribute");
+
             return false;
         }
     #endif
@@ -365,6 +427,9 @@ LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING,
+                "LDConfigSetFeatureStoreBackend NULL config");
+
             return false;
         }
     #endif
@@ -382,6 +447,9 @@ LDConfigSetFeatureStoreBackendCacheTTL(struct LDConfig *const config,
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING,
+                "LDConfigSetFeatureStoreBackendCacheTTL NULL config");
+
             return false;
         }
     #endif

@@ -18,6 +18,8 @@ LDUserNew(const char *const key)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (key == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserNew NULL key");
+
             return NULL;
         }
     #endif
@@ -80,6 +82,8 @@ LDUserSetAnonymous(struct LDUser *const user, const bool anon)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetAnonymous NULL user");
+
             return false;
         }
     #endif
@@ -96,6 +100,8 @@ LDUserSetIP(struct LDUser *const user, const char *const ip)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetIP NULL user");
+
             return false;
         }
     #endif
@@ -118,6 +124,8 @@ LDUserSetLastName(struct LDUser *const user, const char *const lastName)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetLastName NULL user");
+
             return false;
         }
     #endif
@@ -132,6 +140,8 @@ LDUserSetEmail(struct LDUser *const user, const char *const email)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetEmail NULL user");
+
             return false;
         }
     #endif
@@ -146,6 +156,8 @@ LDUserSetName(struct LDUser *const user, const char *const name)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetName NULL user");
+
             return false;
         }
     #endif
@@ -160,6 +172,8 @@ LDUserSetAvatar(struct LDUser *const user, const char *const avatar)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetAvatar NULL user");
+
             return false;
         }
     #endif
@@ -172,6 +186,14 @@ LDUserSetCountry(struct LDUser *const user, const char *const country)
 {
     LD_ASSERT_API(user);
 
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetCountry NULL user");
+
+            return false;
+        }
+    #endif
+
     return LDSetString(&user->country, country);
 }
 
@@ -182,6 +204,8 @@ LDUserSetSecondary(struct LDUser *const user, const char *const secondary)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetSecondary NULL user");
+
             return false;
         }
     #endif
@@ -196,6 +220,8 @@ LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom)
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetCustom NULL user");
+
             return false;
         }
     #endif
@@ -215,7 +241,15 @@ LDUserAddPrivateAttribute(struct LDUser *const user,
     LD_ASSERT_API(attribute);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (user == NULL || attribute == NULL) {
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserAddPrivateAttribute NULL user");
+
+            return false;
+        }
+
+        if (attribute == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserAddPrivateAttribute NULL attribute");
+
             return false;
         }
     #endif
