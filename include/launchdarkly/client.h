@@ -5,13 +5,11 @@
 
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-
 #include <launchdarkly/config.h>
 #include <launchdarkly/user.h>
 #include <launchdarkly/json.h>
 #include <launchdarkly/export.h>
+#include <launchdarkly/boolean.h>
 
 /**
  * @struct LDClient
@@ -38,7 +36,7 @@ LD_EXPORT(struct LDClient *) LDClientInit(struct LDConfig *const config,
  * @param[in] client The client to use. May be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDClientClose(struct LDClient *const client);
+LD_EXPORT(LDBoolean) LDClientClose(struct LDClient *const client);
 
 /**
  * @brief Check if a client has been fully initialized. This may be useful
@@ -46,7 +44,7 @@ LD_EXPORT(bool) LDClientClose(struct LDClient *const client);
  * @param[in] client The client to use. May not be `NULL`.
  * @return True if fully initialized, False if not or on error.
  */
-LD_EXPORT(bool) LDClientIsInitialized(struct LDClient *const client);
+LD_EXPORT(LDBoolean) LDClientIsInitialized(struct LDClient *const client);
 
 /**
  * @brief Reports that a user has performed an event. Custom data can be
@@ -59,7 +57,7 @@ LD_EXPORT(bool) LDClientIsInitialized(struct LDClient *const client);
  * transferred. May be `NULL`.
  * @return True if the event was queued, False on error.
  */
-LD_EXPORT(bool) LDClientTrack(struct LDClient *const client,
+LD_EXPORT(LDBoolean) LDClientTrack(struct LDClient *const client,
     const char *const key, const struct LDUser *const user,
     struct LDJSON *const data);
 
@@ -75,7 +73,7 @@ LD_EXPORT(bool) LDClientTrack(struct LDClient *const client,
  * @param[in] metric A metric to be assocated with the event.
  * @return True if the event was queued, False on error.
  */
-LD_EXPORT(bool) LDClientTrackMetric(struct LDClient *const client,
+LD_EXPORT(LDBoolean) LDClientTrackMetric(struct LDClient *const client,
     const char *const key, const struct LDUser *const user,
     struct LDJSON *const data, const double metric);
 
@@ -86,7 +84,7 @@ LD_EXPORT(bool) LDClientTrackMetric(struct LDClient *const client,
  * transferred. May not be `NULL`.
  * @return True if the event was queued, False on error.
  */
-LD_EXPORT(bool) LDClientIdentify(struct LDClient *const client,
+LD_EXPORT(LDBoolean) LDClientIdentify(struct LDClient *const client,
     const struct LDUser *const user);
 
 /**
@@ -94,11 +92,11 @@ LD_EXPORT(bool) LDClientIdentify(struct LDClient *const client,
  * @param[in] client The client to use. May not be `NULL`.
  * @return True if offline, False if not or on error.
  */
-LD_EXPORT(bool) LDClientIsOffline(struct LDClient *const client);
+LD_EXPORT(LDBoolean) LDClientIsOffline(struct LDClient *const client);
 
 /**
  * @brief Immediately flushes queued events.
  * @param[in] client The client to use. May not be `NULL`.
  * @return True if signalled, False on error.
  */
-LD_EXPORT(bool) LDClientFlush(struct LDClient *const client);
+LD_EXPORT(LDBoolean) LDClientFlush(struct LDClient *const client);

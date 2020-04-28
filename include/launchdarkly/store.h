@@ -5,8 +5,9 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stddef.h>
+
+#include <launchdarkly/boolean.h>
 
 /***************************************************************************//**
  * @name Store collections and individual items.
@@ -64,7 +65,7 @@ struct LDStoreInterface {
      * @param[in] collectionCount The number of items in the array.
      * @return True on success, False on failure.
      */
-    bool (*init)(void *const context,
+    LDBoolean (*init)(void *const context,
         const struct LDStoreCollectionState *collections,
         const unsigned int collectionCount);
     /**
@@ -78,7 +79,7 @@ struct LDStoreInterface {
      * @param[out] result Returns the feature, or NULL if it does not exist.
      * @return True on success, False on failure.
      */
-    bool (*get)(void *const context, const char *const kind,
+    LDBoolean (*get)(void *const context, const char *const kind,
         const char *const featureKey,
         struct LDStoreCollectionItem *const result);
     /**
@@ -91,7 +92,7 @@ struct LDStoreInterface {
      * @param[out] result Count Returns the number of items in the result array.
      * @return True on success, False on failure.
      */
-    bool (*all)(void *const context, const char *const kind,
+    LDBoolean (*all)(void *const context, const char *const kind,
         struct LDStoreCollectionItem **const result,
         unsigned int *const resultCount);
     /**
@@ -106,7 +107,7 @@ struct LDStoreInterface {
      * @param[in] featureKey Key of the new item.
      * @return True on success, False on failure.
      */
-    bool (*upsert)(void *const context, const char *const kind,
+    LDBoolean (*upsert)(void *const context, const char *const kind,
         const struct LDStoreCollectionItem *const feature,
         const char *const featureKey);
     /**
@@ -115,7 +116,7 @@ struct LDStoreInterface {
      * May not be NULL (assert).
      * @return True if the store is intialized, false otherwise.
      */
-    bool (*initialized)(void *const context);
+    LDBoolean (*initialized)(void *const context);
     /**
      * @brief Destroy the implementation specific context associated.
      * @param[in] context Implementation specific context.

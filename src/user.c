@@ -76,7 +76,7 @@ LDUserFree(struct LDUser *const user)
 }
 
 void
-LDUserSetAnonymous(struct LDUser *const user, const bool anon)
+LDUserSetAnonymous(struct LDUser *const user, const LDBoolean anon)
 {
     LD_ASSERT_API(user);
 
@@ -91,7 +91,7 @@ LDUserSetAnonymous(struct LDUser *const user, const bool anon)
     user->anonymous = anon;
 }
 
-bool
+LDBoolean
 LDUserSetIP(struct LDUser *const user, const char *const ip)
 {
     LD_ASSERT_API(user);
@@ -107,7 +107,7 @@ LDUserSetIP(struct LDUser *const user, const char *const ip)
     return LDSetString(&user->ip, ip);
 }
 
-bool
+LDBoolean
 LDUserSetFirstName(struct LDUser *const user, const char *const firstName)
 {
     LD_ASSERT_API(user);
@@ -115,7 +115,7 @@ LDUserSetFirstName(struct LDUser *const user, const char *const firstName)
     return LDSetString(&user->firstName, firstName);
 }
 
-bool
+LDBoolean
 LDUserSetLastName(struct LDUser *const user, const char *const lastName)
 {
     LD_ASSERT_API(user);
@@ -131,7 +131,7 @@ LDUserSetLastName(struct LDUser *const user, const char *const lastName)
     return LDSetString(&user->lastName, lastName);
 }
 
-bool
+LDBoolean
 LDUserSetEmail(struct LDUser *const user, const char *const email)
 {
     LD_ASSERT_API(user);
@@ -147,7 +147,7 @@ LDUserSetEmail(struct LDUser *const user, const char *const email)
     return LDSetString(&user->email, email);
 }
 
-bool
+LDBoolean
 LDUserSetName(struct LDUser *const user, const char *const name)
 {
     LD_ASSERT_API(user);
@@ -163,7 +163,7 @@ LDUserSetName(struct LDUser *const user, const char *const name)
     return LDSetString(&user->name, name);
 }
 
-bool
+LDBoolean
 LDUserSetAvatar(struct LDUser *const user, const char *const avatar)
 {
     LD_ASSERT_API(user);
@@ -179,7 +179,7 @@ LDUserSetAvatar(struct LDUser *const user, const char *const avatar)
     return LDSetString(&user->avatar, avatar);
 }
 
-bool
+LDBoolean
 LDUserSetCountry(struct LDUser *const user, const char *const country)
 {
     LD_ASSERT_API(user);
@@ -195,7 +195,7 @@ LDUserSetCountry(struct LDUser *const user, const char *const country)
     return LDSetString(&user->country, country);
 }
 
-bool
+LDBoolean
 LDUserSetSecondary(struct LDUser *const user, const char *const secondary)
 {
     LD_ASSERT_API(user);
@@ -227,7 +227,7 @@ LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom)
     user->custom = custom;
 }
 
-bool
+LDBoolean
 LDUserAddPrivateAttribute(struct LDUser *const user,
     const char *const attribute)
 {

@@ -5,13 +5,11 @@
 
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-
 #include <launchdarkly/client.h>
 #include <launchdarkly/user.h>
 #include <launchdarkly/json.h>
 #include <launchdarkly/export.h>
+#include <launchdarkly/boolean.h>
 
 /** @brief The reason an evaluation occured */
 enum LDEvalReason {
@@ -79,7 +77,7 @@ struct LDDetails {
     unsigned int variationIndex;
     /** @brief True if there is a `variationIndex`, false if the default
      * value was returned. */
-    bool hasVariation;
+    LDBoolean hasVariation;
     /** @brief The reason an evaluation occured */
     enum LDEvalReason reason;
     /** @brief Extra information depending on the evaluation reason */
@@ -135,9 +133,9 @@ LD_EXPORT(struct LDJSON *) LDReasonToJSON(
  * If `NULL` no explanation will be generated.
  * @return The fallback will be returned on any error.
  */
-LD_EXPORT(bool) LDBoolVariation(struct LDClient *const client,
-    const struct LDUser *const user, const char *const key, const bool fallback,
-    struct LDDetails *const details);
+LD_EXPORT(LDBoolean) LDBoolVariation(struct LDClient *const client,
+    const struct LDUser *const user, const char *const key,
+    const LDBoolean fallback, struct LDDetails *const details);
 
 /**
  * @brief Evaluate a integer flag

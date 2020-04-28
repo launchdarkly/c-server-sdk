@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <launchdarkly/export.h>
-
 #include <stddef.h>
+
+#include <launchdarkly/export.h>
 
 /** @brief Equivalent to `malloc` */
 LD_EXPORT(void *) LDAlloc(const size_t bytes);

@@ -6,9 +6,10 @@ extern "C" {
 
 #include <hiredis/hiredis.h>
 
+#include <launchdarkly/boolean.h>
 #include <launchdarkly/store/redis.h>
 
-bool storeUpsertInternal(void *const contextRaw, const char *const kind,
+LDBoolean storeUpsertInternal(void *const contextRaw, const char *const kind,
     const struct LDStoreCollectionItem *const feature,
     const char *const featureKey, void (*const hook)());
 

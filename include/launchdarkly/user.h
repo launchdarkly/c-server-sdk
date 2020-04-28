@@ -5,11 +5,9 @@
 
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-
 #include <launchdarkly/json.h>
 #include <launchdarkly/export.h>
+#include <launchdarkly/boolean.h>
 
 /**
  * @struct LDUser
@@ -37,7 +35,8 @@ LD_EXPORT(void) LDUserFree(struct LDUser *const user);
  * @param[in] anon If the user should be anonymous or not.
  * @return Void.
  */
-LD_EXPORT(void) LDUserSetAnonymous(struct LDUser *const user, const bool anon);
+LD_EXPORT(void) LDUserSetAnonymous(struct LDUser *const user,
+    const LDBoolean anon);
 
 /**
  * @brief Set the user's IP.
@@ -45,7 +44,8 @@ LD_EXPORT(void) LDUserSetAnonymous(struct LDUser *const user, const bool anon);
  * @param[in] ip The user's IP. May be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDUserSetIP(struct LDUser *const user, const char *const ip);
+LD_EXPORT(LDBoolean) LDUserSetIP(struct LDUser *const user,
+    const char *const ip);
 
 /**
  * @brief Set the user's first name.
@@ -53,7 +53,7 @@ LD_EXPORT(bool) LDUserSetIP(struct LDUser *const user, const char *const ip);
  * @param[in] firstName The user's first name. May be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDUserSetFirstName(struct LDUser *const user,
+LD_EXPORT(LDBoolean) LDUserSetFirstName(struct LDUser *const user,
     const char *const firstName);
 
 /**
@@ -62,7 +62,7 @@ LD_EXPORT(bool) LDUserSetFirstName(struct LDUser *const user,
  * @param[in] lastName The user's last name. May be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDUserSetLastName(struct LDUser *const user,
+LD_EXPORT(LDBoolean) LDUserSetLastName(struct LDUser *const user,
     const char *const lastName);
 
 /**
@@ -71,7 +71,7 @@ LD_EXPORT(bool) LDUserSetLastName(struct LDUser *const user,
  * @param[in] email The user's email. May be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDUserSetEmail(struct LDUser *const user,
+LD_EXPORT(LDBoolean) LDUserSetEmail(struct LDUser *const user,
     const char *const email);
 
 /**
@@ -80,7 +80,7 @@ LD_EXPORT(bool) LDUserSetEmail(struct LDUser *const user,
  * @param[in] name The user's name. May be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDUserSetName(struct LDUser *const user,
+LD_EXPORT(LDBoolean) LDUserSetName(struct LDUser *const user,
     const char *const name);
 
 /**
@@ -89,7 +89,7 @@ LD_EXPORT(bool) LDUserSetName(struct LDUser *const user,
  * @param[in] avatar The user's avatar. May be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDUserSetAvatar(struct LDUser *const user,
+LD_EXPORT(LDBoolean) LDUserSetAvatar(struct LDUser *const user,
     const char *const avatar);
 
 /**
@@ -98,7 +98,7 @@ LD_EXPORT(bool) LDUserSetAvatar(struct LDUser *const user,
  * @param[in] country The user's country. May be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDUserSetCountry(struct LDUser *const user,
+LD_EXPORT(LDBoolean) LDUserSetCountry(struct LDUser *const user,
     const char *const country);
 
 /**
@@ -107,7 +107,7 @@ LD_EXPORT(bool) LDUserSetCountry(struct LDUser *const user,
  * @param[in] secondary The user's secondary key. May be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDUserSetSecondary(struct LDUser *const user,
+LD_EXPORT(LDBoolean) LDUserSetSecondary(struct LDUser *const user,
     const char *const secondary);
 
 /**
@@ -125,5 +125,5 @@ LD_EXPORT(void) LDUserSetCustom(struct LDUser *const user,
  * @param[in] attribute Attribute to mark as private. May not be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDUserAddPrivateAttribute(struct LDUser *const user,
+LD_EXPORT(LDBoolean) LDUserAddPrivateAttribute(struct LDUser *const user,
     const char *const attribute);

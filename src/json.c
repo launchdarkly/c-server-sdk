@@ -12,7 +12,7 @@ LDNewNull(void)
 }
 
 struct LDJSON *
-LDNewBool(const bool boolean)
+LDNewBool(const LDBoolean boolean)
 {
     return (struct LDJSON *)cJSON_CreateBool(boolean);
 }
@@ -51,7 +51,7 @@ LDNewArray(void)
     return (struct LDJSON *)cJSON_CreateArray();
 }
 
-bool
+LDBoolean
 LDSetNumber(struct LDJSON *const rawNode, const double number)
 {
     struct cJSON *const node = (struct cJSON *)rawNode;
@@ -141,14 +141,14 @@ LDJSONGetType(const struct LDJSON *const inputRaw)
     #endif
 }
 
-bool
+LDBoolean
 LDJSONCompare(const struct LDJSON *const left, const struct LDJSON *const right)
 {
     return cJSON_Compare((const cJSON *)left,
         (const cJSON *)right, true);
 }
 
-bool
+LDBoolean
 LDGetBool(const struct LDJSON *const node)
 {
     cJSON *const json = (cJSON *)node;
@@ -370,7 +370,7 @@ LDArrayLookup(const struct LDJSON *const rawArray, const unsigned int index)
     return (struct LDJSON *)cJSON_GetArrayItem(array, index);
 }
 
-bool
+LDBoolean
 LDArrayPush(struct LDJSON *const rawArray, struct LDJSON *const item)
 {
     cJSON *const array = (cJSON *)rawArray;
@@ -404,7 +404,7 @@ LDArrayPush(struct LDJSON *const rawArray, struct LDJSON *const item)
     return true;
 }
 
-bool
+LDBoolean
 LDArrayAppend(struct LDJSON *const rawPrefix,
     const struct LDJSON *const rawSuffix)
 {
@@ -488,7 +488,7 @@ LDObjectLookup(const struct LDJSON *const rawObject, const char *const key)
     return (struct LDJSON *)cJSON_GetObjectItemCaseSensitive(object, key);
 }
 
-bool
+LDBoolean
 LDObjectSetKey(struct LDJSON *const rawObject,
     const char *const key, struct LDJSON *const item)
 {
@@ -597,7 +597,7 @@ LDObjectDetachKey(struct LDJSON *const rawObject, const char *const key)
         cJSON_DetachItemFromObjectCaseSensitive(object, key);
 }
 
-bool
+LDBoolean
 LDObjectMerge(struct LDJSON *const to, const struct LDJSON *const from)
 {
     const struct LDJSON *iter;

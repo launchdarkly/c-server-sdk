@@ -331,9 +331,9 @@ isBool(const LDJSONType type)
     return type == LDBool;
 }
 
-bool
+LDBoolean
 LDBoolVariation(struct LDClient *const client, const struct LDUser *const user,
-    const char *const key, const bool fallback,
+    const char *const key, const LDBoolean fallback,
     struct LDDetails *const details)
 {
     bool value;

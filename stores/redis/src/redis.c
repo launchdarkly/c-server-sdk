@@ -15,7 +15,7 @@ static const char *const initedKey     = "$inited";
 
 struct LDRedisConfig {
     char *host;
-    uint16_t port;
+    unsigned short port;
     unsigned int poolSize;
     char *prefix;
 };
@@ -63,7 +63,7 @@ LDRedisConfigNew()
     return config;
 }
 
-bool
+LDBoolean
 LDRedisConfigSetHost(struct LDRedisConfig *const config, const char *const host)
 {
     char *hostCopy;
@@ -82,8 +82,9 @@ LDRedisConfigSetHost(struct LDRedisConfig *const config, const char *const host)
     return true;
 }
 
-bool
-LDRedisConfigSetPort(struct LDRedisConfig *const config, const uint16_t port)
+LDBoolean
+LDRedisConfigSetPort(struct LDRedisConfig *const config,
+    const unsigned short port)
 {
     LD_ASSERT_API(config);
 
@@ -92,7 +93,7 @@ LDRedisConfigSetPort(struct LDRedisConfig *const config, const uint16_t port)
     return true;
 }
 
-bool
+LDBoolean
 LDRedisConfigSetPrefix(struct LDRedisConfig *const config,
     const char *const prefix)
 {
@@ -112,7 +113,7 @@ LDRedisConfigSetPrefix(struct LDRedisConfig *const config,
     return true;
 }
 
-bool
+LDBoolean
 LDRedisConfigSetPoolSize(struct LDRedisConfig *const config,
     const unsigned int poolSize)
 {
@@ -186,7 +187,7 @@ borrowConnection(struct Context *const context)
 
                 if (!(connection->connection =
                     redisConnect(LDRedisConfigGetHost(context->config),
-                    context->config->port)))
+                        context->config->port)))
                 {
                     LD_LOG(LD_LOG_ERROR, "failed to create redis connection");
 
@@ -297,7 +298,7 @@ resetReply(redisReply **const reply)
     *reply = NULL;
 }
 
-static bool
+static LDBoolean
 storeInit(void *const contextRaw,
     const struct LDStoreCollectionState *collections,
     const unsigned int collectionCount)
@@ -387,7 +388,7 @@ storeInit(void *const contextRaw,
     return success;
 }
 
-static bool
+static LDBoolean
 storeGet(void *const contextRaw, const char *const kind,
     const char *const key, struct LDStoreCollectionItem *const result)
 {
@@ -453,7 +454,7 @@ storeGet(void *const contextRaw, const char *const kind,
     return success;
 }
 
-static bool
+static LDBoolean
 storeAll(void *const contextRaw, const char *const kind,
     struct LDStoreCollectionItem **const result,
     unsigned int *const resultCount)
@@ -562,7 +563,7 @@ storeAll(void *const contextRaw, const char *const kind,
     return success;
 }
 
-bool
+LDBoolean
 storeUpsertInternal(void *const contextRaw, const char *const kind,
     const struct LDStoreCollectionItem *const feature,
     const char *const featureKey,
@@ -718,7 +719,7 @@ storeUpsertInternal(void *const contextRaw, const char *const kind,
     return success;
 }
 
-static bool
+static LDBoolean
 storeUpsert(void *const contextRaw, const char *const kind,
     const struct LDStoreCollectionItem *const feature,
     const char *const featureKey)
@@ -731,7 +732,7 @@ storeUpsert(void *const contextRaw, const char *const kind,
     return storeUpsertInternal(contextRaw, kind, feature, featureKey, NULL);
 }
 
-static bool
+static LDBoolean
 storeInitialized(void *const contextRaw)
 {
     struct Context *context;

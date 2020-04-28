@@ -6,7 +6,7 @@
 
 #include "test-utils/flags.h"
 
-static bool
+static LDBoolean
 mockFailInit(void *const context,
     const struct LDStoreCollectionState *collections,
     const unsigned int collectionCount)
@@ -17,7 +17,7 @@ mockFailInit(void *const context,
     return false;
 }
 
-static bool
+static LDBoolean
 mockFailGet(void *const context, const char *const kind,
     const char *const featureKey,
     struct LDStoreCollectionItem *const result)
@@ -30,7 +30,7 @@ mockFailGet(void *const context, const char *const kind,
     return false;
 }
 
-static bool
+static LDBoolean
 mockFailAll(void *const context, const char *const kind,
     struct LDStoreCollectionItem **const result,
     unsigned int *const resultCount)
@@ -43,7 +43,7 @@ mockFailAll(void *const context, const char *const kind,
     return false;
 }
 
-static bool
+static LDBoolean
 mockFailUpsert(void *const context, const char *const kind,
     const struct LDStoreCollectionItem *const feature,
     const char *const featureKey)
@@ -56,7 +56,7 @@ mockFailUpsert(void *const context, const char *const kind,
     return false;
 }
 
-static bool
+static LDBoolean
 mockFailInitialized(void *const context)
 {
     (void)context;
@@ -197,7 +197,7 @@ testFailInitialized()
     LDStoreDestroy(store);
 }
 
-static bool
+static LDBoolean
 mockFailGetInvalidJSON(void *const context, const char *const kind,
     const char *const featureKey,
     struct LDStoreCollectionItem *const result)
@@ -231,7 +231,7 @@ testFailGetInvalidJSON()
     LDStoreDestroy(store);
 }
 
-static bool
+static LDBoolean
 mockFailAllInvalidJSON(void *const context, const char *const kind,
     struct LDStoreCollectionItem **const result,
     unsigned int *const resultCount)
@@ -268,7 +268,7 @@ testFailAllInvalidJSON()
     LDStoreDestroy(store);
 }
 
-static bool
+static LDBoolean
 mockFailGetInvalidFlag(void *const context, const char *const kind,
     const char *const featureKey,
     struct LDStoreCollectionItem *const result)
@@ -302,7 +302,7 @@ testFailGetInvalidFlag()
     LDStoreDestroy(store);
 }
 
-static bool
+static LDBoolean
 mockFailAllInvalidFlag(void *const context, const char *const kind,
     struct LDStoreCollectionItem **const result,
     unsigned int *const resultCount)
@@ -347,7 +347,7 @@ testFailAllInvalidFlag()
 static bool staticInitializedValue;
 static unsigned int staticInitializedCount;
 
-static bool
+static LDBoolean
 mockStaticInitialized(void *const context)
 {
     (void)context;
@@ -391,7 +391,7 @@ static unsigned int staticGetCount;
 static struct LDJSON *staticGetValue;
 static char *staticGetKey;
 
-static bool
+static LDBoolean
 mockStaticGet(void *const context, const char *const kind,
     const char *const featureKey,
     struct LDStoreCollectionItem *const result)
@@ -467,7 +467,7 @@ static unsigned int staticUpsertCount;
 static struct LDJSON *staticUpsertValue;
 static char *staticUpsertKey;
 
-static bool
+static LDBoolean
 mockStaticUpsert(void *const context, const char *const kind,
     const struct LDStoreCollectionItem *const feature,
     const char *const featureKey)
@@ -516,7 +516,7 @@ testUpsertCache()
 static struct LDJSON *staticAllValue;
 static unsigned int staticAllCount;
 
-static bool
+static LDBoolean
 mockStaticAll(void *const context, const char *const kind,
     struct LDStoreCollectionItem **const result,
     unsigned int *const resultCount)

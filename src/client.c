@@ -81,7 +81,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     return client;
 }
 
-bool
+LDBoolean
 LDClientClose(struct LDClient *const client)
 {
     if (client) {
@@ -109,7 +109,7 @@ LDClientClose(struct LDClient *const client)
     return true;
 }
 
-bool
+LDBoolean
 LDClientIsInitialized(struct LDClient *const client)
 {
     LD_ASSERT(client);
@@ -125,7 +125,7 @@ LDClientIsInitialized(struct LDClient *const client)
     return LDStoreInitialized(client->store);
 }
 
-bool
+LDBoolean
 LDClientTrack(struct LDClient *const client, const char *const key,
     const struct LDUser *const user, struct LDJSON *const data)
 {
@@ -156,7 +156,7 @@ LDClientTrack(struct LDClient *const client, const char *const key,
     return LDi_track(client->eventProcessor, user, key, data, 0, false);
 }
 
-bool
+LDBoolean
 LDClientTrackMetric(struct LDClient *const client, const char *const key,
     const struct LDUser *const user, struct LDJSON *const data,
     const double metric)
@@ -188,7 +188,7 @@ LDClientTrackMetric(struct LDClient *const client, const char *const key,
     return LDi_track(client->eventProcessor, user, key, data, metric, true);
 }
 
-bool
+LDBoolean
 LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
 {
     LD_ASSERT(client);
@@ -211,7 +211,7 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
     return LDi_identify(client->eventProcessor, user);
 }
 
-bool
+LDBoolean
 LDClientIsOffline(struct LDClient *const client)
 {
     LD_ASSERT(client);
@@ -227,7 +227,7 @@ LDClientIsOffline(struct LDClient *const client)
     return client->config->offline;
 }
 
-bool
+LDBoolean
 LDClientFlush(struct LDClient *const client)
 {
     LD_ASSERT(client);

@@ -5,10 +5,8 @@
 
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-
 #include <launchdarkly/export.h>
+#include <launchdarkly/boolean.h>
 
 /* **** Forward Declarations **** */
 
@@ -47,7 +45,7 @@ LD_EXPORT(struct LDJSON *) LDNewNull(void);
  * @param[in] boolean The value to assign the new node
  * @return `NULL` on failure.
  */
-LD_EXPORT(struct LDJSON *) LDNewBool(const bool boolean);
+LD_EXPORT(struct LDJSON *) LDNewBool(const LDBoolean boolean);
 
 /**
  * @brief Constructs a JSON node of type `LDJSONumber`.
@@ -90,7 +88,8 @@ LD_EXPORT(struct LDJSON *) LDNewArray(void);
   * @param[in] number The value to use for the node.
   * @return True on success, False on failure.
   */
-LD_EXPORT(bool) LDSetNumber(struct LDJSON *const node, const double number);
+LD_EXPORT(LDBoolean) LDSetNumber(struct LDJSON *const node,
+    const double number);
 
 /*@}*/
 
@@ -127,7 +126,7 @@ LD_EXPORT(LDJSONType) LDJSONGetType(const struct LDJSON *const json);
  * @param[in] right May be `NULL`.
  * @return True if equal, false otherwise.
  */
-LD_EXPORT(bool) LDJSONCompare(const struct LDJSON *const left,
+LD_EXPORT(LDBoolean) LDJSONCompare(const struct LDJSON *const left,
     const struct LDJSON *const right);
 
 /*@}*/
@@ -143,7 +142,7 @@ LD_EXPORT(bool) LDJSONCompare(const struct LDJSON *const left,
  * @param[in] node Node to read value from. Must be correct type.
  * @return The boolean nodes value. Returns false on failure.
  */
-LD_EXPORT(bool) LDGetBool(const struct LDJSON *const node);
+LD_EXPORT(LDBoolean) LDGetBool(const struct LDJSON *const node);
 
 /**
  * @brief Get the value from a node of type `LDJSONNumber`.
@@ -235,7 +234,7 @@ LD_EXPORT(struct LDJSON *) LDArrayLookup(const struct LDJSON *const array,
  * @param[in] item The value to append to the array. This item is consumed.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDArrayPush(struct LDJSON *const array,
+LD_EXPORT(LDBoolean) LDArrayPush(struct LDJSON *const array,
     struct LDJSON *const item);
 
 /**
@@ -244,7 +243,7 @@ LD_EXPORT(bool) LDArrayPush(struct LDJSON *const array,
  * @param[in] suffix Must be of type `LDJSONArray`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDArrayAppend(struct LDJSON *const prefix,
+LD_EXPORT(LDBoolean) LDArrayAppend(struct LDJSON *const prefix,
     const struct LDJSON *const suffix);
 
 /***************************************************************************//**
@@ -272,7 +271,7 @@ LD_EXPORT(struct LDJSON *) LDObjectLookup(const struct LDJSON *const object,
  * @param[in] item The value to assign to key. This item is consumed.
  * @return True on success, False on failure.
  */
-LD_EXPORT(bool) LDObjectSetKey(struct LDJSON *const object,
+LD_EXPORT(LDBoolean) LDObjectSetKey(struct LDJSON *const object,
     const char *const key, struct LDJSON *const item);
 
 /**
@@ -303,7 +302,7 @@ LD_EXPORT(struct LDJSON *) LDObjectDetachKey(struct LDJSON *const object,
  * @param[in] from Object to copy keys from. May not be `NULL`.
  * @return True on success, `to` is polluted on failure.
  */
-LD_EXPORT(bool) LDObjectMerge(struct LDJSON *const to,
+LD_EXPORT(LDBoolean) LDObjectMerge(struct LDJSON *const to,
     const struct LDJSON *const from);
 
  /*@}*/

@@ -92,7 +92,7 @@ LDConfigFree(struct LDConfig *const config)
     }
 }
 
-bool
+LDBoolean
 LDConfigSetBaseURI(struct LDConfig *const config, const char *const baseURI)
 {
     LD_ASSERT_API(config);
@@ -115,7 +115,7 @@ LDConfigSetBaseURI(struct LDConfig *const config, const char *const baseURI)
     return LDSetString(&config->baseURI, baseURI);
 }
 
-bool
+LDBoolean
 LDConfigSetStreamURI(struct LDConfig *const config, const char *const streamURI)
 {
     LD_ASSERT_API(config);
@@ -138,7 +138,7 @@ LDConfigSetStreamURI(struct LDConfig *const config, const char *const streamURI)
     return LDSetString(&config->streamURI, streamURI);
 }
 
-bool
+LDBoolean
 LDConfigSetEventsURI(struct LDConfig *const config, const char *const eventsURI)
 {
     LD_ASSERT_API(config);
@@ -162,7 +162,7 @@ LDConfigSetEventsURI(struct LDConfig *const config, const char *const eventsURI)
 }
 
 void
-LDConfigSetStream(struct LDConfig *const config, const bool stream)
+LDConfigSetStream(struct LDConfig *const config, const LDBoolean stream)
 {
     LD_ASSERT_API(config);
 
@@ -178,7 +178,7 @@ LDConfigSetStream(struct LDConfig *const config, const bool stream)
 }
 
 void
-LDConfigSetSendEvents(struct LDConfig *const config, const bool sendEvents)
+LDConfigSetSendEvents(struct LDConfig *const config, const LDBoolean sendEvents)
 {
     LD_ASSERT_API(config);
 
@@ -262,7 +262,7 @@ LDConfigSetPollInterval(struct LDConfig *const config,
 }
 
 void
-LDConfigSetOffline(struct LDConfig *const config, const bool offline)
+LDConfigSetOffline(struct LDConfig *const config, const LDBoolean offline)
 {
     LD_ASSERT_API(config);
 
@@ -278,7 +278,7 @@ LDConfigSetOffline(struct LDConfig *const config, const bool offline)
 }
 
 void
-LDConfigSetUseLDD(struct LDConfig *const config, const bool useLDD)
+LDConfigSetUseLDD(struct LDConfig *const config, const LDBoolean useLDD)
 {
     LD_ASSERT_API(config);
 
@@ -295,7 +295,7 @@ LDConfigSetUseLDD(struct LDConfig *const config, const bool useLDD)
 
 void
 LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
-    const bool allAttributesPrivate)
+    const LDBoolean allAttributesPrivate)
 {
     LD_ASSERT_API(config);
 
@@ -313,7 +313,7 @@ LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
 
 void
 LDConfigInlineUsersInEvents(struct LDConfig *const config,
-    const bool inlineUsersInEvents)
+    const LDBoolean inlineUsersInEvents)
 {
     LD_ASSERT_API(config);
 
@@ -364,7 +364,7 @@ LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
     config->userKeysFlushInterval = userKeysFlushInterval;
 }
 
-bool
+LDBoolean
 LDConfigAddPrivateAttribute(struct LDConfig *const config,
     const char *const attribute)
 {

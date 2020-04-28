@@ -14,9 +14,6 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
-#include <stddef.h>
-
 #include <launchdarkly/json.h>
 #include <launchdarkly/config.h>
 #include <launchdarkly/user.h>
@@ -25,6 +22,7 @@ extern "C" {
 #include <launchdarkly/logging.h>
 #include <launchdarkly/variations.h>
 #include <launchdarkly/store.h>
+#include <launchdarkly/boolean.h>
 
 #ifdef __cplusplus
 }
