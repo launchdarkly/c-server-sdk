@@ -73,9 +73,9 @@ LD_EXPORT(bool) LDConfigSetEventsURI(struct LDConfig *const config,
  * so by LaunchDarkly support. Defaults to true.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] stream True for streaming, False for polling.
- * @return True on success, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetStream(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetStream(struct LDConfig *const config,
     const bool stream);
 
 /**
@@ -84,9 +84,9 @@ LD_EXPORT(bool) LDConfigSetStream(struct LDConfig *const config,
  * only affects sending events, not streaming or polling for events from the
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] sendEvents
- * @return True on success, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetSendEvents(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetSendEvents(struct LDConfig *const config,
     const bool sendEvents);
 
 /**
@@ -95,18 +95,18 @@ LD_EXPORT(bool) LDConfigSetSendEvents(struct LDConfig *const config,
  * buffer is flushed, events will be discarded.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] eventsCapacity
- * @return True on succes, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetEventsCapacity(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetEventsCapacity(struct LDConfig *const config,
     const unsigned int eventsCapacity);
 
 /**
  * @brief The connection timeout to use when making requests to LaunchDarkly.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] milliseconds
- * @return True on succes, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetTimeout(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetTimeout(struct LDConfig *const config,
     const unsigned int milliseconds);
 
 /**
@@ -114,18 +114,18 @@ LD_EXPORT(bool) LDConfigSetTimeout(struct LDConfig *const config,
  * interval means that the event buffer is less likely to reach capacity.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] milliseconds
- * @return True on succes, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetFlushInterval(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetFlushInterval(struct LDConfig *const config,
     const unsigned int milliseconds);
 
 /**
  * @brief The polling interval (when streaming is disabled).
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] milliseconds
- * @return True on succes, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetPollInterval(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetPollInterval(struct LDConfig *const config,
     const unsigned int milliseconds);
 
 /**
@@ -134,9 +134,9 @@ LD_EXPORT(bool) LDConfigSetPollInterval(struct LDConfig *const config,
  * and will return default values for all feature flags.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] offline
- * @return True on succes, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetOffline(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetOffline(struct LDConfig *const config,
     const bool offline);
 
 /**
@@ -145,9 +145,9 @@ LD_EXPORT(bool) LDConfigSetOffline(struct LDConfig *const config,
  * or polling API, but reads data only from the feature store.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] useLDD
- * @return True on succes, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetUseLDD(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetUseLDD(struct LDConfig *const config,
     const bool useLDD);
 
 /**
@@ -156,9 +156,9 @@ LD_EXPORT(bool) LDConfigSetUseLDD(struct LDConfig *const config,
  * private, not just the attributes specified in PrivateAttributeNames.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] allAttributesPrivate
- * @return True on succes, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
     const bool allAttributesPrivate);
 
 /**
@@ -166,9 +166,9 @@ LD_EXPORT(bool) LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
  * analytics event.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] inlineUsersInEvents
- * @return True on succes, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigInlineUsersInEvents(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigInlineUsersInEvents(struct LDConfig *const config,
     const bool inlineUsersInEvents);
 
 /**
@@ -176,9 +176,9 @@ LD_EXPORT(bool) LDConfigInlineUsersInEvents(struct LDConfig *const config,
  * one time, so that duplicate user details will not be sent in analytics.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] userKeysCapacity
- * @return True on succes, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetUserKeysCapacity(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetUserKeysCapacity(struct LDConfig *const config,
     const unsigned int userKeysCapacity);
 
 /**
@@ -186,9 +186,9 @@ LD_EXPORT(bool) LDConfigSetUserKeysCapacity(struct LDConfig *const config,
  * user keys.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] milliseconds
- * @return True on succes, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
     const unsigned int milliseconds);
 
 /**
@@ -207,9 +207,9 @@ LD_EXPORT(bool) LDConfigAddPrivateAttribute(struct LDConfig *const config,
  * related data received from LaunchDarkly.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] backend May be `NULL`.
- * @return True on succes, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
+LD_EXPORT(void) LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
     struct LDStoreInterface *const backend);
 
 /**
@@ -219,7 +219,7 @@ LD_EXPORT(bool) LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
  * time is 30 seconds.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] milliseconds How long the cache should live.
- * @return True on succes, False on failure.
+ * @return Void.
  */
- LD_EXPORT(bool) LDConfigSetFeatureStoreBackendCacheTTL(
+ LD_EXPORT(void) LDConfigSetFeatureStoreBackendCacheTTL(
      struct LDConfig *const config, const unsigned int milliseconds);

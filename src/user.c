@@ -75,7 +75,7 @@ LDUserFree(struct LDUser *const user)
     }
 }
 
-bool
+void
 LDUserSetAnonymous(struct LDUser *const user, const bool anon)
 {
     LD_ASSERT_API(user);
@@ -84,13 +84,11 @@ LDUserSetAnonymous(struct LDUser *const user, const bool anon)
         if (user == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDUserSetAnonymous NULL user");
 
-            return false;
+            return;
         }
     #endif
 
     user->anonymous = anon;
-
-    return true;
 }
 
 bool
@@ -213,7 +211,7 @@ LDUserSetSecondary(struct LDUser *const user, const char *const secondary)
     return LDSetString(&user->secondary, secondary);
 }
 
-bool
+void
 LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom)
 {
     LD_ASSERT_API(custom);
@@ -222,13 +220,11 @@ LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom)
         if (user == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDUserSetCustom NULL user");
 
-            return false;
+            return;
         }
     #endif
 
     user->custom = custom;
-
-    return true;
 }
 
 bool

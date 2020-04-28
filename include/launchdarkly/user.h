@@ -35,9 +35,9 @@ LD_EXPORT(void) LDUserFree(struct LDUser *const user);
  * @brief Mark the user as anonymous.
  * @param[in] user The user to mutate. May not be `NULL`.
  * @param[in] anon If the user should be anonymous or not.
- * @return True on success, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDUserSetAnonymous(struct LDUser *const user, const bool anon);
+LD_EXPORT(void) LDUserSetAnonymous(struct LDUser *const user, const bool anon);
 
 /**
  * @brief Set the user's IP.
@@ -114,9 +114,9 @@ LD_EXPORT(bool) LDUserSetSecondary(struct LDUser *const user,
  * @brief Set the user's custom JSON.
  * @param[in] user The user to mutate. May not be `NULL`.
  * @param[in] custom Custom JSON for the user. May be `NULL`.
- * @return True on success, False on failure.
+ * @return Void.
  */
-LD_EXPORT(bool) LDUserSetCustom(struct LDUser *const user,
+LD_EXPORT(void) LDUserSetCustom(struct LDUser *const user,
     struct LDJSON *const custom);
 
 /**

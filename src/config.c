@@ -161,7 +161,7 @@ LDConfigSetEventsURI(struct LDConfig *const config, const char *const eventsURI)
     return LDSetString(&config->eventsURI, eventsURI);
 }
 
-bool
+void
 LDConfigSetStream(struct LDConfig *const config, const bool stream)
 {
     LD_ASSERT_API(config);
@@ -170,16 +170,14 @@ LDConfigSetStream(struct LDConfig *const config, const bool stream)
         if (config == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDConfigSetStream NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->stream = stream;
-
-    return true;
 }
 
-bool
+void
 LDConfigSetSendEvents(struct LDConfig *const config, const bool sendEvents)
 {
     LD_ASSERT_API(config);
@@ -188,16 +186,14 @@ LDConfigSetSendEvents(struct LDConfig *const config, const bool sendEvents)
         if (config == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDConfigSetSendEvents NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->sendEvents = sendEvents;
-
-    return true;
 }
 
-bool
+void
 LDConfigSetEventsCapacity(struct LDConfig *const config,
     const unsigned int eventsCapacity)
 {
@@ -207,16 +203,14 @@ LDConfigSetEventsCapacity(struct LDConfig *const config,
         if (config == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDConfigSetEventsCapacity NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->eventsCapacity = eventsCapacity;
-
-    return true;
 }
 
-bool
+void
 LDConfigSetTimeout(struct LDConfig *const config,
     const unsigned int milliseconds)
 {
@@ -226,16 +220,14 @@ LDConfigSetTimeout(struct LDConfig *const config,
         if (config == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDConfigSetTimeout NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->timeout = milliseconds;
-
-    return true;
 }
 
-bool
+void
 LDConfigSetFlushInterval(struct LDConfig *const config,
     const unsigned int milliseconds)
 {
@@ -245,16 +237,14 @@ LDConfigSetFlushInterval(struct LDConfig *const config,
         if (config == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDConfigSetFlushInterval NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->flushInterval = milliseconds;
-
-    return true;
 }
 
-bool
+void
 LDConfigSetPollInterval(struct LDConfig *const config,
     const unsigned int milliseconds)
 {
@@ -264,16 +254,14 @@ LDConfigSetPollInterval(struct LDConfig *const config,
         if (config == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDConfigSetPollInterval NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->pollInterval = milliseconds;
-
-    return true;
 }
 
-bool
+void
 LDConfigSetOffline(struct LDConfig *const config, const bool offline)
 {
     LD_ASSERT_API(config);
@@ -282,16 +270,14 @@ LDConfigSetOffline(struct LDConfig *const config, const bool offline)
         if (config == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDConfigSetOffline NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->offline = offline;
-
-    return true;
 }
 
-bool
+void
 LDConfigSetUseLDD(struct LDConfig *const config, const bool useLDD)
 {
     LD_ASSERT_API(config);
@@ -300,16 +286,14 @@ LDConfigSetUseLDD(struct LDConfig *const config, const bool useLDD)
         if (config == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDConfigSetUseLDD NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->useLDD = useLDD;
-
-    return true;
 }
 
-bool
+void
 LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
     const bool allAttributesPrivate)
 {
@@ -320,16 +304,14 @@ LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
             LD_LOG(LD_LOG_WARNING,
                 "LDConfigSetAllAttributesPrivate NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->allAttributesPrivate = allAttributesPrivate;
-
-    return true;
 }
 
-bool
+void
 LDConfigInlineUsersInEvents(struct LDConfig *const config,
     const bool inlineUsersInEvents)
 {
@@ -340,16 +322,14 @@ LDConfigInlineUsersInEvents(struct LDConfig *const config,
             LD_LOG(LD_LOG_WARNING,
                 "LDConfigSetInlineUsersInEvents NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->inlineUsersInEvents = inlineUsersInEvents;
-
-    return true;
 }
 
-bool
+void
 LDConfigSetUserKeysCapacity(struct LDConfig *const config,
     const unsigned int userKeysCapacity)
 {
@@ -359,16 +339,14 @@ LDConfigSetUserKeysCapacity(struct LDConfig *const config,
         if (config == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDConfigSetUserKeysCapacity NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->userKeysCapacity = userKeysCapacity;
-
-    return true;
 }
 
-bool
+void
 LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
     const unsigned int userKeysFlushInterval)
 {
@@ -379,13 +357,11 @@ LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
             LD_LOG(LD_LOG_WARNING,
                 "LDConfigSetUserKeysFlushInterval NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->userKeysFlushInterval = userKeysFlushInterval;
-
-    return true;
 }
 
 bool
@@ -419,7 +395,7 @@ LDConfigAddPrivateAttribute(struct LDConfig *const config,
     }
 }
 
-bool
+void
 LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
     struct LDStoreInterface *const backend)
 {
@@ -430,16 +406,14 @@ LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
             LD_LOG(LD_LOG_WARNING,
                 "LDConfigSetFeatureStoreBackend NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->storeBackend = backend;
-
-    return true;
 }
 
-bool
+void
 LDConfigSetFeatureStoreBackendCacheTTL(struct LDConfig *const config,
     const unsigned int milliseconds)
 {
@@ -450,11 +424,9 @@ LDConfigSetFeatureStoreBackendCacheTTL(struct LDConfig *const config,
             LD_LOG(LD_LOG_WARNING,
                 "LDConfigSetFeatureStoreBackendCacheTTL NULL config");
 
-            return false;
+            return;
         }
     #endif
 
     config->storeCacheMilliseconds = milliseconds;
-
-    return true;
 }
