@@ -84,7 +84,7 @@ LDi_processEvaluation(
     const struct LDJSON *evaluationValue;
     const struct LDDetails *detailsRef;
     const unsigned int *variationIndexRef;
-    long unsigned int now;
+    double now;
 
     indexEvent        = NULL;
     featureEvent      = NULL;
@@ -223,7 +223,7 @@ LDi_summarizeEvent(struct EventProcessor *const context,
     }
 
     if (context->summaryStart == 0) {
-        unsigned long now;
+        double now;
 
         LDi_getUnixMilliseconds(&now);
 
@@ -444,7 +444,7 @@ convertToDebug(struct LDJSON *const event)
 
 void
 LDi_possiblyQueueEvent(struct EventProcessor *const context,
-    struct LDJSON *event, const unsigned long now)
+    struct LDJSON *event, const double now)
 {
     bool shouldTrack;
     struct LDJSON *tmp;
@@ -463,7 +463,7 @@ LDi_possiblyQueueEvent(struct EventProcessor *const context,
 
     if (LDi_notNull(tmp = LDObjectLookup(event, "debugEventsUntilDate"))) {
         /* validated as Number by LDi_newFeatureRequestEvent */
-        const unsigned long until = LDGetNumber(tmp);
+        const double until = LDGetNumber(tmp);
         /* ensure we don't send debugEventsUntilDate to LD */
         LDJSONFree(LDCollectionDetachIter(event, tmp));
 
@@ -519,7 +519,7 @@ bool
 LDi_maybeMakeIndexEvent(
     struct EventProcessor *const context,
     const struct LDUser *const   user,
-    const unsigned long          now,
+    const double                 now,
     struct LDJSON **const        result
 ) {
     struct LDJSON *event, *tmp;
@@ -592,7 +592,7 @@ LDi_newFeatureRequestEvent(
     const char *const                  prereqOf,
     const struct LDJSON *const         flag,
     const struct LDDetails *const      details,
-    const unsigned long                now
+    const double                       now
 ) {
     struct LDJSON *tmp, *event;
 
@@ -788,7 +788,7 @@ LDi_newFeatureRequestEvent(
 }
 
 struct LDJSON *
-LDi_newBaseEvent(const char *const kind, const unsigned long now)
+LDi_newBaseEvent(const char *const kind, const double now)
 {
     struct LDJSON *tmp, *event;
 
@@ -963,7 +963,7 @@ LDi_identify(
     const struct LDUser *const   user
 ) {
     struct LDJSON *event;
-    unsigned long now;
+    double now;
 
     LD_ASSERT(context);
     LD_ASSERT(user);
@@ -989,7 +989,7 @@ struct LDJSON *
 LDi_newIdentifyEvent(
     const struct EventProcessor *const context,
     const struct LDUser *const         user,
-    const unsigned long                now
+    const double                       now
 ) {
     struct LDJSON *event, *tmp;
 
@@ -1050,7 +1050,7 @@ LDi_newCustomEvent(
     struct LDJSON *const               data,
     const double                       metric,
     const bool                         hasMetric,
-    const unsigned long                now
+    const double                       now
 ) {
     struct LDJSON *tmp, *event;
 
@@ -1156,7 +1156,7 @@ LDi_objectToArray(const struct LDJSON *const object)
 struct LDJSON *
 LDi_prepareSummaryEvent(
     struct EventProcessor *const context,
-    const unsigned long          now
+    const double                 now
 ) {
     struct LDJSON *tmp, *summary, *iter, *counters;
 
@@ -1271,7 +1271,7 @@ LDi_track(
     const bool                   hasMetric
 ) {
     struct LDJSON *event, *indexEvent;
-    unsigned long now;
+    double now;
 
     LD_ASSERT(context);
     LD_ASSERT(user);
@@ -1317,7 +1317,7 @@ LDi_bundleEventPayload(
     struct LDJSON **const        result
 ) {
     struct LDJSON *nextEvents, *nextSummaryCounters, *summaryEvent;
-    unsigned long now;
+    double now;
 
     LD_ASSERT(context);
     LD_ASSERT(result);
@@ -1387,7 +1387,7 @@ LDi_bundleEventPayload(
 void
 LDi_setServerTime(
     struct EventProcessor *const context,
-    const unsigned long long     serverTime
+    const double                 serverTime
 ) {
     LD_ASSERT(context);
     LDi_mutex_lock(&context->lock);

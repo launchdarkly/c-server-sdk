@@ -387,7 +387,7 @@ done(struct LDClient *const client, void *const rawcontext,
     }
 
     if (success) {
-        unsigned long now;
+        double now;
 
         LDi_getMonotonicMilliseconds(&now);
 
@@ -441,7 +441,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     /* logic for checking backoff wait */
     if (context->attempts) {
-        unsigned long now;
+        double now;
 
         LDi_getMonotonicMilliseconds(&now);
 

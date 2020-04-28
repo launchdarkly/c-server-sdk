@@ -391,7 +391,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         const char *keyText;
         struct LDDetails details, *detailsRef;
         struct LDJSONRC *preflagrc;
-        unsigned long now;
+        double now;
 
         value            = NULL;
         preflag          = NULL;

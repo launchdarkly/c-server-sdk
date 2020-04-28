@@ -60,7 +60,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     LD_LOG(LD_LOG_INFO, "waiting to initialize");
     if (maxwaitmilli){
-        unsigned long start, diff, now;
+        double start, diff, now;
 
         LDi_getMonotonicMilliseconds(&start);
         do {

@@ -28,7 +28,7 @@ LDi_notNull(const struct LDJSON *const json)
 
 struct AnalyticsContext {
     bool active;
-    unsigned long lastFlush;
+    double lastFlush;
     struct curl_slist *headers;
     struct LDClient *client;
     char *buffer;
@@ -77,7 +77,7 @@ done(struct LDClient *const client, void *const rawcontext,
 
         resetMemory(context);
     } else {
-        unsigned long now;
+        double now;
 
         /* failed twice so just discard the payload */
         if (context->failureTime) {
@@ -191,7 +191,7 @@ LDi_onHeader(const char *buffer, const size_t size,
 
     LDi_setServerTime(
         client->eventProcessor,
-        1000 * (unsigned long long)mktime(&tm)
+        1000.0 * (double)mktime(&tm)
     );
 
     return total;
@@ -224,7 +224,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     }
 
     if (context->failureTime) {
-        unsigned long now;
+        double now;
 
         LDi_getMonotonicMilliseconds(&now);
 
@@ -244,7 +244,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         LDi_rwlock_rdunlock(&client->lock);
 
         if (!shouldFlush) {
-            unsigned long now;
+            double now;
 
             LDi_getMonotonicMilliseconds(&now);
             LD_ASSERT(now >= context->lastFlush);

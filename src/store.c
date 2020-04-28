@@ -285,7 +285,7 @@ struct CacheItem {
     struct LDJSONRC *feature;
     UT_hash_handle hh;
     /* monotonic milliseconds */
-    unsigned long updatedOn;
+    double updatedOn;
 };
 
 static void
@@ -710,7 +710,7 @@ static int
 isExpired(const struct LDStore *const store,
     const struct CacheItem *const item)
 {
-    unsigned long now;
+    double now;
 
     LD_ASSERT(store);
     LD_ASSERT(item);

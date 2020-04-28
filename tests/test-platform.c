@@ -7,7 +7,7 @@
 static void
 testMonotonic()
 {
-    unsigned long past, present;
+    double past, present;
 
     LD_ASSERT(LDi_getMonotonicMilliseconds(&past));
     LD_ASSERT(LDi_getMonotonicMilliseconds(&present));
@@ -18,14 +18,14 @@ testMonotonic()
 static void
 testGetUnixMilliseconds()
 {
-    unsigned long now;
+    double now;
     LD_ASSERT(LDi_getUnixMilliseconds(&now));
 }
 
 static void
 testSleepMinimum()
 {
-    unsigned long past, present;
+    double past, present;
 
     LD_ASSERT(LDi_getMonotonicMilliseconds(&past));
 

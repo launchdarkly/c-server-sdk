@@ -58,7 +58,7 @@ struct PollContext {
     size_t size;
     struct curl_slist *headers;
     bool active;
-    unsigned long lastpoll;
+    double lastpoll;
 };
 
 static size_t
@@ -159,7 +159,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     }
 
     {
-        unsigned long now;
+        double now;
 
         LDi_getMonotonicMilliseconds(&now);
         LD_ASSERT(now >= context->lastpoll);

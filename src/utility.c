@@ -82,10 +82,10 @@ LDi_sleepMilliseconds(const unsigned long milliseconds)
 }
 
 #ifndef _WIN32
-    static unsigned long
+    static double
     LDi_timeSpecToMilliseconds(const struct timespec ts)
     {
-        return (ts.tv_sec * 1000) + (ts.tv_nsec / 1000000);
+        return ((double)ts.tv_sec * 1000.0) + ((double)ts.tv_nsec / 1000000.0);
     }
 
     bool
@@ -123,7 +123,7 @@ LDi_sleepMilliseconds(const unsigned long milliseconds)
 #endif
 
 bool
-LDi_getMonotonicMilliseconds(unsigned long *const resultMilliseconds)
+LDi_getMonotonicMilliseconds(double *const resultMilliseconds)
 {
     #ifdef _WIN32
         *resultMilliseconds = GetTickCount64();
@@ -141,7 +141,7 @@ LDi_getMonotonicMilliseconds(unsigned long *const resultMilliseconds)
 }
 
 bool
-LDi_getUnixMilliseconds(unsigned long *const resultMilliseconds)
+LDi_getUnixMilliseconds(double *const resultMilliseconds)
 {
     #ifdef _WIN32
         *resultMilliseconds = (double)time(NULL) * 1000.0;

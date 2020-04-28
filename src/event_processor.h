@@ -73,11 +73,11 @@ LDi_newFeatureRequestEvent(
     const char *const                   prereqOf,
     const struct LDJSON *const          flag,
     const struct LDDetails *const       details,
-    const unsigned long                 now
+    const double                        now
 );
 
 void
 LDi_setServerTime(
     struct EventProcessor *const context,
-    const unsigned long long     serverTime
+    const double                 serverTime
 );

@@ -11,10 +11,10 @@ struct EventProcessor {
     ld_mutex_t lock;
     struct LDJSON *events; /* Array of Objects */
     struct LDJSON *summaryCounters; /* Object */
-    unsigned long summaryStart;
+    double summaryStart;
     struct LDLRU *userKeys;
-    unsigned long lastUserKeyFlush;
-    unsigned long long lastServerTime;
+    double lastUserKeyFlush;
+    double lastServerTime;
     const struct LDConfig *config;
 };
 
@@ -34,7 +34,7 @@ LDi_addEvent(
 struct LDJSON *
 LDi_newBaseEvent(
     const char *const   kind,
-    const unsigned long now
+    const double        now
 );
 
 bool
@@ -50,7 +50,7 @@ struct LDJSON *
 LDi_newIdentifyEvent(
     const struct EventProcessor *const context,
     const struct LDUser *const         user,
-    const unsigned long                now
+    const double                       now
 );
 
 struct LDJSON *
@@ -61,21 +61,21 @@ LDi_newCustomEvent(
     struct LDJSON *const               data,
     const double                       metric,
     const bool                         hasMetric,
-    const unsigned long                now
+    const double                       now
 );
 
 void
 LDi_possiblyQueueEvent(
     struct EventProcessor *const context,
     struct LDJSON *const         event,
-    const unsigned long          now
+    const double                 now
 );
 
 bool
 LDi_maybeMakeIndexEvent(
     struct EventProcessor *const context,
     const struct LDUser *const   user,
-    const unsigned long          now,
+    const double                 now,
     struct LDJSON **const        result
 );
 
@@ -84,5 +84,5 @@ struct LDJSON *LDi_objectToArray(const struct LDJSON *const object);
 struct LDJSON *
 LDi_prepareSummaryEvent(
     struct EventProcessor *const context,
-    const unsigned long          now
+    const double                 now
 );
