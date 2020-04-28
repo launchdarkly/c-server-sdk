@@ -60,6 +60,7 @@ target_include_directories(ldserverapi
 target_compile_definitions(ldserverapi
     PRIVATE -D LAUNCHDARKLY_CONCURRENCY_ABORT
             -D LAUNCHDARKLY_USE_ASSERT
+            -D LAUNCHDARKLY_DEFENSIVE
 )
 
 if(MSVC)
