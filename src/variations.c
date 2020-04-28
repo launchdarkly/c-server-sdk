@@ -189,7 +189,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     LD_ASSERT_API(user);
     LD_ASSERT_API(key);
 
-    /* fallback intentionally not asserted */
+    LD_ASSERT(fallback);
     LD_ASSERT(checkType);
 
     flag       = NULL;
@@ -449,11 +449,17 @@ LDStringVariation(struct LDClient *const client, const struct LDUser *const user
         setDetailsOOM(details);
 
         return NULL;
+    } else if (!fallback) {
+        if (!(fallbackJSON = LDNewNull())) {
+            setDetailsOOM(details);
+
+            return NULL;
+        }
     }
 
     result = variation(client, user, key, fallbackJSON, isText, details);
 
-    if (result) {
+    if (result && fallback) {
         /* never mutate just type hack */
         value = (char *)LDGetText(result);
 
@@ -489,6 +495,12 @@ LDJSONVariation(struct LDClient *const client, const struct LDUser *const user,
         setDetailsOOM(details);
 
         return NULL;
+    } else if (!fallback) {
+        if (!(fallbackJSON = LDNewNull())) {
+            setDetailsOOM(details);
+
+            return NULL;
+        }
     }
 
     result = variation(client, user, key, fallbackJSON, isArrayOrObject,
