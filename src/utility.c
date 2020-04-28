@@ -192,9 +192,10 @@ LDi_normalize(const double n, const double nmin, const double nmax,
 bool
 LDi_randomHex(char *const buffer, const size_t bufferSize)
 {
+    size_t i;
     const char *const alphabet = "0123456789ABCDEF";
 
-    for (size_t i = 0; i < bufferSize; i++) {
+    for (i = 0; i < bufferSize; i++) {
         unsigned int rng = 0;
         if (LDi_random(&rng)) {
             buffer[i] = alphabet[rng % 16];
