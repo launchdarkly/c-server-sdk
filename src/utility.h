@@ -17,6 +17,10 @@
     #include <mach/mach.h>
 #endif
 
+#ifndef __WIN32
+    #include <time.h>
+#endif
+
 #include <launchdarkly/json.h>
 
 /* **** LDUtility **** */
