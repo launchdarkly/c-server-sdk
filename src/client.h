@@ -9,7 +9,6 @@
 #include "event_processor.h"
 
 struct LDClient {
-    bool initialized;
     bool shuttingdown;
     struct LDConfig *config;
     ld_thread_t thread;

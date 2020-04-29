@@ -64,12 +64,9 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
         LDi_getMonotonicMilliseconds(&start);
         do {
-            LDi_rwlock_rdlock(&client->lock);
-            if (client->initialized) {
-                LDi_rwlock_rdunlock(&client->lock);
+            if (LDStoreInitialized(client->store)) {
                 break;
             }
-            LDi_rwlock_rdunlock(&client->lock);
 
             LDi_sleepMilliseconds(5);
 

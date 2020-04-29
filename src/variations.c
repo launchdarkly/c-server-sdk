@@ -553,14 +553,10 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
         return NULL;
     }
 
-    if (!client->initialized) {
-        if (LDStoreInitialized(client->store)) {
-            LD_LOG(LD_LOG_WARNING, "LDAllFlags using stale values");
-        } else {
-            LD_LOG(LD_LOG_WARNING, "LDAllFlags not initialized returning NULL");
+    if (!LDStoreInitialized(client->store)) {
+        LD_LOG(LD_LOG_WARNING, "LDAllFlags not initialized returning NULL");
 
-            return NULL;
-        }
+        return NULL;
     }
 
     if (!(evaluatedFlags = LDNewObject())) {
