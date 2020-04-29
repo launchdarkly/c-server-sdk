@@ -459,7 +459,13 @@ LDStringVariation(struct LDClient *const client, const struct LDUser *const user
 
     result = variation(client, user, key, fallbackJSON, isText, details);
 
-    if (result && fallback) {
+    if (result == NULL) {
+        return NULL;
+    } else if (fallback == NULL && result == fallbackJSON) {
+        LDJSONFree(fallbackJSON);
+
+        return NULL;
+    } else {
         /* never mutate just type hack */
         value = (char *)LDGetText(result);
 
@@ -470,8 +476,6 @@ LDStringVariation(struct LDClient *const client, const struct LDUser *const user
         LDJSONFree(result);
 
         return value;
-    } else {
-        return NULL;
     }
 }
 
@@ -505,6 +509,12 @@ LDJSONVariation(struct LDClient *const client, const struct LDUser *const user,
 
     result = variation(client, user, key, fallbackJSON, isArrayOrObject,
         details);
+
+    if (fallback == NULL && result == fallbackJSON) {
+        LDJSONFree(fallbackJSON);
+
+        return NULL;
+    }
 
     return result;
 }

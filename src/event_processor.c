@@ -119,23 +119,25 @@ LDi_processEvaluation(
     if (!featureEvent) {
         LDi_mutex_unlock(&context->lock);
 
-        LDFree(subEvents);
+        LDJSONFree(subEvents);
 
         return false;
     }
 
-    if (!LDi_maybeMakeIndexEvent(context, user, now, &indexEvent))
-    {
-        LDJSONFree(featureEvent);
-        LDFree(subEvents);
-
+    if (!LDi_maybeMakeIndexEvent(context, user, now, &indexEvent)) {
         LDi_mutex_unlock(&context->lock);
+
+        LDJSONFree(featureEvent);
+        LDJSONFree(subEvents);
 
         return false;
     }
 
     if (!LDi_summarizeEvent(context, featureEvent, !flag)) {
         LDi_mutex_unlock(&context->lock);
+
+        LDJSONFree(featureEvent);
+        LDJSONFree(subEvents);
 
         return false;
     }
@@ -151,6 +153,8 @@ LDi_processEvaluation(
 
         featureEvent = NULL;
     }
+
+    LDJSONFree(featureEvent);
 
     if (subEvents) {
         struct LDJSON *iter;

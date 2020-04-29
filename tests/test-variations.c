@@ -170,7 +170,31 @@ testStringVariation()
     LD_ASSERT(strcmp(actual, "b") == 0);
     LD_ASSERT(details.reason == LD_FALLTHROUGH);
     /* cleanup */
-    free(actual);
+    LDFree(actual);
+    LDUserFree(user);
+    LDClientClose(client);
+    LDDetailsClear(&details);
+}
+
+static void
+testStringVariationNullFallback()
+{
+    struct LDClient *client;
+    struct LDUser *user;
+    char *actual;
+    struct LDDetails details;
+    /* setup */
+    LD_ASSERT(client = makeTestClient());
+    LD_ASSERT(user = LDUserNew("userkey"));
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    /* run */
+    actual = LDStringVariation(client, user, "invalidFeatureKey", NULL,
+        &details);
+    /* validate */
+    LD_ASSERT(actual == NULL);
+    LD_ASSERT(details.reason == LD_ERROR);
+    LD_ASSERT(details.extra.errorKind == LD_FLAG_NOT_FOUND);
+    /* cleanup */
     LDUserFree(user);
     LDClientClose(client);
     LDDetailsClear(&details);
@@ -216,6 +240,30 @@ testJSONVariation()
     LDDetailsClear(&details);
 }
 
+static void
+testJSONVariationNullFallback()
+{
+    struct LDClient *client;
+    struct LDUser *user;
+    struct LDJSON *actual;
+    struct LDDetails details;
+    /* setup */
+    LD_ASSERT(client = makeTestClient());
+    LD_ASSERT(user = LDUserNew("userkey"));
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    /* run */
+    actual = LDJSONVariation(client, user, "invalidFeatureKey", NULL,
+        &details);
+    /* validate */
+    LD_ASSERT(actual == NULL);
+    LD_ASSERT(details.reason == LD_ERROR);
+    LD_ASSERT(details.extra.errorKind == LD_FLAG_NOT_FOUND);
+    /* cleanup */
+    LDUserFree(user);
+    LDClientClose(client);
+    LDDetailsClear(&details);
+}
+
 int
 main()
 {
@@ -227,7 +275,9 @@ main()
     testDoubleVariation();
     testDoubleVariationAsInt();
     testStringVariation();
+    testStringVariationNullFallback();
     testJSONVariation();
+    testJSONVariationNullFallback();
 
     return 0;
 }
