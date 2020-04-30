@@ -1,6 +1,7 @@
 var searchData=
 [
   ['ld_5fclient_5fnot_5fready',['LD_CLIENT_NOT_READY',['../variations_8h.html#a8a801b43272f17f44948faf9ae58e42eae929e4c744e8e961ba3dd49f4c931d42',1,'variations.h']]],
+  ['ld_5fclient_5fnot_5fspecified',['LD_CLIENT_NOT_SPECIFIED',['../variations_8h.html#a8a801b43272f17f44948faf9ae58e42eaccaaf7233b96e6cdc0ce3d1592f078ea',1,'variations.h']]],
   ['ld_5ferror',['LD_ERROR',['../variations_8h.html#a5bfb76ead561505a82400126669f5212a5e9f31e9e0e8a2bd42f60779f4352fca',1,'variations.h']]],
   ['ld_5ffallthrough',['LD_FALLTHROUGH',['../variations_8h.html#a5bfb76ead561505a82400126669f5212a942ee03cd342272a58d7256ecf550e3f',1,'variations.h']]],
   ['ld_5fflag_5fnot_5ffound',['LD_FLAG_NOT_FOUND',['../variations_8h.html#a8a801b43272f17f44948faf9ae58e42eaab937b653a26935d872110ce9de8f98b',1,'variations.h']]],

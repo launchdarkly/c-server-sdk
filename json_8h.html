@@ -98,9 +98,8 @@ $(document).ready(function(){initNavTree('json_8h.html','');});
 
 <p>Public API Interface for JSON usage.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
-<code>#include &lt;stddef.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="export_8h_source.html">launchdarkly/export.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="export_8h_source.html">launchdarkly/export.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="boolean_8h_source.html">launchdarkly/boolean.h</a>&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for json.h:</div>
 <div class="dyncontent">
@@ -135,30 +134,30 @@ Functions</h2></td></tr>
 <tr><td colspan="2"><div class="groupHeader">Constructing values</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Routines for constructing values </p>
 </div></td></tr>
-<tr class="memitem:ad7aa685b723679353030797ff0ba114f"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#ad7aa685b723679353030797ff0ba114f">LDNewNull</a> ()</td></tr>
-<tr class="memdesc:ad7aa685b723679353030797ff0ba114f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a JSON node of type <code>LDJSONNull</code>.  <a href="#ad7aa685b723679353030797ff0ba114f">More...</a><br /></td></tr>
-<tr class="separator:ad7aa685b723679353030797ff0ba114f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab1a544cc56a0663b5ec84ecbc056c1df"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#ab1a544cc56a0663b5ec84ecbc056c1df">LDNewBool</a> (const bool boolean)</td></tr>
-<tr class="memdesc:ab1a544cc56a0663b5ec84ecbc056c1df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a JSON node of type <code>LDJSONBool</code>.  <a href="#ab1a544cc56a0663b5ec84ecbc056c1df">More...</a><br /></td></tr>
-<tr class="separator:ab1a544cc56a0663b5ec84ecbc056c1df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa575c098417d81a159e95da8d899adf7"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#aa575c098417d81a159e95da8d899adf7">LDNewNull</a> (void)</td></tr>
+<tr class="memdesc:aa575c098417d81a159e95da8d899adf7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a JSON node of type <code>LDJSONNull</code>.  <a href="#aa575c098417d81a159e95da8d899adf7">More...</a><br /></td></tr>
+<tr class="separator:aa575c098417d81a159e95da8d899adf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2a8f0c5da91d3f66dd05621a63c52fb"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#ac2a8f0c5da91d3f66dd05621a63c52fb">LDNewBool</a> (const LDBoolean boolean)</td></tr>
+<tr class="memdesc:ac2a8f0c5da91d3f66dd05621a63c52fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a JSON node of type <code>LDJSONBool</code>.  <a href="#ac2a8f0c5da91d3f66dd05621a63c52fb">More...</a><br /></td></tr>
+<tr class="separator:ac2a8f0c5da91d3f66dd05621a63c52fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55ef572692ceab1f1687bd4399ee9c17"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a55ef572692ceab1f1687bd4399ee9c17">LDNewNumber</a> (const double number)</td></tr>
 <tr class="memdesc:a55ef572692ceab1f1687bd4399ee9c17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a JSON node of type <code>LDJSONumber</code>.  <a href="#a55ef572692ceab1f1687bd4399ee9c17">More...</a><br /></td></tr>
 <tr class="separator:a55ef572692ceab1f1687bd4399ee9c17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a206bc84384e13eb7e85a54d2d051b375"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a206bc84384e13eb7e85a54d2d051b375">LDNewText</a> (const char *const text)</td></tr>
 <tr class="memdesc:a206bc84384e13eb7e85a54d2d051b375"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a a new constructed JSON node of type <code>LDJSONText</code>.  <a href="#a206bc84384e13eb7e85a54d2d051b375">More...</a><br /></td></tr>
 <tr class="separator:a206bc84384e13eb7e85a54d2d051b375"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2890222119da3e06f26d748cf607f723"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a2890222119da3e06f26d748cf607f723">LDNewObject</a> ()</td></tr>
-<tr class="memdesc:a2890222119da3e06f26d748cf607f723"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a JSON node of type <code>LDJSONObject</code>.  <a href="#a2890222119da3e06f26d748cf607f723">More...</a><br /></td></tr>
-<tr class="separator:a2890222119da3e06f26d748cf607f723"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0cd13983deac29c5787d9a9147f3bac3"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a0cd13983deac29c5787d9a9147f3bac3">LDNewArray</a> ()</td></tr>
-<tr class="memdesc:a0cd13983deac29c5787d9a9147f3bac3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a JSON node of type <code>LDJSONArray</code>.  <a href="#a0cd13983deac29c5787d9a9147f3bac3">More...</a><br /></td></tr>
-<tr class="separator:a0cd13983deac29c5787d9a9147f3bac3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad47f4ca8921e4fa65ba9fe4b41517ea2"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#ad47f4ca8921e4fa65ba9fe4b41517ea2">LDNewObject</a> (void)</td></tr>
+<tr class="memdesc:ad47f4ca8921e4fa65ba9fe4b41517ea2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a JSON node of type <code>LDJSONObject</code>.  <a href="#ad47f4ca8921e4fa65ba9fe4b41517ea2">More...</a><br /></td></tr>
+<tr class="separator:ad47f4ca8921e4fa65ba9fe4b41517ea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abaeb396c738b1e297af985c7f946c2ec"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#abaeb396c738b1e297af985c7f946c2ec">LDNewArray</a> (void)</td></tr>
+<tr class="memdesc:abaeb396c738b1e297af985c7f946c2ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a JSON node of type <code>LDJSONArray</code>.  <a href="#abaeb396c738b1e297af985c7f946c2ec">More...</a><br /></td></tr>
+<tr class="separator:abaeb396c738b1e297af985c7f946c2ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Setting values</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Routines for setting values of existing nodes </p>
 </div></td></tr>
-<tr class="memitem:acb06bf5bda2b6c16511fac135e5b7908"><td class="memItemLeft" align="right" valign="top"><a id="acb06bf5bda2b6c16511fac135e5b7908"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (struct LDJSON *const node, const double number)</td></tr>
-<tr class="separator:acb06bf5bda2b6c16511fac135e5b7908"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a747675630428e355a0af6e54d857ea4f"><td class="memItemLeft" align="right" valign="top">LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a747675630428e355a0af6e54d857ea4f">LDSetNumber</a> (struct LDJSON *const node, const double number)</td></tr>
+<tr class="memdesc:a747675630428e355a0af6e54d857ea4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the value of an existing Number.  <a href="#a747675630428e355a0af6e54d857ea4f">More...</a><br /></td></tr>
+<tr class="separator:a747675630428e355a0af6e54d857ea4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Cleanup and Utility</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Miscellaneous Operations </p>
 </div></td></tr>
@@ -171,15 +170,15 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <tr class="memitem:a76b2cc2b943a45968e1b9294d591c67c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="json_8h.html#a35e090b31eb4dd4fc1f6b10c313ce398">LDJSONType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a76b2cc2b943a45968e1b9294d591c67c">LDJSONGetType</a> (const struct LDJSON *const json)</td></tr>
 <tr class="memdesc:a76b2cc2b943a45968e1b9294d591c67c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the type of a JSON structure.  <a href="#a76b2cc2b943a45968e1b9294d591c67c">More...</a><br /></td></tr>
 <tr class="separator:a76b2cc2b943a45968e1b9294d591c67c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89fb0a6ddf5c66904011a88a08ee77dc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a89fb0a6ddf5c66904011a88a08ee77dc">LDJSONCompare</a> (const struct LDJSON *const left, const struct LDJSON *const right)</td></tr>
-<tr class="memdesc:a89fb0a6ddf5c66904011a88a08ee77dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deep compare to check if two JSON structures are equal.  <a href="#a89fb0a6ddf5c66904011a88a08ee77dc">More...</a><br /></td></tr>
-<tr class="separator:a89fb0a6ddf5c66904011a88a08ee77dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06ee3b31ab0a5dd32104a36d624e87f9"><td class="memItemLeft" align="right" valign="top">LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a06ee3b31ab0a5dd32104a36d624e87f9">LDJSONCompare</a> (const struct LDJSON *const left, const struct LDJSON *const right)</td></tr>
+<tr class="memdesc:a06ee3b31ab0a5dd32104a36d624e87f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deep compare to check if two JSON structures are equal.  <a href="#a06ee3b31ab0a5dd32104a36d624e87f9">More...</a><br /></td></tr>
+<tr class="separator:a06ee3b31ab0a5dd32104a36d624e87f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Reading Values</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Routines for reading values </p>
 </div></td></tr>
-<tr class="memitem:abc952c41cb710c66ab207b05b9777451"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#abc952c41cb710c66ab207b05b9777451">LDGetBool</a> (const struct LDJSON *const node)</td></tr>
-<tr class="memdesc:abc952c41cb710c66ab207b05b9777451"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the value from a node of type <code>LDJSONBool</code>.  <a href="#abc952c41cb710c66ab207b05b9777451">More...</a><br /></td></tr>
-<tr class="separator:abc952c41cb710c66ab207b05b9777451"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add28009e120907cbd395aa8360bec0c5"><td class="memItemLeft" align="right" valign="top">LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#add28009e120907cbd395aa8360bec0c5">LDGetBool</a> (const struct LDJSON *const node)</td></tr>
+<tr class="memdesc:add28009e120907cbd395aa8360bec0c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the value from a node of type <code>LDJSONBool</code>.  <a href="#add28009e120907cbd395aa8360bec0c5">More...</a><br /></td></tr>
+<tr class="separator:add28009e120907cbd395aa8360bec0c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b6ee54624d3861d6b3383d930228f38"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a6b6ee54624d3861d6b3383d930228f38">LDGetNumber</a> (const struct LDJSON *const node)</td></tr>
 <tr class="memdesc:a6b6ee54624d3861d6b3383d930228f38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the value from a node of type <code>LDJSONNumber</code>.  <a href="#a6b6ee54624d3861d6b3383d930228f38">More...</a><br /></td></tr>
 <tr class="separator:a6b6ee54624d3861d6b3383d930228f38"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -210,30 +209,30 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <tr class="memitem:a5dd0e8382ff995104f5051efb7b5858a"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a5dd0e8382ff995104f5051efb7b5858a">LDArrayLookup</a> (const struct LDJSON *const array, const unsigned int index)</td></tr>
 <tr class="memdesc:a5dd0e8382ff995104f5051efb7b5858a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lookup up the value of an index for a given array.  <a href="#a5dd0e8382ff995104f5051efb7b5858a">More...</a><br /></td></tr>
 <tr class="separator:a5dd0e8382ff995104f5051efb7b5858a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a016be8991af3683d777500a392134709"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a016be8991af3683d777500a392134709">LDArrayPush</a> (struct LDJSON *const array, struct LDJSON *const item)</td></tr>
-<tr class="memdesc:a016be8991af3683d777500a392134709"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds an item to the end of an existing array.  <a href="#a016be8991af3683d777500a392134709">More...</a><br /></td></tr>
-<tr class="separator:a016be8991af3683d777500a392134709"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ecff84bc25741dfcb53bdbc6c064c54"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a4ecff84bc25741dfcb53bdbc6c064c54">LDArrayAppend</a> (struct LDJSON *const prefix, const struct LDJSON *const suffix)</td></tr>
-<tr class="memdesc:a4ecff84bc25741dfcb53bdbc6c064c54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Appends the array on the right to the array on the left.  <a href="#a4ecff84bc25741dfcb53bdbc6c064c54">More...</a><br /></td></tr>
-<tr class="separator:a4ecff84bc25741dfcb53bdbc6c064c54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24e5727af61913e29efb815689a005e6"><td class="memItemLeft" align="right" valign="top">LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a24e5727af61913e29efb815689a005e6">LDArrayPush</a> (struct LDJSON *const array, struct LDJSON *const item)</td></tr>
+<tr class="memdesc:a24e5727af61913e29efb815689a005e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds an item to the end of an existing array.  <a href="#a24e5727af61913e29efb815689a005e6">More...</a><br /></td></tr>
+<tr class="separator:a24e5727af61913e29efb815689a005e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c3ff89005964c0bd5c3fb771c361baf"><td class="memItemLeft" align="right" valign="top">LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a1c3ff89005964c0bd5c3fb771c361baf">LDArrayAppend</a> (struct LDJSON *const prefix, const struct LDJSON *const suffix)</td></tr>
+<tr class="memdesc:a1c3ff89005964c0bd5c3fb771c361baf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Appends the array on the right to the array on the left.  <a href="#a1c3ff89005964c0bd5c3fb771c361baf">More...</a><br /></td></tr>
+<tr class="separator:a1c3ff89005964c0bd5c3fb771c361baf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Object Operations</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Routines for working with objects </p>
 </div></td></tr>
 <tr class="memitem:a4183e1e8dd0f6afb678f7ea0928e3376"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a4183e1e8dd0f6afb678f7ea0928e3376">LDObjectLookup</a> (const struct LDJSON *const object, const char *const key)</td></tr>
 <tr class="memdesc:a4183e1e8dd0f6afb678f7ea0928e3376"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lookup up the value of a key for a given object.  <a href="#a4183e1e8dd0f6afb678f7ea0928e3376">More...</a><br /></td></tr>
 <tr class="separator:a4183e1e8dd0f6afb678f7ea0928e3376"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5c7769b0ed3cdf65f4a92f3e14fd4aaf"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a5c7769b0ed3cdf65f4a92f3e14fd4aaf">LDObjectSetKey</a> (struct LDJSON *const object, const char *const key, struct LDJSON *const item)</td></tr>
-<tr class="memdesc:a5c7769b0ed3cdf65f4a92f3e14fd4aaf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the provided key in an object to item. If the key already exists the original value is deleted.  <a href="#a5c7769b0ed3cdf65f4a92f3e14fd4aaf">More...</a><br /></td></tr>
-<tr class="separator:a5c7769b0ed3cdf65f4a92f3e14fd4aaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeadc2f5fe34f84b9e42a7339943e422d"><td class="memItemLeft" align="right" valign="top">LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#aeadc2f5fe34f84b9e42a7339943e422d">LDObjectSetKey</a> (struct LDJSON *const object, const char *const key, struct LDJSON *const item)</td></tr>
+<tr class="memdesc:aeadc2f5fe34f84b9e42a7339943e422d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the provided key in an object to item. If the key already exists the original value is deleted.  <a href="#aeadc2f5fe34f84b9e42a7339943e422d">More...</a><br /></td></tr>
+<tr class="separator:aeadc2f5fe34f84b9e42a7339943e422d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a44c271fc2062e0af83ae64fff919262c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a44c271fc2062e0af83ae64fff919262c">LDObjectDeleteKey</a> (struct LDJSON *const object, const char *const key)</td></tr>
 <tr class="memdesc:a44c271fc2062e0af83ae64fff919262c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delete the provided key from the given object.  <a href="#a44c271fc2062e0af83ae64fff919262c">More...</a><br /></td></tr>
 <tr class="separator:a44c271fc2062e0af83ae64fff919262c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a071d37886524976500f1a933c7cad8"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a5a071d37886524976500f1a933c7cad8">LDObjectDetachKey</a> (struct LDJSON *const object, const char *const key)</td></tr>
 <tr class="memdesc:a5a071d37886524976500f1a933c7cad8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detach the provided key from the given object. The returned value is no longer owned by the object and must be manually deleted.  <a href="#a5a071d37886524976500f1a933c7cad8">More...</a><br /></td></tr>
 <tr class="separator:a5a071d37886524976500f1a933c7cad8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ab12daecfd4aa724b813b1b4be5d1ab"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a7ab12daecfd4aa724b813b1b4be5d1ab">LDObjectMerge</a> (struct LDJSON *const to, const struct LDJSON *const from)</td></tr>
-<tr class="memdesc:a7ab12daecfd4aa724b813b1b4be5d1ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy keys from one object to another. If a key already exists it is overwritten by the new value.  <a href="#a7ab12daecfd4aa724b813b1b4be5d1ab">More...</a><br /></td></tr>
-<tr class="separator:a7ab12daecfd4aa724b813b1b4be5d1ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60732d3ccc24bd1607906dc8e3d2c27b"><td class="memItemLeft" align="right" valign="top">LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a60732d3ccc24bd1607906dc8e3d2c27b">LDObjectMerge</a> (struct LDJSON *const to, const struct LDJSON *const from)</td></tr>
+<tr class="memdesc:a60732d3ccc24bd1607906dc8e3d2c27b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy keys from one object to another. If a key already exists it is overwritten by the new value.  <a href="#a60732d3ccc24bd1607906dc8e3d2c27b">More...</a><br /></td></tr>
+<tr class="separator:a60732d3ccc24bd1607906dc8e3d2c27b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Serialization / Deserialization</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Working with textual representations of JSON </p>
 </div></td></tr>
@@ -278,14 +277,14 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a4ecff84bc25741dfcb53bdbc6c064c54"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4ecff84bc25741dfcb53bdbc6c064c54">&#9670;&nbsp;</a></span>LDArrayAppend()</h2>
+<a id="a1c3ff89005964c0bd5c3fb771c361baf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c3ff89005964c0bd5c3fb771c361baf">&#9670;&nbsp;</a></span>LDArrayAppend()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool LDArrayAppend </td>
+          <td class="memname">LDBoolean LDArrayAppend </td>
           <td>(</td>
           <td class="paramtype">struct LDJSON *const&#160;</td>
           <td class="paramname"><em>prefix</em>, </td>
@@ -307,8 +306,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Appends the array on the right to the array on the left. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">prefix</td><td>Must be of type <code>LDJSONArray</code> (assert). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">suffix</td><td>Must be of type <code>LDJSONArray</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">prefix</td><td>Must be of type <code>LDJSONArray</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">suffix</td><td>Must be of type <code>LDJSONArray</code>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -345,23 +344,23 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Lookup up the value of an index for a given array. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">array</td><td>May not be <code>NULL</code> (assert), must be of type <code>LDJSONArray</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">array</td><td>May not be <code>NULL</code>. must be of type <code>LDJSONArray</code>. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">index</td><td>The index to lookup in the array </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Item if it exists, otherwise <code>NULL</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Item if it exists, otherwise <code>NULL if does not exist, or on failure.</code> </dd></dl>
 
 </div>
 </div>
-<a id="a016be8991af3683d777500a392134709"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a016be8991af3683d777500a392134709">&#9670;&nbsp;</a></span>LDArrayPush()</h2>
+<a id="a24e5727af61913e29efb815689a005e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24e5727af61913e29efb815689a005e6">&#9670;&nbsp;</a></span>LDArrayPush()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool LDArrayPush </td>
+          <td class="memname">LDBoolean LDArrayPush </td>
           <td>(</td>
           <td class="paramtype">struct LDJSON *const&#160;</td>
           <td class="paramname"><em>array</em>, </td>
@@ -383,7 +382,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Adds an item to the end of an existing array. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">array</td><td>Must be of type <code>LDJSONArray</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">array</td><td>Must be of type <code>LDJSONArray</code>. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">item</td><td>The value to append to the array. This item is consumed. </td></tr>
   </table>
   </dd>
@@ -421,12 +420,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Remove an iterator from a collection. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">collection</td><td>May not be <code>NULL</code> (assert), must be of type <code>LDJSONArray</code> or <code>LDJSONObject</code> (assert). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">iter</td><td>May not be <code>NULL</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">collection</td><td>May not be <code>NULL</code>. must be of type <code>LDJSONArray</code> or <code>LDJSONObject</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">iter</td><td>May not be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The detached iterator </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The detached iterator, or <code>NULL</code> on failure. </dd></dl>
 
 </div>
 </div>
@@ -449,22 +448,22 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Return the size of a JSON collection. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">collection</td><td>May not be <code>NULL</code> (assert), must be of type <code>LDJSONArray</code> or <code>LDJSONObject</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">collection</td><td>May not be <code>NULL</code>. must be of type <code>LDJSONArray</code> or <code>LDJSONObject</code>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The size of the collection </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The size of the collection, or zero on failure. </dd></dl>
 
 </div>
 </div>
-<a id="abc952c41cb710c66ab207b05b9777451"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abc952c41cb710c66ab207b05b9777451">&#9670;&nbsp;</a></span>LDGetBool()</h2>
+<a id="add28009e120907cbd395aa8360bec0c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add28009e120907cbd395aa8360bec0c5">&#9670;&nbsp;</a></span>LDGetBool()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool LDGetBool </td>
+          <td class="memname">LDBoolean LDGetBool </td>
           <td>(</td>
           <td class="paramtype">const struct LDJSON *const&#160;</td>
           <td class="paramname"><em>node</em></td><td>)</td>
@@ -476,11 +475,11 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Get the value from a node of type <code>LDJSONBool</code>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">node</td><td>Node to read value from. Must be correct type (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">node</td><td>Node to read value from. Must be correct type. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The boolean nodes value </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The boolean nodes value. Returns false on failure. </dd></dl>
 
 </div>
 </div>
@@ -503,11 +502,11 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Allows iteration over an array. Modification of the array invalidates this iterator. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">collection</td><td>May not be <code>NULL</code> (assert), must be of type <code>LDJSONArray</code> or <code>LDJSONObject</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">collection</td><td>May not be <code>NULL</code>. must be of type <code>LDJSONArray</code> or <code>LDJSONObject</code>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>First child iterator, or <code>NULL</code> if empty </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>First child iterator, or <code>NULL</code> if empty or on failure. </dd></dl>
 
 </div>
 </div>
@@ -530,11 +529,11 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Get the value from a node of type <code>LDJSONNumber</code>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">node</td><td>Node to read value from. Must be correct type (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">node</td><td>Node to read value from. Must be correct type. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The number nodes value </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The number nodes value. Returns 0 on failure. </dd></dl>
 
 </div>
 </div>
@@ -557,7 +556,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Get the value from a node of type <code>LDJSONText</code>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">node</td><td>Node to read value from. Must be correct type (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">node</td><td>Node to read value from. Must be correct type. </td></tr>
   </table>
   </dd>
 </dl>
@@ -584,11 +583,11 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Returns the key associated with the iterator Must be an object iterator. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">iter</td><td>The iterator obtained from an object. May not be <code>NULL</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">iter</td><td>The iterator obtained from an object. May not be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The key on success, or <code>NULL</code> if there is no key (wrong type). </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The key on success, or <code>NULL</code> if there is no key, or on failure. </dd></dl>
 
 </div>
 </div>
@@ -619,14 +618,14 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 
 </div>
 </div>
-<a id="a89fb0a6ddf5c66904011a88a08ee77dc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a89fb0a6ddf5c66904011a88a08ee77dc">&#9670;&nbsp;</a></span>LDJSONCompare()</h2>
+<a id="a06ee3b31ab0a5dd32104a36d624e87f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06ee3b31ab0a5dd32104a36d624e87f9">&#9670;&nbsp;</a></span>LDJSONCompare()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool LDJSONCompare </td>
+          <td class="memname">LDBoolean LDJSONCompare </td>
           <td>(</td>
           <td class="paramtype">const struct LDJSON *const&#160;</td>
           <td class="paramname"><em>left</em>, </td>
@@ -676,7 +675,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Deserialize JSON text into a JSON structure. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">text</td><td>JSON text to deserialize. May not be <code>NULL</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">text</td><td>JSON text to deserialize. May not be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -703,7 +702,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Duplicates an existing JSON strucutre. This acts as a deep copy. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>JSON to be duplicated. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>JSON to be duplicated. May not be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -757,11 +756,11 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Get the type of a JSON structure. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>May be not be <code>NULL</code> (assert) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>May be not be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The JSON type </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The JSON type, or <code>LDNull</code> on failure. </dd></dl>
 
 </div>
 </div>
@@ -784,7 +783,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Serialize JSON text into a JSON structure. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>Structure to serialize. May be <code>NULL</code> depending on implementation. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>Structure to serialize. May be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -792,8 +791,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 
 </div>
 </div>
-<a id="a0cd13983deac29c5787d9a9147f3bac3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0cd13983deac29c5787d9a9147f3bac3">&#9670;&nbsp;</a></span>LDNewArray()</h2>
+<a id="abaeb396c738b1e297af985c7f946c2ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abaeb396c738b1e297af985c7f946c2ec">&#9670;&nbsp;</a></span>LDNewArray()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -801,6 +800,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
         <tr>
           <td class="memname">struct LDJSON* LDNewArray </td>
           <td>(</td>
+          <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -812,8 +812,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 
 </div>
 </div>
-<a id="ab1a544cc56a0663b5ec84ecbc056c1df"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab1a544cc56a0663b5ec84ecbc056c1df">&#9670;&nbsp;</a></span>LDNewBool()</h2>
+<a id="ac2a8f0c5da91d3f66dd05621a63c52fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2a8f0c5da91d3f66dd05621a63c52fb">&#9670;&nbsp;</a></span>LDNewBool()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -821,7 +821,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
         <tr>
           <td class="memname">struct LDJSON* LDNewBool </td>
           <td>(</td>
-          <td class="paramtype">const bool&#160;</td>
+          <td class="paramtype">const LDBoolean&#160;</td>
           <td class="paramname"><em>boolean</em></td><td>)</td>
           <td></td>
         </tr>
@@ -839,8 +839,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 
 </div>
 </div>
-<a id="ad7aa685b723679353030797ff0ba114f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad7aa685b723679353030797ff0ba114f">&#9670;&nbsp;</a></span>LDNewNull()</h2>
+<a id="aa575c098417d81a159e95da8d899adf7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa575c098417d81a159e95da8d899adf7">&#9670;&nbsp;</a></span>LDNewNull()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -848,6 +848,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
         <tr>
           <td class="memname">struct LDJSON* LDNewNull </td>
           <td>(</td>
+          <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -886,8 +887,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 
 </div>
 </div>
-<a id="a2890222119da3e06f26d748cf607f723"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2890222119da3e06f26d748cf607f723">&#9670;&nbsp;</a></span>LDNewObject()</h2>
+<a id="ad47f4ca8921e4fa65ba9fe4b41517ea2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad47f4ca8921e4fa65ba9fe4b41517ea2">&#9670;&nbsp;</a></span>LDNewObject()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -895,6 +896,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
         <tr>
           <td class="memname">struct LDJSON* LDNewObject </td>
           <td>(</td>
+          <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -925,7 +927,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Returns a a new constructed JSON node of type <code>LDJSONText</code>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">text</td><td>The text to copy and then assign the new node </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">text</td><td>The text to copy and then assign the new node. May not be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -962,8 +964,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Delete the provided key from the given object. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">object</td><td>May not be <code>NULL</code> (assert), must be of type <code>LDJSONObject</code> (assert). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key to delete from the object. May not be <code>NULL</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">object</td><td>May not be <code>NULL</code>. must be of type <code>LDJSONObject</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key to delete from the object. May not be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1000,12 +1002,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Detach the provided key from the given object. The returned value is no longer owned by the object and must be manually deleted. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">object</td><td>May not be <code>NULL</code> (assert), must be of type <code>LDJSONObject</code> (assert). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key to detach from the object. May not be <code>NULL</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">object</td><td>May not be <code>NULL</code>. must be of type <code>LDJSONObject</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key to detach from the object. May not be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The value associated, or <code>NULL</code> if it does not exit </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The value associated, or <code>NULL</code> if it does not exit, or on error. </dd></dl>
 
 </div>
 </div>
@@ -1038,8 +1040,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Lookup up the value of a key for a given object. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">object</td><td>May not be <code>NULL</code> (assert), must be of type <code>LDJSONObject</code> (assert). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key to lookup in the object. May not be <code>NULL</code> (assert), </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">object</td><td>May not be <code>NULL</code>. must be of type <code>LDJSONObject</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key to lookup in the object. May not be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1047,14 +1049,14 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 
 </div>
 </div>
-<a id="a7ab12daecfd4aa724b813b1b4be5d1ab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7ab12daecfd4aa724b813b1b4be5d1ab">&#9670;&nbsp;</a></span>LDObjectMerge()</h2>
+<a id="a60732d3ccc24bd1607906dc8e3d2c27b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60732d3ccc24bd1607906dc8e3d2c27b">&#9670;&nbsp;</a></span>LDObjectMerge()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool LDObjectMerge </td>
+          <td class="memname">LDBoolean LDObjectMerge </td>
           <td>(</td>
           <td class="paramtype">struct LDJSON *const&#160;</td>
           <td class="paramname"><em>to</em>, </td>
@@ -1076,8 +1078,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Copy keys from one object to another. If a key already exists it is overwritten by the new value. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">to</td><td>Object to assign to. May not be <code>NULL</code> (assert). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">from</td><td>Object to copy keys from. May not be <code>NULL</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">to</td><td>Object to assign to. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">from</td><td>Object to copy keys from. May not be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1085,14 +1087,14 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 
 </div>
 </div>
-<a id="a5c7769b0ed3cdf65f4a92f3e14fd4aaf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5c7769b0ed3cdf65f4a92f3e14fd4aaf">&#9670;&nbsp;</a></span>LDObjectSetKey()</h2>
+<a id="aeadc2f5fe34f84b9e42a7339943e422d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeadc2f5fe34f84b9e42a7339943e422d">&#9670;&nbsp;</a></span>LDObjectSetKey()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool LDObjectSetKey </td>
+          <td class="memname">LDBoolean LDObjectSetKey </td>
           <td>(</td>
           <td class="paramtype">struct LDJSON *const&#160;</td>
           <td class="paramname"><em>object</em>, </td>
@@ -1120,9 +1122,47 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LDSetNumber</b> (stru
 <p>Sets the provided key in an object to item. If the key already exists the original value is deleted. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">object</td><td>Must be of type <code>LDJSONObject</code> (assert). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key that is being written to in the object. May not be <code>NULL</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">object</td><td>Must be of type <code>LDJSONObject</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key that is being written to in the object. May not be <code>NULL</code>. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">item</td><td>The value to assign to key. This item is consumed. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True on success, False on failure. </dd></dl>
+
+</div>
+</div>
+<a id="a747675630428e355a0af6e54d857ea4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a747675630428e355a0af6e54d857ea4f">&#9670;&nbsp;</a></span>LDSetNumber()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LDBoolean LDSetNumber </td>
+          <td>(</td>
+          <td class="paramtype">struct LDJSON *const&#160;</td>
+          <td class="paramname"><em>node</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the value of an existing Number. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">node</td><td>The node to set the value of. Must be a number. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">number</td><td>The value to use for the node. </td></tr>
   </table>
   </dd>
 </dl>

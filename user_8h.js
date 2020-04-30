@@ -1,16 +1,16 @@
 var user_8h =
 [
-    [ "LDUserAddPrivateAttribute", "user_8h.html#a10bbbd8f5ac02cfaaee7b6bf20c961aa", null ],
+    [ "LDUserAddPrivateAttribute", "user_8h.html#a7111b5b7057a73058421472d6e5fa818", null ],
     [ "LDUserFree", "user_8h.html#a33cbe4b5ed3852acff3e59f361e5e476", null ],
-    [ "LDUserNew", "user_8h.html#ab004b6ddf5abe147b30db1ab57e5664f", null ],
-    [ "LDUserSetAnonymous", "user_8h.html#a3a53ac03871fa400b162347e97a07a22", null ],
-    [ "LDUserSetAvatar", "user_8h.html#adc777e007bba1f652e15cae65a126601", null ],
-    [ "LDUserSetCountry", "user_8h.html#abaa010c2873234f1621799d1a2a1a49f", null ],
+    [ "LDUserNew", "user_8h.html#a3c0db523b6dc37d3776ee3a445db95fc", null ],
+    [ "LDUserSetAnonymous", "user_8h.html#a9f609f2e41bd6bf3fcba13bfe65facde", null ],
+    [ "LDUserSetAvatar", "user_8h.html#ae9c729c1c26c560000bb33881919b6dc", null ],
+    [ "LDUserSetCountry", "user_8h.html#ac1fdca095ea8395ad8c70948d15a2361", null ],
     [ "LDUserSetCustom", "user_8h.html#a7e80b503f3749b5b2ad645a33f2e1e0b", null ],
-    [ "LDUserSetEmail", "user_8h.html#a95c44ffefb086487e6bd55a668b33695", null ],
-    [ "LDUserSetFirstName", "user_8h.html#a9fc266704c0de49a76d9759574f30c6b", null ],
-    [ "LDUserSetIP", "user_8h.html#a071282e2e51db627f098385aad609382", null ],
-    [ "LDUserSetLastName", "user_8h.html#a7c9f166c133f05520b2da7565c5a2ba0", null ],
-    [ "LDUserSetName", "user_8h.html#a9bd4754b5cda09b88b761e09625ca61b", null ],
-    [ "LDUserSetSecondary", "user_8h.html#adb204e29c4ee29aa2d3707d92f8bc1d4", null ]
+    [ "LDUserSetEmail", "user_8h.html#a7cf6d460f6b6af53f0dc78567976b659", null ],
+    [ "LDUserSetFirstName", "user_8h.html#a53aa182cb82b488490c9f021924f6bed", null ],
+    [ "LDUserSetIP", "user_8h.html#ad03168d61e967e2566167a6293161593", null ],
+    [ "LDUserSetLastName", "user_8h.html#ad2e9ac5e02b35852dd84830c5d247a20", null ],
+    [ "LDUserSetName", "user_8h.html#a29ba1a93944c6861c93aa9b76aa892d9", null ],
+    [ "LDUserSetSecondary", "user_8h.html#a19538317efdf5d21f69803e2132b3287", null ]
 ];

@@ -1,11 +1,11 @@
 var client_8h =
 [
-    [ "LDClientClose", "client_8h.html#ab7d00dbcd76715c1da55ba2469a0cc4f", null ],
-    [ "LDClientFlush", "client_8h.html#a675adeb6d3c92b221bb806ecbdb73bb4", null ],
-    [ "LDClientIdentify", "client_8h.html#a7e9a0a7f8702307dae23b35218465734", null ],
+    [ "LDClientClose", "client_8h.html#af3ef6e68348337a5b7688153962ff3b5", null ],
+    [ "LDClientFlush", "client_8h.html#a6d0bd8246aafc9158c795128426ab499", null ],
+    [ "LDClientIdentify", "client_8h.html#a696a5bebe952dc076488e9fb2562b091", null ],
     [ "LDClientInit", "client_8h.html#aa1b880269a6ddef2b82dec9517ad1111", null ],
-    [ "LDClientIsInitialized", "client_8h.html#af1dc2a6805de9e7d3ebe40ee4d88bee8", null ],
-    [ "LDClientIsOffline", "client_8h.html#a8123277a93525e407beab0fb8262f7ee", null ],
-    [ "LDClientTrack", "client_8h.html#a09279c34f8773f08da90f84c318567a8", null ],
-    [ "LDClientTrackMetric", "client_8h.html#aff323ce45abf1bf77cfd07d0a1ecc9e0", null ]
+    [ "LDClientIsInitialized", "client_8h.html#a377021c529549544d3852e448390ad3e", null ],
+    [ "LDClientIsOffline", "client_8h.html#aee6568396a3bbebd3a69f534c6fa079e", null ],
+    [ "LDClientTrack", "client_8h.html#aef1fb9d7ad8cf35f95b7bfd0ab7d75b1", null ],
+    [ "LDClientTrackMetric", "client_8h.html#af3d2df29367d8178dd4a3c2804cd3bec", null ]
 ];

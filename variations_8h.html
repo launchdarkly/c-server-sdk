@@ -100,11 +100,11 @@ $(document).ready(function(){initNavTree('variations_8h.html','');});
 
 <p>Public API Interface for evaluation variations.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
-<code>#include &lt;stddef.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="client_8h_source.html">launchdarkly/client.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="user_8h_source.html">launchdarkly/user.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="json_8h_source.html">launchdarkly/json.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="export_8h_source.html">launchdarkly/export.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="boolean_8h_source.html">launchdarkly/boolean.h</a>&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for variations.h:</div>
 <div class="dyncontent">
@@ -147,6 +147,7 @@ Enumerations</h2></td></tr>
 <a class="el" href="variations_8h.html#a8a801b43272f17f44948faf9ae58e42ea2bc164d0d8d8a013155d38b1a59b4c65">LD_STORE_ERROR</a>, 
 <a class="el" href="variations_8h.html#a8a801b43272f17f44948faf9ae58e42eaab937b653a26935d872110ce9de8f98b">LD_FLAG_NOT_FOUND</a>, 
 <a class="el" href="variations_8h.html#a8a801b43272f17f44948faf9ae58e42eab6dbc4ad6dbe74d5b75487194a44b1d3">LD_USER_NOT_SPECIFIED</a>, 
+<a class="el" href="variations_8h.html#a8a801b43272f17f44948faf9ae58e42eaccaaf7233b96e6cdc0ce3d1592f078ea">LD_CLIENT_NOT_SPECIFIED</a>, 
 <a class="el" href="variations_8h.html#a8a801b43272f17f44948faf9ae58e42ea452d360ac6d34afbb7a7a7a6ef20b526">LD_MALFORMED_FLAG</a>, 
 <a class="el" href="variations_8h.html#a8a801b43272f17f44948faf9ae58e42eaa983a0992d13b46aafe74ebf8cfeee16">LD_WRONG_TYPE</a>, 
 <a class="el" href="variations_8h.html#a8a801b43272f17f44948faf9ae58e42ea264596a2d11c536e760c26ba28f10eb5">LD_OOM</a>
@@ -173,24 +174,24 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
 <tr class="memitem:a56c643402fb222fa3d55cf0ddb162efa"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#a56c643402fb222fa3d55cf0ddb162efa">LDReasonToJSON</a> (const struct <a class="el" href="structLDDetails.html">LDDetails</a> *const details)</td></tr>
 <tr class="memdesc:a56c643402fb222fa3d55cf0ddb162efa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marshal just the evaluation reason portion of <code><a class="el" href="structLDDetails.html">LDDetails</a></code> to JSON.  <a href="#a56c643402fb222fa3d55cf0ddb162efa">More...</a><br /></td></tr>
 <tr class="separator:a56c643402fb222fa3d55cf0ddb162efa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a137be3595f7f7e090856b6be87625e21"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#a137be3595f7f7e090856b6be87625e21">LDBoolVariation</a> (struct LDClient *const client, struct LDUser *const user, const char *const key, const bool fallback, struct <a class="el" href="structLDDetails.html">LDDetails</a> *const details)</td></tr>
-<tr class="memdesc:a137be3595f7f7e090856b6be87625e21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a boolean flag.  <a href="#a137be3595f7f7e090856b6be87625e21">More...</a><br /></td></tr>
-<tr class="separator:a137be3595f7f7e090856b6be87625e21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0102df381b2a40a97f057f5f3f481de3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#a0102df381b2a40a97f057f5f3f481de3">LDIntVariation</a> (struct LDClient *const client, struct LDUser *const user, const char *const key, const int fallback, struct <a class="el" href="structLDDetails.html">LDDetails</a> *const details)</td></tr>
-<tr class="memdesc:a0102df381b2a40a97f057f5f3f481de3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a integer flag.  <a href="#a0102df381b2a40a97f057f5f3f481de3">More...</a><br /></td></tr>
-<tr class="separator:a0102df381b2a40a97f057f5f3f481de3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4bfc9baedb0b2224508a54f074d45ad4"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#a4bfc9baedb0b2224508a54f074d45ad4">LDDoubleVariation</a> (struct LDClient *const client, struct LDUser *const user, const char *const key, const double fallback, struct <a class="el" href="structLDDetails.html">LDDetails</a> *const details)</td></tr>
-<tr class="memdesc:a4bfc9baedb0b2224508a54f074d45ad4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a double flag.  <a href="#a4bfc9baedb0b2224508a54f074d45ad4">More...</a><br /></td></tr>
-<tr class="separator:a4bfc9baedb0b2224508a54f074d45ad4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c05d09217140af046ed68cee69747f2"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#a2c05d09217140af046ed68cee69747f2">LDStringVariation</a> (struct LDClient *const client, struct LDUser *const user, const char *const key, const char *const fallback, struct <a class="el" href="structLDDetails.html">LDDetails</a> *const details)</td></tr>
-<tr class="memdesc:a2c05d09217140af046ed68cee69747f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a text flag.  <a href="#a2c05d09217140af046ed68cee69747f2">More...</a><br /></td></tr>
-<tr class="separator:a2c05d09217140af046ed68cee69747f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a28e7e8e1ad5d8a4deda238eb63189cab"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#a28e7e8e1ad5d8a4deda238eb63189cab">LDJSONVariation</a> (struct LDClient *const client, struct LDUser *const user, const char *const key, const struct LDJSON *const fallback, struct <a class="el" href="structLDDetails.html">LDDetails</a> *const details)</td></tr>
-<tr class="memdesc:a28e7e8e1ad5d8a4deda238eb63189cab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a JSON flag.  <a href="#a28e7e8e1ad5d8a4deda238eb63189cab">More...</a><br /></td></tr>
-<tr class="separator:a28e7e8e1ad5d8a4deda238eb63189cab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4cbd9bb2a3a03a0937415b7d43638cd6"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#a4cbd9bb2a3a03a0937415b7d43638cd6">LDAllFlags</a> (struct LDClient *const client, struct LDUser *const user)</td></tr>
-<tr class="memdesc:a4cbd9bb2a3a03a0937415b7d43638cd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a map from feature flag keys to values for a given user. This does not send analytics events back to LaunchDarkly.  <a href="#a4cbd9bb2a3a03a0937415b7d43638cd6">More...</a><br /></td></tr>
-<tr class="separator:a4cbd9bb2a3a03a0937415b7d43638cd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bde6b2f91b8b55bbbe277a94868c2e9"><td class="memItemLeft" align="right" valign="top">LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#a9bde6b2f91b8b55bbbe277a94868c2e9">LDBoolVariation</a> (struct <a class="el" href="structLDClient.html">LDClient</a> *const client, const struct <a class="el" href="structLDUser.html">LDUser</a> *const user, const char *const key, const LDBoolean fallback, struct <a class="el" href="structLDDetails.html">LDDetails</a> *const details)</td></tr>
+<tr class="memdesc:a9bde6b2f91b8b55bbbe277a94868c2e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a boolean flag.  <a href="#a9bde6b2f91b8b55bbbe277a94868c2e9">More...</a><br /></td></tr>
+<tr class="separator:a9bde6b2f91b8b55bbbe277a94868c2e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab9f179b1c7a0c3c004477f1c5fa7ad1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#aab9f179b1c7a0c3c004477f1c5fa7ad1">LDIntVariation</a> (struct <a class="el" href="structLDClient.html">LDClient</a> *const client, const struct <a class="el" href="structLDUser.html">LDUser</a> *const user, const char *const key, const int fallback, struct <a class="el" href="structLDDetails.html">LDDetails</a> *const details)</td></tr>
+<tr class="memdesc:aab9f179b1c7a0c3c004477f1c5fa7ad1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a integer flag.  <a href="#aab9f179b1c7a0c3c004477f1c5fa7ad1">More...</a><br /></td></tr>
+<tr class="separator:aab9f179b1c7a0c3c004477f1c5fa7ad1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af917b2a80a68aec1809eef61113fd045"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#af917b2a80a68aec1809eef61113fd045">LDDoubleVariation</a> (struct <a class="el" href="structLDClient.html">LDClient</a> *const client, const struct <a class="el" href="structLDUser.html">LDUser</a> *const user, const char *const key, const double fallback, struct <a class="el" href="structLDDetails.html">LDDetails</a> *const details)</td></tr>
+<tr class="memdesc:af917b2a80a68aec1809eef61113fd045"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a double flag.  <a href="#af917b2a80a68aec1809eef61113fd045">More...</a><br /></td></tr>
+<tr class="separator:af917b2a80a68aec1809eef61113fd045"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7067509e0744fc46fee768154ff80a9a"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#a7067509e0744fc46fee768154ff80a9a">LDStringVariation</a> (struct <a class="el" href="structLDClient.html">LDClient</a> *const client, const struct <a class="el" href="structLDUser.html">LDUser</a> *const user, const char *const key, const char *const fallback, struct <a class="el" href="structLDDetails.html">LDDetails</a> *const details)</td></tr>
+<tr class="memdesc:a7067509e0744fc46fee768154ff80a9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a text flag.  <a href="#a7067509e0744fc46fee768154ff80a9a">More...</a><br /></td></tr>
+<tr class="separator:a7067509e0744fc46fee768154ff80a9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59bb748a0350597768bc61ff3db642b9"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#a59bb748a0350597768bc61ff3db642b9">LDJSONVariation</a> (struct <a class="el" href="structLDClient.html">LDClient</a> *const client, const struct <a class="el" href="structLDUser.html">LDUser</a> *const user, const char *const key, const struct LDJSON *const fallback, struct <a class="el" href="structLDDetails.html">LDDetails</a> *const details)</td></tr>
+<tr class="memdesc:a59bb748a0350597768bc61ff3db642b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a JSON flag.  <a href="#a59bb748a0350597768bc61ff3db642b9">More...</a><br /></td></tr>
+<tr class="separator:a59bb748a0350597768bc61ff3db642b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51ba0df725bdcd4a005e6efe7bb4f944"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="variations_8h.html#a51ba0df725bdcd4a005e6efe7bb4f944">LDAllFlags</a> (struct <a class="el" href="structLDClient.html">LDClient</a> *const client, const struct <a class="el" href="structLDUser.html">LDUser</a> *const user)</td></tr>
+<tr class="memdesc:a51ba0df725bdcd4a005e6efe7bb4f944"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a map from feature flag keys to values for a given user. This does not send analytics events back to LaunchDarkly.  <a href="#a51ba0df725bdcd4a005e6efe7bb4f944">More...</a><br /></td></tr>
+<tr class="separator:a51ba0df725bdcd4a005e6efe7bb4f944"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Public API Interface for evaluation variations. </p>
@@ -218,6 +219,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
 <tr><td class="fieldname"><a id="a8a801b43272f17f44948faf9ae58e42eaab937b653a26935d872110ce9de8f98b"></a>LD_FLAG_NOT_FOUND&#160;</td><td class="fielddoc"><p>Indicates that the caller provided a flag key that did not match any known flag. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a8a801b43272f17f44948faf9ae58e42eab6dbc4ad6dbe74d5b75487194a44b1d3"></a>LD_USER_NOT_SPECIFIED&#160;</td><td class="fielddoc"><p>Indicates that a <code>NULL</code> user was passed for the user parameter. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8a801b43272f17f44948faf9ae58e42eaccaaf7233b96e6cdc0ce3d1592f078ea"></a>LD_CLIENT_NOT_SPECIFIED&#160;</td><td class="fielddoc"><p>Indicates that a <code>NULL</code> client was passed for the client parameter. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a8a801b43272f17f44948faf9ae58e42ea452d360ac6d34afbb7a7a7a6ef20b526"></a>LD_MALFORMED_FLAG&#160;</td><td class="fielddoc"><p>Indicates that there was an internal inconsistency in the flag data, a rule specified a nonexistent variation. </p>
 </td></tr>
@@ -262,8 +265,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a4cbd9bb2a3a03a0937415b7d43638cd6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4cbd9bb2a3a03a0937415b7d43638cd6">&#9670;&nbsp;</a></span>LDAllFlags()</h2>
+<a id="a51ba0df725bdcd4a005e6efe7bb4f944"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51ba0df725bdcd4a005e6efe7bb4f944">&#9670;&nbsp;</a></span>LDAllFlags()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -271,13 +274,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
         <tr>
           <td class="memname">struct LDJSON* LDAllFlags </td>
           <td>(</td>
-          <td class="paramtype">struct LDClient *const&#160;</td>
+          <td class="paramtype">struct <a class="el" href="structLDClient.html">LDClient</a> *const&#160;</td>
           <td class="paramname"><em>client</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct LDUser *const&#160;</td>
+          <td class="paramtype">const struct <a class="el" href="structLDUser.html">LDUser</a> *const&#160;</td>
           <td class="paramname"><em>user</em>&#160;</td>
         </tr>
         <tr>
@@ -291,31 +294,31 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
 <p>Returns a map from feature flag keys to values for a given user. This does not send analytics events back to LaunchDarkly. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. May not be <code>NULL</code> (assert). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate flags for. Ownership is not transferred. May not be <code>NULL</code> (assert). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate flags for. Ownership is not transferred. May not be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A JSON object, or <code>NULL</code> on <code>malloc</code> failure. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A JSON object, or <code>NULL</code> on failure. </dd></dl>
 
 </div>
 </div>
-<a id="a137be3595f7f7e090856b6be87625e21"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a137be3595f7f7e090856b6be87625e21">&#9670;&nbsp;</a></span>LDBoolVariation()</h2>
+<a id="a9bde6b2f91b8b55bbbe277a94868c2e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9bde6b2f91b8b55bbbe277a94868c2e9">&#9670;&nbsp;</a></span>LDBoolVariation()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool LDBoolVariation </td>
+          <td class="memname">LDBoolean LDBoolVariation </td>
           <td>(</td>
-          <td class="paramtype">struct LDClient *const&#160;</td>
+          <td class="paramtype">struct <a class="el" href="structLDClient.html">LDClient</a> *const&#160;</td>
           <td class="paramname"><em>client</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct LDUser *const&#160;</td>
+          <td class="paramtype">const struct <a class="el" href="structLDUser.html">LDUser</a> *const&#160;</td>
           <td class="paramname"><em>user</em>, </td>
         </tr>
         <tr>
@@ -327,7 +330,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const bool&#160;</td>
+          <td class="paramtype">const LDBoolean&#160;</td>
           <td class="paramname"><em>fallback</em>, </td>
         </tr>
         <tr>
@@ -347,20 +350,20 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
 <p>Evaluate a boolean flag. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate the flag against. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key of the flag to evaluate. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate the flag against. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key of the flag to evaluate. May not be <code>NULL</code>. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">fallback</td><td>The value to return on error </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">details</td><td>A struct where the evaluation explanation will be put. If <code>NULL</code> no explanation will be generated. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The fallback will be returned if <code>client</code>, <code>user</code>, or <code>key</code> are <code>NULL</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The fallback will be returned on any error. </dd></dl>
 
 </div>
 </div>
-<a id="a4bfc9baedb0b2224508a54f074d45ad4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4bfc9baedb0b2224508a54f074d45ad4">&#9670;&nbsp;</a></span>LDDoubleVariation()</h2>
+<a id="af917b2a80a68aec1809eef61113fd045"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af917b2a80a68aec1809eef61113fd045">&#9670;&nbsp;</a></span>LDDoubleVariation()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -368,13 +371,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
         <tr>
           <td class="memname">double LDDoubleVariation </td>
           <td>(</td>
-          <td class="paramtype">struct LDClient *const&#160;</td>
+          <td class="paramtype">struct <a class="el" href="structLDClient.html">LDClient</a> *const&#160;</td>
           <td class="paramname"><em>client</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct LDUser *const&#160;</td>
+          <td class="paramtype">const struct <a class="el" href="structLDUser.html">LDUser</a> *const&#160;</td>
           <td class="paramname"><em>user</em>, </td>
         </tr>
         <tr>
@@ -406,15 +409,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
 <p>Evaluate a double flag. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate the flag against. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key of the flag to evaluate. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate the flag against. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key of the flag to evaluate. May not be <code>NULL</code>. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">fallback</td><td>The value to return on error </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">details</td><td>A struct where the evaluation explanation will be put. If <code>NULL</code> no explanation will be generated. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The fallback will be returned if <code>client</code>, <code>user</code>, or <code>key</code> are <code>NULL</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The fallback will be returned on any error. </dd></dl>
 
 </div>
 </div>
@@ -472,8 +475,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
 
 </div>
 </div>
-<a id="a0102df381b2a40a97f057f5f3f481de3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0102df381b2a40a97f057f5f3f481de3">&#9670;&nbsp;</a></span>LDIntVariation()</h2>
+<a id="aab9f179b1c7a0c3c004477f1c5fa7ad1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab9f179b1c7a0c3c004477f1c5fa7ad1">&#9670;&nbsp;</a></span>LDIntVariation()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -481,13 +484,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
         <tr>
           <td class="memname">int LDIntVariation </td>
           <td>(</td>
-          <td class="paramtype">struct LDClient *const&#160;</td>
+          <td class="paramtype">struct <a class="el" href="structLDClient.html">LDClient</a> *const&#160;</td>
           <td class="paramname"><em>client</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct LDUser *const&#160;</td>
+          <td class="paramtype">const struct <a class="el" href="structLDUser.html">LDUser</a> *const&#160;</td>
           <td class="paramname"><em>user</em>, </td>
         </tr>
         <tr>
@@ -519,20 +522,20 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
 <p>Evaluate a integer flag. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate the flag against. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key of the flag to evaluate. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate the flag against. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key of the flag to evaluate. May not be <code>NULL</code>. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">fallback</td><td>The value to return on error </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">details</td><td>A struct where the evaluation explanation will be put. If <code>NULL</code> no explanation will be generated. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The fallback will be returned if <code>client</code>, <code>user</code>, or <code>key</code> are <code>NULL</code>. If the flag value is actually a float the result is truncated. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The fallback will be returned on any error. </dd></dl>
 
 </div>
 </div>
-<a id="a28e7e8e1ad5d8a4deda238eb63189cab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a28e7e8e1ad5d8a4deda238eb63189cab">&#9670;&nbsp;</a></span>LDJSONVariation()</h2>
+<a id="a59bb748a0350597768bc61ff3db642b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59bb748a0350597768bc61ff3db642b9">&#9670;&nbsp;</a></span>LDJSONVariation()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -540,13 +543,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
         <tr>
           <td class="memname">struct LDJSON* LDJSONVariation </td>
           <td>(</td>
-          <td class="paramtype">struct LDClient *const&#160;</td>
+          <td class="paramtype">struct <a class="el" href="structLDClient.html">LDClient</a> *const&#160;</td>
           <td class="paramname"><em>client</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct LDUser *const&#160;</td>
+          <td class="paramtype">const struct <a class="el" href="structLDUser.html">LDUser</a> *const&#160;</td>
           <td class="paramname"><em>user</em>, </td>
         </tr>
         <tr>
@@ -578,15 +581,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
 <p>Evaluate a JSON flag. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate the flag against. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key of the flag to evaluate. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">fallback</td><td>The fallback to return on error. Ownership is not transferred. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate the flag against. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key of the flag to evaluate. May not be <code>NULL</code>` </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fallback</td><td>The fallback to return on error. Ownership is not transferred. May be <code>NULL</code>. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">details</td><td>A struct where the evaluation explanation will be put. If <code>NULL</code> no explanation will be generated. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The fallback will be returned if <code>client</code>, <code>user</code>, or <code>key</code> are <code>NULL</code>. The result must be cleanud up with <code>LDJSONFree</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The fallback will be returned on any error but may be <code>NULL</code> on allocation failure. The result must be cleanud up with <code>LDJSONFree</code>. </dd></dl>
 
 </div>
 </div>
@@ -617,8 +620,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
 
 </div>
 </div>
-<a id="a2c05d09217140af046ed68cee69747f2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2c05d09217140af046ed68cee69747f2">&#9670;&nbsp;</a></span>LDStringVariation()</h2>
+<a id="a7067509e0744fc46fee768154ff80a9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7067509e0744fc46fee768154ff80a9a">&#9670;&nbsp;</a></span>LDStringVariation()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -626,13 +629,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
         <tr>
           <td class="memname">char* LDStringVariation </td>
           <td>(</td>
-          <td class="paramtype">struct LDClient *const&#160;</td>
+          <td class="paramtype">struct <a class="el" href="structLDClient.html">LDClient</a> *const&#160;</td>
           <td class="paramname"><em>client</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct LDUser *const&#160;</td>
+          <td class="paramtype">const struct <a class="el" href="structLDUser.html">LDUser</a> *const&#160;</td>
           <td class="paramname"><em>user</em>, </td>
         </tr>
         <tr>
@@ -664,15 +667,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vari
 <p>Evaluate a text flag. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate the flag against. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key of the flag to evaluate. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">fallback</td><td>The value to return on error. Ownership is not transferred. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to evaluate the flag against. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key of the flag to evaluate. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fallback</td><td>The value to return on error. Ownership is not transferred. May be <code>NULL</code>. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">details</td><td>A struct where the evaluation explanation will be put. If <code>NULL</code> no explanation will be generated. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The fallback will be returned if <code>client</code>, <code>user</code>, or <code>key</code> are <code>NULL</code>. The result must be cleaned up with <code>LDFree</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The fallback will be returned on any error but may be <code>NULL</code> on allocation failure. The result must be cleaned up with <code>LDFree</code>. </dd></dl>
 
 </div>
 </div>

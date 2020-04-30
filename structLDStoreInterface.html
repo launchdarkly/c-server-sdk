@@ -96,7 +96,7 @@ $(document).ready(function(){initNavTree('structLDStoreInterface.html','');});
 </div><!--header-->
 <div class="contents">
 
-<p>An Interface providing access to a store.  
+<p>An opaque client object.  
  <a href="structLDStoreInterface.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="store_8h_source.html">store.h</a>&gt;</code></p>
@@ -107,36 +107,36 @@ Data Fields</h2></td></tr>
 void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a></td></tr>
 <tr class="memdesc:a5d3e0f0b25d5ba75443f203f4e552421"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used to store implementation specific data. <br /></td></tr>
 <tr class="separator:a5d3e0f0b25d5ba75443f203f4e552421"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a79a0ab5bbd19811e0ddb0e69372a0ae4"><td class="memItemLeft" align="right" valign="top">bool(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#a79a0ab5bbd19811e0ddb0e69372a0ae4">init</a> )(void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const struct <a class="el" href="structLDStoreCollectionState.html">LDStoreCollectionState</a> *collections, const unsigned int collectionCount)</td></tr>
-<tr class="memdesc:a79a0ab5bbd19811e0ddb0e69372a0ae4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the feature store with a new data set.  <a href="#a79a0ab5bbd19811e0ddb0e69372a0ae4">More...</a><br /></td></tr>
-<tr class="separator:a79a0ab5bbd19811e0ddb0e69372a0ae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9ba2c5c33d1094bc6c73340501ac2898"><td class="memItemLeft" align="right" valign="top">bool(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#a9ba2c5c33d1094bc6c73340501ac2898">get</a> )(void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, const char *const featureKey, struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> *const result)</td></tr>
-<tr class="memdesc:a9ba2c5c33d1094bc6c73340501ac2898"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fetch a feature from the store.  <a href="#a9ba2c5c33d1094bc6c73340501ac2898">More...</a><br /></td></tr>
-<tr class="separator:a9ba2c5c33d1094bc6c73340501ac2898"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29c58f4febcde84601bbd6a720a3cbb3"><td class="memItemLeft" align="right" valign="top">bool(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#a29c58f4febcde84601bbd6a720a3cbb3">all</a> )(void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> **const result, unsigned int *const resultCount)</td></tr>
-<tr class="memdesc:a29c58f4febcde84601bbd6a720a3cbb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fetch all features in a given namespace.  <a href="#a29c58f4febcde84601bbd6a720a3cbb3">More...</a><br /></td></tr>
-<tr class="separator:a29c58f4febcde84601bbd6a720a3cbb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac5b48f42178b1cc86737b151ee259452"><td class="memItemLeft" align="right" valign="top">bool(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#ac5b48f42178b1cc86737b151ee259452">upsert</a> )(void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, const struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> *const feature, const char *const featureKey)</td></tr>
-<tr class="memdesc:ac5b48f42178b1cc86737b151ee259452"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace an existing feature with a newer one or delete a feature.  <a href="#ac5b48f42178b1cc86737b151ee259452">More...</a><br /></td></tr>
-<tr class="separator:ac5b48f42178b1cc86737b151ee259452"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d60a6863b61721d2f80b6947efebd8c"><td class="memItemLeft" align="right" valign="top">bool(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#a0d60a6863b61721d2f80b6947efebd8c">initialized</a> )(void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>)</td></tr>
-<tr class="memdesc:a0d60a6863b61721d2f80b6947efebd8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine if the store is initialized with features yet.  <a href="#a0d60a6863b61721d2f80b6947efebd8c">More...</a><br /></td></tr>
-<tr class="separator:a0d60a6863b61721d2f80b6947efebd8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46adfb91f494700bdbced43ac63e1c90"><td class="memItemLeft" align="right" valign="top">LDBoolean(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#a46adfb91f494700bdbced43ac63e1c90">init</a> )(void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const struct <a class="el" href="structLDStoreCollectionState.html">LDStoreCollectionState</a> *collections, const unsigned int collectionCount)</td></tr>
+<tr class="memdesc:a46adfb91f494700bdbced43ac63e1c90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the feature store with a new data set.  <a href="#a46adfb91f494700bdbced43ac63e1c90">More...</a><br /></td></tr>
+<tr class="separator:a46adfb91f494700bdbced43ac63e1c90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf8e9b74622fc85e8207bcbf1756504d"><td class="memItemLeft" align="right" valign="top">LDBoolean(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#aaf8e9b74622fc85e8207bcbf1756504d">get</a> )(void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, const char *const featureKey, struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> *const result)</td></tr>
+<tr class="memdesc:aaf8e9b74622fc85e8207bcbf1756504d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fetch a feature from the store.  <a href="#aaf8e9b74622fc85e8207bcbf1756504d">More...</a><br /></td></tr>
+<tr class="separator:aaf8e9b74622fc85e8207bcbf1756504d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc398253cc86e4a7c05ebfa898e94cf3"><td class="memItemLeft" align="right" valign="top">LDBoolean(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#acc398253cc86e4a7c05ebfa898e94cf3">all</a> )(void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> **const result, unsigned int *const resultCount)</td></tr>
+<tr class="memdesc:acc398253cc86e4a7c05ebfa898e94cf3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fetch all features in a given namespace.  <a href="#acc398253cc86e4a7c05ebfa898e94cf3">More...</a><br /></td></tr>
+<tr class="separator:acc398253cc86e4a7c05ebfa898e94cf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9177dde311a1c76ab590a248a2bbc6e"><td class="memItemLeft" align="right" valign="top">LDBoolean(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#ae9177dde311a1c76ab590a248a2bbc6e">upsert</a> )(void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, const struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> *const feature, const char *const featureKey)</td></tr>
+<tr class="memdesc:ae9177dde311a1c76ab590a248a2bbc6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace an existing feature with a newer one or delete a feature.  <a href="#ae9177dde311a1c76ab590a248a2bbc6e">More...</a><br /></td></tr>
+<tr class="separator:ae9177dde311a1c76ab590a248a2bbc6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31deebf1133b42b94908e8e86edf6a96"><td class="memItemLeft" align="right" valign="top">LDBoolean(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#a31deebf1133b42b94908e8e86edf6a96">initialized</a> )(void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>)</td></tr>
+<tr class="memdesc:a31deebf1133b42b94908e8e86edf6a96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine if the store is initialized with features yet.  <a href="#a31deebf1133b42b94908e8e86edf6a96">More...</a><br /></td></tr>
+<tr class="separator:a31deebf1133b42b94908e8e86edf6a96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad7815f9494e8e1334a553fd3bc875b0a"><td class="memItemLeft" align="right" valign="top">void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDStoreInterface.html#ad7815f9494e8e1334a553fd3bc875b0a">destructor</a> )(void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>)</td></tr>
 <tr class="memdesc:ad7815f9494e8e1334a553fd3bc875b0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy the implementation specific context associated.  <a href="#ad7815f9494e8e1334a553fd3bc875b0a">More...</a><br /></td></tr>
 <tr class="separator:ad7815f9494e8e1334a553fd3bc875b0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>An Interface providing access to a store. </p>
+<div class="textblock"><p>An opaque client object. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
-<a id="a29c58f4febcde84601bbd6a720a3cbb3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a29c58f4febcde84601bbd6a720a3cbb3">&#9670;&nbsp;</a></span>all</h2>
+<a id="acc398253cc86e4a7c05ebfa898e94cf3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc398253cc86e4a7c05ebfa898e94cf3">&#9670;&nbsp;</a></span>all</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool(* LDStoreInterface::all) (void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> **const result, unsigned int *const resultCount)</td>
+          <td class="memname">LDBoolean(* LDStoreInterface::all) (void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> **const result, unsigned int *const resultCount)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -178,14 +178,14 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="st
 
 </div>
 </div>
-<a id="a9ba2c5c33d1094bc6c73340501ac2898"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9ba2c5c33d1094bc6c73340501ac2898">&#9670;&nbsp;</a></span>get</h2>
+<a id="aaf8e9b74622fc85e8207bcbf1756504d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf8e9b74622fc85e8207bcbf1756504d">&#9670;&nbsp;</a></span>get</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool(* LDStoreInterface::get) (void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, const char *const featureKey, struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> *const result)</td>
+          <td class="memname">LDBoolean(* LDStoreInterface::get) (void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, const char *const featureKey, struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> *const result)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -204,14 +204,14 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="st
 
 </div>
 </div>
-<a id="a79a0ab5bbd19811e0ddb0e69372a0ae4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a79a0ab5bbd19811e0ddb0e69372a0ae4">&#9670;&nbsp;</a></span>init</h2>
+<a id="a46adfb91f494700bdbced43ac63e1c90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a46adfb91f494700bdbced43ac63e1c90">&#9670;&nbsp;</a></span>init</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool(* LDStoreInterface::init) (void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const struct <a class="el" href="structLDStoreCollectionState.html">LDStoreCollectionState</a> *collections, const unsigned int collectionCount)</td>
+          <td class="memname">LDBoolean(* LDStoreInterface::init) (void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const struct <a class="el" href="structLDStoreCollectionState.html">LDStoreCollectionState</a> *collections, const unsigned int collectionCount)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -229,14 +229,14 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="st
 
 </div>
 </div>
-<a id="a0d60a6863b61721d2f80b6947efebd8c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0d60a6863b61721d2f80b6947efebd8c">&#9670;&nbsp;</a></span>initialized</h2>
+<a id="a31deebf1133b42b94908e8e86edf6a96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31deebf1133b42b94908e8e86edf6a96">&#9670;&nbsp;</a></span>initialized</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool(* LDStoreInterface::initialized) (void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>)</td>
+          <td class="memname">LDBoolean(* LDStoreInterface::initialized) (void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -252,14 +252,14 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="st
 
 </div>
 </div>
-<a id="ac5b48f42178b1cc86737b151ee259452"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac5b48f42178b1cc86737b151ee259452">&#9670;&nbsp;</a></span>upsert</h2>
+<a id="ae9177dde311a1c76ab590a248a2bbc6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae9177dde311a1c76ab590a248a2bbc6e">&#9670;&nbsp;</a></span>upsert</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool(* LDStoreInterface::upsert) (void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, const struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> *const feature, const char *const featureKey)</td>
+          <td class="memname">LDBoolean(* LDStoreInterface::upsert) (void *const <a class="el" href="structLDStoreInterface.html#a5d3e0f0b25d5ba75443f203f4e552421">context</a>, const char *const kind, const struct <a class="el" href="structLDStoreCollectionItem.html">LDStoreCollectionItem</a> *const feature, const char *const featureKey)</td>
         </tr>
       </table>
 </div><div class="memdoc">

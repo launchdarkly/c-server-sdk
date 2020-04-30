@@ -98,8 +98,8 @@ $(document).ready(function(){initNavTree('memory_8h.html','');});
 
 <p>Public API. Operations for managing memory.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;<a class="el" href="export_8h_source.html">launchdarkly/export.h</a>&gt;</code><br />
-<code>#include &lt;stddef.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;stddef.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="export_8h_source.html">launchdarkly/export.h</a>&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for memory.h:</div>
 <div class="dyncontent">
@@ -147,10 +147,10 @@ char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="me
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="memory_8h.html#aa81ccaefba3262c1ae9bd4983992353b">LDSetMemoryRoutines</a> (void *(*const newMalloc)(const size_t), void(*const newFree)(void *const), void *(*const newRealloc)(void *const, const size_t), char *(*const newStrDup)(const char *const), void *(*const newCalloc)(const size_t, const size_t), char *(*const newStrNDup)(const char *const, const size_t))</td></tr>
 <tr class="memdesc:aa81ccaefba3262c1ae9bd4983992353b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set all the memory related functions to be used by the SDK. <br /></td></tr>
 <tr class="separator:aa81ccaefba3262c1ae9bd4983992353b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5954815fc8e321f26c4b8823e8d05bf0"><td class="memItemLeft" align="right" valign="top"><a id="a5954815fc8e321f26c4b8823e8d05bf0"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="memory_8h.html#a5954815fc8e321f26c4b8823e8d05bf0">LDGlobalInit</a> ()</td></tr>
-<tr class="memdesc:a5954815fc8e321f26c4b8823e8d05bf0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Must be called once before any other API function. <br /></td></tr>
-<tr class="separator:a5954815fc8e321f26c4b8823e8d05bf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad38201bc1ff5dc6ef300997085966f00"><td class="memItemLeft" align="right" valign="top"><a id="ad38201bc1ff5dc6ef300997085966f00"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="memory_8h.html#ad38201bc1ff5dc6ef300997085966f00">LDGlobalInit</a> (void)</td></tr>
+<tr class="memdesc:ad38201bc1ff5dc6ef300997085966f00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Must be called once before any other API function. <br /></td></tr>
+<tr class="separator:ad38201bc1ff5dc6ef300997085966f00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Public API. Operations for managing memory. </p>

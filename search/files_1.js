@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['client_2eh',['client.h',['../client_8h.html',1,'']]],
-  ['config_2eh',['config.h',['../config_8h.html',1,'']]]
+  ['boolean_2eh',['boolean.h',['../boolean_8h.html',1,'']]]
 ];
