@@ -2,6 +2,33 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.0.0] - 2020-04-30
+Version `2.0.0` brings many changes, however they are primarily focused on edge cases and internal details. For most customers, this release will be a drop-in replacement and will not require any changes in your SDK usage. When using the SDK, you should either install the SDK configured for your desired location with `cmake --build . --target install` or use it as a CMake sub-project with the `ldserverapi` target. The internal organization of files is not part of the API and may change in future releases.
+
+### Added:
+- Added the capability to remove all assertions at compile time. This is controlled with the compile time definition `LAUNCHDARKLY_USE_ASSERT`.
+
+### Fixed:
+- Fixed handling of large time values to fix overflow issues on certain systems: For example 32 bit builds and Windows.
+- Waiting until timeout on streaming mode initialization.
+- Made CMake more hygienic with target based compilation options.
+- Fixed many miscellaneous warnings. Now the SDK is much closer to ANSI compatibility.
+- Disabled certain unneeded warnings on Windows.
+
+### Changed:
+- By default all API operations now use defensive checks instead of assertions by default. This can be controlled based on preference with the compile time definition `LAUNCHDARKLY_DEFENSIVE`.
+- The `LDStringVariation` and `LDJSONVariation` functions now accept `NULL` as fallback values.
+- Binary releases are now archives which contain both the headers, and binary, for each platform. These can be extracted and used directly.
+- All `bool` values in the public API now use `LDBoolean`. This value is a number containing either zero or one. It is currently a `char`, however this should be considered an opaque detail. This is part of ANSI C compatibility progress.
+- Switched to usage of `PTHREAD_MUTEX_ERRORCHECK` on POSIX. This is controlled with the compile time definition `LAUNCHDARKLY_CONCURRENCY_UNSAFE`.
+- Optimized internals to reduce locking, and switch certain reader/writer locks to mutexes, based on usage pattern.
+- Detangled headers reducing complexity.
+- Added a mock HTTP server used for integration testing.
+- Added stricter compilation options than the exiting `-Wextra`.
+- Greatly simplified internal event generation logic.
+- Increased error checking around many system operations.
+
+
 ## [1.2.1] - 2020-03-31
 ### Fixed:
 - Standardized polling retry behavior. It now simply waits until the next poll interval.
