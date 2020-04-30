@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <launchdarkly/export.h>
-
 #include <stddef.h>
+
+#include <launchdarkly/export.h>
 
 /** @brief Equivalent to `malloc` */
 LD_EXPORT(void *) LDAlloc(const size_t bytes);
@@ -31,4 +31,4 @@ LD_EXPORT(void) LDSetMemoryRoutines(void *(*const newMalloc)(const size_t),
     char *(*const newStrNDup)(const char *const, const size_t));
 
 /** @brief Must be called once before any other API function */
-LD_EXPORT(void) LDGlobalInit();
+LD_EXPORT(void) LDGlobalInit(void);

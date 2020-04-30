@@ -2,8 +2,10 @@
 
 #include <launchdarkly/store/redis.h>
 
+#include "assertion.h"
+#include "concurrency.h"
 #include "utlist.h"
-#include "misc.h"
+#include "utility.h"
 #include "redis.h"
 #include "store.h"
 
@@ -13,7 +15,7 @@ static const char *const initedKey     = "$inited";
 
 struct LDRedisConfig {
     char *host;
-    uint16_t port;
+    unsigned short port;
     unsigned int poolSize;
     char *prefix;
 };
@@ -61,13 +63,13 @@ LDRedisConfigNew()
     return config;
 }
 
-bool
+LDBoolean
 LDRedisConfigSetHost(struct LDRedisConfig *const config, const char *const host)
 {
     char *hostCopy;
 
-    LD_ASSERT(config);
-    LD_ASSERT(host);
+    LD_ASSERT_API(config);
+    LD_ASSERT_API(host);
 
     if (!(hostCopy = LDStrDup(host))) {
         return false;
@@ -80,24 +82,25 @@ LDRedisConfigSetHost(struct LDRedisConfig *const config, const char *const host)
     return true;
 }
 
-bool
-LDRedisConfigSetPort(struct LDRedisConfig *const config, const uint16_t port)
+LDBoolean
+LDRedisConfigSetPort(struct LDRedisConfig *const config,
+    const unsigned short port)
 {
-    LD_ASSERT(config);
+    LD_ASSERT_API(config);
 
     config->port = port;
 
     return true;
 }
 
-bool
+LDBoolean
 LDRedisConfigSetPrefix(struct LDRedisConfig *const config,
     const char *const prefix)
 {
     char *prefixCopy;
 
-    LD_ASSERT(config);
-    LD_ASSERT(prefix);
+    LD_ASSERT_API(config);
+    LD_ASSERT_API(prefix);
 
     if (!(prefixCopy = LDStrDup(prefix))) {
         return false;
@@ -110,11 +113,11 @@ LDRedisConfigSetPrefix(struct LDRedisConfig *const config,
     return true;
 }
 
-bool
+LDBoolean
 LDRedisConfigSetPoolSize(struct LDRedisConfig *const config,
     const unsigned int poolSize)
 {
-    LD_ASSERT(config);
+    LD_ASSERT_API(config);
 
     config->poolSize = poolSize;
 
@@ -154,7 +157,7 @@ borrowConnection(struct Context *const context)
 
     connection = NULL;
 
-    LD_ASSERT(LDi_mtxlock(&context->lock));
+    LDi_mutex_lock(&context->lock);
     while (!connection) {
         if (context->connections) {
             LD_LOG(LD_LOG_TRACE, "using existing redis connection");
@@ -163,14 +166,14 @@ borrowConnection(struct Context *const context)
 
             LL_DELETE(context->connections, context->connections);
 
-            LD_ASSERT(LDi_mtxunlock(&context->lock));
+            LDi_mutex_unlock(&context->lock);
         } else {
             if (context->count < context->config->poolSize) {
                 LD_LOG(LD_LOG_TRACE, "opening new redis connection");
 
                 context->count++; /* pre increment before attempt */
 
-                LD_ASSERT(LDi_mtxunlock(&context->lock));
+                LDi_mutex_unlock(&context->lock);
 
                 if (!(connection = LDAlloc(sizeof(struct Connection)))) {
                     LD_LOG(LD_LOG_ERROR,
@@ -184,7 +187,7 @@ borrowConnection(struct Context *const context)
 
                 if (!(connection->connection =
                     redisConnect(LDRedisConfigGetHost(context->config),
-                    context->config->port)))
+                        context->config->port)))
                 {
                     LD_LOG(LD_LOG_ERROR, "failed to create redis connection");
 
@@ -199,7 +202,7 @@ borrowConnection(struct Context *const context)
             } else {
                 LD_LOG(LD_LOG_TRACE, "waiting on free connection");
 
-                LDi_condwait(&context->condition, &context->lock, 1000 * 10);
+                LDi_cond_wait(&context->condition, &context->lock, 1000 * 10);
             }
         }
     }
@@ -207,9 +210,9 @@ borrowConnection(struct Context *const context)
     return connection;
 
   error:
-    LD_ASSERT(LDi_mtxlock(&context->lock));
+    LDi_mutex_lock(&context->lock);
     context->count--;
-    LD_ASSERT(LDi_mtxunlock(&context->lock));
+    LDi_mutex_unlock(&context->lock);
 
     if (connection) {
         if (connection->connection) {
@@ -232,7 +235,7 @@ returnConnection(struct Context *const context,
         return;
     }
 
-    LD_ASSERT(LDi_mtxlock(&context->lock));
+    LDi_mutex_lock(&context->lock);
 
     if (connection->connection->err == 0) {
         LD_LOG(LD_LOG_TRACE, "returning redis connection");
@@ -248,9 +251,9 @@ returnConnection(struct Context *const context,
         LDFree(connection);
     }
 
-    LD_ASSERT(LDi_mtxunlock(&context->lock));
+    LDi_mutex_unlock(&context->lock);
 
-    LDi_condsignal(&context->condition);
+    LDi_cond_signal(&context->condition);
 }
 
 static bool
@@ -295,7 +298,7 @@ resetReply(redisReply **const reply)
     *reply = NULL;
 }
 
-static bool
+static LDBoolean
 storeInit(void *const contextRaw,
     const struct LDStoreCollectionState *collections,
     const unsigned int collectionCount)
@@ -385,7 +388,7 @@ storeInit(void *const contextRaw,
     return success;
 }
 
-static bool
+static LDBoolean
 storeGet(void *const contextRaw, const char *const kind,
     const char *const key, struct LDStoreCollectionItem *const result)
 {
@@ -451,7 +454,7 @@ storeGet(void *const contextRaw, const char *const kind,
     return success;
 }
 
-static bool
+static LDBoolean
 storeAll(void *const contextRaw, const char *const kind,
     struct LDStoreCollectionItem **const result,
     unsigned int *const resultCount)
@@ -521,7 +524,8 @@ storeAll(void *const contextRaw, const char *const kind,
             goto cleanup;
         }
 
-        LD_ASSERT(raw = reply->element[i]->str);
+        raw = reply->element[i]->str;
+        LD_ASSERT(raw);
 
         if (!(feature = LDJSONDeserialize(raw))) {
             goto cleanup;
@@ -559,7 +563,7 @@ storeAll(void *const contextRaw, const char *const kind,
     return success;
 }
 
-bool
+LDBoolean
 storeUpsertInternal(void *const contextRaw, const char *const kind,
     const struct LDStoreCollectionItem *const feature,
     const char *const featureKey,
@@ -715,7 +719,7 @@ storeUpsertInternal(void *const contextRaw, const char *const kind,
     return success;
 }
 
-static bool
+static LDBoolean
 storeUpsert(void *const contextRaw, const char *const kind,
     const struct LDStoreCollectionItem *const feature,
     const char *const featureKey)
@@ -728,7 +732,7 @@ storeUpsert(void *const contextRaw, const char *const kind,
     return storeUpsertInternal(contextRaw, kind, feature, featureKey, NULL);
 }
 
-static bool
+static LDBoolean
 storeInitialized(void *const contextRaw)
 {
     struct Context *context;
@@ -774,7 +778,8 @@ storeDestructor(void *const contextRaw)
         while (context->connections) {
             struct Connection *tmp;
 
-            LD_ASSERT(tmp = context->connections);
+            tmp = context->connections;
+            LD_ASSERT(tmp);
 
             redisFree(tmp->connection);
 
@@ -783,8 +788,8 @@ storeDestructor(void *const contextRaw)
             LDFree(tmp);
         }
 
-        LD_ASSERT(LDi_mtxdestroy(&context->lock));
-        LDi_conddestroy(&context->condition);
+        LDi_mutex_destroy(&context->lock);
+        LDi_cond_destroy(&context->condition);
 
         LDRedisConfigFree(context->config);
 
@@ -798,7 +803,7 @@ LDStoreInterfaceRedisNew(struct LDRedisConfig *const config)
     struct LDStoreInterface *handle;
     struct Context *context;
 
-    LD_ASSERT(config);
+    LD_ASSERT_API(config);
 
     handle  = NULL;
     context = NULL;
@@ -817,8 +822,8 @@ LDStoreInterfaceRedisNew(struct LDRedisConfig *const config)
     context->connections = NULL;
     context->config      = config;
 
-    LD_ASSERT(LDi_mtxinit(&context->lock));
-    LDi_condinit(&context->condition);
+    LDi_mutex_init(&context->lock);
+    LDi_cond_init(&context->condition);
 
     handle->context     = context;
     handle->init        = storeInit;

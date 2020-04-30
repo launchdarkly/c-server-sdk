@@ -1,10 +1,11 @@
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "config.h"
 #include "client.h"
 #include "evaluate.h"
 #include "streaming.h"
-#include "misc.h"
+#include "utility.h"
 
 static void
 testParsePathFlags()
@@ -173,15 +174,11 @@ testStreamContext(void (*const action)())
     LDConfigSetUseLDD(config, true);
     LDConfigSetSendEvents(config, false);
     LD_ASSERT(client = LDClientInit(config, 0));
-    LD_ASSERT(context = (struct StreamContext *)
-        malloc(sizeof(struct StreamContext)));
-    memset(context, 0, sizeof(struct StreamContext));
-    context->client = client;
+    LD_ASSERT(context = LDi_constructStreamContext(client));
 
     action(context);
 
-    LDFree(context->dataBuffer);
-    LDFree(context->memory);
+    LDSSEParserDestroy(&context->parser);
     LDFree(context);
     LDClientClose(client);
 }
@@ -195,7 +192,7 @@ testEventDataIsNotValidJSON(struct StreamContext *const context)
         "event: delete\n"
         "data: hello\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -207,7 +204,7 @@ testEventDataIsNotAnObject(struct StreamContext *const context)
         "event: delete\n"
         "data: 123\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -219,7 +216,7 @@ testDeleteWithoutPath(struct StreamContext *const context)
         "event: delete\n"
         "data: {\"version\": 8}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -231,7 +228,7 @@ testDeletePathNotString(struct StreamContext *const context)
         "event: delete\n"
         "data: {\"path\": 123, \"version\": 8}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -243,7 +240,7 @@ testDeletePathUnrecognized(struct StreamContext *const context)
         "event: delete\n"
         "data: {\"path\": \"hello\", \"version\": 8}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -255,7 +252,7 @@ testDeleteMissingVersion(struct StreamContext *const context)
         "event: delete\n"
         "data: {\"path\": \"/flags/my-flag\"}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -267,7 +264,7 @@ testDeleteVersionNotANumber(struct StreamContext *const context)
         "event: delete\n"
         "data: {\"path\": \"/flags/my-flag\", \"version\": \"test\"}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -280,7 +277,7 @@ testPatchInvalidPath(struct StreamContext *const context)
         "data: {\"path\": 123, \"data\": "
         "{\"key\": \"my-flag\", \"version\": 3}}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -292,7 +289,7 @@ testPatchMissingDataField(struct StreamContext *const context)
         "event: patch\n"
         "data: {\"path\": \"/flags/my-flag\"}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -304,7 +301,7 @@ testPutMissingDataField(struct StreamContext *const context)
         "event: put\n"
         "data: {\"path\": \"/\"}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -316,7 +313,7 @@ testPutDataNotAnObject(struct StreamContext *const context)
         "event: put\n"
         "data: {\"path\": \"/\", \"data\": 52}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -329,7 +326,7 @@ testPutDataMissingFlagsField(struct StreamContext *const context)
         "data: {\"path\": \"/\", \"data\": {\"segments\": "
         "{\"my-segment\": {\"key\": \"my-segment\", \"version\": 5}}}}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -342,7 +339,7 @@ testPutDataFlagsNotAnObject(struct StreamContext *const context)
         "data: {\"path\": \"/\", \"data\": {\"flags\": 123, \"segments\": "
         "{\"my-segment\": {\"key\": \"my-segment\", \"version\": 5}}}}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -355,7 +352,7 @@ testPutDataMissingSegmentsField(struct StreamContext *const context)
         "data: {\"path\": \"/\", \"data\": {\"flags\": {\"my-flag\":"
         "{\"key\": \"my-flag\", \"version\": 2}}}}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void
@@ -368,7 +365,7 @@ testPutDataSegmentsNotAnObject(struct StreamContext *const context)
         "data: {\"path\": \"/\", \"data\": {\"flags\": {\"my-flag\":"
         "{\"key\": \"my-flag\", \"version\": 2}},\"segments\": 52}}\n\n";
 
-    LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    LD_ASSERT(!LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 static void

@@ -1,6 +1,9 @@
 #pragma once
 
-#include <launchdarkly/api.h>
+#include <stdbool.h>
+
+#include <launchdarkly/json.h>
+#include <launchdarkly/store.h>
 
 struct LDConfig {
     char *key;

@@ -3,13 +3,15 @@
 
 #include <launchdarkly/api.h>
 
-#include "events.h"
+#include "assertion.h"
+#include "event_processor.h"
 #include "network.h"
 #include "client.h"
 #include "config.h"
-#include "misc.h"
+#include "utility.h"
 #include "user.h"
 #include "store.h"
+#include "concurrency.h"
 
 struct LDClient *
 LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
@@ -17,6 +19,14 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     struct LDClient *client;
 
     LD_ASSERT(config);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientInit NULL config");
+
+            return NULL;
+        }
+    #endif
 
     if (!(client = (struct LDClient *)LDAlloc(sizeof(struct LDClient)))) {
         return NULL;
@@ -36,82 +46,53 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     client->shouldFlush    = false;
     client->shuttingdown   = false;
     client->config         = config;
-    client->summaryStart   = 0;
-    client->lastServerTime = 0;
 
-    LD_ASSERT(LDi_getMonotonicMilliseconds(&client->lastUserKeyFlush));
+    if (!(client->eventProcessor = LDi_newEventProcessor(config))) {
+        LDStoreDestroy(client->store);
+        LDFree(client);
 
-    if (!LDi_rwlockinit(&client->lock)) {
-        goto error;
+        return NULL;
     }
 
-    if (!(client->events = LDNewArray())) {
-        goto error;
-    }
+    LDi_rwlock_init(&client->lock);
 
-    if (!(client->summaryCounters = LDNewObject())) {
-        goto error;
-    }
-
-    if (!(client->userKeys = LDLRUInit(config->userKeysCapacity))) {
-        goto error;
-    }
-
-    if (!LDi_createthread(&client->thread, LDi_networkthread, client)) {
-        goto error;
-    }
+    LDi_thread_create(&client->thread, LDi_networkthread, client);
 
     LD_LOG(LD_LOG_INFO, "waiting to initialize");
     if (maxwaitmilli){
-        unsigned long start, diff, now;
+        double start, diff, now;
 
-        LD_ASSERT(LDi_getMonotonicMilliseconds(&start));
+        LDi_getMonotonicMilliseconds(&start);
         do {
-            LD_ASSERT(LDi_rdlock(&client->lock));
-            if (client->initialized) {
-                LD_ASSERT(LDi_rdunlock(&client->lock));
+            if (LDStoreInitialized(client->store)) {
                 break;
             }
-            LD_ASSERT(LDi_rdunlock(&client->lock));
 
             LDi_sleepMilliseconds(5);
 
-            LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+            LDi_getMonotonicMilliseconds(&now);
         } while ((diff = now - start) < maxwaitmilli);
     }
     LD_LOG(LD_LOG_INFO, "initialized");
 
     return client;
-
-  error:
-    LDStoreDestroy(client->store);
-
-    LDJSONFree(client->events);
-    LDJSONFree(client->summaryCounters);
-    LDLRUFree(client->userKeys);
-
-    LDFree(client);
-
-    return NULL;
 }
 
-void
+LDBoolean
 LDClientClose(struct LDClient *const client)
 {
     if (client) {
         /* signal shutdown to background */
-        LD_ASSERT(LDi_wrlock(&client->lock));
+        LDi_rwlock_wrlock(&client->lock);
         client->shuttingdown = true;
-        LD_ASSERT(LDi_wrunlock(&client->lock));
+        LDi_rwlock_wrunlock(&client->lock);
 
         /* wait until background exits */
-        LD_ASSERT(LDi_jointhread(client->thread));
+        LDi_thread_join(&client->thread);
 
         /* cleanup resources */
-        LD_ASSERT(LDi_rwlockdestroy(&client->lock));
-        LDJSONFree(client->events);
-        LDJSONFree(client->summaryCounters);
-        LDLRUFree(client->userKeys);
+        LDi_rwlock_destroy(&client->lock);
+        LDi_freeEventProcessor(client->eventProcessor);
 
         LDStoreDestroy(client->store);
 
@@ -121,103 +102,144 @@ LDClientClose(struct LDClient *const client)
 
         LD_LOG(LD_LOG_INFO, "trace client cleanup");
     }
+
+    return true;
 }
 
-bool
+LDBoolean
 LDClientIsInitialized(struct LDClient *const client)
 {
     LD_ASSERT(client);
 
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientIsInitialized NULL client");
+
+            return false;
+        }
+    #endif
+
     return LDStoreInitialized(client->store);
 }
 
-bool
+LDBoolean
 LDClientTrack(struct LDClient *const client, const char *const key,
     const struct LDUser *const user, struct LDJSON *const data)
 {
-    struct LDJSON *event, *indexEvent;
-
     LD_ASSERT(client);
-    LD_ASSERT(LDUserValidate(user));
     LD_ASSERT(key);
+    LD_ASSERT(user);
 
-    if (!LDi_maybeMakeIndexEvent(client, user, &indexEvent)) {
-        LD_LOG(LD_LOG_ERROR, "failed to construct index event");
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL client");
 
-        return false;
-    }
+            return false;
+        }
 
-    if (!(event = LDi_newCustomEvent(client, user, key, data))) {
-        LD_LOG(LD_LOG_ERROR, "failed to construct custom event");
+        if (key == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL key");
 
-        LDJSONFree(indexEvent);
+            return false;
+        }
 
-        return false;
-    }
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL user");
 
-    LDi_addEvent(client, event);
+            return false;
+        }
+    #endif
 
-    if (indexEvent) {
-        LDi_addEvent(client, indexEvent);
-    }
-
-    return true;
+    return LDi_track(client->eventProcessor, user, key, data, 0, false);
 }
 
-bool
+LDBoolean
 LDClientTrackMetric(struct LDClient *const client, const char *const key,
     const struct LDUser *const user, struct LDJSON *const data,
     const double metric)
 {
-    struct LDJSON *event;
-
     LD_ASSERT(client);
-    LD_ASSERT(user);
     LD_ASSERT(key);
+    LD_ASSERT(user);
 
-    if (!(event = LDi_newCustomMetricEvent(client, user, key, data, metric))) {
-        LD_LOG(LD_LOG_ERROR, "failed to construct custom event");
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL client");
 
-        return false;
-    }
+            return false;
+        }
 
-    LDi_addEvent(client, event);
+        if (key == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL key");
 
-    return true;
+            return false;
+        }
+
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL user");
+
+            return false;
+        }
+    #endif
+
+    return LDi_track(client->eventProcessor, user, key, data, metric, true);
 }
 
-bool
+LDBoolean
 LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
 {
-    struct LDJSON *event;
-
     LD_ASSERT(client);
-    LD_ASSERT(LDUserValidate(user));
+    LD_ASSERT(user);
 
-    if (!(event = newIdentifyEvent(client, user))) {
-        LD_LOG(LD_LOG_ERROR, "failed to construct identify event");
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientIdentify NULL client");
 
-        return false;
-    }
+            return false;
+        }
 
-    LDi_addEvent(client, event);
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientIdentify NULL user");
 
-    return true;
+            return false;
+        }
+    #endif
+
+    return LDi_identify(client->eventProcessor, user);
 }
 
-bool
+LDBoolean
 LDClientIsOffline(struct LDClient *const client)
 {
     LD_ASSERT(client);
 
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client) {
+            LD_LOG(LD_LOG_WARNING, "LDClientIsOffline NULL client");
+
+            return false;
+        }
+    #endif
+
     return client->config->offline;
 }
 
-void
+LDBoolean
 LDClientFlush(struct LDClient *const client)
 {
     LD_ASSERT(client);
-    LD_ASSERT(LDi_wrlock(&client->lock));
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientFlush NULL client");
+
+            return false;
+        }
+    #endif
+
+    LDi_rwlock_wrlock(&client->lock);
     client->shouldFlush = true;
-    LD_ASSERT(LDi_wrunlock(&client->lock));
+    LDi_rwlock_wrunlock(&client->lock);
+
+    return true;
 }

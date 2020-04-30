@@ -4,12 +4,14 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "network.h"
 #include "streaming.h"
 #include "config.h"
 #include "client.h"
 #include "user.h"
-#include "misc.h"
+#include "utility.h"
+#include "logging.h"
 
 bool
 LDi_parsePath(const char *path, enum FeatureKind *const kind,
@@ -115,18 +117,30 @@ validatePutBody(const struct LDJSON *const put)
 
 /* consumes input even on failure */
 static bool
-onPut(struct LDClient *const client, struct LDJSON *const put)
+onPut(struct LDClient *const client, const char *const eventBuffer)
 {
-    struct LDJSON *data, *features;
+    struct LDJSON *data, *features, *put;
     bool success;
 
     LD_ASSERT(client);
-    LD_ASSERT(put);
-    LD_ASSERT(LDJSONGetType(put) == LDObject);
+    LD_ASSERT(eventBuffer);
 
     data     = NULL;
     features = NULL;
     success  = false;
+    put      = NULL;
+
+    if (!(put = LDJSONDeserialize(eventBuffer))){
+        LD_LOG(LD_LOG_ERROR, "sse delete failed to decode event body");
+
+        goto cleanup;
+    }
+
+    if (LDJSONGetType(put) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "sse delete body should be object, discarding");
+
+        goto cleanup;
+    }
 
     if (!(data = LDObjectDetachKey(put, "data"))) {
         LD_LOG(LD_LOG_ERROR, "put.data does not exist");
@@ -140,7 +154,8 @@ onPut(struct LDClient *const client, struct LDJSON *const put)
         goto cleanup;
     }
 
-    LD_ASSERT(features = LDObjectDetachKey(data, "flags"));
+    features = LDObjectDetachKey(data, "flags");
+    LD_ASSERT(features);
 
     if (!LDObjectSetKey(data, "features", features)) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -170,20 +185,32 @@ onPut(struct LDClient *const client, struct LDJSON *const put)
 
 /* consumes input even on failure */
 static bool
-onPatch(struct LDClient *const client, struct LDJSON *const data)
+onPatch(struct LDClient *const client, const char *const eventBuffer)
 {
-    struct LDJSON *tmp;
+    struct LDJSON *tmp, *data;
     const char *key;
     bool success;
     enum FeatureKind kind;
 
     LD_ASSERT(client);
-    LD_ASSERT(data);
-    LD_ASSERT(LDJSONGetType(data) == LDObject);
+    LD_ASSERT(eventBuffer);
 
     tmp     = NULL;
     key     = NULL;
     success = false;
+    data    = NULL;
+
+    if (!(data = LDJSONDeserialize(eventBuffer))){
+        LD_LOG(LD_LOG_ERROR, "sse patch failed to decode event body");
+
+        goto cleanup;
+    }
+
+    if (LDJSONGetType(data) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "sse patch body should be object, discarding");
+
+        goto cleanup;
+    }
 
     if (!getEventPath(data, &kind, &key)) {
         LD_LOG(LD_LOG_ERROR, "patch failed to get path");
@@ -215,20 +242,32 @@ onPatch(struct LDClient *const client, struct LDJSON *const data)
 
 /* consumes input even on failure */
 static bool
-onDelete(struct LDClient *const client, struct LDJSON *const data)
+onDelete(struct LDClient *const client, const char *const eventBuffer)
 {
-    struct LDJSON *tmp;
+    struct LDJSON *tmp, *data;
     const char *key;
     bool success;
     enum FeatureKind kind;
 
     LD_ASSERT(client);
-    LD_ASSERT(data);
-    LD_ASSERT(LDJSONGetType(data) == LDObject);
+    LD_ASSERT(eventBuffer);
 
     tmp     = NULL;
     key     = NULL;
     success = false;
+    data    = NULL;
+
+    if (!(data = LDJSONDeserialize(eventBuffer))){
+        LD_LOG(LD_LOG_ERROR, "sse delete failed to decode event body");
+
+        goto cleanup;
+    }
+
+    if (LDJSONGetType(data) != LDObject) {
+        LD_LOG(LD_LOG_ERROR, "sse delete body should be object, discarding");
+
+        goto cleanup;
+    }
 
     if (!getEventPath(data, &kind, &key)) {
         LD_LOG(LD_LOG_ERROR, "patch failed to get path");
@@ -262,157 +301,61 @@ onDelete(struct LDClient *const client, struct LDJSON *const data)
     return success;
 }
 
-bool
-LDi_onSSE(struct StreamContext *const context, const char *line)
+static bool
+LDi_onEvent(const char *const eventName, const char *const eventBuffer,
+    void *const rawContext)
 {
-    LD_ASSERT(context);
+    bool status;
+    struct StreamContext *context;
 
-    if (!line) {
-        /* should not happen from the networking side but is not fatal */
-        LD_LOG(LD_LOG_ERROR, "streamcallback got NULL line");
-    } else if (line[0] == ':') {
-        /* skip comment */
-    } else if (line[0] == 0) {
-        bool status = true;
-        struct LDJSON *json;
+    LD_ASSERT(eventName);
+    LD_ASSERT(eventBuffer);
+    LD_ASSERT(rawContext);
 
-        if (context->eventName[0] == 0) {
-            LD_LOG(LD_LOG_WARNING,
-                "streamcallback got dispatch but type was never set");
-        } else if (context->dataBuffer == NULL) {
-            LD_LOG(LD_LOG_WARNING,
-                "streamcallback got dispatch but data was never set");
-        } else if ((json = LDJSONDeserialize(context->dataBuffer))) {
-            if (LDJSONGetType(json) != LDObject) {
-                LDJSONFree(json);
+    status  = true;
+    context = (struct StreamContext *)rawContext;
 
-                LD_LOG(LD_LOG_ERROR, "event should be object, discarding");
-            } else if (strcmp(context->eventName, "put") == 0) {
-                status = onPut(context->client, json);
-            } else if (strcmp(context->eventName, "patch") == 0) {
-                status = onPatch(context->client, json);
-            } else if (strcmp(context->eventName, "delete") == 0) {
-                status = onDelete(context->client, json);
-            } else {
-                char msg[256];
-
-                LD_ASSERT(snprintf(msg, sizeof(msg),
-                    "streamcallback unknown event name: %s",
-                    context->eventName) >= 0);
-
-                LD_LOG(LD_LOG_ERROR, msg);
-
-                LDJSONFree(json);
-            }
-        }
-
-        LDFree(context->dataBuffer);
-        context->dataBuffer = NULL;
-        context->eventName[0] = 0;
-
-        if (!status) {
-            return false;
-        }
-    } else if (strncmp(line, "data:", 5) == 0) {
-        bool nempty;
-        size_t linesize, currentsize;
-
-        currentsize = 0;
-
-        line += 5;
-        line += line[0] == ' ';
-
-        nempty = context->dataBuffer != NULL;
-        linesize = strlen(line);
-
-        if (nempty) {
-            currentsize = strlen(context->dataBuffer);
-        }
-
-        context->dataBuffer = (char *)LDRealloc(
-            context->dataBuffer, linesize + currentsize + nempty + 1);
-
-        if (nempty) {
-            context->dataBuffer[currentsize] = '\n';
-        }
-
-        memcpy(context->dataBuffer + currentsize + nempty, line, linesize);
-
-        context->dataBuffer[currentsize + nempty + linesize] = 0;
-    } else if (strncmp(line, "event:", 6) == 0) {
-        line += 6;
-        line += line[0] == ' ';
-
-        if (snprintf(context->eventName,
-            sizeof(context->eventName), "%s", line) < 0)
-        {
-            LD_LOG(LD_LOG_CRITICAL,
-                "snprintf failed in streamcallback type processing");
-
-            return false;
-        }
+    if (strcmp(eventName, "put") == 0) {
+        status = onPut(context->client, eventBuffer);
+    } else if (strcmp(eventName, "patch") == 0) {
+        status = onPatch(context->client, eventBuffer);
+    } else if (strcmp(eventName, "delete") == 0) {
+        status = onDelete(context->client, eventBuffer);
+    } else {
+        LD_LOG_1(LD_LOG_ERROR, "sse unknown event name: %s", eventName);
     }
 
-    return true;
+    return status;
 }
 
 size_t
 LDi_streamWriteCallback(const void *const contents, size_t size, size_t nmemb,
-    void *rawcontext)
+    void *const rawContext)
 {
-    char *nl;
-    size_t realsize;
-    struct StreamContext *mem;
+    size_t realSize;
+    struct StreamContext *context;
 
-    LD_ASSERT(rawcontext);
+    LD_ASSERT(rawContext);
 
-    nl       = NULL;
-    realsize = size * nmemb;
-    mem      = (struct StreamContext *)rawcontext;
+    realSize = size * nmemb;
+    context  = (struct StreamContext *)rawContext;
 
-    if (!(mem->memory =
-        (char *)LDRealloc(mem->memory, mem->size + realsize + 1)))
-    {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
-
-        return 0;
+    if (LDSSEParserProcess(&context->parser, contents, realSize)) {
+        return realSize;
     }
 
-    memcpy(&(mem->memory[mem->size]), contents, realsize);
-
-    mem->size += realsize;
-    mem->memory[mem->size] = 0;
-
-    nl = (char *)memchr(mem->memory, '\n', mem->size);
-    if (nl) {
-        size_t eaten = 0;
-        while (nl) {
-            *nl = 0;
-            LDi_onSSE(mem, mem->memory + eaten);
-            eaten = nl - mem->memory + 1;
-            nl = (char *)memchr(mem->memory + eaten, '\n', mem->size - eaten);
-        }
-        mem->size -= eaten;
-        memmove(mem->memory, mem->memory + eaten, mem->size);
-    }
-    return realsize;
+    return 0;
 }
 
-static void
+void
 resetMemory(struct StreamContext *const context)
 {
     LD_ASSERT(context);
 
-    context->eventName[0] = 0;
-    context->dataBuffer = NULL;
-
-    LDFree(context->memory);
-    context->memory = NULL;
+    LDSSEParserDestroy(&context->parser);
 
     curl_slist_free_all(context->headers);
     context->headers = NULL;
-
-    context->size = 0;
 }
 
 static void
@@ -444,9 +387,9 @@ done(struct LDClient *const client, void *const rawcontext,
     }
 
     if (success) {
-        unsigned long now;
+        double now;
 
-        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+        LDi_getMonotonicMilliseconds(&now);
 
         /* if closed within 60 seconds of start count as a failure */
         if (now >= context->startedOn + (60 * 1000)) {
@@ -498,9 +441,9 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     /* logic for checking backoff wait */
     if (context->attempts) {
-        unsigned long now;
+        double now;
 
-        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+        LDi_getMonotonicMilliseconds(&now);
 
         if (context->waitUntil) {
             if (now >= context->waitUntil) {
@@ -597,6 +540,32 @@ poll(struct LDClient *const client, void *const rawcontext)
     return NULL;
 }
 
+struct StreamContext *
+LDi_constructStreamContext(struct LDClient *const client)
+{
+    struct StreamContext *context;
+
+    LD_ASSERT(client);
+
+    if (!(context =
+        (struct StreamContext *)LDAlloc(sizeof(struct StreamContext))))
+    {
+        return NULL;
+    }
+
+    LDSSEParserInitialize(&context->parser, LDi_onEvent, context);
+
+    context->active           = false;
+    context->headers          = NULL;
+    context->client           = client;
+    context->attempts         = 0;
+    context->waitUntil        = 0;
+    context->startedOn        = 0;
+    context->permanentFailure = false;
+
+    return context;
+}
+
 struct NetworkInterface *
 LDi_constructStreaming(struct LDClient *const client)
 {
@@ -614,23 +583,10 @@ LDi_constructStreaming(struct LDClient *const client)
         goto error;
     }
 
-    if (!(context =
-        (struct StreamContext *)LDAlloc(sizeof(struct StreamContext))))
+    if (!(context = LDi_constructStreamContext(client)))
     {
         goto error;
     }
-
-    context->memory           = NULL;
-    context->size             = 0;
-    context->active           = false;
-    context->headers          = NULL;
-    context->eventName[0]     = 0;
-    context->dataBuffer       = NULL;
-    context->client           = client;
-    context->attempts         = 0;
-    context->waitUntil        = 0;
-    context->startedOn        = 0;
-    context->permanentFailure = false;
 
     netInterface->done    = done;
     netInterface->poll    = poll;
@@ -641,7 +597,7 @@ LDi_constructStreaming(struct LDClient *const client)
     return netInterface;
 
   error:
-    LDFree(context);
+    resetMemory(context);
     LDFree(netInterface);
     return NULL;
 }

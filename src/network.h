@@ -7,7 +7,10 @@
 
 #include <curl/curl.h>
 
-#include "misc.h"
+#include <launchdarkly/json.h>
+
+#include "client.h"
+#include "concurrency.h"
 
 struct NetworkInterface {
     /* get next handle */

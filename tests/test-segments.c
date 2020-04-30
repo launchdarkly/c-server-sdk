@@ -1,7 +1,8 @@
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "evaluate.h"
-#include "misc.h"
+#include "utility.h"
 
 static struct LDJSON *
 makeTestSegment(struct LDJSON *const rules)

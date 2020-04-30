@@ -3,11 +3,12 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "network.h"
 #include "client.h"
 #include "user.h"
 #include "config.h"
-#include "misc.h"
+#include "utility.h"
 #include "store.h"
 
 static bool
@@ -32,7 +33,8 @@ updateStore(struct LDStore *const store, const char *const rawupdate)
         goto error;
     }
 
-    LD_ASSERT(features = LDObjectDetachKey(update, "flags"));
+    features = LDObjectDetachKey(update, "flags");
+    LD_ASSERT(features);
 
     if (!LDObjectSetKey(update, "features", features)) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -56,7 +58,7 @@ struct PollContext {
     size_t size;
     struct curl_slist *headers;
     bool active;
-    unsigned long lastpoll;
+    double lastpoll;
 };
 
 static size_t
@@ -112,15 +114,11 @@ done(struct LDClient *const client, void *const rawcontext,
     context->active = false;
 
     if (success) {
-        if (updateStore(client->store, context->memory)) {
-            LD_ASSERT(LDi_wrlock(&client->lock));
-            client->initialized = true;
-            LD_ASSERT(LDi_wrunlock(&client->lock));
-        } else {
+        if (!updateStore(client->store, context->memory)) {
             LD_LOG(LD_LOG_ERROR, "polling failed to update store");
         }
 
-        LD_ASSERT(LDi_getMonotonicMilliseconds(&context->lastpoll));
+        LDi_getMonotonicMilliseconds(&context->lastpoll);
     }
 
     resetMemory(context);
@@ -157,9 +155,9 @@ poll(struct LDClient *const client, void *const rawcontext)
     }
 
     {
-        unsigned long now;
+        double now;
 
-        LD_ASSERT(LDi_getMonotonicMilliseconds(&now));
+        LDi_getMonotonicMilliseconds(&now);
         LD_ASSERT(now >= context->lastpoll);
 
         if (now - context->lastpoll < client->config->pollInterval) {
@@ -175,14 +173,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         return NULL;
     }
 
-    {
-        char msg[256];
-
-        LD_ASSERT(snprintf(msg, sizeof(msg),
-            "connection to polling url: %s", url) >= 0);
-
-        LD_LOG(LD_LOG_INFO, msg);
-    }
+    LD_LOG_1(LD_LOG_INFO, "connection to polling url: %s", url);
 
     if (!LDi_prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;

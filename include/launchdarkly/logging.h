@@ -5,9 +5,6 @@
 
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-
 #include <launchdarkly/export.h>
 
 /** @brief The log levels compatible with the logging interface */

@@ -1,7 +1,8 @@
 #include <launchdarkly/memory.h>
 
+#include "assertion.h"
 #include "lru.h"
-#include "misc.h"
+#include "utility.h"
 
 #include "utlist.h"
 #include "uthash.h"
@@ -109,6 +110,10 @@ LDLRUClear(struct LDLRU *const lru)
 
     LD_ASSERT(lru);
 
+    iter = NULL;
+    tmp1 = NULL;
+    tmp2 = NULL;
+
     HASH_ITER(hh, lru->hash, iter, tmp1) {
         HASH_DEL(lru->hash, iter);
 
@@ -122,6 +127,6 @@ LDLRUClear(struct LDLRU *const lru)
     }
 
     lru->elements = 0;
-    lru->list = NULL;
-    lru->hash = NULL;
+    lru->list     = NULL;
+    lru->hash     = NULL;
 }

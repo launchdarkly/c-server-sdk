@@ -7,5 +7,5 @@ Import-Module ".\.ldrelease\helpers.psm1" -Force
 
 SetupVSToolsEnv -architecture amd64
 
-cd build
+cd build-static
 ExecuteOrFail { cmake --build . --target RUN_TESTS }

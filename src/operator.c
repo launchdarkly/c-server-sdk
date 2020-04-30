@@ -6,8 +6,9 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "operators.h"
-#include "misc.h"
+#include "utility.h"
 
 #define CHECKSTRING(uvalue, cvalue) \
     if (LDJSONGetType(uvalue) != LDText || \
@@ -84,20 +85,18 @@ operatorMatchesFn(const struct LDJSON *const uvalue,
     regex       = NULL;
     errorOffset = 0;
 
-    LD_ASSERT(subject = LDGetText(uvalue));
-    LD_ASSERT(regex = LDGetText(cvalue));
+    subject = LDGetText(uvalue);
+    LD_ASSERT(subject);
+    regex = LDGetText(cvalue);
+    LD_ASSERT(regex);
 
     context = pcre_compile(
         regex, PCRE_JAVASCRIPT_COMPAT, &error, &errorOffset, NULL);
 
     if (!context) {
-        char msg[256];
-
-        LD_ASSERT(snprintf(msg, sizeof(msg),
+        LD_LOG_3(LD_LOG_ERROR,
             "failed to compile regex '%s' got error '%s' with offset %d",
-            regex, error, errorOffset) >= 0);
-
-        LD_LOG(LD_LOG_ERROR, msg);
+            regex, error, errorOffset);
 
         return false;
     }
@@ -178,7 +177,8 @@ LDi_parseTime(const struct LDJSON *const json, timestamp_t *result)
     } else if (LDJSONGetType(json) == LDText) {
         const char *text;
 
-        LD_ASSERT(text = LDGetText(json));
+        text = LDGetText(json);
+        LD_ASSERT(text);
 
         if (timestamp_parse(text, strlen(text), result)) {
             LD_LOG(LD_LOG_ERROR, "failed to parse date uvalue");

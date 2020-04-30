@@ -1,7 +1,8 @@
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "lru.h"
-#include "misc.h"
+#include "utility.h"
 
 void
 testInsertExisting()

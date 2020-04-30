@@ -2,8 +2,9 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "user.h"
-#include "misc.h"
+#include "utility.h"
 
 static struct LDUser *
 constructBasic()

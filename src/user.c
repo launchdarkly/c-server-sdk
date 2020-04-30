@@ -3,15 +3,26 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "client.h"
 #include "user.h"
 #include "config.h"
-#include "misc.h"
+#include "utility.h"
 
 struct LDUser *
 LDUserNew(const char *const key)
 {
     struct LDUser *user;
+
+    LD_ASSERT_API(key);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (key == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserNew NULL key");
+
+            return NULL;
+        }
+    #endif
 
     if (!(user = (struct LDUser *)LDAlloc(sizeof(struct LDUser)))) {
         return NULL;
@@ -65,73 +76,137 @@ LDUserFree(struct LDUser *const user)
 }
 
 void
-LDUserSetAnonymous(struct LDUser *const user, const bool anon)
+LDUserSetAnonymous(struct LDUser *const user, const LDBoolean anon)
 {
-    LD_ASSERT(user);
+    LD_ASSERT_API(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetAnonymous NULL user");
+
+            return;
+        }
+    #endif
 
     user->anonymous = anon;
 }
 
-bool
+LDBoolean
 LDUserSetIP(struct LDUser *const user, const char *const ip)
 {
-    LD_ASSERT(user);
+    LD_ASSERT_API(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetIP NULL user");
+
+            return false;
+        }
+    #endif
 
     return LDSetString(&user->ip, ip);
 }
 
-bool
+LDBoolean
 LDUserSetFirstName(struct LDUser *const user, const char *const firstName)
 {
-    LD_ASSERT(user);
+    LD_ASSERT_API(user);
 
     return LDSetString(&user->firstName, firstName);
 }
 
-bool
+LDBoolean
 LDUserSetLastName(struct LDUser *const user, const char *const lastName)
 {
-    LD_ASSERT(user);
+    LD_ASSERT_API(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetLastName NULL user");
+
+            return false;
+        }
+    #endif
 
     return LDSetString(&user->lastName, lastName);
 }
 
-bool
+LDBoolean
 LDUserSetEmail(struct LDUser *const user, const char *const email)
 {
-    LD_ASSERT(user);
+    LD_ASSERT_API(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetEmail NULL user");
+
+            return false;
+        }
+    #endif
 
     return LDSetString(&user->email, email);
 }
 
-bool
+LDBoolean
 LDUserSetName(struct LDUser *const user, const char *const name)
 {
-    LD_ASSERT(user);
+    LD_ASSERT_API(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetName NULL user");
+
+            return false;
+        }
+    #endif
 
     return LDSetString(&user->name, name);
 }
 
-bool
+LDBoolean
 LDUserSetAvatar(struct LDUser *const user, const char *const avatar)
 {
-    LD_ASSERT(user);
+    LD_ASSERT_API(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetAvatar NULL user");
+
+            return false;
+        }
+    #endif
 
     return LDSetString(&user->avatar, avatar);
 }
 
-bool
+LDBoolean
 LDUserSetCountry(struct LDUser *const user, const char *const country)
 {
-    LD_ASSERT(user);
+    LD_ASSERT_API(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetCountry NULL user");
+
+            return false;
+        }
+    #endif
 
     return LDSetString(&user->country, country);
 }
 
-bool
+LDBoolean
 LDUserSetSecondary(struct LDUser *const user, const char *const secondary)
 {
-    LD_ASSERT(user);
+    LD_ASSERT_API(user);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetSecondary NULL user");
+
+            return false;
+        }
+    #endif
 
     return LDSetString(&user->secondary, secondary);
 }
@@ -139,19 +214,41 @@ LDUserSetSecondary(struct LDUser *const user, const char *const secondary)
 void
 LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom)
 {
-    LD_ASSERT(custom);
+    LD_ASSERT_API(custom);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserSetCustom NULL user");
+
+            return;
+        }
+    #endif
 
     user->custom = custom;
 }
 
-bool
+LDBoolean
 LDUserAddPrivateAttribute(struct LDUser *const user,
     const char *const attribute)
 {
     struct LDJSON *temp;
 
-    LD_ASSERT(user);
-    LD_ASSERT(attribute);
+    LD_ASSERT_API(user);
+    LD_ASSERT_API(attribute);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (user == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserAddPrivateAttribute NULL user");
+
+            return false;
+        }
+
+        if (attribute == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDUserAddPrivateAttribute NULL attribute");
+
+            return false;
+        }
+    #endif
 
     if ((temp = LDNewText(attribute))) {
         return LDArrayPush(user->privateAttributeNames, temp);
@@ -178,14 +275,16 @@ LDi_textInArray(const struct LDJSON *const array, const char *const text)
 }
 
 static bool
-isPrivateAttr(struct LDClient *const client, const struct LDUser *const user,
-    const char *const key)
-{
+isPrivateAttr(
+    const struct LDConfig *const config,
+    const struct LDUser *const   user,
+    const char *const            key
+) {
     bool global = false;
 
-    if (client) {
-        global = client->config->allAttributesPrivate ||
-            LDi_textInArray(client->config->privateAttributeNames, key);
+    if (config) {
+        global = config->allAttributesPrivate ||
+            LDi_textInArray(config->privateAttributeNames, key);
     }
 
     return global || LDi_textInArray(user->privateAttributeNames, key);
@@ -218,9 +317,11 @@ addHidden(struct LDJSON **const ref, const char *const value){
 }
 
 struct LDJSON *
-LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
-    const bool redact)
-{
+LDUserToJSON(
+    const struct LDConfig *const config,
+    const struct LDUser *const   lduser,
+    const bool                   redact
+) {
     struct LDJSON *hidden, *json, *temp;
 
     LD_ASSERT(lduser);
@@ -233,19 +334,17 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
         return NULL;
     }
 
-    if (lduser->key) {
-        if (!(temp = LDNewText(lduser->key))) {
-            LDJSONFree(json);
+    if (!(temp = LDNewText(lduser->key))) {
+        LDJSONFree(json);
 
-            return NULL;
-        }
+        return NULL;
+    }
 
-        if (!LDObjectSetKey(json, "key", temp)) {
-            LDJSONFree(temp);
-            LDJSONFree(json);
+    if (!LDObjectSetKey(json, "key", temp)) {
+        LDJSONFree(temp);
+        LDJSONFree(json);
 
-            return NULL;
-        }
+        return NULL;
     }
 
     if (lduser->anonymous) {
@@ -265,7 +364,7 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
 
     #define addstring(field)                                                   \
         if (lduser->field) {                                                   \
-            if (redact && isPrivateAttr(client, lduser, #field)) {             \
+            if (redact && isPrivateAttr(config, lduser, #field)) {             \
                 if (!addHidden(&hidden, #field)) {                             \
                     LDJSONFree(json);                                          \
                                                                                \
@@ -312,7 +411,7 @@ LDUserToJSON(struct LDClient *const client, const struct LDUser *const lduser,
                 /* must record next to make delete safe */
                 struct LDJSON *const next = LDIterNext(item);
 
-                if (isPrivateAttr(client, lduser, LDIterKey(item))) {
+                if (isPrivateAttr(config, lduser, LDIterKey(item))) {
                     if (!addHidden(&hidden, LDIterKey(item))) {
                         LDJSONFree(json);
                         LDJSONFree(custom);
@@ -402,10 +501,4 @@ LDi_valueOfAttribute(const struct LDUser *const user,
     }
 
     return NULL;
-}
-
-bool
-LDUserValidate(const struct LDUser *const user)
-{
-    return user != NULL && user->key != NULL;
 }

@@ -1,11 +1,14 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
+#include <curl/curl.h>
 
 #include "cJSON.h"
 
-#include <launchdarkly/api.h>
+#include <launchdarkly/memory.h>
 
-#include "misc.h"
+#include "assertion.h"
 
 static void *(*customAlloc)(const size_t bytes) = malloc;
 
@@ -93,17 +96,19 @@ LDSetMemoryRoutines(void *(*const newMalloc)(const size_t),
 }
 
 void
-LDGlobalInit()
+LDGlobalInit(void)
 {
     static bool first = true;
 
     if (first) {
         struct cJSON_Hooks hooks;
+        CURLcode status;
 
         first = false;
 
-        LD_ASSERT(!curl_global_init_mem(CURL_GLOBAL_DEFAULT, LDAlloc, LDFree,
-            LDRealloc, LDStrDup, LDCalloc));
+        status = curl_global_init_mem(CURL_GLOBAL_DEFAULT, LDAlloc, LDFree,
+            LDRealloc, LDStrDup, LDCalloc);
+        LD_ASSERT(!status);
 
         hooks.malloc_fn = LDAlloc;
         hooks.free_fn   = LDFree;

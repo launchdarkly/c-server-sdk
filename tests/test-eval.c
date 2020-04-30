@@ -3,8 +3,9 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "evaluate.h"
-#include "misc.h"
+#include "utility.h"
 #include "store.h"
 
 static struct LDStore *

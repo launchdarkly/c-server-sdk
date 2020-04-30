@@ -16,6 +16,8 @@ jobs:
     docker:
       - image: ldcircleci/ld-c-sdk-ubuntu  # defined in sdks-ci-docker project
       - image: redis
+    environment:
+      CTEST_OUTPUT_ON_FAILURE: 1
     steps:
       - checkout
       - run:
@@ -26,11 +28,15 @@ jobs:
             cmake --build .
       - run:
           name: Test
-          command: ./.ldrelease/test.sh
+          command: |
+            cd build
+            CTEST_OUTPUT_ON_FAILURE=1 make test
 
   build-test-osx:
     macos:
       xcode: "9.0"
+    environment:
+      CTEST_OUTPUT_ON_FAILURE: 1
     steps:
       - checkout
       - run:
@@ -51,12 +57,16 @@ jobs:
             cmake --build .
       - run:
           name: Test
-          command: ./.ldrelease/test.sh
+          command: |
+           cd build
+           CTEST_OUTPUT_ON_FAILURE=1 make test
 
   build-test-windows:
     executor:
       name: win/vs2019
       shell: powershell.exe
+    environment:
+      CTEST_OUTPUT_ON_FAILURE: 1
     steps:
       - checkout
       - run:

@@ -1,8 +1,9 @@
 #include <launchdarkly/api.h>
 
-#include "misc.h"
+#include "assertion.h"
+#include "utility.h"
 
-#include "util-store.h"
+#include "test-utils/store.h"
 
 static struct LDStore *
 prepareEmptyStore()

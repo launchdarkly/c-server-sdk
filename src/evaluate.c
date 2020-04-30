@@ -3,14 +3,15 @@
 
 #include <launchdarkly/api.h>
 
+#include "assertion.h"
 #include "network.h"
 #include "operators.h"
-#include "events.h"
 #include "evaluate.h"
 #include "user.h"
 #include "client.h"
-#include "misc.h"
+#include "utility.h"
 #include "store.h"
+#include "event_processor.h"
 
 bool
 LDi_isEvalError(const EvalStatus status)
@@ -46,58 +47,6 @@ maybeNegate(const struct LDJSON *const clause, const EvalStatus status)
     }
 
     return status;
-}
-
-struct LDJSON *
-LDi_addReason(struct LDJSON **const result, const char *const reason)
-{
-    struct LDJSON *tmpcollection, *tmp;
-
-    LD_ASSERT(reason);
-
-    tmpcollection = NULL;
-    tmp           = NULL;
-
-    if (!(*result)) {
-        if (!(*result = LDNewObject())) {
-            LD_LOG(LD_LOG_ERROR, "allocation error");
-
-            return NULL;
-        }
-    }
-
-    if (!(tmpcollection = LDNewObject())) {
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        return NULL;
-    }
-
-    if (!(tmp = LDNewText(reason))) {
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        LDJSONFree(tmpcollection);
-
-        return NULL;
-    }
-
-    if (!LDObjectSetKey(tmpcollection, "kind", tmp)) {
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        LDJSONFree(tmp);
-        LDJSONFree(tmpcollection);
-
-        return NULL;
-    }
-
-    if (!LDObjectSetKey(*result, "reason", tmpcollection)) {
-        LD_LOG(LD_LOG_ERROR, "allocation error");
-
-        LDJSONFree(tmpcollection);
-
-        return NULL;
-    }
-
-    return tmpcollection;
 }
 
 static bool
@@ -172,7 +121,7 @@ LDi_evaluate(struct LDClient *const client, const struct LDJSON *const flag,
     const char *failedKey;
 
     LD_ASSERT(flag);
-    LD_ASSERT(LDUserValidate(user));
+    LD_ASSERT(user);
     LD_ASSERT(store);
     LD_ASSERT(details);
     LD_ASSERT(o_events);
@@ -442,6 +391,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         const char *keyText;
         struct LDDetails details, *detailsRef;
         struct LDJSONRC *preflagrc;
+        double now;
 
         value            = NULL;
         preflag          = NULL;
@@ -455,6 +405,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         preflagrc        = NULL;
 
         LDDetailsInit(&details);
+        LDi_getUnixMilliseconds(&now);
 
         if (LDJSONGetType(iter) != LDObject) {
             LD_LOG(LD_LOG_ERROR, "schema error");
@@ -529,9 +480,9 @@ LDi_checkPrerequisites(struct LDClient *const client,
             detailsRef = &details;
         }
 
-        event = LDi_newFeatureRequestEvent(client,
+        event = LDi_newFeatureRequestEvent(client->eventProcessor,
             keyText, user, variationNumRef, value, NULL,
-            LDGetText(LDObjectLookup(flag, "key")), preflag, detailsRef);
+            LDGetText(LDObjectLookup(flag, "key")), preflag, detailsRef, now);
 
         if (!event) {
             LDJSONRCDecrement(preflagrc);
@@ -962,7 +913,7 @@ LDi_segmentRuleMatchUser(const struct LDJSON *const segmentRule,
     }
 }
 
-EvalStatus
+static EvalStatus
 matchAny(OpFn f, const struct LDJSON *const value,
     const struct LDJSON *const values)
 {
@@ -1148,14 +1099,16 @@ LDi_bucketUser(const struct LDUser *const user, const char *const segmentKey,
         if (snprintf(raw, sizeof(raw), "%s.%s.%s", segmentKey,
             salt, bucketable) >= 0)
         {
+            int status;
             char digest[21], encoded[17];
             const float longScale = 0xFFFFFFFFFFFFFFF;
 
             SHA1(digest, raw, strlen(raw));
 
             /* encodes to hex, and shortens, 16 characters in hex 8 bytes */
-            LD_ASSERT(hexify((unsigned char *)digest,
-                sizeof(digest) - 1, encoded, sizeof(encoded)) == 16);
+            status = hexify((unsigned char *)digest,
+                sizeof(digest) - 1, encoded, sizeof(encoded));
+            LD_ASSERT(status == 16);
 
             encoded[15] = 0;
 
@@ -1242,7 +1195,8 @@ LDi_variationIndexForUser(const struct LDJSON *const varOrRoll,
         return false;
     }
 
-    LD_ASSERT(variation = LDGetIter(variations));
+    variation = LDGetIter(variations);
+    LD_ASSERT(variation);
 
     if (!LDi_bucketUser(user, key, "key", salt, &userBucket)) {
         LD_LOG(LD_LOG_ERROR, "failed to bucket user");

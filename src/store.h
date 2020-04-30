@@ -43,7 +43,7 @@ unsigned int LDi_getFeatureVersion(const struct LDJSON *const feature);
 /** @brief Get version of a validated feature value */
 unsigned int LDi_getFeatureVersionTrusted(const struct LDJSON *const feature);
 
-/** @briefUsed for testing */
+/** @brief Used for testing */
 void LDi_expireAll(struct LDStore *const store);
 
 /***************************************************************************//**
