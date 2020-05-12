@@ -180,6 +180,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a4b24cd675d59814e6373a9cfa672fa91"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8h.html#a4b24cd675d59814e6373a9cfa672fa91">LDConfigSetFeatureStoreBackendCacheTTL</a> (struct <a class="el" href="structLDConfig.html">LDConfig</a> *const config, const unsigned int milliseconds)</td></tr>
 <tr class="memdesc:a4b24cd675d59814e6373a9cfa672fa91"><td class="mdescLeft">&#160;</td><td class="mdescRight">When a feature store backend is provided, configure how long items will be cached in memory. Set the value to zero to always hit the external store backend. If no backend exists this value is ignored. The default cache time is 30 seconds.  <a href="#a4b24cd675d59814e6373a9cfa672fa91">More...</a><br /></td></tr>
 <tr class="separator:a4b24cd675d59814e6373a9cfa672fa91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea2ec110c0b83e8aba8bf2253015b63c"><td class="memItemLeft" align="right" valign="top">LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8h.html#aea2ec110c0b83e8aba8bf2253015b63c">LDConfigSetWrapperInfo</a> (struct <a class="el" href="structLDConfig.html">LDConfig</a> *const config, const char *const wrapperName, const char *const wrapperVersion)</td></tr>
+<tr class="memdesc:aea2ec110c0b83e8aba8bf2253015b63c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates to LaunchDarkly the name and version of an SDK wrapper library. If <code>wrapperVersion</code> is set <code>wrapperName</code> must be set.  <a href="#aea2ec110c0b83e8aba8bf2253015b63c">More...</a><br /></td></tr>
+<tr class="separator:aea2ec110c0b83e8aba8bf2253015b63c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Public API Interface for Configuration. </p>
@@ -218,7 +221,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True on succes, False on failure. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>True on success, False on failure. </dd></dl>
 
 </div>
 </div>
@@ -919,6 +922,51 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Void. </dd></dl>
+
+</div>
+</div>
+<a id="aea2ec110c0b83e8aba8bf2253015b63c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea2ec110c0b83e8aba8bf2253015b63c">&#9670;&nbsp;</a></span>LDConfigSetWrapperInfo()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LDBoolean LDConfigSetWrapperInfo </td>
+          <td>(</td>
+          <td class="paramtype">struct <a class="el" href="structLDConfig.html">LDConfig</a> *const&#160;</td>
+          <td class="paramname"><em>config</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramname"><em>wrapperName</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramname"><em>wrapperVersion</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Indicates to LaunchDarkly the name and version of an SDK wrapper library. If <code>wrapperVersion</code> is set <code>wrapperName</code> must be set. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">config</td><td>The configuration to modify. May not be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">wrapperName</td><td>The name of the wrapper. May be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">wrapperVersion</td><td>The version of the wrapper. May be <code>NULL</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True on success, False on failure. </dd></dl>
 
 </div>
 </div>

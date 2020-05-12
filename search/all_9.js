@@ -61,6 +61,7 @@ var searchData=
   ['ldconfigsetuseldd',['LDConfigSetUseLDD',['../config_8h.html#a1adabf587a063f4a2c97bb5927458963',1,'config.h']]],
   ['ldconfigsetuserkeyscapacity',['LDConfigSetUserKeysCapacity',['../config_8h.html#a7e43385441f9b46c078b8e516c54c8a9',1,'config.h']]],
   ['ldconfigsetuserkeysflushinterval',['LDConfigSetUserKeysFlushInterval',['../config_8h.html#a2180909cccc7685d9221d7f0cf343307',1,'config.h']]],
+  ['ldconfigsetwrapperinfo',['LDConfigSetWrapperInfo',['../config_8h.html#aea2ec110c0b83e8aba8bf2253015b63c',1,'config.h']]],
   ['ldconfiguregloballogger',['LDConfigureGlobalLogger',['../logging_8h.html#a079e4006b1a14ecd3d6bec98939f0438',1,'logging.h']]],
   ['lddetails',['LDDetails',['../structLDDetails.html',1,'']]],
   ['lddetailsclear',['LDDetailsClear',['../variations_8h.html#a84c97c954d7fe5bc0ae82ba02975243d',1,'variations.h']]],

@@ -19,5 +19,6 @@ var config_8h =
     [ "LDConfigSetTimeout", "config_8h.html#a9c7a29c0f268c24a1a61387d8dc48914", null ],
     [ "LDConfigSetUseLDD", "config_8h.html#a1adabf587a063f4a2c97bb5927458963", null ],
     [ "LDConfigSetUserKeysCapacity", "config_8h.html#a7e43385441f9b46c078b8e516c54c8a9", null ],
-    [ "LDConfigSetUserKeysFlushInterval", "config_8h.html#a2180909cccc7685d9221d7f0cf343307", null ]
+    [ "LDConfigSetUserKeysFlushInterval", "config_8h.html#a2180909cccc7685d9221d7f0cf343307", null ],
+    [ "LDConfigSetWrapperInfo", "config_8h.html#aea2ec110c0b83e8aba8bf2253015b63c", null ]
 ];
