@@ -195,7 +195,7 @@ LD_EXPORT(void) LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
  * names removed.
  * @param[in] config The configuration to modify. May not be `NULL`.
  * @param[in] attribute May not be `NULL`.
- * @return True on succes, False on failure.
+ * @return True on success, False on failure.
  */
 LD_EXPORT(LDBoolean) LDConfigAddPrivateAttribute(struct LDConfig *const config,
     const char *const attribute);
@@ -221,3 +221,15 @@ LD_EXPORT(void) LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
  */
  LD_EXPORT(void) LDConfigSetFeatureStoreBackendCacheTTL(
      struct LDConfig *const config, const unsigned int milliseconds);
+
+/**
+ * @brief Indicates to LaunchDarkly the name and version of an SDK wrapper
+ * library. If `wrapperVersion` is set `wrapperName` must be set.
+ * @param[in] config The configuration to modify. May not be `NULL`.
+ * @param[in] wrapperName The name of the wrapper. May be `NULL`.
+ * @param[in] wrapperVersion The version of the wrapper. May be `NULL`.
+ * @return True on success, False on failure.
+ */
+LD_EXPORT(LDBoolean) LDConfigSetWrapperInfo(
+    struct LDConfig *const config, const char *const wrapperName,
+    const char *const wrapperVersion);

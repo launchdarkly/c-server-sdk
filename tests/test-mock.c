@@ -209,6 +209,89 @@ testBasicStream()
     LDi_thread_join(&thread);
 }
 
+static int wrapperHeaderCase;
+
+static THREAD_RETURN
+testWrapperHeader_thread(void *const unused)
+{
+    struct LDHTTPRequest request;
+
+    LD_ASSERT(unused == NULL);
+
+    LDHTTPRequestInit(&request);
+
+    LDi_readHTTPRequest(acceptFD, &request);
+
+    switch (wrapperHeaderCase) {
+        case 0:
+            LD_ASSERT(strcmp(
+                "abc/123",
+                LDGetText(LDObjectLookup(request.requestHeaders,
+                    "X-LaunchDarkly-Wrapper"))
+            ) == 0);
+            break;
+        case 1:
+            LD_ASSERT(strcmp(
+                "xyz",
+                LDGetText(LDObjectLookup(request.requestHeaders,
+                    "X-LaunchDarkly-Wrapper"))
+            ) == 0);
+            break;
+        case 2:
+            LD_ASSERT(LDObjectLookup(request.requestHeaders,
+                "X-LaunchDarkly-Wrapper") == NULL);
+            break;
+        default:
+            LD_ASSERT(false);
+            break;
+    }
+
+    testBasicStream_sendResponse(request.requestSocket);
+
+    LDHTTPRequestDestroy(&request);
+
+    return THREAD_RETURN_DEFAULT;
+}
+
+static void
+testWrapperHeader()
+{
+    ld_thread_t thread;
+    struct LDConfig *config;
+    struct LDClient *client;
+    char streamURL[1024];
+
+    LDi_listenOnRandomPort(&acceptFD, &acceptPort);
+    LDi_thread_create(&thread, testBasicStream_thread, NULL);
+
+    LD_ASSERT(snprintf(streamURL, 1024, "http://127.0.0.1:%d", acceptPort) > 0);
+
+    LD_ASSERT(config = LDConfigNew("key"));
+
+    switch (wrapperHeaderCase) {
+        case 0:
+            LD_ASSERT(LDConfigSetWrapperInfo(config, "abc", "123"));
+            break;
+        case 1:
+            LD_ASSERT(LDConfigSetWrapperInfo(config, "xyz", NULL));
+            break;
+        case 2:
+            /* do nothing */
+            break;
+        default:
+            LD_ASSERT(false);
+            break;
+    }
+
+    LDConfigSetStreamURI(config, streamURL);
+
+    LD_ASSERT(client = LDClientInit(config, 1000 * 10));
+
+    LDClientClose(client);
+    LDi_closeSocket(acceptFD);
+    LDi_thread_join(&thread);
+}
+
 int
 main()
 {
@@ -217,6 +300,15 @@ main()
 
     testBasicPoll();
     testBasicStream();
+
+    wrapperHeaderCase = 0;
+    testWrapperHeader();
+
+    wrapperHeaderCase = 1;
+    testWrapperHeader();
+
+    wrapperHeaderCase = 2;
+    testWrapperHeader();
 
     return 0;
 }

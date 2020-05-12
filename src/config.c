@@ -62,6 +62,8 @@ LDConfigNew(const char *const key)
     config->userKeysFlushInterval  = 300000;
     config->storeBackend           = NULL;
     config->storeCacheMilliseconds = 30 * 1000;
+    config->wrapperName            = NULL;
+    config->wrapperVersion         = NULL;
 
     return config;
 
@@ -88,6 +90,8 @@ LDConfigFree(struct LDConfig *const config)
         LDFree(     config->streamURI             );
         LDFree(     config->eventsURI             );
         LDJSONFree( config->privateAttributeNames );
+        LDFree(     config->wrapperName           );
+        LDFree(     config->wrapperVersion        );
         LDFree(     config                        );
     }
 }
@@ -429,4 +433,66 @@ LDConfigSetFeatureStoreBackendCacheTTL(struct LDConfig *const config,
     #endif
 
     config->storeCacheMilliseconds = milliseconds;
+}
+
+LDBoolean
+LDConfigSetWrapperInfo(struct LDConfig *const config,
+    const char *const wrapperName, const char *const wrapperVersion)
+{
+    char *nameTmp, *versionTmp;
+
+    LD_ASSERT_API(config);
+
+    #ifdef LAUNCHDARKLY_OFFENSIVE
+        if (wrapperVersion) {
+            LD_ASSERT(wrapperName);
+        }
+    #endif
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (config == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetWrapperInfo NULL config");
+
+            return false;
+        }
+
+        if (!wrapperName && wrapperVersion) {
+            LD_LOG(LD_LOG_WARNING,
+                "LDConfigSetWrapperInfo wrapperVersion set without wrapperName"
+            );
+
+            return false;
+        }
+    #endif
+
+    if (wrapperName) {
+        if (!(nameTmp = LDStrDup(wrapperName))) {
+            LD_LOG(LD_LOG_WARNING, "LDConfigSetWrapperInfo malloc error");
+
+            return false;
+        }
+
+        if (wrapperVersion) {
+            if (!(versionTmp = LDStrDup(wrapperVersion))) {
+                LD_LOG(LD_LOG_WARNING, "LDConfigSetWrapperInfo malloc error");
+
+                LDFree(nameTmp);
+
+                return false;
+            }
+        } else {
+            versionTmp = NULL;
+        }
+    } else {
+        nameTmp    = NULL;
+        versionTmp = NULL;
+    }
+
+    LDFree(config->wrapperName);
+    LDFree(config->wrapperVersion);
+
+    config->wrapperName    = nameTmp;
+    config->wrapperVersion = versionTmp;
+
+    return true;
 }
