@@ -25,4 +25,6 @@ struct LDConfig {
     unsigned int userKeysFlushInterval;
     struct LDStoreInterface *storeBackend;
     unsigned int storeCacheMilliseconds;
+    char *wrapperName;
+    char *wrapperVersion;
 };

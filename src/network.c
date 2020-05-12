@@ -40,18 +40,48 @@ LDi_prepareShared(const struct LDConfig *const config, const char *const url,
     }
 
     {
-        char headerauth[256];
+        char headerAuth[256];
 
-        if (snprintf(headerauth, sizeof(headerauth), "Authorization: %s",
+        if (snprintf(headerAuth, sizeof(headerAuth), "Authorization: %s",
             config->key) < 0)
         {
-            LD_LOG(LD_LOG_CRITICAL, "snprintf during failed");
+            LD_LOG(LD_LOG_CRITICAL, "snprintf for headerAuth failed");
 
             goto error;
         }
 
-        if (!(headers = curl_slist_append(headers, headerauth))) {
-            LD_LOG(LD_LOG_CRITICAL, "curl_slist_append failed for headerauth");
+        if (!(headers = curl_slist_append(headers, headerAuth))) {
+            LD_LOG(LD_LOG_CRITICAL, "curl_slist_append failed for headerAuth");
+
+            goto error;
+        }
+    }
+
+    if (config->wrapperName) {
+        char headerWrapper[256];
+
+        if (config->wrapperVersion) {
+            if (snprintf(headerWrapper, sizeof(headerWrapper),
+                "X-LaunchDarkly-Wrapper: %s/%s", config->wrapperName,
+                config->wrapperVersion) < 0)
+            {
+                LD_LOG(LD_LOG_CRITICAL, "snprintf for headerWrapper failed");
+
+                goto error;
+            }
+        } else {
+            if (snprintf(headerWrapper, sizeof(headerWrapper),
+                "X-LaunchDarkly-Wrapper: %s", config->wrapperName) < 0)
+            {
+                LD_LOG(LD_LOG_CRITICAL, "snprintf for headerWrapper failed");
+
+                goto error;
+            }
+        }
+
+        if (!(headers = curl_slist_append(headers, headerWrapper))) {
+            LD_LOG(LD_LOG_CRITICAL,
+                "curl_slist_append failed for headerWrapper");
 
             goto error;
         }
