@@ -2,6 +2,10 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.1.0] - 2020-05-12
+### Added:
+- LDConfigSetWrapperInfo which is used to inform the LaunchDarkly backend of an SDK wrappers name and version. Currently used in our Lua server-side SDK.
+
 ## [2.0.0] - 2020-04-30
 Version `2.0.0` brings many changes, however they are primarily focused on edge cases and internal details. For most customers, this release will be a drop-in replacement and will not require any changes in your SDK usage. When using the SDK, you should either install the SDK configured for your desired location with `cmake --build . --target install` or use it as a CMake sub-project with the `ldserverapi` target. The internal organization of files is not part of the API and may change in future releases.
 
