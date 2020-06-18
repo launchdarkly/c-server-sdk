@@ -2,6 +2,11 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.1.1] - 2020-06-18
+### Fixed:
+- Cap usage of usleep(3) at 999999 usec which is required on certain platforms
+- When an error occurs with usleep(3) print errno and not the status code
+
 ## [2.1.0] - 2020-05-12
 ### Added:
 - LDConfigSetWrapperInfo which is used to inform the LaunchDarkly backend of an SDK wrappers name and version. Currently used in our Lua server-side SDK.
