@@ -80,12 +80,19 @@ LDi_sleepMilliseconds(const unsigned long milliseconds)
         }
 
         if ((status = usleep(usec)) != 0) {
-            LD_LOG_1(LD_LOG_CRITICAL, "usleep failed with: %s",
-                strerror(errno));
+            if (errno == EINTR) {
+                LD_LOG(LD_LOG_WARNING,
+                    "LDi_sleepMilliseconds usleep got EINTR skipping sleep");
 
-            LD_ASSERT(false);
+                return false;
+            } else {
+                LD_LOG_1(LD_LOG_CRITICAL, "usleep failed with: %s",
+                    strerror(errno));
 
-            return false;
+                LD_ASSERT(false);
+
+                return false;
+            }
         }
 
         return true;
