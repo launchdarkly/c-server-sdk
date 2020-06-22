@@ -1,9 +1,10 @@
+#include <stdbool.h>
+
 #include "cJSON.h"
 
-#include <launchdarkly/api.h>
+#include <launchdarkly/json.h>
 
 #include "assertion.h"
-#include "utility.h"
 
 struct LDJSON *
 LDNewNull(void)

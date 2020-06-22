@@ -27,11 +27,11 @@
 
 #define LD_UUID_SIZE 36
 
-/* limited to 1 second */
 bool LDi_sleepMilliseconds(const unsigned long milliseconds);
 bool LDi_getMonotonicMilliseconds(double *const resultMilliseconds);
 bool LDi_getUnixMilliseconds(double *const resultMilliseconds);
 bool LDi_randomHex(char *const buffer, const size_t bufferSize);
+#define LD_UUID_SIZE 36
 bool LDi_UUIDv4(char *const buffer);
 
 #ifdef _WIN32

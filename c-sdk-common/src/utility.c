@@ -6,7 +6,8 @@
 #endif
 #include <stdlib.h>
 
-#include <launchdarkly/api.h>
+#include <launchdarkly/json.h>
+#include <launchdarkly/memory.h>
 
 #include "assertion.h"
 #include "concurrency.h"

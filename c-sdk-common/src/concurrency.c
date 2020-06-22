@@ -1,3 +1,5 @@
+#include <errno.h>
+
 #include "assertion.h"
 #include "utility.h"
 #include "logging.h"
@@ -485,7 +487,15 @@ LDi_cond_wait_imp(ld_cond_t *const cond, ld_mutex_t *const mutex,
     LD_ASSERT(mutex);
 
     #ifdef _WIN32
-        status = SleepConditionVariableCS(cond, mutex, milliseconds) == 0;
+        status = SleepConditionVariableCS(cond, mutex, milliseconds);
+
+        if (status == 0) {
+            if (GetLastError() != ERROR_TIMEOUT) {
+                status = 1;
+            }
+        } else {
+            status = 0;
+        }
     #else
         if ((status = LDi_clockGetTime(&ts, LD_CLOCK_REALTIME) == false)) {
             goto done;
@@ -499,10 +509,14 @@ LDi_cond_wait_imp(ld_cond_t *const cond, ld_mutex_t *const mutex,
         }
 
         if ((status = pthread_cond_timedwait(cond, mutex, &ts)) != 0) {
-            LD_LOG_1(LD_LOG_CRITICAL, "pthread_cond_timedwait failed: %s",
-                strerror(status));
+            if (status != ETIMEDOUT) {
+                LD_LOG_1(LD_LOG_CRITICAL, "pthread_cond_timedwait failed: %s",
+                    strerror(status));
 
-            goto done;
+                goto done;
+            } else {
+                status = 0;
+            }
         }
     #endif
 
