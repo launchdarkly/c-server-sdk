@@ -2,6 +2,10 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.1.3] - 2020-06-25
+### Changed:
+- Set the &#34;Accept&#34; header to &#34;text/event-stream&#34; for streaming connections.
+
 ## [2.1.2] - 2020-06-19
 ### Fixed:
 - `usleep(3)` setting `errno` to `EINTR` is no longer considered a fatal error.
