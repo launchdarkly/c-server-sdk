@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include <launchdarkly/api.h>
+#include <launchdarkly/logging.h>
 
 #include "assertion.h"
-#include "utility.h"
 
 static LDLogLevel sdkloggerlevel = LD_LOG_INFO;
 static void (*sdklogger)(const LDLogLevel level, const char *const text) = NULL;

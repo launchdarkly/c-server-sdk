@@ -174,6 +174,11 @@ testBasicStream_thread(void *const unused)
         LDGetText(LDObjectLookup(request.requestHeaders, "User-Agent"))
     ) == 0);
 
+    LD_ASSERT(strcmp(
+        "text/event-stream",
+        LDGetText(LDObjectLookup(request.requestHeaders, "Accept"))
+    ) == 0);
+
     testBasicStream_sendResponse(request.requestSocket);
 
     LDHTTPRequestDestroy(&request);

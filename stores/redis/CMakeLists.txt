@@ -6,8 +6,8 @@ project(ldserverapi-redis)
 
 add_library(ldserverapi-redis
     "src/redis.c"
-    "../../src/concurrency.c"
-    "../../src/utility.c"
+    "../../c-sdk-common/src/concurrency.c"
+    "../../c-sdk-common/src/utility.c"
     "../../src/store.c"
 )
 
@@ -19,6 +19,8 @@ target_include_directories(ldserverapi-redis
             "../../src"
             "../../tests"
             "../../third-party/include"
+            "../../c-sdk-common/include"
+            "../../c-sdk-common/src"
 )
 
 INSTALL(
@@ -56,6 +58,7 @@ if(BUILD_TESTING)
                     "../../src"
                     "../../tests"
                     "../../third-party/include"
+                    "../../c-sdk-common/include"
         )
     endif (NOT SKIP_DATABASE_TESTS)
 endif()

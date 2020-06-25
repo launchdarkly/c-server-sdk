@@ -18,8 +18,10 @@
 
     #ifdef LAUNCHDARKLY_MUTEX_ONLY
         #define ld_rwlock_t ld_mutex_t
+        #define LD_RWLOCK_INIT LD_MUTEX_INIT
     #else
         #define ld_rwlock_t SRWLOCK
+        #define LD_RWLOCK_INIT SRWLOCK_INIT
     #endif
 #else
     #define THREAD_RETURN void *
@@ -31,8 +33,10 @@
 
     #ifdef LAUNCHDARKLY_MUTEX_ONLY
         #define ld_rwlock_t ld_mutex_t
+        #define LD_RWLOCK_INIT LD_MUTEX_INIT
     #else
         #define ld_rwlock_t pthread_rwlock_t
+        #define LD_RWLOCK_INIT PTHREAD_RWLOCK_INITIALIZER
     #endif
 #endif
 

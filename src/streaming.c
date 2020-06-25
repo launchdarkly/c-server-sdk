@@ -426,6 +426,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     CURL *curl;
     char url[4096];
     struct StreamContext *context;
+    struct curl_slist *headersTmp;
 
     LD_ASSERT(client);
     LD_ASSERT(rawcontext);
@@ -514,6 +515,13 @@ poll(struct LDClient *const client, void *const rawcontext)
     if (!LDi_prepareShared(client->config, url, &curl, &context->headers)) {
         goto error;
     }
+
+    if (!(headersTmp = curl_slist_append(context->headers,
+        "Accept: text/event-stream")))
+    {
+        goto error;
+    }
+    context->headers = headersTmp;
 
     if (curl_easy_setopt(curl, CURLOPT_WRITEDATA, context) != CURLE_OK) {
         LD_LOG(LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_WRITEDATA failed");

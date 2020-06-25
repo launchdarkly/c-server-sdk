@@ -25,7 +25,12 @@ if(NOT DEFINED MSVC)
 endif()
 
 set(LD_INCLUDE_PATHS
-    "src" "third-party/include" ${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR}
+    "src"
+    "third-party/include"
+    "c-sdk-common/include"
+    "c-sdk-common/src"
+    ${CURL_INCLUDE_DIR}
+    ${PCRE_INCLUDE_DIR}
 )
 
 if(APPLE)
@@ -36,7 +41,7 @@ if (REDIS_STORE)
     add_subdirectory(stores/redis)
 endif (REDIS_STORE)
 
-file(GLOB SOURCES "src/*" "third-party/src/*")
+file(GLOB SOURCES "src/*" "third-party/src/*" "c-sdk-common/src/*")
 
 if(NOT DEFINED MSVC)
     list(REMOVE_ITEM SOURCES
@@ -101,12 +106,18 @@ if(NOT SKIP_BASE_INSTALL)
         DESTINATION            include
         FILES_MATCHING PATTERN "*.h*"
     )
+
+    INSTALL(
+        DIRECTORY              ${PROJECT_SOURCE_DIR}/c-sdk-common/include/
+        DESTINATION            include
+        FILES_MATCHING PATTERN "*.h*"
+    )
 endif()
 
 # test targets ----------------------------------------------------------------
 
 if(BUILD_TESTING)
-    file(GLOB TEST_UTILS_SRC "test-utils/src/*")
+    file(GLOB TEST_UTILS_SRC "test-utils/src/*" "c-sdk-common/test-utils/src/*")
 
     add_library(test-utils STATIC ${TEST_UTILS_SRC})
 
@@ -115,6 +126,7 @@ if(BUILD_TESTING)
     target_include_directories(test-utils
         PUBLIC ${LD_INCLUDE_PATHS}
                "test-utils/include"
+               "c-sdk-common/test-utils/include"
     )
 
     target_compile_definitions(test-utils
