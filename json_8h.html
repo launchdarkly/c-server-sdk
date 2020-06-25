@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>C Server-Side SDK: include/launchdarkly/json.h File Reference</title>
+<title>C Server-Side SDK: c-sdk-common/include/launchdarkly/json.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -103,15 +103,15 @@ $(document).ready(function(){initNavTree('json_8h.html','');});
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for json.h:</div>
 <div class="dyncontent">
-<div class="center"><img src="json_8h__incl.png" border="0" usemap="#include_2launchdarkly_2json_8h" alt=""/></div>
-<map name="include_2launchdarkly_2json_8h" id="include_2launchdarkly_2json_8h">
+<div class="center"><img src="json_8h__incl.png" border="0" usemap="#c-sdk-common_2include_2launchdarkly_2json_8h" alt=""/></div>
+<map name="c-sdk-common_2include_2launchdarkly_2json_8h" id="c-sdk-common_2include_2launchdarkly_2json_8h">
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><img src="json_8h__dep__incl.png" border="0" usemap="#include_2launchdarkly_2json_8hdep" alt=""/></div>
-<map name="include_2launchdarkly_2json_8hdep" id="include_2launchdarkly_2json_8hdep">
+<div class="center"><img src="json_8h__dep__incl.png" border="0" usemap="#c-sdk-common_2include_2launchdarkly_2json_8hdep" alt=""/></div>
+<map name="c-sdk-common_2include_2launchdarkly_2json_8hdep" id="c-sdk-common_2include_2launchdarkly_2json_8hdep">
 </map>
 </div>
 </div>
@@ -144,7 +144,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a55ef572692ceab1f1687bd4399ee9c17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a JSON node of type <code>LDJSONumber</code>.  <a href="#a55ef572692ceab1f1687bd4399ee9c17">More...</a><br /></td></tr>
 <tr class="separator:a55ef572692ceab1f1687bd4399ee9c17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a206bc84384e13eb7e85a54d2d051b375"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a206bc84384e13eb7e85a54d2d051b375">LDNewText</a> (const char *const text)</td></tr>
-<tr class="memdesc:a206bc84384e13eb7e85a54d2d051b375"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a a new constructed JSON node of type <code>LDJSONText</code>.  <a href="#a206bc84384e13eb7e85a54d2d051b375">More...</a><br /></td></tr>
+<tr class="memdesc:a206bc84384e13eb7e85a54d2d051b375"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a new constructed JSON node of type <code>LDJSONText</code>.  <a href="#a206bc84384e13eb7e85a54d2d051b375">More...</a><br /></td></tr>
 <tr class="separator:a206bc84384e13eb7e85a54d2d051b375"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad47f4ca8921e4fa65ba9fe4b41517ea2"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#ad47f4ca8921e4fa65ba9fe4b41517ea2">LDNewObject</a> (void)</td></tr>
 <tr class="memdesc:ad47f4ca8921e4fa65ba9fe4b41517ea2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a JSON node of type <code>LDJSONObject</code>.  <a href="#ad47f4ca8921e4fa65ba9fe4b41517ea2">More...</a><br /></td></tr>
@@ -237,7 +237,7 @@ Functions</h2></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Working with textual representations of JSON </p>
 </div></td></tr>
 <tr class="memitem:a9f2d02e2d6aca7208b9632a645299f8e"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#a9f2d02e2d6aca7208b9632a645299f8e">LDJSONSerialize</a> (const struct LDJSON *const json)</td></tr>
-<tr class="memdesc:a9f2d02e2d6aca7208b9632a645299f8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize JSON text into a JSON structure.  <a href="#a9f2d02e2d6aca7208b9632a645299f8e">More...</a><br /></td></tr>
+<tr class="memdesc:a9f2d02e2d6aca7208b9632a645299f8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize JSON structure into JSON text.  <a href="#a9f2d02e2d6aca7208b9632a645299f8e">More...</a><br /></td></tr>
 <tr class="separator:a9f2d02e2d6aca7208b9632a645299f8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc808995aa9e1960bd3b6867dedf25b2"><td class="memItemLeft" align="right" valign="top">struct LDJSON *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="json_8h.html#acc808995aa9e1960bd3b6867dedf25b2">LDJSONDeserialize</a> (const char *const text)</td></tr>
 <tr class="memdesc:acc808995aa9e1960bd3b6867dedf25b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialize JSON text into a JSON structure.  <a href="#acc808995aa9e1960bd3b6867dedf25b2">More...</a><br /></td></tr>
@@ -349,7 +349,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Item if it exists, otherwise <code>NULL if does not exist, or on failure.</code> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Item if it exists, otherwise <code>NULL</code> if does not exist, or on failure. </dd></dl>
 
 </div>
 </div>
@@ -780,7 +780,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Serialize JSON text into a JSON structure. </p>
+<p>Serialize JSON structure into JSON text. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>Structure to serialize. May be <code>NULL</code>. </td></tr>
@@ -924,7 +924,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns a a new constructed JSON node of type <code>LDJSONText</code>. </p>
+<p>Returns a new constructed JSON node of type <code>LDJSONText</code>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">text</td><td>The text to copy and then assign the new node. May not be <code>NULL</code>. </td></tr>
@@ -1175,7 +1175,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_efe5b79025e5a9a1c6aba444011d94a7.html">launchdarkly</a></li><li class="navelem"><a class="el" href="json_8h.html">json.h</a></li>
+    <li class="navelem"><a class="el" href="dir_2baa2abe2a8541e88a77fd54574fc547.html">c-sdk-common</a></li><li class="navelem"><a class="el" href="dir_431872f0c593d22e60b93671af8c531f.html">include</a></li><li class="navelem"><a class="el" href="dir_d6de379f4146b247b94d58fd9285f8ab.html">launchdarkly</a></li><li class="navelem"><a class="el" href="json_8h.html">json.h</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>

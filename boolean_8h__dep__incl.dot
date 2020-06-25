@@ -1,10 +1,10 @@
-digraph "include/launchdarkly/boolean.h"
+digraph "c-sdk-common/include/launchdarkly/boolean.h"
 {
   edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
   node [fontname="Helvetica",fontsize="10",shape=record];
-  Node1 [label="include/launchdarkly\l/boolean.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node1 [label="c-sdk-common/include\l/launchdarkly/boolean.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
   Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node2 [label="include/launchdarkly\l/json.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$json_8h.html",tooltip="Public API Interface for JSON usage. "];
+  Node2 [label="c-sdk-common/include\l/launchdarkly/json.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$json_8h.html",tooltip="Public API Interface for JSON usage. "];
   Node2 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node3 [label="include/launchdarkly\l/api.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$api_8h.html",tooltip="Public API. Include this for every public operation. "];
   Node2 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
