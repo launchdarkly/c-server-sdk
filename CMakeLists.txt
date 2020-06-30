@@ -58,7 +58,8 @@ add_library(ldserverapi ${SOURCES})
 target_link_libraries(ldserverapi PRIVATE ${LD_LIBRARIES})
 
 target_include_directories(ldserverapi
-    PUBLIC "include"
+    PUBLIC  "include"
+            "c-sdk-common/include"
     PRIVATE ${LD_INCLUDE_PATHS}
 )
 
