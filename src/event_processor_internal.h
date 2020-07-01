@@ -68,7 +68,8 @@ void
 LDi_possiblyQueueEvent(
     struct EventProcessor *const context,
     struct LDJSON *const         event,
-    const double                 now
+    const double                 now,
+    const bool                   detailedEvaluation
 );
 
 bool

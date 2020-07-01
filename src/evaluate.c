@@ -389,7 +389,7 @@ LDi_checkPrerequisites(struct LDClient *const client,
         unsigned int *variationNumRef;
         EvalStatus status;
         const char *keyText;
-        struct LDDetails details, *detailsRef;
+        struct LDDetails details;
         struct LDJSONRC *preflagrc;
         double now;
 
@@ -401,7 +401,6 @@ LDi_checkPrerequisites(struct LDClient *const client,
         event            = NULL;
         subevents        = NULL;
         keyText          = NULL;
-        detailsRef       = NULL;
         preflagrc        = NULL;
 
         LDDetailsInit(&details);
@@ -476,13 +475,9 @@ LDi_checkPrerequisites(struct LDClient *const client,
             variationNumRef = &details.variationIndex;
         }
 
-        if (recordReason) {
-            detailsRef = &details;
-        }
-
         event = LDi_newFeatureRequestEvent(client->eventProcessor,
             keyText, user, variationNumRef, value, NULL,
-            LDGetText(LDObjectLookup(flag, "key")), preflag, detailsRef, now);
+            LDGetText(LDObjectLookup(flag, "key")), preflag, &details, now);
 
         if (!event) {
             LDJSONRCDecrement(preflagrc);

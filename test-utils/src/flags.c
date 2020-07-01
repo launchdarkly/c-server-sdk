@@ -39,3 +39,54 @@ addVariation(struct LDJSON *const flag, struct LDJSON *const variation)
 
     LD_ASSERT(LDArrayPush(variations, variation));
 }
+
+void
+addVariations1(struct LDJSON *const flag)
+{
+    addVariation(flag, LDNewText("fall"));
+    addVariation(flag, LDNewText("off"));
+    addVariation(flag, LDNewText("on"));
+}
+
+void
+addVariations2(struct LDJSON *const flag)
+{
+    addVariation(flag, LDNewText("nogo"));
+    addVariation(flag, LDNewText("go"));
+}
+
+struct LDJSON *
+makeFlagToMatchUser(const char *const key,
+    struct LDJSON *const variationOrRollout)
+{
+    struct LDJSON *flag, *clause, *tmp, *rule;
+
+    LD_ASSERT(clause = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("key")));
+    LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
+    LD_ASSERT(tmp = LDNewArray());
+    LD_ASSERT(LDArrayPush(tmp, LDNewText(key)));
+    LD_ASSERT(LDObjectSetKey(clause, "values", tmp));
+
+    LD_ASSERT(rule = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(rule, "id", LDNewText("rule-id")));
+    LD_ASSERT(LDObjectMerge(rule, variationOrRollout));
+    LD_ASSERT(tmp = LDNewArray());
+    LD_ASSERT(LDArrayPush(tmp, clause));
+    LD_ASSERT(LDObjectSetKey(rule, "clauses", tmp));
+
+    LD_ASSERT(flag = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
+    LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    addVariations1(flag);
+    setFallthrough(flag, 0);
+    LD_ASSERT(tmp = LDNewArray());
+    LD_ASSERT(LDArrayPush(tmp, rule));
+    LD_ASSERT(LDObjectSetKey(flag, "rules", tmp));
+    LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(3)));
+
+    LDJSONFree(variationOrRollout);
+
+    return flag;
+}
