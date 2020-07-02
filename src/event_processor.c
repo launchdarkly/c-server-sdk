@@ -82,17 +82,16 @@ LDi_processEvaluation(
 ) {
     struct LDJSON *indexEvent, *featureEvent;
     const struct LDJSON *evaluationValue;
-    const struct LDDetails *detailsRef;
     const unsigned int *variationIndexRef;
     double now;
 
     indexEvent        = NULL;
     featureEvent      = NULL;
     evaluationValue   = NULL;
-    detailsRef        = NULL;
     variationIndexRef = NULL;
 
     LD_ASSERT(context);
+    LD_ASSERT(details);
 
     LDi_getUnixMilliseconds(&now);
 
@@ -106,15 +105,11 @@ LDi_processEvaluation(
         variationIndexRef = &details->variationIndex;
     }
 
-    if (detailedEvaluation) {
-        detailsRef = details;
-    }
-
     LDi_mutex_lock(&context->lock);
 
     featureEvent = LDi_newFeatureRequestEvent(context, flagKey, user,
         variationIndexRef, evaluationValue, fallbackValue, NULL, flag,
-        detailsRef, now);
+        details, now);
 
     if (!featureEvent) {
         LDi_mutex_unlock(&context->lock);
@@ -149,7 +144,7 @@ LDi_processEvaluation(
     }
 
     if (flag) {
-        LDi_possiblyQueueEvent(context, featureEvent, now);
+        LDi_possiblyQueueEvent(context, featureEvent, now, detailedEvaluation);
 
         featureEvent = NULL;
     }
@@ -180,7 +175,8 @@ LDi_processEvaluation(
             LDi_possiblyQueueEvent(
                 context,
                 LDCollectionDetachIter(subEvents, iter),
-                now
+                now,
+                detailedEvaluation
             );
 
             iter = next;
@@ -448,13 +444,23 @@ convertToDebug(struct LDJSON *const event)
 
 void
 LDi_possiblyQueueEvent(struct EventProcessor *const context,
-    struct LDJSON *event, const double now)
+    struct LDJSON *event, const double now, const bool detailedEvaluation)
 {
     bool shouldTrack;
     struct LDJSON *tmp;
 
     LD_ASSERT(context);
     LD_ASSERT(event);
+
+    if (LDi_notNull(tmp = LDObjectLookup(event, "shouldAlwaysTrackDetails"))) {
+        if (!LDGetBool(tmp)) {
+            LDObjectDeleteKey(event, "reason");
+        }
+
+        LDJSONFree(LDCollectionDetachIter(event, tmp));
+    } else if (!detailedEvaluation) {
+        LDObjectDeleteKey(event, "reason");
+    }
 
     if (LDi_notNull(tmp = LDObjectLookup(event, "trackEvents"))) {
         /* validated as Boolean by LDi_newFeatureRequestEvent */
@@ -599,13 +605,16 @@ LDi_newFeatureRequestEvent(
     const double                       now
 ) {
     struct LDJSON *tmp, *event;
+    bool shouldTrack, shouldAlwaysDetail;
 
     LD_ASSERT(context);
     LD_ASSERT(key);
     LD_ASSERT(user);
 
-    tmp   = NULL;
-    event = NULL;
+    tmp                = NULL;
+    event              = NULL;
+    shouldTrack        = false;
+    shouldAlwaysDetail = false;
 
     if (!(event = LDi_newBaseEvent("feature", now))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -750,19 +759,7 @@ LDi_newFeatureRequestEvent(
             }
 
             if (LDGetBool(tmp)) {
-                if (!(tmp = LDJSONDuplicate(tmp))) {
-                    LD_LOG(LD_LOG_ERROR, "memory error");
-
-                    goto error;
-                }
-
-                if (!LDObjectSetKey(event, "trackEvents", tmp)) {
-                    LD_LOG(LD_LOG_ERROR, "memory error");
-
-                    LDJSONFree(tmp);
-
-                    goto error;
-                }
+                shouldTrack = true;
             }
         }
     }
@@ -775,6 +772,66 @@ LDi_newFeatureRequestEvent(
         }
 
         if (!LDObjectSetKey(event, "reason", tmp)) {
+            LD_LOG(LD_LOG_ERROR, "memory error");
+
+            LDJSONFree(tmp);
+
+            goto error;
+        }
+    }
+
+    if (details && flag) {
+        if (LDi_notNull(tmp = LDObjectLookup(flag, "trackEventsFallthrough"))) {
+            if (LDJSONGetType(tmp) != LDBool) {
+                LD_LOG(LD_LOG_ERROR, "schema error");
+
+                goto error;
+            }
+
+            if (LDGetBool(tmp) && details->reason == LD_FALLTHROUGH) {
+                shouldTrack        = true;
+                shouldAlwaysDetail = true;
+            }
+        }
+
+        if (details->reason == LD_RULE_MATCH) {
+            tmp = LDArrayLookup(LDObjectLookup(
+                flag, "rules"), details->extra.rule.ruleIndex);
+
+            if (LDi_notNull(tmp = LDObjectLookup(tmp, "trackEvents"))
+                && LDJSONGetType(tmp) == LDBool
+                && LDGetBool(tmp) == true
+            ) {
+                shouldTrack        = true;
+                shouldAlwaysDetail = true;
+            }
+        }
+    }
+
+    if (shouldTrack) {
+        if (!(tmp = LDNewBool(true))) {
+            LD_LOG(LD_LOG_ERROR, "memory error");
+
+            goto error;
+        }
+
+        if (!LDObjectSetKey(event, "trackEvents", tmp)) {
+            LD_LOG(LD_LOG_ERROR, "memory error");
+
+            LDJSONFree(tmp);
+
+            goto error;
+        }
+    }
+
+    if (shouldAlwaysDetail) {
+        if (!(tmp = LDNewBool(true))) {
+            LD_LOG(LD_LOG_ERROR, "memory error");
+
+            goto error;
+        }
+
+        if (!LDObjectSetKey(event, "shouldAlwaysTrackDetails", tmp)) {
             LD_LOG(LD_LOG_ERROR, "memory error");
 
             LDJSONFree(tmp);

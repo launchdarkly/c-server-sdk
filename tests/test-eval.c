@@ -7,6 +7,7 @@
 #include "evaluate.h"
 #include "utility.h"
 #include "store.h"
+#include "test-utils/flags.h"
 
 static struct LDStore *
 prepareEmptyStore()
@@ -26,29 +27,6 @@ prepareEmptyStore()
 }
 
 static void
-setFallthrough(struct LDJSON *const flag, const unsigned int variation)
-{
-    struct LDJSON *tmp;
-
-    LD_ASSERT(tmp = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(tmp, "variation", LDNewNumber(variation)));
-    LD_ASSERT(LDObjectSetKey(flag, "fallthrough", tmp));
-}
-
-static void
-addVariation(struct LDJSON *const flag, struct LDJSON *const variation)
-{
-    struct LDJSON *variations;
-
-    if (!(variations = LDObjectLookup(flag, "variations"))) {
-        LD_ASSERT(variations = LDNewArray());
-        LDObjectSetKey(flag, "variations", variations);
-    }
-
-    LD_ASSERT(LDArrayPush(variations, variation));
-}
-
-static void
 addPrerequisite(struct LDJSON *const flag, const char *const key,
     const unsigned int variation)
 {
@@ -64,56 +42,6 @@ addPrerequisite(struct LDJSON *const flag, const char *const key,
     LD_ASSERT(LDObjectSetKey(tmp, "variation", LDNewNumber(variation)));
 
     LD_ASSERT(LDArrayPush(prerequisites, tmp));
-}
-
-static void
-addVariations1(struct LDJSON *const flag)
-{
-    addVariation(flag, LDNewText("fall"));
-    addVariation(flag, LDNewText("off"));
-    addVariation(flag, LDNewText("on"));
-}
-
-static void
-addVariations2(struct LDJSON *const flag)
-{
-    addVariation(flag, LDNewText("nogo"));
-    addVariation(flag, LDNewText("go"));
-}
-
-static struct LDJSON *
-makeFlagToMatchUser(const char *const key,
-    struct LDJSON *const variationOrRollout)
-{
-    struct LDJSON *flag, *clause, *tmp, *rule;
-
-    LD_ASSERT(clause = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("key")));
-    LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
-    LD_ASSERT(tmp = LDNewArray());
-    LD_ASSERT(LDArrayPush(tmp, LDNewText(key)));
-    LD_ASSERT(LDObjectSetKey(clause, "values", tmp));
-
-    LD_ASSERT(rule = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(rule, "id", LDNewText("rule-id")));
-    LD_ASSERT(LDObjectMerge(rule, variationOrRollout));
-    LD_ASSERT(tmp = LDNewArray());
-    LD_ASSERT(LDArrayPush(tmp, clause));
-    LD_ASSERT(LDObjectSetKey(rule, "clauses", tmp));
-
-    LD_ASSERT(flag = LDNewObject());
-    LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
-    LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
-    addVariations1(flag);
-    setFallthrough(flag, 0);
-    LD_ASSERT(tmp = LDNewArray());
-    LD_ASSERT(LDArrayPush(tmp, rule));
-    LD_ASSERT(LDObjectSetKey(flag, "rules", tmp));
-
-    LDJSONFree(variationOrRollout);
-
-    return flag;
 }
 
 static struct LDJSON *

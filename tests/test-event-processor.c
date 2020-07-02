@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 #include <launchdarkly/api.h>
 
@@ -323,6 +324,163 @@ testInlineUsersInEvents()
     LDClientClose(client);
 }
 
+static void
+testDetailsNotIncludedIfNotDetailed()
+{
+    struct LDConfig *config;
+    struct LDClient *client;
+    struct LDJSON *flag, *event;
+    struct LDUser *user;
+
+    LD_ASSERT(config = LDConfigNew("api_key"));
+    LDConfigInlineUsersInEvents(config, true);
+    LD_ASSERT(client = LDClientInit(config, 0));
+    LD_ASSERT(user = LDUserNew("user"));
+
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    setFallthrough(flag, 0);
+    addVariation(flag, LDNewNumber(51));
+
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag));
+    LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 0);
+
+    /* check that user is embedded in full fidelity event */
+    LD_ASSERT(LDIntVariation(client, user, "flag", 25, NULL) == 51);
+
+    LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 1);
+    LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 0));
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
+    LD_ASSERT(LDObjectLookup(event, "reason") == NULL);
+
+    LDUserFree(user);
+    LDClientClose(client);
+}
+
+static void
+testDetailsIncludedIfDetailed()
+{
+    struct LDConfig *config;
+    struct LDClient *client;
+    struct LDJSON *flag, *event, *tmp;
+    struct LDUser *user;
+    struct LDDetails details;
+    char *reason;
+
+    LD_ASSERT(config = LDConfigNew("api_key"));
+    LDConfigInlineUsersInEvents(config, true);
+    LD_ASSERT(client = LDClientInit(config, 0));
+    LD_ASSERT(user = LDUserNew("user"));
+
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    setFallthrough(flag, 0);
+    addVariation(flag, LDNewNumber(51));
+
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag));
+    LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 0);
+
+    /* check that user is embedded in full fidelity event */
+    LD_ASSERT(LDIntVariation(client, user, "flag", 25, &details) == 51);
+
+    LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 1);
+    LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 0));
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
+    LD_ASSERT(tmp = LDObjectLookup(event, "reason"));
+    LD_ASSERT(reason = LDJSONSerialize(tmp));
+    LD_ASSERT(strcmp(reason, "{\"kind\":\"FALLTHROUGH\"}") == 0);
+
+    LDFree(reason);
+    LDDetailsClear(&details);
+    LDUserFree(user);
+    LDClientClose(client);
+}
+
+static void
+testExperimentationFallthroughNonDetailed()
+{
+    struct LDConfig *config;
+    struct LDClient *client;
+    struct LDJSON *flag, *event, *tmp;
+    struct LDUser *user;
+    char *reason;
+
+    LD_ASSERT(config = LDConfigNew("api_key"));
+    LDConfigInlineUsersInEvents(config, true);
+    LD_ASSERT(client = LDClientInit(config, 0));
+    LD_ASSERT(user = LDUserNew("user"));
+
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    setFallthrough(flag, 0);
+    addVariation(flag, LDNewNumber(51));
+    LD_ASSERT(tmp = LDNewBool(true));
+    LD_ASSERT(LDObjectSetKey(flag, "trackEventsFallthrough", tmp));
+
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag));
+    LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 0);
+
+    /* check that user is embedded in full fidelity event */
+    LD_ASSERT(LDIntVariation(client, user, "flag", 25, NULL) == 51);
+
+    LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 1);
+    LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 0));
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
+    LD_ASSERT(tmp = LDObjectLookup(event, "reason"));
+    LD_ASSERT(reason = LDJSONSerialize(tmp));
+    LD_ASSERT(strcmp(reason, "{\"kind\":\"FALLTHROUGH\"}") == 0);
+
+    LDFree(reason);
+    LDUserFree(user);
+    LDClientClose(client);
+}
+
+static void
+testExperimentationRuleNonDetailed()
+{
+    struct LDConfig *config;
+    struct LDClient *client;
+    struct LDJSON *flag, *event, *tmp, *variation;
+    struct LDUser *user;
+    char *result;
+    char *reason;
+
+    LD_ASSERT(config = LDConfigNew("api_key"));
+    LDConfigInlineUsersInEvents(config, true);
+    LD_ASSERT(client = LDClientInit(config, 0));
+    LD_ASSERT(user = LDUserNew("user"));
+
+    /* flag */
+    LD_ASSERT(variation = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(variation, "variation", LDNewNumber(2)));
+    flag = makeFlagToMatchUser("user", variation);
+    LD_ASSERT(tmp = LDArrayLookup(LDObjectLookup(flag, "rules"), 0))
+    LD_ASSERT(LDObjectSetKey(tmp, "trackEvents", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "trackEvents", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(flag, "trackEventsFallthrough", LDNewBool(false)));
+
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag));
+    LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 0);
+
+    /* check that user is embedded in full fidelity event */
+    LD_ASSERT(result = LDStringVariation(client, user, "feature", "a", NULL));
+
+    LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 1);
+    LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 0));
+    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
+    LD_ASSERT(tmp = LDObjectLookup(event, "reason"));
+    LD_ASSERT(reason = LDJSONSerialize(tmp));
+    LD_ASSERT(strcmp(reason,
+        "{\"kind\":\"RULE_MATCH\",\"ruleId\":\"rule-id\",\"ruleIndex\":0}")
+        == 0);
+
+    LDFree(result);
+    LDFree(reason);
+    LDUserFree(user);
+    LDClientClose(client);
+}
+
 int
 main()
 {
@@ -335,6 +493,10 @@ main()
     testIndexEventGeneration();
     testTrackMetricQueued();
     testInlineUsersInEvents();
+    testDetailsNotIncludedIfNotDetailed();
+    testDetailsIncludedIfDetailed();
+    testExperimentationFallthroughNonDetailed();
+    testExperimentationRuleNonDetailed();
 
     return 0;
 };
