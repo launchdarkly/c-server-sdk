@@ -2,6 +2,11 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.1.4] - 2020-07-01
+### Fixed:
+- Added extra public headers to the `ldserversdk` target to fix Redis usage when embedding the cmake project
+- Fixed generation of full fidelity evaluation events for the LaunchDarkly experimentation feature
+
 ## [2.1.3] - 2020-06-25
 ### Changed:
 - Set the &#34;Accept&#34; header to &#34;text/event-stream&#34; for streaming connections.
