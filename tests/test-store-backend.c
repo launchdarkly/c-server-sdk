@@ -458,6 +458,7 @@ testGetCache()
 
     LD_ASSERT(LDJSONCompare(LDJSONRCGet(item1), LDJSONRCGet(item2)));
 
+    LDJSONFree(staticGetValue);
     LDJSONRCDecrement(item1);
     LDJSONRCDecrement(item2);
     LDStoreDestroy(store);
