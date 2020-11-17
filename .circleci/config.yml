@@ -28,10 +28,10 @@ jobs:
             cmake -D REDIS_STORE=ON ..
             cmake --build .
       - run:
-          name: Test
+          name: Unit test with memcheck
           command: |
             cd build
-            CTEST_OUTPUT_ON_FAILURE=1 make test
+            ctest -T memcheck
 
   build-test-linux-32bit:
     docker:
@@ -61,7 +61,7 @@ jobs:
           name: Test
           command: |
             cd build
-            CTEST_OUTPUT_ON_FAILURE=1 make test
+            make test
 
   build-test-osx:
     macos:
@@ -90,7 +90,7 @@ jobs:
           name: Test
           command: |
            cd build
-           CTEST_OUTPUT_ON_FAILURE=1 make test
+           make test
 
   build-test-windows:
     executor:
