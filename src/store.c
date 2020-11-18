@@ -226,7 +226,11 @@ LDJSONRCNew(struct LDJSON *const json)
     LDi_mutex_init(&result->lock);
 
     result->value = json;
+
+    /* the locking here is only to satisfy helgrind */
+    LDi_mutex_lock(&result->lock);
     result->count = 1;
+    LDi_mutex_unlock(&result->lock);
 
     return result;
 }
