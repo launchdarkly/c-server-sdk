@@ -146,7 +146,8 @@ main()
 {
     struct LDJSON *iter;
 
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     LD_ASSERT(tests = LDNewArray());
@@ -273,6 +274,8 @@ main()
     /* testParseTimestampBeforeEpoch(); */
 
     LDJSONFree(tests);
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }

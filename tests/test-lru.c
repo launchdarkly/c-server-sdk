@@ -68,13 +68,16 @@ testZeroCapacityAlwaysNew()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     testInsertExisting();
     testMaxCapacity();
     testAccessBumpsPosition();
     testZeroCapacityAlwaysNew();
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }

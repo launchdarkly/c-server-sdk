@@ -123,7 +123,8 @@ main()
 {
     setbuf(stdout, NULL);
 
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     constructNoSettings();
@@ -131,6 +132,8 @@ main()
     serializeEmpty();
     serializeRedacted();
     serializeAll();
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }

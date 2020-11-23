@@ -152,9 +152,8 @@ threadSignalCondition(void *const condition)
     LD_ASSERT(condition);
 
     LD_ASSERT(LDi_mutex_lock(&conditionTestLock));
-    LD_ASSERT(LDi_mutex_unlock(&conditionTestLock));
-
     LDi_cond_signal((ld_cond_t *)condition);
+    LD_ASSERT(LDi_mutex_unlock(&conditionTestLock));
 
     return THREAD_RETURN_DEFAULT;
 }
@@ -182,7 +181,10 @@ testConditionVars()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
+    LDGlobalInit();
+
     testMonotonic();
     testGetUnixMilliseconds();
     testSleepMinimum();
@@ -191,6 +193,8 @@ main()
     testConcurrency();
     testRNG();
     testConditionVars();
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }

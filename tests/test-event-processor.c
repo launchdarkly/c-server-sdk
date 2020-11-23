@@ -484,7 +484,8 @@ testExperimentationRuleNonDetailed()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     testConstructAndFree();
@@ -497,6 +498,8 @@ main()
     testDetailsIncludedIfDetailed();
     testExperimentationFallthroughNonDetailed();
     testExperimentationRuleNonDetailed();
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 };

@@ -164,7 +164,8 @@ testAppend()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     testNull();
@@ -175,6 +176,8 @@ main()
     testObject();
     testMerge();
     testAppend();
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }

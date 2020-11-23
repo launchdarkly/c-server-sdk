@@ -403,7 +403,8 @@ testSSENoEventType(struct StreamContext *const context)
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     testParsePathFlags();
@@ -428,6 +429,8 @@ main()
     testStreamContext(testSSEUnknownEventType);
     testStreamContext(testSSENoData);
     testStreamContext(testSSENoEventType);
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }

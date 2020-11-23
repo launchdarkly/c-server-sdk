@@ -23,10 +23,13 @@ prepareEmptyStore()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     runSharedStoreTests(prepareEmptyStore);
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }

@@ -77,13 +77,16 @@ testParseServerTimeHeaderBad()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     testParseHTTPDate();
     testParseServerTimeHeaderActual();
     testParseServerTimeHeaderAlt();
     testParseServerTimeHeaderBad();
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }
