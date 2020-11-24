@@ -2,6 +2,22 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.2.0] - 2020-11-24
+### Added:
+- LDBasicLoggerThreadSafeInitialize used to setup LDBasicLoggerThreadSafe
+- LDBasicLoggerThreadSafe a thread safe alternative to LDBasicLogger
+- LDBasicLoggerThreadSafeShutdown to cleanup LDBasicLoggerThreadSafe resources
+
+### Changed:
+- OSX artifacts are now generated with Xcode 9.4.1
+
+### Fixed:
+- All helgrind concurrency warnings
+
+### Deprecated:
+- Marked LDBasicLogger as deprecated
+
+
 ## [2.1.4] - 2020-07-01
 ### Fixed:
 - Added extra public headers to the `ldserversdk` target to fix Redis usage when embedding the cmake project
