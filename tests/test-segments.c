@@ -285,7 +285,8 @@ testNonMatchingRuleWithMultipleClauses()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     testExplicitIncludeUser();
@@ -295,6 +296,8 @@ main()
     testMatchingRuleWithZeroRollout();
     testMatchingRuleWithMultipleClauses();
     testNonMatchingRuleWithMultipleClauses();
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }

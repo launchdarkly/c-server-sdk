@@ -300,7 +300,8 @@ testWrapperHeader()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     testBasicPoll();
@@ -314,6 +315,8 @@ main()
 
     wrapperHeaderCase = 2;
     testWrapperHeader();
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }

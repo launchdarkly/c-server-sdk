@@ -129,7 +129,8 @@ testJSONVariationDefaultValueOffline()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     testBoolVariationDefaultValueOffline();
@@ -137,6 +138,8 @@ main()
     testDoubleVariationDefaultValueOffline();
     testStringVariationDefaultValueOffline();
     testJSONVariationDefaultValueOffline();
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }

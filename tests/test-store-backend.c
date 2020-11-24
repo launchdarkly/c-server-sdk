@@ -458,6 +458,7 @@ testGetCache()
 
     LD_ASSERT(LDJSONCompare(LDJSONRCGet(item1), LDJSONRCGet(item2)));
 
+    LDJSONFree(staticGetValue);
     LDJSONRCDecrement(item1);
     LDJSONRCDecrement(item2);
     LDStoreDestroy(store);
@@ -627,7 +628,8 @@ testAllCache()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     testFailInit();
@@ -644,6 +646,8 @@ main()
     testGetCache();
     testUpsertCache();
     testAllCache();
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }

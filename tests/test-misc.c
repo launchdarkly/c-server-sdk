@@ -14,8 +14,11 @@ testGenerateUUIDv4()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     testGenerateUUIDv4();
+
+    LDBasicLoggerThreadSafeShutdown();
 }

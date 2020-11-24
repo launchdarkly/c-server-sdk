@@ -1016,7 +1016,8 @@ testLDi_bucketUserByKey()
 int
 main()
 {
-    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLogger);
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();
 
     returnsOffVariationIfFlagIsOff();
@@ -1039,6 +1040,8 @@ main()
     testCanMatchJustOneSegmentFromList();
 
     testLDi_bucketUserByKey();
+
+    LDBasicLoggerThreadSafeShutdown();
 
     return 0;
 }
