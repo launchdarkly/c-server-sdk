@@ -274,8 +274,12 @@ poll(struct LDClient *const client, void *const rawcontext)
         if (!(context->buffer = LDJSONSerialize(events))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
+            LDJSONFree(events);
+
             return NULL;
         }
+
+        LDJSONFree(events);
 
         /* Only generate a UUID once per payload. We want the header to remain
         the same during a retry */

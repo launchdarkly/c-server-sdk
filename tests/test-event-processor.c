@@ -193,6 +193,34 @@ testCounterForNilVariationIsDistinctFromOthers()
 }
 
 static void
+testTrackQueued()
+{
+    const char *key;
+    struct LDClient *client;
+    struct LDUser *user;
+    struct LDJSON *event;
+
+    key = "metric-key1";
+    LD_ASSERT(client = makeOfflineClient());
+    LD_ASSERT(user = LDUserNew("abc"));
+
+    LD_ASSERT(LDClientTrack(client, key, user, NULL));
+
+    LD_ASSERT(client->eventProcessor->events);
+    LD_ASSERT(LDJSONGetType(client->eventProcessor->events) == LDArray);
+    /* event + index */
+    LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 2);
+    LD_ASSERT(event = LDGetIter(client->eventProcessor->events));
+    LD_ASSERT(LDJSONGetType(event) == LDObject);
+    LD_ASSERT(strcmp(key, LDGetText(LDObjectLookup(event, "key"))) == 0);
+    LD_ASSERT(!LDObjectLookup(event, "data"));
+    LD_ASSERT(strcmp("custom", LDGetText(LDObjectLookup(event, "kind"))) == 0);
+
+    LDUserFree(user);
+    LDClientClose(client);
+}
+
+static void
 testTrackMetricQueued()
 {
     double metric;
@@ -218,6 +246,31 @@ testTrackMetricQueued()
     LD_ASSERT(!LDObjectLookup(event, "data"));
     LD_ASSERT(strcmp("custom", LDGetText(LDObjectLookup(event, "kind"))) == 0);
     LD_ASSERT(metric == LDGetNumber(LDObjectLookup(event, "metricValue")));
+
+    LDUserFree(user);
+    LDClientClose(client);
+}
+
+static void
+testIdentifyQueued()
+{
+    struct LDClient *client;
+    struct LDUser *user;
+    struct LDJSON *event;
+
+    LD_ASSERT(client = makeOfflineClient());
+    LD_ASSERT(user = LDUserNew("abc"));
+
+    LD_ASSERT(LDClientIdentify(client, user));
+
+    LD_ASSERT(client->eventProcessor->events);
+    LD_ASSERT(LDJSONGetType(client->eventProcessor->events) == LDArray);
+    LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 1);
+    LD_ASSERT(event = LDGetIter(client->eventProcessor->events));
+    LD_ASSERT(LDJSONGetType(event) == LDObject);
+    LD_ASSERT(strcmp("identify",
+      LDGetText(LDObjectLookup(event, "kind"))) == 0);
+    LD_ASSERT(strcmp("abc", LDGetText(LDObjectLookup(event, "key"))) == 0);
 
     LDUserFree(user);
     LDClientClose(client);
@@ -492,7 +545,9 @@ main()
     testMakeSummaryKeyIncrementsCounters();
     testCounterForNilVariationIsDistinctFromOthers();
     testIndexEventGeneration();
+    testTrackQueued();
     testTrackMetricQueued();
+    testIdentifyQueued();
     testInlineUsersInEvents();
     testDetailsNotIncludedIfNotDetailed();
     testDetailsIncludedIfDetailed();
