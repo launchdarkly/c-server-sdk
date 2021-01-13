@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 2.8.8)
 
 project(ldserverapi-redis)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeFiles")
+
 # ldserverapi-redis targets ----------------------------------------------------
+
+find_package(hiredis REQUIRED)
 
 add_library(ldserverapi-redis
     "src/redis.c"
@@ -11,7 +15,10 @@ add_library(ldserverapi-redis
     "../../src/store.c"
 )
 
-target_link_libraries(ldserverapi-redis PRIVATE hiredis ldserverapi)
+target_link_libraries(ldserverapi-redis
+  PRIVATE ldserverapi
+          ${HIREDIS_LIBRARIES}
+)
 
 target_include_directories(ldserverapi-redis
     PUBLIC  "include"
@@ -21,6 +28,7 @@ target_include_directories(ldserverapi-redis
             "../../third-party/include"
             "../../c-sdk-common/include"
             "../../c-sdk-common/src"
+            ${HIREDIS_INCLUDE_DIRS}
 )
 
 INSTALL(
