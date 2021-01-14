@@ -2,6 +2,21 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.2.1] - 2021-01-14
+### Added:
+- Vendored Findhiredis to ease building the Redis integration
+- Added code coverage reporting functionality to CMake
+- Increased unit test coverage
+
+### Fixed:
+- Added ability to target secondary key
+- Internal assertions that should of been API assertions
+- A memory leak related to every delivery
+- Empty summary events being sent when other events were also being sent
+- A leak of custom attributes if the attributes were replaced after already being set
+- Fixed inverted defensive check in LDClientIsOffline
+- Fixed stream read timeout handling
+
 ## [2.2.0] - 2020-11-24
 ### Added:
 - LDBasicLoggerThreadSafeInitialize used to setup LDBasicLoggerThreadSafe
