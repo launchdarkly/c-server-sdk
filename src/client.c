@@ -18,7 +18,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 {
     struct LDClient *client;
 
-    LD_ASSERT(config);
+    LD_ASSERT_API(config);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (config == NULL) {
@@ -109,7 +109,7 @@ LDClientClose(struct LDClient *const client)
 LDBoolean
 LDClientIsInitialized(struct LDClient *const client)
 {
-    LD_ASSERT(client);
+    LD_ASSERT_API(client);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (client == NULL) {
@@ -126,9 +126,9 @@ LDBoolean
 LDClientTrack(struct LDClient *const client, const char *const key,
     const struct LDUser *const user, struct LDJSON *const data)
 {
-    LD_ASSERT(client);
-    LD_ASSERT(key);
-    LD_ASSERT(user);
+    LD_ASSERT_API(client);
+    LD_ASSERT_API(key);
+    LD_ASSERT_API(user);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (client == NULL) {
@@ -158,9 +158,9 @@ LDClientTrackMetric(struct LDClient *const client, const char *const key,
     const struct LDUser *const user, struct LDJSON *const data,
     const double metric)
 {
-    LD_ASSERT(client);
-    LD_ASSERT(key);
-    LD_ASSERT(user);
+    LD_ASSERT_API(client);
+    LD_ASSERT_API(key);
+    LD_ASSERT_API(user);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (client == NULL) {
@@ -188,8 +188,8 @@ LDClientTrackMetric(struct LDClient *const client, const char *const key,
 LDBoolean
 LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
 {
-    LD_ASSERT(client);
-    LD_ASSERT(user);
+    LD_ASSERT_API(client);
+    LD_ASSERT_API(user);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (client == NULL) {
@@ -211,10 +211,10 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
 LDBoolean
 LDClientIsOffline(struct LDClient *const client)
 {
-    LD_ASSERT(client);
+    LD_ASSERT_API(client);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client) {
+        if (client == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDClientIsOffline NULL client");
 
             return false;
@@ -227,7 +227,7 @@ LDClientIsOffline(struct LDClient *const client)
 LDBoolean
 LDClientFlush(struct LDClient *const client)
 {
-    LD_ASSERT(client);
+    LD_ASSERT_API(client);
 
     #ifdef LAUNCHDARKLY_DEFENSIVE
         if (client == NULL) {

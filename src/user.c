@@ -224,6 +224,8 @@ LDUserSetCustom(struct LDUser *const user, struct LDJSON *const custom)
         }
     #endif
 
+    LDJSONFree(user->custom);
+
     user->custom = custom;
 }
 
@@ -457,6 +459,10 @@ LDi_valueOfAttribute(const struct LDUser *const user,
     if (strcmp(attribute, "key") == 0) {
         if (user->key) {
             return LDNewText(user->key);
+        }
+    } else if (strcmp(attribute, "secondary") == 0) {
+        if (user->secondary) {
+            return LDNewText(user->secondary);
         }
     } else if (strcmp(attribute, "ip") == 0) {
         if (user->ip) {

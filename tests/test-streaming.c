@@ -174,7 +174,7 @@ testStreamContext(void (*const action)())
     LDConfigSetUseLDD(config, true);
     LDConfigSetSendEvents(config, false);
     LD_ASSERT(client = LDClientInit(config, 0));
-    LD_ASSERT(context = LDi_constructStreamContext(client));
+    LD_ASSERT(context = LDi_constructStreamContext(client, NULL, NULL));
 
     action(context);
 

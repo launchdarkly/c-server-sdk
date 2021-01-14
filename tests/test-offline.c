@@ -126,6 +126,18 @@ testJSONVariationDefaultValueOffline()
     LDDetailsClear(&details);
 }
 
+static void
+testOfflineClientReturnsAsOffline()
+{
+    struct LDClient *client;
+
+    LD_ASSERT(client = makeOfflineClient());
+
+    LD_ASSERT(LDClientIsOffline(client) == true);
+
+    LDClientClose(client);
+}
+
 int
 main()
 {
@@ -138,6 +150,7 @@ main()
     testDoubleVariationDefaultValueOffline();
     testStringVariationDefaultValueOffline();
     testJSONVariationDefaultValueOffline();
+    testOfflineClientReturnsAsOffline();
 
     LDBasicLoggerThreadSafeShutdown();
 

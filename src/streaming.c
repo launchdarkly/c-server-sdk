@@ -340,6 +340,8 @@ LDi_streamWriteCallback(const void *const contents, size_t size, size_t nmemb,
     realSize = size * nmemb;
     context  = (struct StreamContext *)rawContext;
 
+    LDi_getMonotonicMilliseconds(&context->lastReadTimeMilliseconds);
+
     if (LDSSEParserProcess(&context->parser, contents, realSize)) {
         return realSize;
     }
@@ -434,10 +436,32 @@ poll(struct LDClient *const client, void *const rawcontext)
     context = (struct StreamContext *)rawcontext;
     curl    = NULL;
 
-    if (context->active || !client->config->stream
-        || context->permanentFailure)
-    {
+    if (!client->config->stream || context->permanentFailure) {
         return NULL;
+    }
+
+    if (context->active) {
+        double now;
+
+        LDi_getMonotonicMilliseconds(&now);
+
+        if ((context->lastReadTimeMilliseconds + (300 * 1000)) <= now) {
+            LD_LOG(LD_LOG_WARNING, "stream read timout killing stream");
+            
+            if (!LDi_removeAndFreeHandle(context->multi,
+                context->networkInterface->current))
+            {
+                return NULL;
+            }
+
+            context->networkInterface->current = NULL;
+
+            done(client, rawcontext, 0);
+
+            return NULL;
+        } else {
+            return NULL;
+        }
     }
 
     /* logic for checking backoff wait */
@@ -539,6 +563,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     }
 
     context->active = true;
+    LDi_getMonotonicMilliseconds(&context->lastReadTimeMilliseconds);
 
     return curl;
 
@@ -549,7 +574,8 @@ poll(struct LDClient *const client, void *const rawcontext)
 }
 
 struct StreamContext *
-LDi_constructStreamContext(struct LDClient *const client)
+LDi_constructStreamContext(struct LDClient *const client,
+    CURLM *const multi, struct NetworkInterface *const networkInterface)
 {
     struct StreamContext *context;
 
@@ -563,19 +589,22 @@ LDi_constructStreamContext(struct LDClient *const client)
 
     LDSSEParserInitialize(&context->parser, LDi_onEvent, context);
 
-    context->active           = false;
-    context->headers          = NULL;
-    context->client           = client;
-    context->attempts         = 0;
-    context->waitUntil        = 0;
-    context->startedOn        = 0;
-    context->permanentFailure = false;
+    context->active                   = false;
+    context->headers                  = NULL;
+    context->client                   = client;
+    context->attempts                 = 0;
+    context->waitUntil                = 0;
+    context->startedOn                = 0;
+    context->permanentFailure         = false;
+    context->multi                    = multi;
+    context->networkInterface         = networkInterface;
+    context->lastReadTimeMilliseconds = 0;
 
     return context;
 }
 
 struct NetworkInterface *
-LDi_constructStreaming(struct LDClient *const client)
+LDi_constructStreaming(struct LDClient *const client, CURLM *const multi)
 {
     struct NetworkInterface *netInterface;
     struct StreamContext *context;
@@ -591,7 +620,7 @@ LDi_constructStreaming(struct LDClient *const client)
         goto error;
     }
 
-    if (!(context = LDi_constructStreamContext(client)))
+    if (!(context = LDi_constructStreamContext(client, multi, netInterface)))
     {
         goto error;
     }

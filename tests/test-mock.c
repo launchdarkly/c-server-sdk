@@ -297,6 +297,81 @@ testWrapperHeader()
     LDi_thread_join(&thread);
 }
 
+static THREAD_RETURN
+testBasicFlush_thread(void *const unused)
+{
+    struct LDHTTPRequest request;
+    struct LDJSON *got, *expected, *tmp;
+
+    LD_ASSERT(unused == NULL);
+
+    LDHTTPRequestInit(&request);
+
+    LDi_readHTTPRequest(acceptFD, &request);
+
+    LD_ASSERT(strcmp("/bulk", request.requestURL) == 0);
+    LD_ASSERT(strcmp("POST", request.requestMethod) == 0);
+
+    LD_ASSERT(strcmp(
+        "key",
+        LDGetText(LDObjectLookup(request.requestHeaders, "Authorization"))
+    ) == 0);
+
+    LD_ASSERT(strcmp(
+        "CServerClient/" LD_SDK_VERSION,
+        LDGetText(LDObjectLookup(request.requestHeaders, "User-Agent"))
+    ) == 0);
+
+    LD_ASSERT(request.requestBody != NULL);
+
+    LD_ASSERT(got = LDJSONDeserialize(request.requestBody));
+    LD_ASSERT(expected = LDJSONDeserialize("[{\"kind\":\"identify\","
+      "\"key\":\"my-user\",\"user\":{\"key\":\"my-user\"}}]"));
+
+    LDObjectDeleteKey(LDArrayLookup(got, 0), "creationDate");
+
+    LD_ASSERT(LDJSONCompare(got, expected));
+
+    LDi_send200(request.requestSocket, NULL);
+
+    LDHTTPRequestDestroy(&request);
+
+    LDJSONFree(got);
+    LDJSONFree(expected);
+    return THREAD_RETURN_DEFAULT;
+}
+
+static void 
+testBasicFlush()
+{
+    ld_thread_t thread;
+    struct LDConfig *config;
+    struct LDClient *client;
+    struct LDUser *user;
+    char pollURL[1024];
+
+    LDi_listenOnRandomPort(&acceptFD, &acceptPort);
+    LDi_thread_create(&thread, testBasicFlush_thread, NULL);
+
+    LD_ASSERT(snprintf(pollURL, 1024, "http://127.0.0.1:%d", acceptPort) > 0);
+
+    LD_ASSERT(config = LDConfigNew("key"));
+    LD_ASSERT(LDConfigSetStreamURI(config, "http://192.0.2.0"));
+    LD_ASSERT(LDConfigSetEventsURI(config, pollURL));
+
+    LD_ASSERT(client = LDClientInit(config, 0));
+    LD_ASSERT(user = LDUserNew("my-user"));
+
+    LD_ASSERT(LDClientIdentify(client, user));
+    LDClientFlush(client);
+
+    LDi_thread_join(&thread);
+    LDi_closeSocket(acceptFD);
+
+    LDUserFree(user);
+    LDClientClose(client);
+}
+
 int
 main()
 {
@@ -306,6 +381,7 @@ main()
 
     testBasicPoll();
     testBasicStream();
+    testBasicFlush();
 
     wrapperHeaderCase = 0;
     testWrapperHeader();

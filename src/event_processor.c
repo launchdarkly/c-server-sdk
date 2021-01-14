@@ -1409,36 +1409,38 @@ LDi_bundleEventPayload(
         return false;
     }
 
-    if (!(nextSummaryCounters = LDNewObject())) {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
+    if (LDCollectionGetSize(context->summaryCounters) != 0) {
+        if (!(nextSummaryCounters = LDNewObject())) {
+            LD_LOG(LD_LOG_ERROR, "alloc error");
 
-        LDi_mutex_unlock(&context->lock);
+            LDi_mutex_unlock(&context->lock);
 
-        LDJSONFree(nextEvents);
+            LDJSONFree(nextEvents);
 
-        return false;
+            return false;
+        }
+
+        if (!(summaryEvent = LDi_prepareSummaryEvent(context, now))) {
+            LD_LOG(LD_LOG_ERROR, "failed to prepare summary");
+
+            LDi_mutex_unlock(&context->lock);
+
+            LDJSONFree(nextEvents);
+            LDJSONFree(nextSummaryCounters);
+
+            return false;
+        }
+
+        LDArrayPush(context->events, summaryEvent);
+
+        LDJSONFree(context->summaryCounters);
+
+        context->summaryStart    = 0;
+        context->summaryCounters = nextSummaryCounters;
     }
 
-    if (!(summaryEvent = LDi_prepareSummaryEvent(context, now))) {
-        LD_LOG(LD_LOG_ERROR, "failed to prepare summary");
-
-        LDi_mutex_unlock(&context->lock);
-
-        LDJSONFree(nextEvents);
-        LDJSONFree(nextSummaryCounters);
-
-        return false;
-    }
-
-    LDArrayPush(context->events, summaryEvent);
-
-    *result = context->events;
-
-    LDJSONFree(context->summaryCounters);
-
-    context->summaryStart    = 0;
-    context->events          = nextEvents;
-    context->summaryCounters = nextSummaryCounters;
+    *result         = context->events;
+    context->events = nextEvents;
 
     LDi_mutex_unlock(&context->lock);
 

@@ -99,6 +99,15 @@ LDi_prepareShared(const struct LDConfig *const config, const char *const url,
         goto error;
     }
 
+    if (curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS,
+        (long)config->timeout) != CURLE_OK)
+    {
+        LD_LOG(LD_LOG_CRITICAL,
+            "curl_easy_setopt CURLOPT_CONNECTTIMEOUT_MS failed");
+
+        goto error;
+    }
+
     *o_curl    = curl;
     *o_headers = headers;
 
@@ -110,6 +119,48 @@ LDi_prepareShared(const struct LDConfig *const config, const char *const url,
     curl_slist_free_all(headers);
 
     return false;
+}
+
+bool
+LDi_addHandle(CURLM *const multi, struct NetworkInterface *networkInterface,
+    CURL *const handle)
+{
+    LD_ASSERT(multi);
+    LD_ASSERT(networkInterface);
+    LD_ASSERT(handle);
+
+    if (curl_easy_setopt(
+        handle, CURLOPT_PRIVATE, networkInterface) != CURLE_OK)
+    {
+        LD_LOG(LD_LOG_ERROR, "failed to associate context");
+
+        return false;
+    }
+
+    if (curl_multi_add_handle(multi, handle) != CURLM_OK) {
+        LD_LOG(LD_LOG_ERROR, "failed to add handle");
+
+        return false;
+    }
+
+    return true;
+}
+
+bool
+LDi_removeAndFreeHandle(CURLM *const multi, CURL *const handle)
+{
+    LD_ASSERT(multi);
+    LD_ASSERT(handle);
+    
+    if (curl_multi_remove_handle(multi, handle) != CURLM_OK) {
+        LD_LOG(LD_ERROR, "curl_multi_remove_handle failed");
+
+        return false;
+    }
+
+    curl_easy_cleanup(handle);
+
+    return true;
 }
 
 THREAD_RETURN
@@ -139,7 +190,9 @@ LDi_networkthread(void* const clientref)
             return THREAD_RETURN_DEFAULT;
         }
 
-        if (!(interfaces[interfacecount++] = LDi_constructStreaming(client))) {
+        if (!(interfaces[interfacecount++] =
+            LDi_constructStreaming(client, multihandle)))
+        {
             LD_LOG(LD_LOG_ERROR, "failed to construct streaming");
 
             return THREAD_RETURN_DEFAULT;
@@ -177,25 +230,12 @@ LDi_networkthread(void* const clientref)
             for (i = 0; i < interfacecount; i++) {
                 CURL *handle;
 
-                /* not waiting on backoff */
                 handle = interfaces[i]->poll(client, interfaces[i]->context);
 
                 if (handle) {
                     interfaces[i]->current = handle;
-
-                    if (curl_easy_setopt(
-                        handle, CURLOPT_PRIVATE, interfaces[i]) != CURLE_OK)
-                    {
-                        LD_LOG(LD_LOG_ERROR, "failed to associate context");
-
-                        goto cleanup;
-                    }
-
-                    if (curl_multi_add_handle(
-                        multihandle, handle) != CURLM_OK)
-                    {
-                        LD_LOG(LD_LOG_ERROR, "failed to add handle");
-
+                   
+                    if (!LDi_addHandle(multihandle, interfaces[i], handle)) {
                         goto cleanup;
                     }
                 }
@@ -211,7 +251,6 @@ LDi_networkthread(void* const clientref)
                 long responseCode;
                 CURL *easy = info->easy_handle;
                 struct NetworkInterface *netInterface = NULL;
-                CURLMcode status;
 
                 if (curl_easy_getinfo(
                     easy, CURLINFO_RESPONSE_CODE, &responseCode) != CURLE_OK)
@@ -247,11 +286,10 @@ LDi_networkthread(void* const clientref)
                     info->data.result == CURLE_OK ? responseCode : 0);
 
                 netInterface->current = NULL;
-
-                status = curl_multi_remove_handle(multihandle, easy);
-                LD_ASSERT(status == CURLM_OK);
-
-                curl_easy_cleanup(easy);
+                
+                if (!LDi_removeAndFreeHandle(multihandle, easy)) {
+                    goto cleanup;
+                }
             }
         } while (info);
 
@@ -280,12 +318,11 @@ LDi_networkthread(void* const clientref)
             struct NetworkInterface *const netInterface = interfaces[i];
 
             if (netInterface->current) {
-                status = curl_multi_remove_handle(multihandle,
-                    netInterface->current);
-
-                LD_ASSERT(status == CURLM_OK);
-
-                curl_easy_cleanup(netInterface->current);
+                if (!LDi_removeAndFreeHandle(multihandle,
+                    netInterface->current))
+                {
+                    return THREAD_RETURN_DEFAULT;
+                }
             }
 
             netInterface->destroy(netInterface->context);
