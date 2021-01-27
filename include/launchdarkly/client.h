@@ -78,6 +78,19 @@ LD_EXPORT(LDBoolean) LDClientTrackMetric(struct LDClient *const client,
     struct LDJSON *const data, const double metric);
 
 /**
+ * @brief Record a alias event
+ * @param[in] client The client to use. May not be `NULL`.
+ * @param[in] currentUser The new version of a user. Ownership is not
+ * transferred. May not be `NULL`.
+ * @param[in] previousUser The previous version of a user. Ownership is not
+ * transferred. May not be `NULL`.
+ * @return True if the event was queued, False on error.
+ */
+LD_EXPORT(LDBoolean) LDClientAlias(struct LDClient *const client,
+    const struct LDUser *const currentUser,
+    const struct LDUser *const previousUser);
+
+/**
  * @brief Generates an identify event for a user.
  * @param[in] client The client to use. May not be `NULL`.
  * @param[in] user The user to generate the event for. Ownership is not

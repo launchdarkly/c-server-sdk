@@ -1,5 +1,6 @@
 #pragma once
 
+#include <launchdarkly/boolean.h>
 #include <launchdarkly/json.h>
 #include <launchdarkly/variations.h>
 
@@ -32,6 +33,13 @@ LDi_track(
     struct LDJSON *const         data,
     const double                 metric,
     const bool                   hasMetric
+);
+
+LDBoolean
+LDi_alias(
+    struct EventProcessor *const context,
+    const struct LDUser *const   currentUser,
+    const struct LDUser *const   previousUser
 );
 
 bool

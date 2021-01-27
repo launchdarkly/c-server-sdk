@@ -534,6 +534,65 @@ testExperimentationRuleNonDetailed()
     LDClientClose(client);
 }
 
+static void
+testConstructAliasEvent()
+{
+    struct LDUser *previous, *current;
+    struct LDJSON *result, *expected;
+
+    LD_ASSERT(previous = LDUserNew("a"));
+    LD_ASSERT(current = LDUserNew("b"));
+
+    LDUserSetAnonymous(previous, true);
+
+    LD_ASSERT(result = LDi_newAliasEvent(current, previous, 52));
+
+    LD_ASSERT(expected = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(expected, "kind", LDNewText("alias")));
+    LD_ASSERT(LDObjectSetKey(expected, "creationDate", LDNewNumber(52)));
+    LD_ASSERT(LDObjectSetKey(expected, "key", LDNewText("b")));
+    LD_ASSERT(LDObjectSetKey(expected, "contextKind", LDNewText("user")));
+    LD_ASSERT(LDObjectSetKey(expected, "previousKey", LDNewText("a")));
+    LD_ASSERT(LDObjectSetKey(expected, "previousContextKind",
+      LDNewText("anonymousUser")));
+
+    LD_ASSERT(LDJSONCompare(result, expected));
+
+    LDJSONFree(expected);
+    LDJSONFree(result);
+    LDUserFree(previous);
+    LDUserFree(current);
+}
+
+static void
+testAliasEventIsQueued()
+{
+    struct LDClient *client;
+    double metricValue;
+    const char *metricName;
+    struct LDJSON *payload, *event;
+    struct LDUser *previous, *current;
+
+    LD_ASSERT(previous = LDUserNew("p"));
+    LD_ASSERT(current = LDUserNew("c"));
+
+    LD_ASSERT(client = makeOfflineClient());
+
+    LDClientAlias(client, current, previous);
+
+    LD_ASSERT(LDi_bundleEventPayload(client->eventProcessor, &payload))
+
+    LD_ASSERT(LDCollectionGetSize(payload) == 1);
+    LD_ASSERT(event = LDArrayLookup(payload, 0));
+    LD_ASSERT(strcmp("alias", LDGetText(LDObjectLookup(event, "kind"))) == 0);
+
+    LDUserFree(previous);
+    LDUserFree(current);
+    LDJSONFree(payload);
+
+    LDClientClose(client);
+}
+
 int
 main()
 {
@@ -553,6 +612,8 @@ main()
     testDetailsIncludedIfDetailed();
     testExperimentationFallthroughNonDetailed();
     testExperimentationRuleNonDetailed();
+    testConstructAliasEvent();
+    testAliasEventIsQueued();
 
     LDBasicLoggerThreadSafeShutdown();
 
