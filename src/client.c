@@ -186,6 +186,39 @@ LDClientTrackMetric(struct LDClient *const client, const char *const key,
 }
 
 LDBoolean
+LDClientAlias(
+    struct LDClient *const     client,
+    const struct LDUser *const currentUser,
+    const struct LDUser *const previousUser
+) {
+    LD_ASSERT_API(client);
+    LD_ASSERT_API(currentUser);
+    LD_ASSERT_API(previousUser);
+
+    #ifdef LAUNCHDARKLY_DEFENSIVE
+        if (client == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL client");
+
+            return 0;
+        }
+
+        if (currentUser == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL currentUser");
+
+            return 0;
+        }
+
+        if (previousUser == NULL) {
+            LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL previousUser");
+
+            return 0;
+        }
+    #endif
+
+    return LDi_alias(client->eventProcessor, currentUser, previousUser);
+}
+
+LDBoolean
 LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
 {
     LD_ASSERT_API(client);
