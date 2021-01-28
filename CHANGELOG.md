@@ -2,6 +2,11 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.3.0] - 2021-01-28
+### Added:
+- Added the `LDClientAlias` function. This can be used to associate two user objects for analytics purposes with an alias event.
+
+
 ## [2.2.1] - 2021-01-14
 ### Added:
 - Vendored Findhiredis to ease building the Redis integration
