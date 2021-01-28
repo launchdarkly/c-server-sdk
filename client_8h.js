@@ -1,5 +1,6 @@
 var client_8h =
 [
+    [ "LDClientAlias", "client_8h.html#a84c050587535ce32ded2ed86f609d7ed", null ],
     [ "LDClientClose", "client_8h.html#af3ef6e68348337a5b7688153962ff3b5", null ],
     [ "LDClientFlush", "client_8h.html#a6d0bd8246aafc9158c795128426ab499", null ],
     [ "LDClientIdentify", "client_8h.html#a696a5bebe952dc076488e9fb2562b091", null ],
