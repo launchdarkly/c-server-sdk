@@ -1055,6 +1055,33 @@ LDi_clauseMatchesUserNoSegments(const struct LDJSON *const clause,
     }
 }
 
+static float
+LDi_hexToDecimal(const char *const input)
+{
+    float acc;
+    const char *i;
+
+    LD_ASSERT(input);
+
+    acc = 0;
+
+    for (i = input; *i != '\0'; i++) {
+        char charOffset;
+
+        if (*i >= 48 && *i <= 57) {
+            charOffset = *i - 48;
+        } else if (*i >= 97 && *i <= 102) {
+            charOffset = *i - 87;
+        } else {
+            return 0.0;
+        }
+
+        acc = (acc * 16) + charOffset;
+    }
+
+    return acc;
+}
+
 bool
 LDi_bucketUser(const struct LDUser *const user, const char *const segmentKey,
     const char *const attribute, const char *const salt, float *const bucket)
@@ -1096,7 +1123,7 @@ LDi_bucketUser(const struct LDUser *const user, const char *const segmentKey,
         {
             int status;
             char digest[21], encoded[17];
-            const float longScale = 0xFFFFFFFFFFFFFFF;
+            const float longScale = 1152921504606846975.0;
 
             SHA1(digest, raw, strlen(raw));
 
@@ -1107,7 +1134,7 @@ LDi_bucketUser(const struct LDUser *const user, const char *const segmentKey,
 
             encoded[15] = 0;
 
-            *bucket = (float)strtoll(encoded, NULL, 16) / longScale;
+            *bucket = LDi_hexToDecimal(encoded) / longScale;
 
             LDJSONFree(attributeValue);
 

@@ -122,8 +122,8 @@ LDi_prepareShared(const struct LDConfig *const config, const char *const url,
 }
 
 bool
-LDi_addHandle(CURLM *const multi, struct NetworkInterface *networkInterface,
-    CURL *const handle)
+LDi_addHandle(CURLM *const multi,
+    struct NetworkInterface *const networkInterface, CURL *const handle)
 {
     LD_ASSERT(multi);
     LD_ASSERT(networkInterface);
@@ -153,7 +153,7 @@ LDi_removeAndFreeHandle(CURLM *const multi, CURL *const handle)
     LD_ASSERT(handle);
     
     if (curl_multi_remove_handle(multi, handle) != CURLM_OK) {
-        LD_LOG(LD_ERROR, "curl_multi_remove_handle failed");
+        LD_LOG(LD_LOG_ERROR, "curl_multi_remove_handle failed");
 
         return false;
     }

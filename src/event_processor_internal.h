@@ -74,7 +74,7 @@ LDi_newAliasEvent(
 void
 LDi_possiblyQueueEvent(
     struct EventProcessor *const context,
-    struct LDJSON *const         event,
+    struct LDJSON *              event,
     const double                 now,
     const bool                   detailedEvaluation
 );

@@ -8,6 +8,7 @@ workflows:
   build_and_test_all:
     jobs:
       - build-test-linux
+      - build-test-linux-optimized
       - build-test-linux-32bit
       - build-test-osx
       - build-test-windows
@@ -32,6 +33,26 @@ jobs:
           command: |
             cd build
             ctest -T memcheck
+
+  build-test-linux-optimized:
+    docker:
+      - image: ldcircleci/ld-c-sdk-ubuntu  # defined in sdks-ci-docker project
+      - image: redis
+    environment:
+      CTEST_OUTPUT_ON_FAILURE: 1
+    steps:
+      - checkout
+      - run:
+          name: Build
+          command: |
+            mkdir build && cd build
+            cmake -D CMAKE_BUILD_TYPE=Release -D REDIS_STORE=ON ..
+            cmake --build .
+      - run:
+          name: Unit test
+          command: |
+            cd build
+            make test
 
   build-test-linux-32bit:
     docker:
