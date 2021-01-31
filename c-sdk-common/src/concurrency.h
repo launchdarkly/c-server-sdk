@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdbool.h>
+#include <launchdarkly/boolean.h>
 
 #ifdef _WIN32
     #include <windows.h>
@@ -40,17 +40,17 @@
     #endif
 #endif
 
-typedef bool (*ld_mutex_unary_t)(ld_mutex_t *const mutex);
+typedef LDBoolean (*ld_mutex_unary_t)(ld_mutex_t *const mutex);
 
-typedef bool (*ld_thread_join_t)(ld_thread_t *const thread);
-typedef bool (*ld_thread_create_t)(ld_thread_t *const thread,
+typedef LDBoolean (*ld_thread_join_t)(ld_thread_t *const thread);
+typedef LDBoolean (*ld_thread_create_t)(ld_thread_t *const thread,
     THREAD_RETURN (*const routine)(void *), void *const argument);
 
-typedef bool (*ld_rwlock_unary_t)(ld_rwlock_t *const lock);
+typedef LDBoolean (*ld_rwlock_unary_t)(ld_rwlock_t *const lock);
 
-typedef bool (*ld_cond_unary_t)(ld_cond_t *const cond);
-typedef bool (*ld_cond_wait_t)(ld_cond_t *const cond, ld_mutex_t *const mutex,
-    const int milliseconds);
+typedef LDBoolean (*ld_cond_unary_t)(ld_cond_t *const cond);
+typedef LDBoolean (*ld_cond_wait_t)(ld_cond_t *const cond,
+    ld_mutex_t *const mutex, const int milliseconds);
 
 extern ld_mutex_unary_t   LDi_mutex_init;
 extern ld_mutex_unary_t   LDi_mutex_destroy;

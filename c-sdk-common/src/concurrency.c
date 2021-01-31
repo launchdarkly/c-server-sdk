@@ -1,11 +1,12 @@
 #include <errno.h>
+#include <string.h>
 
 #include "assertion.h"
 #include "utility.h"
 #include "logging.h"
 #include "concurrency.h"
 
-static bool
+static LDBoolean
 LDi_thread_join_imp(ld_thread_t *const thread)
 {
     int status;
@@ -17,8 +18,8 @@ LDi_thread_join_imp(ld_thread_t *const thread)
     LD_ASSERT(thread);
 
     #ifdef _WIN32
-        if ((status =
-            (WaitForSingleObject(*thread, INFINITE) == WAIT_OBJECT_0) != true))
+        if ((status = (WaitForSingleObject(*thread, INFINITE) == WAIT_OBJECT_0)
+            != LDBooleanTrue))
         {
             LD_LOG(LD_LOG_CRITICAL, "WaitForSingleObject failed");
         }
@@ -40,7 +41,7 @@ LDi_thread_join_imp(ld_thread_t *const thread)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_thread_create_imp(ld_thread_t *const thread,
     THREAD_RETURN (*const routine)(void *), void *const argument)
 {
@@ -78,7 +79,7 @@ LDi_thread_create_imp(ld_thread_t *const thread,
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_mutex_init_imp(ld_mutex_t *const mutex)
 {
     int status;
@@ -135,6 +136,7 @@ LDi_mutex_init_imp(ld_mutex_t *const mutex)
         }
     #endif
 
+#ifndef _WIN32
   done:
     #ifdef LAUNCHDARKLY_CONCURRENCY_ABORT
         LD_ASSERT(status == 0);
@@ -143,11 +145,12 @@ LDi_mutex_init_imp(ld_mutex_t *const mutex)
     #ifdef LAUNCHDARKLY_TRACE_CONCURRENCY
         LD_LOG_1(LD_LOG_TRACE, "LDi_mutex_init end %p", (void *)mutex);
     #endif
+#endif
 
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_mutex_init_nl_imp(ld_mutex_t *const mutex)
 {
     int status;
@@ -186,11 +189,14 @@ LDi_mutex_init_nl_imp(ld_mutex_t *const mutex)
         }
     #endif
 
+#ifndef _WIN32
   done:
+#endif
+
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_mutex_destroy_imp(ld_mutex_t *const mutex)
 {
     int status;
@@ -223,7 +229,7 @@ LDi_mutex_destroy_imp(ld_mutex_t *const mutex)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_mutex_destroy_nl_imp(ld_mutex_t *const mutex)
 {
     int status;
@@ -239,7 +245,7 @@ LDi_mutex_destroy_nl_imp(ld_mutex_t *const mutex)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_mutex_lock_imp(ld_mutex_t *const mutex)
 {
     int status;
@@ -272,7 +278,7 @@ LDi_mutex_lock_imp(ld_mutex_t *const mutex)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_mutex_lock_nl_imp(ld_mutex_t *const mutex)
 {
     int status;
@@ -288,7 +294,7 @@ LDi_mutex_lock_nl_imp(ld_mutex_t *const mutex)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_mutex_unlock_imp(ld_mutex_t *const mutex)
 {
     int status;
@@ -321,7 +327,7 @@ LDi_mutex_unlock_imp(ld_mutex_t *const mutex)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_mutex_unlock_nl_imp(ld_mutex_t *const mutex)
 {
     int status;
@@ -337,7 +343,7 @@ LDi_mutex_unlock_nl_imp(ld_mutex_t *const mutex)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_rwlock_init_imp(ld_rwlock_t *const lock)
 {
     int status;
@@ -349,7 +355,7 @@ LDi_rwlock_init_imp(ld_rwlock_t *const lock)
     LD_ASSERT(lock);
 
     #ifdef LAUNCHDARKLY_MUTEX_ONLY
-        status = LDi_mutex_init(lock) != true;
+        status = LDi_mutex_init(lock) != LDBooleanTrue;
     #else
         #ifdef _WIN32
             InitializeSRWLock(lock);
@@ -374,7 +380,7 @@ LDi_rwlock_init_imp(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_rwlock_destroy_imp(ld_rwlock_t *const lock)
 {
     int status;
@@ -386,7 +392,7 @@ LDi_rwlock_destroy_imp(ld_rwlock_t *const lock)
     LD_ASSERT(lock);
 
     #ifdef LAUNCHDARKLY_MUTEX_ONLY
-        status = LDi_mutex_destroy(lock) != true;
+        status = LDi_mutex_destroy(lock) != LDBooleanTrue;
     #else
         #ifdef _WIN32
             /* no cleanup procedure for windows */
@@ -411,7 +417,7 @@ LDi_rwlock_destroy_imp(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_rwlock_rdlock_imp(ld_rwlock_t *const lock)
 {
     int status;
@@ -423,7 +429,7 @@ LDi_rwlock_rdlock_imp(ld_rwlock_t *const lock)
     LD_ASSERT(lock);
 
     #ifdef LAUNCHDARKLY_MUTEX_ONLY
-        status = LDi_mutex_lock(lock) != true;
+        status = LDi_mutex_lock(lock) != LDBooleanTrue;
     #else
         #ifdef _WIN32
             AcquireSRWLockShared(lock);
@@ -448,7 +454,7 @@ LDi_rwlock_rdlock_imp(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_rwlock_wrlock_imp(ld_rwlock_t *const lock)
 {
     int status;
@@ -460,7 +466,7 @@ LDi_rwlock_wrlock_imp(ld_rwlock_t *const lock)
     LD_ASSERT(lock);
 
     #ifdef LAUNCHDARKLY_MUTEX_ONLY
-        status = LDi_mutex_lock(lock) != true;
+        status = LDi_mutex_lock(lock) != LDBooleanTrue;
     #else
         #ifdef _WIN32
             AcquireSRWLockExclusive(lock);
@@ -485,7 +491,7 @@ LDi_rwlock_wrlock_imp(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_rwlock_rdunlock_imp(ld_rwlock_t *const lock)
 {
     int status;
@@ -497,7 +503,7 @@ LDi_rwlock_rdunlock_imp(ld_rwlock_t *const lock)
     LD_ASSERT(lock);
 
     #ifdef LAUNCHDARKLY_MUTEX_ONLY
-        status = LDi_mutex_unlock(lock) != true;
+        status = LDi_mutex_unlock(lock) != LDBooleanTrue;
     #else
         #ifdef _WIN32
             ReleaseSRWLockShared(lock);
@@ -522,7 +528,7 @@ LDi_rwlock_rdunlock_imp(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_rwlock_wrunlock_imp(ld_rwlock_t *const lock)
 {
     int status;
@@ -534,7 +540,7 @@ LDi_rwlock_wrunlock_imp(ld_rwlock_t *const lock)
     LD_ASSERT(lock);
 
     #ifdef LAUNCHDARKLY_MUTEX_ONLY
-        status = LDi_mutex_unlock(lock) != true;
+        status = LDi_mutex_unlock(lock) != LDBooleanTrue;
     #else
         #ifdef _WIN32
             ReleaseSRWLockExclusive(lock);
@@ -559,7 +565,7 @@ LDi_rwlock_wrunlock_imp(ld_rwlock_t *const lock)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_cond_wait_imp(ld_cond_t *const cond, ld_mutex_t *const mutex,
     const int milliseconds)
 {
@@ -588,7 +594,9 @@ LDi_cond_wait_imp(ld_cond_t *const cond, ld_mutex_t *const mutex,
             status = 0;
         }
     #else
-        if ((status = LDi_clockGetTime(&ts, LD_CLOCK_REALTIME) == false)) {
+        if ((status = LDi_clockGetTime(&ts, LD_CLOCK_REALTIME)
+            == LDBooleanFalse))
+        {
             goto done;
         }
 
@@ -611,7 +619,10 @@ LDi_cond_wait_imp(ld_cond_t *const cond, ld_mutex_t *const mutex,
         }
     #endif
 
+#ifndef _WIN32
   done:
+#endif
+
     #ifdef LAUNCHDARKLY_CONCURRENCY_ABORT
         LD_ASSERT(status == 0);
     #endif
@@ -624,7 +635,7 @@ LDi_cond_wait_imp(ld_cond_t *const cond, ld_mutex_t *const mutex,
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_cond_signal_imp(ld_cond_t *const cond)
 {
     int status;
@@ -657,7 +668,7 @@ LDi_cond_signal_imp(ld_cond_t *const cond)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_cond_destroy_imp(ld_cond_t *const cond)
 {
     int status;
@@ -689,7 +700,7 @@ LDi_cond_destroy_imp(ld_cond_t *const cond)
     return status == 0;
 }
 
-static bool
+static LDBoolean
 LDi_cond_init_imp(ld_cond_t *const cond)
 {
     int status;

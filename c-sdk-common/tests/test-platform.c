@@ -1,4 +1,4 @@
-#include <launchdarkly/api.h>
+#include <launchdarkly/memory.h>
 
 #include "assertion.h"
 #include "concurrency.h"
@@ -71,7 +71,7 @@ testRWLock()
 
 struct Context {
     ld_rwlock_t lock;
-    bool flag;
+    LDBoolean flag;
 };
 
 static THREAD_RETURN
@@ -79,10 +79,10 @@ threadGoAwait(void *const rawcontext)
 {
     struct Context *context = (struct Context *)rawcontext;
 
-    while (true) {
+    while (LDBooleanTrue) {
         LD_ASSERT(LDi_rwlock_wrlock(&context->lock));
         if (context->flag) {
-            context->flag = false;
+            context->flag = LDBooleanFalse;
             LD_ASSERT(LDi_rwlock_wrunlock(&context->lock));
             break;
         }
@@ -100,18 +100,18 @@ testConcurrency()
     ld_thread_t thread;
 
     struct Context context;
-    context.flag = false;
+    context.flag = LDBooleanFalse;
 
     LD_ASSERT(LDi_rwlock_init(&context.lock));
     LD_ASSERT(LDi_thread_create(&thread, threadGoAwait, &context));
 
     LD_ASSERT(LDi_sleepMilliseconds(25));
     LD_ASSERT(LDi_rwlock_wrlock(&context.lock));
-    context.flag = true;
+    context.flag = LDBooleanTrue;
     LD_ASSERT(LDi_rwlock_wrunlock(&context.lock));
 
-    while (true) {
-        bool status;
+    while (LDBooleanTrue) {
+        LDBoolean status;
 
         LD_ASSERT(LDi_rwlock_wrlock(&context.lock));
         status = context.flag;

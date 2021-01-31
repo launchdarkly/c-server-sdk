@@ -2,7 +2,9 @@
 
 #include <stddef.h>
 
-typedef bool (*ld_sse_dispatch)(const char *const name,
+#include <launchdarkly/boolean.h>
+
+typedef LDBoolean (*ld_sse_dispatch)(const char *const name,
     const char *const body, void *const context);
 
 struct LDSSEParser {
@@ -19,5 +21,5 @@ void LDSSEParserInitialize(struct LDSSEParser *const parser,
 
 void LDSSEParserDestroy(struct LDSSEParser *const parser);
 
-bool LDSSEParserProcess(struct LDSSEParser *const parser,
+LDBoolean LDSSEParserProcess(struct LDSSEParser *const parser,
     const void *const buffer, const size_t bufferSize);

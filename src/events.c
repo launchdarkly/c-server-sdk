@@ -14,16 +14,16 @@
 #include "utility.h"
 #include "lru.h"
 
-bool
+LDBoolean
 LDi_notNull(const struct LDJSON *const json)
 {
     if (json) {
         if (LDJSONGetType(json) != LDNull) {
-            return true;
+            return LDBooleanTrue;
         }
     }
 
-    return false;
+    return LDBooleanFalse;
 }
 
 struct AnalyticsContext {

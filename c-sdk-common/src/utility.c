@@ -30,7 +30,7 @@ LDi_strncasecmp(const char *const s1, const char *const s2, const size_t n)
     #endif
 }
 
-bool
+LDBoolean
 LDi_random(unsigned int *const result)
 {
     #ifdef _WIN32
@@ -41,7 +41,7 @@ LDi_random(unsigned int *const result)
         return status == 0;
     #else
         static unsigned int state;
-        static bool init = false;
+        static LDBoolean init = LDBooleanFalse;
         static ld_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
         LD_ASSERT(result);
@@ -50,23 +50,24 @@ LDi_random(unsigned int *const result)
 
         if (!init) {
             state = time(NULL);
-            init  = true;
+            init  = LDBooleanTrue;
         }
 
         *result = rand_r(&state);
 
         LDi_mutex_unlock(&lock);
 
-        return true;
+        return LDBooleanTrue;
     #endif
 }
 
-bool
+LDBoolean
 LDi_sleepMilliseconds(const unsigned long milliseconds)
 {
     #ifdef _WIN32
         Sleep(milliseconds);
-        return true;
+
+        return LDBooleanTrue;
     #else
         int status;
         useconds_t usec;
@@ -85,18 +86,18 @@ LDi_sleepMilliseconds(const unsigned long milliseconds)
                 LD_LOG(LD_LOG_WARNING,
                     "LDi_sleepMilliseconds usleep got EINTR skipping sleep");
 
-                return false;
+                return LDBooleanFalse;
             } else {
                 LD_LOG_1(LD_LOG_CRITICAL, "usleep failed with: %s",
                     strerror(errno));
 
-                LD_ASSERT(false);
+                LD_ASSERT(LDBooleanFalse);
 
-                return false;
+                return LDBooleanFalse;
             }
         }
 
-        return true;
+        return LDBooleanTrue;
     #endif
 }
 
@@ -107,7 +108,7 @@ LDi_sleepMilliseconds(const unsigned long milliseconds)
         return ((double)ts.tv_sec * 1000.0) + ((double)ts.tv_nsec / 1000000.0);
     }
 
-    bool
+    LDBoolean
     LDi_clockGetTime(struct timespec *const ts, ld_clock_t clockid)
     {
         #ifdef __APPLE__
@@ -119,65 +120,71 @@ LDi_sleepMilliseconds(const unsigned long milliseconds)
                 &clock_serve);
 
             if (status != KERN_SUCCESS) {
-                return false;
+                return LDBooleanFalse;
             }
 
             status = clock_get_time(clock_serve, &mach_timespec);
             mach_port_deallocate(mach_task_self(), clock_serve);
 
             if (status != KERN_SUCCESS) {
-                return false;
+                return LDBooleanFalse;
             }
 
             ts->tv_sec  = mach_timespec.tv_sec;
             ts->tv_nsec = mach_timespec.tv_nsec;
         #else
             if (clock_gettime(clockid, ts) != 0) {
-                return false;
+                return LDBooleanFalse;
             }
         #endif
 
-        return true;
+        return LDBooleanTrue;
     }
 #endif
 
-bool
+LDBoolean
 LDi_getMonotonicMilliseconds(double *const resultMilliseconds)
 {
     #ifdef _WIN32
-        *resultMilliseconds = GetTickCount64();
-        return true;
+        *resultMilliseconds = (double)GetTickCount64();
+
+        return LDBooleanTrue;
     #else
         struct timespec ts;
         if (LDi_clockGetTime(&ts, LD_CLOCK_MONOTONIC)) {
             *resultMilliseconds = LDi_timeSpecToMilliseconds(ts);
-            return true;
+
+            return LDBooleanTrue;
         } else {
-            LD_ASSERT(false);
-            return false;
+            LD_ASSERT(LDBooleanFalse);
+
+            return LDBooleanFalse;
         }
     #endif
 }
 
-bool
+LDBoolean
 LDi_getUnixMilliseconds(double *const resultMilliseconds)
 {
     #ifdef _WIN32
         *resultMilliseconds = (double)time(NULL) * 1000.0;
-        return true;
+
+        return LDBooleanTrue;
     #else
         struct timespec ts;
         if (LDi_clockGetTime(&ts, LD_CLOCK_REALTIME)) {
             *resultMilliseconds = LDi_timeSpecToMilliseconds(ts);
-            return true;
+
+            return LDBooleanTrue;
         } else {
-            LD_ASSERT(false);
-            return false;
+            LD_ASSERT(LDBooleanFalse);
+
+            return LDBooleanFalse;
         }
     #endif
 }
 
-bool
+LDBoolean
 LDSetString(char **const target, const char *const value)
 {
     if (value) {
@@ -188,16 +195,16 @@ LDSetString(char **const target, const char *const value)
 
             *target = tmp;
 
-            return true;
+            return LDBooleanTrue;
         } else {
-            return false;
+            return LDBooleanFalse;
         }
     } else {
         LDFree(*target);
 
         *target = NULL;
 
-        return true;
+        return LDBooleanTrue;
     }
 }
 
@@ -208,7 +215,7 @@ LDi_normalize(const double n, const double nmin, const double nmax,
     return (n - nmin) * (omax - omin) / (nmax - nmin) + omin;
 }
 
-bool
+LDBoolean
 LDi_randomHex(char *const buffer, const size_t bufferSize)
 {
     size_t i;
@@ -220,18 +227,18 @@ LDi_randomHex(char *const buffer, const size_t bufferSize)
             buffer[i] = alphabet[rng % 16];
         }
         else {
-            return false;
+            return LDBooleanFalse;
         }
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
-bool
+LDBoolean
 LDi_UUIDv4(char *const buffer)
 {
     if (!LDi_randomHex(buffer, LD_UUID_SIZE)) {
-        return false;
+        return LDBooleanFalse;
     }
 
     buffer[8]  = '-';
@@ -239,5 +246,5 @@ LDi_UUIDv4(char *const buffer)
     buffer[18] = '-';
     buffer[23] = '-';
 
-    return true;
+    return LDBooleanTrue;
 }

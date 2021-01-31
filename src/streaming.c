@@ -116,7 +116,7 @@ validatePutBody(const struct LDJSON *const put)
 }
 
 /* consumes input even on failure */
-static bool
+static LDBoolean
 onPut(struct LDClient *const client, const char *const eventBuffer)
 {
     struct LDJSON *data, *features, *put;
@@ -127,7 +127,7 @@ onPut(struct LDClient *const client, const char *const eventBuffer)
 
     data     = NULL;
     features = NULL;
-    success  = false;
+    success  = LDBooleanFalse;
     put      = NULL;
 
     if (!(put = LDJSONDeserialize(eventBuffer))){
@@ -173,7 +173,7 @@ onPut(struct LDClient *const client, const char *const eventBuffer)
      }
      data = NULL;
 
-     success = true;
+     success = LDBooleanTrue;
 
   cleanup:
     LDJSONFree(put);
@@ -184,7 +184,7 @@ onPut(struct LDClient *const client, const char *const eventBuffer)
 }
 
 /* consumes input even on failure */
-static bool
+static LDBoolean
 onPatch(struct LDClient *const client, const char *const eventBuffer)
 {
     struct LDJSON *tmp, *data;
@@ -197,7 +197,7 @@ onPatch(struct LDClient *const client, const char *const eventBuffer)
 
     tmp     = NULL;
     key     = NULL;
-    success = false;
+    success = LDBooleanFalse;
     data    = NULL;
 
     if (!(data = LDJSONDeserialize(eventBuffer))){
@@ -232,7 +232,7 @@ onPatch(struct LDClient *const client, const char *const eventBuffer)
         goto cleanup;
     }
 
-    success = true;
+    success = LDBooleanTrue;
 
   cleanup:
     LDJSONFree(data);
@@ -241,12 +241,12 @@ onPatch(struct LDClient *const client, const char *const eventBuffer)
 }
 
 /* consumes input even on failure */
-static bool
+static LDBoolean
 onDelete(struct LDClient *const client, const char *const eventBuffer)
 {
     struct LDJSON *tmp, *data;
     const char *key;
-    bool success;
+    LDBoolean success;
     enum FeatureKind kind;
 
     LD_ASSERT(client);
@@ -254,7 +254,7 @@ onDelete(struct LDClient *const client, const char *const eventBuffer)
 
     tmp     = NULL;
     key     = NULL;
-    success = false;
+    success = LDBooleanFalse;
     data    = NULL;
 
     if (!(data = LDJSONDeserialize(eventBuffer))){
@@ -293,7 +293,7 @@ onDelete(struct LDClient *const client, const char *const eventBuffer)
         goto cleanup;
     }
 
-    success = true;
+    success = LDBooleanTrue;
 
   cleanup:
     LDJSONFree(data);
@@ -301,18 +301,18 @@ onDelete(struct LDClient *const client, const char *const eventBuffer)
     return success;
 }
 
-static bool
+static LDBoolean
 LDi_onEvent(const char *const eventName, const char *const eventBuffer,
     void *const rawContext)
 {
-    bool status;
+    LDBoolean status;
     struct StreamContext *context;
 
     LD_ASSERT(eventName);
     LD_ASSERT(eventBuffer);
     LD_ASSERT(rawContext);
 
-    status  = true;
+    status  = LDBooleanTrue;
     context = (struct StreamContext *)rawContext;
 
     if (strcmp(eventName, "put") == 0) {

@@ -1,5 +1,3 @@
-#include <stdbool.h>
-
 #include "cJSON.h"
 
 #include <launchdarkly/json.h>
@@ -64,20 +62,20 @@ LDSetNumber(struct LDJSON *const rawNode, const double number)
         if (rawNode == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDSetNumber NULL node");
 
-            return false;
+            return LDBooleanFalse;
         }
 
-        if (cJSON_IsNumber(node) == false) {
+        if (cJSON_IsNumber(node) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDSetNumber node is not a number");
 
-            return false;
+            return LDBooleanFalse;
         }
     #endif
 
 
     node->valuedouble = number;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 void
@@ -99,7 +97,7 @@ LDJSONDuplicate(const struct LDJSON *const input)
         }
     #endif
 
-    return (struct LDJSON *)cJSON_Duplicate((cJSON *)input, true);
+    return (struct LDJSON *)cJSON_Duplicate((cJSON *)input, LDBooleanTrue);
 }
 
 LDJSONType
@@ -138,7 +136,7 @@ LDJSONGetType(const struct LDJSON *const inputRaw)
 
         return LDNull;
     #else
-        LD_ASSERT(false);
+        LD_ASSERT(LDBooleanFalse);
     #endif
 }
 
@@ -146,7 +144,7 @@ LDBoolean
 LDJSONCompare(const struct LDJSON *const left, const struct LDJSON *const right)
 {
     return cJSON_Compare((const cJSON *)left,
-        (const cJSON *)right, true);
+        (const cJSON *)right, LDBooleanTrue);
 }
 
 LDBoolean
@@ -161,13 +159,13 @@ LDGetBool(const struct LDJSON *const node)
         if (json == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDGetBool NULL node");
 
-            return false;
+            return LDBooleanFalse;
         }
 
-        if (cJSON_IsBool(json) == false) {
+        if (cJSON_IsBool(json) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDGetBool not boolean");
 
-            return false;
+            return LDBooleanFalse;
         }
     #endif
 
@@ -189,7 +187,7 @@ LDGetNumber(const struct LDJSON *const node)
             return 0.0;
         }
 
-        if (cJSON_IsNumber(json) == false) {
+        if (cJSON_IsNumber(json) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDGetNumber not number");
 
             return 0.0;
@@ -214,7 +212,7 @@ LDGetText(const struct LDJSON *const node)
             return NULL;
         }
 
-        if (cJSON_IsString(json) == false) {
+        if (cJSON_IsString(json) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDGetText not text");
 
             return NULL;
@@ -361,7 +359,7 @@ LDArrayLookup(const struct LDJSON *const rawArray, const unsigned int index)
             return NULL;
         }
 
-        if (cJSON_IsArray(array) == false) {
+        if (cJSON_IsArray(array) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDArrayLookup not array");
 
             return NULL;
@@ -384,25 +382,25 @@ LDArrayPush(struct LDJSON *const rawArray, struct LDJSON *const item)
         if (array == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDArrayPush NULL array");
 
-            return false;
+            return LDBooleanFalse;
         }
 
-        if (cJSON_IsArray(array) == false) {
+        if (cJSON_IsArray(array) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDArrayPush not array");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (item == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDArrayPush NULL item");
 
-            return false;
+            return LDBooleanFalse;
         }
     #endif
 
     cJSON_AddItemToArray(array, (cJSON *)item);
 
-    return true;
+    return LDBooleanTrue;
 }
 
 LDBoolean
@@ -422,39 +420,39 @@ LDArrayAppend(struct LDJSON *const rawPrefix,
         if (prefix == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDArrayPush NULL prefix");
 
-            return false;
+            return LDBooleanFalse;
         }
 
-        if (cJSON_IsArray(prefix) == false) {
+        if (cJSON_IsArray(prefix) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDArrayPush prefix not array");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (suffix == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDArrayPush NULL suffix");
 
-            return false;
+            return LDBooleanFalse;
         }
 
-        if (cJSON_IsArray(suffix) == false) {
+        if (cJSON_IsArray(suffix) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDArrayPush suffix not array");
 
-            return false;
+            return LDBooleanFalse;
         }
     #endif
 
     for (iter = suffix->child; iter; iter = iter->next) {
         cJSON *dupe;
 
-        if (!(dupe = cJSON_Duplicate(iter, true))) {
-            return false;
+        if (!(dupe = cJSON_Duplicate(iter, LDBooleanTrue))) {
+            return LDBooleanFalse;
         }
 
         cJSON_AddItemToArray(prefix, dupe);
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
 struct LDJSON *
@@ -473,7 +471,7 @@ LDObjectLookup(const struct LDJSON *const rawObject, const char *const key)
             return NULL;
         }
 
-        if (cJSON_IsObject(object) == false) {
+        if (cJSON_IsObject(object) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDObjectLookup not object");
 
             return NULL;
@@ -504,25 +502,25 @@ LDObjectSetKey(struct LDJSON *const rawObject,
         if (object == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDObjectSetKey NULL object");
 
-            return false;
+            return LDBooleanFalse;
         }
 
-        if (cJSON_IsObject(object) == false) {
+        if (cJSON_IsObject(object) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDObjectSetKey not object");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (key == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDObjectSetKey NULL key");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (item == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDObjectSetKey NULL item");
 
-            return false;
+            return LDBooleanFalse;
         }
     #endif
 
@@ -530,7 +528,7 @@ LDObjectSetKey(struct LDJSON *const rawObject,
 
     cJSON_AddItemToObject(object, key, (cJSON *)item);
 
-    return true;
+    return LDBooleanTrue;
 }
 
 void
@@ -549,7 +547,7 @@ LDObjectDeleteKey(struct LDJSON *const rawObject, const char *const key)
             return;
         }
 
-        if (cJSON_IsObject(object) == false) {
+        if (cJSON_IsObject(object) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDObjectDeleteKey not object");
 
             return;
@@ -581,7 +579,7 @@ LDObjectDetachKey(struct LDJSON *const rawObject, const char *const key)
             return NULL;
         }
 
-        if (cJSON_IsObject(object) == false) {
+        if (cJSON_IsObject(object) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDObjectDetachKey not object");
 
             return NULL;
@@ -612,25 +610,25 @@ LDObjectMerge(struct LDJSON *const to, const struct LDJSON *const from)
         if (to == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDObjectMerge NULL to");
 
-            return false;
+            return LDBooleanFalse;
         }
 
-        if (cJSON_IsObject((cJSON *)to) == false) {
+        if (cJSON_IsObject((cJSON *)to) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDObjectMerge to not object");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (from == NULL) {
             LD_LOG(LD_LOG_WARNING, "LDObjectMerge NULL from");
 
-            return false;
+            return LDBooleanFalse;
         }
 
-        if (cJSON_IsObject((const cJSON *)from) == false) {
+        if (cJSON_IsObject((const cJSON *)from) == LDBooleanFalse) {
             LD_LOG(LD_LOG_WARNING, "LDObjectMerge from not object");
 
-            return false;
+            return LDBooleanFalse;
         }
     #endif
 
@@ -638,13 +636,13 @@ LDObjectMerge(struct LDJSON *const to, const struct LDJSON *const from)
         struct LDJSON *duplicate;
 
         if (!(duplicate = LDJSONDuplicate(iter))) {
-            return false;
+            return LDBooleanFalse;
         }
 
         LDObjectSetKey(to, LDIterKey(iter), duplicate);
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
 char *

@@ -1,6 +1,7 @@
 #include <time.h>
 #include <pcre.h>
 #include <math.h>
+#include <string.h>
 
 #include "semver.h"
 

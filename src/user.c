@@ -259,7 +259,7 @@ LDUserAddPrivateAttribute(struct LDUser *const user,
     }
 }
 
-bool
+LDBoolean
 LDi_textInArray(const struct LDJSON *const array, const char *const text)
 {
     struct LDJSON *iter;
@@ -269,11 +269,11 @@ LDi_textInArray(const struct LDJSON *const array, const char *const text)
 
     for (iter = LDGetIter(array); iter; iter = LDIterNext(iter)) {
         if (strcmp(LDGetText(iter), text) == 0) {
-            return true;
+            return LDBooleanTrue;
         }
     }
 
-    return false;
+    return LDBooleanFalse;
 }
 
 static bool
