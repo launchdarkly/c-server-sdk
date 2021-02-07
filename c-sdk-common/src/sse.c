@@ -6,8 +6,10 @@
 #include "sse.h"
 
 void
-LDSSEParserInitialize(struct LDSSEParser *const parser,
-    ld_sse_dispatch dispatch, void *const context)
+LDSSEParserInitialize(
+    struct LDSSEParser *const parser,
+    ld_sse_dispatch           dispatch,
+    void *const               context)
 {
     LD_ASSERT(parser);
     LD_ASSERT(dispatch);
@@ -56,8 +58,8 @@ LDi_processLine(struct LDSSEParser *const parser, const char *line)
         } else {
             LD_ASSERT(parser->dispatch);
 
-            status = parser->dispatch(parser->eventName, parser->eventBody,
-                parser->context);
+            status = parser->dispatch(
+                parser->eventName, parser->eventBody, parser->context);
         }
 
         LDFree(parser->eventName);
@@ -70,8 +72,8 @@ LDi_processLine(struct LDSSEParser *const parser, const char *line)
             return LDBooleanFalse;
         }
     } else if (strncmp(line, "data:", 5) == 0) {
-        char *eventBodyTmp;
-        size_t lineSize, currentBodySize;
+        char *    eventBodyTmp;
+        size_t    lineSize, currentBodySize;
         LDBoolean notEmpty;
 
         line += 5;
@@ -122,11 +124,13 @@ LDi_processLine(struct LDSSEParser *const parser, const char *line)
 }
 
 LDBoolean
-LDSSEParserProcess(struct LDSSEParser *const parser,
-    const void *const buffer, const size_t bufferSize)
+LDSSEParserProcess(
+    struct LDSSEParser *const parser,
+    const void *const         buffer,
+    const size_t              bufferSize)
 {
-    void *bufferTmp;
-    char *newLineLocation;
+    void * bufferTmp;
+    char * newLineLocation;
     size_t consumed;
 
     LD_ASSERT(parser);
@@ -144,15 +148,16 @@ LDSSEParserProcess(struct LDSSEParser *const parser,
     }
 
     parser->buffer = bufferTmp;
-    consumed       =  0;
+    consumed       = 0;
 
     memcpy(&(parser->buffer[parser->bufferSize]), buffer, bufferSize);
 
-    parser->bufferSize                 += bufferSize;
-    parser->buffer[parser->bufferSize]  = '\0';
+    parser->bufferSize += bufferSize;
+    parser->buffer[parser->bufferSize] = '\0';
 
-    while ((newLineLocation = (char *)memchr(parser->buffer + consumed, '\n',
-        parser->bufferSize - consumed)))
+    while (
+        (newLineLocation = (char *)memchr(
+             parser->buffer + consumed, '\n', parser->bufferSize - consumed)))
     {
         *newLineLocation = '\0';
 

@@ -30,11 +30,11 @@ LDFree(void *const buffer)
 static char *
 LDi_strdup(const char *const string)
 {
-    #ifdef _WIN32
-        return _strdup(string);
-    #else
-        return strdup(string);
-    #endif
+#ifdef _WIN32
+    return _strdup(string);
+#else
+    return strdup(string);
+#endif
 }
 
 char *(*LDi_customStrDup)(const char *const string) = LDi_strdup;
@@ -84,7 +84,8 @@ LDStrNDup(const char *const str, const size_t n)
 }
 
 void
-LDSetMemoryRoutines(void *(*const newMalloc)(const size_t),
+LDSetMemoryRoutines(
+    void *(*const newMalloc)(const size_t),
     void (*const newFree)(void *const),
     void *(*const newRealloc)(void *const, const size_t),
     char *(*const newStrDup)(const char *const),
@@ -112,12 +113,17 @@ LDGlobalInit(void)
 
     if (first) {
         struct cJSON_Hooks hooks;
-        CURLcode status;
+        CURLcode           status;
 
         first = LDBooleanFalse;
 
-        status = curl_global_init_mem(CURL_GLOBAL_DEFAULT, LDAlloc, LDFree,
-            LDRealloc, LDStrDup, LDCalloc);
+        status = curl_global_init_mem(
+            CURL_GLOBAL_DEFAULT,
+            LDAlloc,
+            LDFree,
+            LDRealloc,
+            LDStrDup,
+            LDCalloc);
 
         LD_ASSERT(!status);
 

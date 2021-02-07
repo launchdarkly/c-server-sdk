@@ -569,7 +569,10 @@ LDi_maybeMakeIndexEvent(
         return false;
     }
 
-    if (!(tmp = LDUserToJSON(context->config, user, true))) {
+    if (!(tmp = LDi_userToJSON(user, LDBooleanTrue,
+        context->config->allAttributesPrivate,
+        context->config->privateAttributeNames)))
+    {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         LDJSONFree(event);
@@ -921,7 +924,10 @@ LDi_addUserInfoToEvent(
     LD_ASSERT(user);
 
     if (context->config->inlineUsersInEvents) {
-        if (!(tmp = LDUserToJSON(context->config, user, true))) {
+        if (!(tmp = LDi_userToJSON(user, LDBooleanTrue,
+            context->config->allAttributesPrivate,
+            context->config->privateAttributeNames)))
+        {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
             return false;
@@ -1095,7 +1101,10 @@ LDi_newIdentifyEvent(
         return false;
     }
 
-    if (!(tmp = LDUserToJSON(context->config, user, true))) {
+    if (!(tmp = LDi_userToJSON(user, LDBooleanTrue,
+        context->config->allAttributesPrivate,
+        context->config->privateAttributeNames)))
+    {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         LDJSONFree(event);

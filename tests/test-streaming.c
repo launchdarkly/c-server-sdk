@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <launchdarkly/api.h>
 
 #include "assertion.h"

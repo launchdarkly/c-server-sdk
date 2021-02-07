@@ -1,21 +1,23 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <launchdarkly/api.h>
+#include <launchdarkly/memory.h>
+#include <launchdarkly/logging.h>
+#include <launchdarkly/user.h>
 
 #include "assertion.h"
 #include "user.h"
 #include "utility.h"
 
 static struct LDUser *
-constructBasic()
+constructBasic(void)
 {
     struct LDJSON *custom;
     struct LDUser *user;
 
-    LD_ASSERT(user = LDUserNew("abc"));
+    LD_ASSERT(user = LDi_userNew("abc"));
 
-    LDUserSetAnonymous(user, false);
+    LDUserSetAnonymous(user, LDBooleanFalse);
     LD_ASSERT(LDUserSetIP(user, "127.0.0.1"));
     LD_ASSERT(LDUserSetFirstName(user, "Jane"));
     LD_ASSERT(LDUserSetLastName(user, "Doe"));
@@ -34,9 +36,9 @@ constructBasic()
 }
 
 static void
-constructNoSettings()
+constructNoSettings(void)
 {
-    struct LDUser *const user = LDUserNew("abc");
+    struct LDUser *const user = LDi_userNew("abc");
 
     LD_ASSERT(user);
 
@@ -44,7 +46,7 @@ constructNoSettings()
 }
 
 static void
-constructAllSettings()
+constructAllSettings(void)
 {
     struct LDUser *user;
 
@@ -54,14 +56,15 @@ constructAllSettings()
 }
 
 static void
-serializeEmpty()
+serializeEmpty(void)
 {
     struct LDJSON *json;
     struct LDUser *user;
     char *serialized;
 
-    LD_ASSERT(user = LDUserNew("abc"));
-    LD_ASSERT(json = LDUserToJSON(NULL, user, false));
+    LD_ASSERT(user = LDi_userNew("abc"));
+    LD_ASSERT(json = LDi_userToJSON(
+        user, LDBooleanFalse, LDBooleanFalse, NULL));
     LD_ASSERT(serialized = LDJSONSerialize(json));
 
     LD_ASSERT(strcmp(serialized, "{\"key\":\"abc\"}") == 0);
@@ -72,14 +75,14 @@ serializeEmpty()
 }
 
 static void
-serializeRedacted()
+serializeRedacted(void)
 {
     struct LDJSON *json;
     struct LDUser *user;
     char *serialized;
     struct LDJSON *custom, *child;
 
-    LD_ASSERT(user = LDUserNew("123"));
+    LD_ASSERT(user = LDi_userNew("123"));
 
     LD_ASSERT(custom = LDNewObject());
     LD_ASSERT(child = LDNewNumber(42));
@@ -90,7 +93,7 @@ serializeRedacted()
     LDUserSetCustom(user, custom);
     LD_ASSERT(LDUserAddPrivateAttribute(user, "secret"));
 
-    LD_ASSERT(json = LDUserToJSON(NULL, user, true));
+    LD_ASSERT(json = LDi_userToJSON(user, LDBooleanTrue, LDBooleanFalse, NULL));
     LD_ASSERT(serialized = LDJSONSerialize(json));
 
     LD_ASSERT(strcmp(serialized, "{\"key\":\"123\",\"custom\":"
@@ -102,7 +105,7 @@ serializeRedacted()
 }
 
 static void
-serializeAll()
+serializeAll(void)
 {
     struct LDJSON *json;
     struct LDUser *user;
@@ -110,7 +113,8 @@ serializeAll()
 
     LD_ASSERT(user = constructBasic());
 
-    LD_ASSERT(json = LDUserToJSON(NULL, user, false));
+    LD_ASSERT(json = LDi_userToJSON(
+        user, LDBooleanFalse, LDBooleanFalse, NULL));
     LD_ASSERT(serialized = LDJSONSerialize(json));
 
     LD_ASSERT(strcmp(serialized, "{\"key\":\"abc\","
@@ -125,24 +129,24 @@ serializeAll()
 }
 
 static void
-testDefaultReplaceAndGet()
+testDefaultReplaceAndGet(void)
 {
     struct LDUser *user;
     struct LDJSON *custom, *tmp, *tmp2, *tmp3, *attributes;
 
     LD_ASSERT(tmp2 = LDNewText("bob"));
 
-    LD_ASSERT(user = LDUserNew("bob"));
+    LD_ASSERT(user = LDi_userNew("bob"));
     LD_ASSERT(strcmp(user->key, "bob") == 0);
     LD_ASSERT(tmp = LDi_valueOfAttribute(user, "key"));
     LD_ASSERT(LDJSONCompare(tmp, tmp2));
     LDJSONFree(tmp);
 
-    LD_ASSERT(user->anonymous == false);
-    LDUserSetAnonymous(user, true);
-    LD_ASSERT(user->anonymous == true);
+    LD_ASSERT(user->anonymous == LDBooleanFalse);
+    LDUserSetAnonymous(user, LDBooleanTrue);
+    LD_ASSERT(user->anonymous == LDBooleanTrue);
     LD_ASSERT(tmp = LDi_valueOfAttribute(user, "anonymous"));
-    LD_ASSERT(tmp3 = LDNewBool(true));
+    LD_ASSERT(tmp3 = LDNewBool(LDBooleanTrue));
     LD_ASSERT(LDJSONCompare(tmp, tmp3));
     LDJSONFree(tmp);
     LDJSONFree(tmp3);
@@ -202,8 +206,6 @@ testDefaultReplaceAndGet()
 int
 main()
 {
-    setbuf(stdout, NULL);
-
     LDBasicLoggerThreadSafeInitialize();
     LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
     LDGlobalInit();

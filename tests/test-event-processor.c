@@ -305,7 +305,8 @@ testIndexEventGeneration()
     /* index event */
     LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 0));
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "index") == 0);
-    LD_ASSERT(tmp = LDUserToJSON(config, user1, true));
+    LD_ASSERT(tmp = LDi_userToJSON(user1, LDBooleanTrue,
+        config->allAttributesPrivate, config->privateAttributeNames));
     LD_ASSERT(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
     LDJSONFree(tmp);
     /* feature event */
@@ -330,7 +331,8 @@ testIndexEventGeneration()
     LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 5);
     LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 3));
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "index") == 0);
-    LD_ASSERT(tmp = LDUserToJSON(config, user2, true));
+    LD_ASSERT(tmp = LDi_userToJSON(user2, LDBooleanTrue,
+        config->allAttributesPrivate, config->privateAttributeNames));
     LD_ASSERT(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
     LDJSONFree(tmp);
     LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 4));
@@ -369,7 +371,8 @@ testInlineUsersInEvents()
     LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 1);
     LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 0));
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
-    LD_ASSERT(tmp = LDUserToJSON(config, user, true));
+    LD_ASSERT(tmp = LDi_userToJSON(user, LDBooleanTrue,
+        config->allAttributesPrivate, config->privateAttributeNames));
     LD_ASSERT(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
     LDJSONFree(tmp);
 
