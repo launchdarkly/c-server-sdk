@@ -10,7 +10,7 @@ static void
 testDefaultAndReplace()
 {
     struct LDConfig *config;
-    struct LDJSON *attributes, *tmp;
+    struct LDJSON *  attributes, *tmp;
 
     LD_ASSERT(config = LDConfigNew("a"));
     LD_ASSERT(strcmp(config->key, "a") == 0);
@@ -21,15 +21,15 @@ testDefaultAndReplace()
     LD_ASSERT(LDConfigSetBaseURI(config, "https://test2.com"));
     LD_ASSERT(strcmp(config->baseURI, "https://test2.com") == 0);
 
-    LD_ASSERT(strcmp(config->streamURI,
-        "https://stream.launchdarkly.com") == 0);
+    LD_ASSERT(
+        strcmp(config->streamURI, "https://stream.launchdarkly.com") == 0);
     LD_ASSERT(LDConfigSetStreamURI(config, "https://test3.com"));
     LD_ASSERT(strcmp(config->streamURI, "https://test3.com") == 0);
     LD_ASSERT(LDConfigSetStreamURI(config, "https://test4.com"));
     LD_ASSERT(strcmp(config->streamURI, "https://test4.com") == 0);
 
-    LD_ASSERT(strcmp(config->eventsURI,
-        "https://events.launchdarkly.com") == 0);
+    LD_ASSERT(
+        strcmp(config->eventsURI, "https://events.launchdarkly.com") == 0);
     LD_ASSERT(LDConfigSetEventsURI(config, "https://test5.com"));
     LD_ASSERT(strcmp(config->eventsURI, "https://test5.com") == 0);
     LD_ASSERT(LDConfigSetEventsURI(config, "https://test6.com"));

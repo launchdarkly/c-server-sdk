@@ -1,15 +1,15 @@
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
-#include "network.h"
 #include "client.h"
-#include "user.h"
 #include "config.h"
-#include "utility.h"
+#include "network.h"
 #include "store.h"
+#include "user.h"
+#include "utility.h"
 
 static bool
 updateStore(struct LDStore *const store, const char *const rawupdate)
@@ -47,25 +47,29 @@ updateStore(struct LDStore *const store, const char *const rawupdate)
     LD_LOG(LD_LOG_INFO, "running store init");
     return LDStoreInit(store, update);
 
-  error:
+error:
     LDJSONFree(update);
 
     return false;
 }
 
-struct PollContext {
-    char *memory;
-    size_t size;
+struct PollContext
+{
+    char *             memory;
+    size_t             size;
     struct curl_slist *headers;
-    bool active;
-    double lastpoll;
+    bool               active;
+    double             lastpoll;
 };
 
 static size_t
-writeCallback(void *const contents, const size_t size,
-    const size_t nmemb, void *const rawmem)
+writeCallback(
+    void *const  contents,
+    const size_t size,
+    const size_t nmemb,
+    void *const  rawmem)
 {
-    size_t realsize;
+    size_t              realsize;
     struct PollContext *mem;
 
     LD_ASSERT(rawmem);
@@ -74,8 +78,7 @@ writeCallback(void *const contents, const size_t size,
     mem      = (struct PollContext *)rawmem;
 
     if (!(mem->memory =
-        (char *)LDRealloc(mem->memory, mem->size + realsize + 1)))
-    {
+              (char *)LDRealloc(mem->memory, mem->size + realsize + 1))) {
         return 0;
     }
 
@@ -101,16 +104,18 @@ resetMemory(struct PollContext *const context)
 }
 
 static void
-done(struct LDClient *const client, void *const rawcontext,
-    const int responseCode)
+done(
+    struct LDClient *const client,
+    void *const            rawcontext,
+    const int              responseCode)
 {
     struct PollContext *context;
-    const bool success = responseCode == 200;
+    const bool          success = responseCode == 200;
 
     LD_ASSERT(client);
     LD_ASSERT(rawcontext);
 
-    context = (struct PollContext *)rawcontext;
+    context         = (struct PollContext *)rawcontext;
     context->active = false;
 
     if (success) {
@@ -141,8 +146,8 @@ destroy(void *const rawcontext)
 static CURL *
 poll(struct LDClient *const client, void *const rawcontext)
 {
-    CURL *curl;
-    char url[4096];
+    CURL *              curl;
+    char                url[4096];
     struct PollContext *context;
 
     LD_ASSERT(rawcontext);
@@ -165,8 +170,8 @@ poll(struct LDClient *const client, void *const rawcontext)
         }
     }
 
-    if (snprintf(url, sizeof(url), "%s/sdk/latest-all",
-        client->config->baseURI) < 0)
+    if (snprintf(
+            url, sizeof(url), "%s/sdk/latest-all", client->config->baseURI) < 0)
     {
         LD_LOG(LD_LOG_CRITICAL, "snprintf URL failed");
 
@@ -179,11 +184,10 @@ poll(struct LDClient *const client, void *const rawcontext)
         goto error;
     }
 
-    if (curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback)
-        != CURLE_OK)
-    {
-        LD_LOG(LD_LOG_CRITICAL,
-            "curl_easy_setopt CURLOPT_WRITEFUNCTION failed");
+    if (curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback) !=
+        CURLE_OK) {
+        LD_LOG(
+            LD_LOG_CRITICAL, "curl_easy_setopt CURLOPT_WRITEFUNCTION failed");
 
         goto error;
     }
@@ -198,7 +202,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     return curl;
 
-  error:
+error:
     curl_slist_free_all(context->headers);
 
     curl_easy_cleanup(curl);
@@ -210,21 +214,20 @@ struct NetworkInterface *
 LDi_constructPolling(struct LDClient *const client)
 {
     struct NetworkInterface *netInterface;
-    struct PollContext *context;
+    struct PollContext *     context;
 
     LD_ASSERT(client);
 
     netInterface = NULL;
     context      = NULL;
 
-    if (!(netInterface =
-        (struct NetworkInterface *)LDAlloc(sizeof(struct NetworkInterface))))
+    if (!(netInterface = (struct NetworkInterface *)LDAlloc(
+              sizeof(struct NetworkInterface))))
     {
         goto error;
     }
 
-    if (!(context =
-        (struct PollContext *)LDAlloc(sizeof(struct PollContext))))
+    if (!(context = (struct PollContext *)LDAlloc(sizeof(struct PollContext))))
     {
         goto error;
     }
@@ -235,16 +238,16 @@ LDi_constructPolling(struct LDClient *const client)
     context->active   = false;
     context->lastpoll = 0;
 
-    netInterface->done     = done;
-    netInterface->poll     = poll;
-    netInterface->context  = context;
-    netInterface->destroy  = destroy;
-    netInterface->context  = context;
-    netInterface->current  = NULL;
+    netInterface->done    = done;
+    netInterface->poll    = poll;
+    netInterface->context = context;
+    netInterface->destroy = destroy;
+    netInterface->context = context;
+    netInterface->current = NULL;
 
     return netInterface;
 
-  error:
+error:
     LDFree(context);
 
     LDFree(netInterface);

@@ -12,9 +12,11 @@
 
 #include "timestamp.h"
 
-typedef bool (*OpFn)(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue);
+typedef bool (*OpFn)(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue);
 
-OpFn LDi_lookupOperation(const char *const operation);
+OpFn
+LDi_lookupOperation(const char *const operation);
 
-bool LDi_parseTime(const struct LDJSON *const json, timestamp_t *result);
+bool
+LDi_parseTime(const struct LDJSON *const json, timestamp_t *result);

@@ -5,14 +5,15 @@
 
 #pragma once
 
-#include <launchdarkly/client.h>
-#include <launchdarkly/user.h>
-#include <launchdarkly/json.h>
-#include <launchdarkly/export.h>
 #include <launchdarkly/boolean.h>
+#include <launchdarkly/client.h>
+#include <launchdarkly/export.h>
+#include <launchdarkly/json.h>
+#include <launchdarkly/user.h>
 
 /** @brief The reason an evaluation occured */
-enum LDEvalReason {
+enum LDEvalReason
+{
     /** @brief A default unset reason */
     LD_UNKNOWN = 0,
     /** @brief Indicates that the flag could not be evaluated, e.g. because it
@@ -37,7 +38,8 @@ enum LDEvalReason {
 };
 
 /** @brief Details about the type of error that caused an evaluation to fail */
-enum LDEvalErrorKind {
+enum LDEvalErrorKind
+{
     /** @brief Indicates that the caller tried to evaluate a flag before the
      * client had successfully initialized */
     LD_CLIENT_NOT_READY,
@@ -46,7 +48,7 @@ enum LDEvalErrorKind {
     /** @brief Indicates an internal exception with the flag store */
     LD_STORE_ERROR,
     /** @brief Indicates that the caller provided a flag key that did not match
-    * any known flag */
+     * any known flag */
     LD_FLAG_NOT_FOUND,
     /** @brief Indicates that a `NULL` user was passed for the user parameter */
     LD_USER_NOT_SPECIFIED,
@@ -64,14 +66,16 @@ enum LDEvalErrorKind {
 };
 
 /** @brief Indicates which rule matched a user */
-struct LDDetailsRule {
+struct LDDetailsRule
+{
     /** @brief The index of the rule that was matched */
     unsigned int ruleIndex;
     /** @brief The unique identifier of the rule that was matched. */
     char *id;
 };
 
-struct LDDetails {
+struct LDDetails
+{
     /** @brief The index of the returned value within the flag's list of
      * variations. */
     unsigned int variationIndex;
@@ -111,8 +115,8 @@ LD_EXPORT(const char *) LDEvalReasonKindToString(const enum LDEvalReason kind);
  * @param[in] kind The error kind to convert.
  * @return A string, or `NULL` on invalid input.
  */
-LD_EXPORT(const char *) LDEvalErrorKindToString(
-    const enum LDEvalErrorKind kind);
+LD_EXPORT(const char *)
+LDEvalErrorKindToString(const enum LDEvalErrorKind kind);
 
 /**
  * @brief Marshal just the evaluation reason portion of `LDDetails` to JSON.
@@ -120,8 +124,8 @@ LD_EXPORT(const char *) LDEvalErrorKindToString(
  * May not be `NULL` (assert)
  * @return A JSON representation, or `NULL` on `malloc` failure.
  */
-LD_EXPORT(struct LDJSON *) LDReasonToJSON(
-    const struct LDDetails *const details);
+LD_EXPORT(struct LDJSON *)
+LDReasonToJSON(const struct LDDetails *const details);
 
 /**
  * @brief Evaluate a boolean flag
@@ -133,9 +137,13 @@ LD_EXPORT(struct LDJSON *) LDReasonToJSON(
  * If `NULL` no explanation will be generated.
  * @return The fallback will be returned on any error.
  */
-LD_EXPORT(LDBoolean) LDBoolVariation(struct LDClient *const client,
-    const struct LDUser *const user, const char *const key,
-    const LDBoolean fallback, struct LDDetails *const details);
+LD_EXPORT(LDBoolean)
+LDBoolVariation(
+    struct LDClient *const     client,
+    const struct LDUser *const user,
+    const char *const          key,
+    const LDBoolean            fallback,
+    struct LDDetails *const    details);
 
 /**
  * @brief Evaluate a integer flag
@@ -147,9 +155,13 @@ LD_EXPORT(LDBoolean) LDBoolVariation(struct LDClient *const client,
  * If `NULL` no explanation will be generated.
  * @return The fallback will be returned on any error.
  */
-LD_EXPORT(int) LDIntVariation(struct LDClient *const client,
-    const struct LDUser *const user, const char *const key, const int fallback,
-    struct LDDetails *const details);
+LD_EXPORT(int)
+LDIntVariation(
+    struct LDClient *const     client,
+    const struct LDUser *const user,
+    const char *const          key,
+    const int                  fallback,
+    struct LDDetails *const    details);
 
 /**
  * @brief Evaluate a double flag
@@ -161,9 +173,13 @@ LD_EXPORT(int) LDIntVariation(struct LDClient *const client,
  * If `NULL` no explanation will be generated.
  * @return The fallback will be returned on any error.
  */
-LD_EXPORT(double) LDDoubleVariation(struct LDClient *const client,
-    const struct LDUser *const user, const char *const key,
-    const double fallback, struct LDDetails *const details);
+LD_EXPORT(double)
+LDDoubleVariation(
+    struct LDClient *const     client,
+    const struct LDUser *const user,
+    const char *const          key,
+    const double               fallback,
+    struct LDDetails *const    details);
 
 /**
  * @brief Evaluate a text flag
@@ -178,9 +194,13 @@ LD_EXPORT(double) LDDoubleVariation(struct LDClient *const client,
  * allocation failure.
  * The result must be cleaned up with `LDFree`.
  */
-LD_EXPORT(char *) LDStringVariation(struct LDClient *const client,
-    const struct LDUser *const user, const char *const key,
-    const char* const fallback, struct LDDetails *const details);
+LD_EXPORT(char *)
+LDStringVariation(
+    struct LDClient *const     client,
+    const struct LDUser *const user,
+    const char *const          key,
+    const char *const          fallback,
+    struct LDDetails *const    details);
 
 /**
  * @brief Evaluate a JSON flag
@@ -195,9 +215,13 @@ LD_EXPORT(char *) LDStringVariation(struct LDClient *const client,
  * allocation failure.
  * The result must be cleanud up with `LDJSONFree`.
  */
-LD_EXPORT(struct LDJSON *) LDJSONVariation(struct LDClient *const client,
-    const struct LDUser *const user, const char *const key,
-    const struct LDJSON *const fallback, struct LDDetails *const details);
+LD_EXPORT(struct LDJSON *)
+LDJSONVariation(
+    struct LDClient *const     client,
+    const struct LDUser *const user,
+    const char *const          key,
+    const struct LDJSON *const fallback,
+    struct LDDetails *const    details);
 
 /**
  * @brief Returns a map from feature flag keys to values for a given user.
@@ -207,5 +231,5 @@ LD_EXPORT(struct LDJSON *) LDJSONVariation(struct LDClient *const client,
  * May not be `NULL`.
  * @return A JSON object, or `NULL` on failure.
  */
-LD_EXPORT(struct LDJSON *) LDAllFlags(struct LDClient *const client,
-    const struct LDUser *const user);
+LD_EXPORT(struct LDJSON *)
+LDAllFlags(struct LDClient *const client, const struct LDUser *const user);

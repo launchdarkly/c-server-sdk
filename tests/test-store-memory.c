@@ -8,7 +8,7 @@
 static struct LDStore *
 prepareEmptyStore()
 {
-    struct LDStore *store;
+    struct LDStore * store;
     struct LDConfig *config;
 
     LD_ASSERT(config = LDConfigNew(""));

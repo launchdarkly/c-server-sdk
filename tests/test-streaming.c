@@ -3,8 +3,8 @@
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
-#include "config.h"
 #include "client.h"
+#include "config.h"
 #include "evaluate.h"
 #include "streaming.h"
 #include "utility.h"
@@ -13,7 +13,7 @@ static void
 testParsePathFlags()
 {
     enum FeatureKind kind;
-    const char *key;
+    const char *     key;
 
     LD_ASSERT(LDi_parsePath("/flags/abcd", &kind, &key));
 
@@ -25,7 +25,7 @@ static void
 testParsePathSegments()
 {
     enum FeatureKind kind;
-    const char *key;
+    const char *     key;
 
     LD_ASSERT(LDi_parsePath("/segments/xyz", &kind, &key));
 
@@ -37,7 +37,7 @@ static void
 testParsePathUnknownKind()
 {
     enum FeatureKind kind;
-    const char *key;
+    const char *     key;
 
     LD_ASSERT(!LDi_parsePath("/unknown/123", &kind, &key));
 
@@ -59,16 +59,15 @@ testInitialPut(struct StreamContext *const context)
 
     LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
 
-    LD_ASSERT(LDStoreGet(
-        context->client->store, LD_FLAG, "my-flag", &flag));
+    LD_ASSERT(LDStoreGet(context->client->store, LD_FLAG, "my-flag", &flag));
     LD_ASSERT(flag);
     LD_ASSERT(LDGetNumber(LDObjectLookup(LDJSONRCGet(flag), "version")) == 2);
 
-    LD_ASSERT(LDStoreGet(
-        context->client->store, LD_SEGMENT, "my-segment", &segment));
+    LD_ASSERT(
+        LDStoreGet(context->client->store, LD_SEGMENT, "my-segment", &segment));
     LD_ASSERT(segment);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(LDJSONRCGet(segment), "version")) ==
-        5);
+    LD_ASSERT(
+        LDGetNumber(LDObjectLookup(LDJSONRCGet(segment), "version")) == 5);
 
     LDJSONRCDecrement(flag);
     LDJSONRCDecrement(segment);
@@ -88,8 +87,7 @@ testPatchFlag(struct StreamContext *const context)
 
     LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
 
-    LD_ASSERT(LDStoreGet(
-        context->client->store, LD_FLAG, "my-flag", &flag));
+    LD_ASSERT(LDStoreGet(context->client->store, LD_FLAG, "my-flag", &flag));
     LD_ASSERT(flag);
     LD_ASSERT(LDGetNumber(LDObjectLookup(LDJSONRCGet(flag), "version")) == 3);
 
@@ -109,8 +107,7 @@ testDeleteFlag(struct StreamContext *const context)
 
     LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
 
-    LD_ASSERT(LDStoreGet(
-        context->client->store, LD_FLAG, "my-flag", &lookup));
+    LD_ASSERT(LDStoreGet(context->client->store, LD_FLAG, "my-flag", &lookup));
     LD_ASSERT(!lookup);
 }
 
@@ -128,11 +125,11 @@ testPatchSegment(struct StreamContext *const context)
 
     LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
 
-    LD_ASSERT(LDStoreGet(
-        context->client->store, LD_SEGMENT, "my-segment", &segment));
+    LD_ASSERT(
+        LDStoreGet(context->client->store, LD_SEGMENT, "my-segment", &segment));
     LD_ASSERT(segment);
-    LD_ASSERT(LDGetNumber(LDObjectLookup(LDJSONRCGet(segment), "version")) ==
-        7);
+    LD_ASSERT(
+        LDGetNumber(LDObjectLookup(LDJSONRCGet(segment), "version")) == 7);
 
     LDJSONRCDecrement(segment);
 }
@@ -150,8 +147,8 @@ testDeleteSegment(struct StreamContext *const context)
 
     LD_ASSERT(LDi_streamWriteCallback(event, strlen(event), 1, context));
 
-    LD_ASSERT(LDStoreGet(
-        context->client->store, LD_SEGMENT, "my-segment", &lookup));
+    LD_ASSERT(
+        LDStoreGet(context->client->store, LD_SEGMENT, "my-segment", &lookup));
     LD_ASSERT(!lookup);
 }
 
@@ -168,8 +165,8 @@ testStreamBundle(struct StreamContext *const context)
 static void
 testStreamContext(void (*const action)())
 {
-    struct LDConfig *config;
-    struct LDClient *client;
+    struct LDConfig *     config;
+    struct LDClient *     client;
     struct StreamContext *context;
 
     LD_ASSERT(config = LDConfigNew("key"));

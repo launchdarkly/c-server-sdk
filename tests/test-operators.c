@@ -6,15 +6,18 @@
 
 static struct LDJSON *tests;
 
-static const char *const dateStr1 = "2017-12-06T00:00:00.000-07:00";
-static const char *const dateStr2 = "2017-12-06T00:01:01.000-07:00";
-static const unsigned int dateMs1 = 10000000;
-static const unsigned int dateMs2 = 10000001;
-static const char *const invalidDate = "hey what's this?";
+static const char *const  dateStr1    = "2017-12-06T00:00:00.000-07:00";
+static const char *const  dateStr2    = "2017-12-06T00:01:01.000-07:00";
+static const unsigned int dateMs1     = 10000000;
+static const unsigned int dateMs2     = 10000001;
+static const char *const  invalidDate = "hey what's this?";
 
 static void
-addTest(const char *const op, struct LDJSON *const uvalue,
-    struct LDJSON *const cvalue, const bool expect)
+addTest(
+    const char *const    op,
+    struct LDJSON *const uvalue,
+    struct LDJSON *const cvalue,
+    const bool           expect)
 {
     struct LDJSON *test = NULL;
 
@@ -31,7 +34,7 @@ static void
 testParseDateZero()
 {
     struct LDJSON *jtimestamp, *jexpected;
-    timestamp_t texpected, ttimestamp;
+    timestamp_t    texpected, ttimestamp;
 
     LD_ASSERT(jexpected = LDNewNumber(0.0));
     LD_ASSERT(LDi_parseTime(jexpected, &texpected));
@@ -49,7 +52,7 @@ static void
 testParseUTCTimestamp()
 {
     struct LDJSON *jtimestamp, *jexpected;
-    timestamp_t texpected, ttimestamp;
+    timestamp_t    texpected, ttimestamp;
 
     LD_ASSERT(jexpected = LDNewNumber(1460847451684));
     LD_ASSERT(LDi_parseTime(jexpected, &texpected));
@@ -67,7 +70,7 @@ static void
 testParseTimezone()
 {
     struct LDJSON *jtimestamp, *jexpected;
-    timestamp_t texpected, ttimestamp;
+    timestamp_t    texpected, ttimestamp;
 
     LD_ASSERT(jexpected = LDNewNumber(1460851752759));
     LD_ASSERT(LDi_parseTime(jexpected, &texpected));
@@ -85,7 +88,7 @@ static void
 testParseTimezoneNoMillis()
 {
     struct LDJSON *jtimestamp, *jexpected;
-    timestamp_t texpected, ttimestamp;
+    timestamp_t    texpected, ttimestamp;
 
     LD_ASSERT(jexpected = LDNewNumber(1460851752000));
     LD_ASSERT(LDi_parseTime(jexpected, &texpected));
@@ -103,7 +106,7 @@ static void
 testTimeCompareSimilar()
 {
     struct LDJSON *jtimestamp1, *jtimestamp2;
-    timestamp_t ttimestamp2, ttimestamp1;
+    timestamp_t    ttimestamp2, ttimestamp1;
 
     LD_ASSERT(jtimestamp1 = LDNewNumber(1000));
     LD_ASSERT(LDi_parseTime(jtimestamp1, &ttimestamp1));
@@ -207,8 +210,8 @@ main()
     addTest("matches", LDNewText("hello world"), LDNewText("hello.*rld"), true);
     addTest("matches", LDNewText("hello world"), LDNewText("hello.*orl"), true);
     addTest("matches", LDNewText("hello world"), LDNewText("l+"), true);
-    addTest("matches", LDNewText("hello world"),
-        LDNewText("(world|planet)"), true);
+    addTest(
+        "matches", LDNewText("hello world"), LDNewText("(world|planet)"), true);
     addTest("matches", LDNewText("hello world"), LDNewText("aloha"), false);
     addTest("matches", LDNewText("hello world"), LDNewText("***bad rg"), false);
 
@@ -216,34 +219,39 @@ main()
     addTest("semVerEqual", LDNewText("2.0.0"), LDNewText("2.0.0"), true);
     addTest("semVerEqual", LDNewText("2.0"), LDNewText("2.0.0"), true);
     addTest("semVerEqual", LDNewText("2-rc1"), LDNewText("2.0.0-rc1"), true);
-    addTest("semVerEqual", LDNewText("2+build2"),
-        LDNewText("2.0.0+build2"), true);
+    addTest(
+        "semVerEqual", LDNewText("2+build2"), LDNewText("2.0.0+build2"), true);
     addTest("semVerEqual", LDNewText("2.0.0"), LDNewText("2.0.1"), false);
     addTest("semVerLessThan", LDNewText("2.0.0"), LDNewText("2.0.1"), true);
     addTest("semVerLessThan", LDNewText("2.0"), LDNewText("2.0.1"), true);
     addTest("semVerLessThan", LDNewText("2.0.1"), LDNewText("2.0.0"), false);
     addTest("semVerLessThan", LDNewText("2.0.1"), LDNewText("2.0"), false);
     addTest("semVerLessThan", LDNewText("2.0.1"), LDNewText("xbad%ver"), false);
-    addTest("semVerLessThan", LDNewText("2.0.0-rc"),
-        LDNewText("2.0.0-rc.beta"), true);
+    addTest(
+        "semVerLessThan",
+        LDNewText("2.0.0-rc"),
+        LDNewText("2.0.0-rc.beta"),
+        true);
     addTest("semVerGreaterThan", LDNewText("2.0.1"), LDNewText("2.0"), true);
     addTest("semVerGreaterThan", LDNewText("2.0.1"), LDNewText("2.0"), true);
-    addTest("semVerGreaterThan", LDNewText("2.0.0"),
-        LDNewText("2.0.1"), false);
+    addTest("semVerGreaterThan", LDNewText("2.0.0"), LDNewText("2.0.1"), false);
     addTest("semVerGreaterThan", LDNewText("2.0"), LDNewText("2.0.1"), false);
-    addTest("semVerGreaterThan", LDNewText("2.0.1"),
-        LDNewText("xbad%ver"), false);
-    addTest("semVerGreaterThan", LDNewText("2.0.0-rc.1"),
-        LDNewText("2.0.0-rc.0"), true);
+    addTest(
+        "semVerGreaterThan", LDNewText("2.0.1"), LDNewText("xbad%ver"), false);
+    addTest(
+        "semVerGreaterThan",
+        LDNewText("2.0.0-rc.1"),
+        LDNewText("2.0.0-rc.0"),
+        true);
     addTest("semVerEqual", LDNewText("02.0.0"), LDNewText("2.0.0"), false);
     addTest("semVerEqual", LDNewText("v2.0.0"), LDNewText("2.0.0"), false);
     addTest("semVerEqual", LDNewText("2.01.0"), LDNewText("2.1.0"), false);
     addTest("semVerEqual", LDNewText("2.0.01"), LDNewText("2.0.1"), false);
 
     for (iter = LDGetIter(tests); iter; iter = LDIterNext(iter)) {
-        OpFn opfn;
+        OpFn           opfn;
         struct LDJSON *op, *uvalue, *cvalue, *expect;
-        char *serializeduvalue, *serializedcvalue;
+        char *         serializeduvalue, *serializedcvalue;
 
         LD_ASSERT(op = LDObjectLookup(iter, "op"));
         LD_ASSERT(uvalue = LDObjectLookup(iter, "uvalue"));

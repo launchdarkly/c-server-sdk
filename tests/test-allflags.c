@@ -6,18 +6,18 @@
 #include "client.h"
 #include "config.h"
 #include "evaluate.h"
-#include "utility.h"
 #include "store.h"
+#include "utility.h"
 
-#include "test-utils/flags.h"
 #include "test-utils/client.h"
+#include "test-utils/flags.h"
 
 static void
 testAllFlags()
 {
-    struct LDJSON *flag1, *flag2, *allFlags;
+    struct LDJSON *  flag1, *flag2, *allFlags;
     struct LDClient *client;
-    struct LDUser *user;
+    struct LDUser *  user;
 
     LD_ASSERT(client = makeTestClient());
     LD_ASSERT(user = LDUserNew("userkey"));

@@ -5,9 +5,9 @@
 
 #pragma once
 
+#include <launchdarkly/boolean.h>
 #include <launchdarkly/export.h>
 #include <launchdarkly/store.h>
-#include <launchdarkly/boolean.h>
 
 /**
  * @struct LDConfig
@@ -39,8 +39,8 @@ LD_EXPORT(void) LDConfigFree(struct LDConfig *const config);
  * @param[in] baseURI The new base URI to use. May not be `NULL`.
  * @return True on success, False on failure
  */
-LD_EXPORT(LDBoolean) LDConfigSetBaseURI(struct LDConfig *const config,
-    const char *const baseURI);
+LD_EXPORT(LDBoolean)
+LDConfigSetBaseURI(struct LDConfig *const config, const char *const baseURI);
 
 /**
  * @brief Set the streaming URI for connecting to LaunchDarkly. You probably
@@ -50,8 +50,9 @@ LD_EXPORT(LDBoolean) LDConfigSetBaseURI(struct LDConfig *const config,
  * @param[in] streamURI The new stream URI to use. May not be `NULL`.
  * @return True on success, False on failure
  */
-LD_EXPORT(LDBoolean) LDConfigSetStreamURI(struct LDConfig *const config,
-    const char *const streamURI);
+LD_EXPORT(LDBoolean)
+LDConfigSetStreamURI(
+    struct LDConfig *const config, const char *const streamURI);
 
 /**
  * @brief Set the events URI for connecting to LaunchDarkly. You probably don't
@@ -61,8 +62,9 @@ LD_EXPORT(LDBoolean) LDConfigSetStreamURI(struct LDConfig *const config,
  * @param[in] eventsURI The new events URI to use. May not be `NULL`.
  * @return True on success, False on failure
  */
-LD_EXPORT(LDBoolean) LDConfigSetEventsURI(struct LDConfig *const config,
-    const char *const eventsURI);
+LD_EXPORT(LDBoolean)
+LDConfigSetEventsURI(
+    struct LDConfig *const config, const char *const eventsURI);
 
 /**
  * @brief Enables or disables real-time streaming flag updates. When set to
@@ -73,8 +75,8 @@ LD_EXPORT(LDBoolean) LDConfigSetEventsURI(struct LDConfig *const config,
  * @param[in] stream True for streaming, False for polling.
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetStream(struct LDConfig *const config,
-    const LDBoolean stream);
+LD_EXPORT(void)
+LDConfigSetStream(struct LDConfig *const config, const LDBoolean stream);
 
 /**
  * @brief Sets whether to send analytics events back to LaunchDarkly. By
@@ -84,8 +86,9 @@ LD_EXPORT(void) LDConfigSetStream(struct LDConfig *const config,
  * @param[in] sendEvents
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetSendEvents(struct LDConfig *const config,
-    const LDBoolean sendEvents);
+LD_EXPORT(void)
+LDConfigSetSendEvents(
+    struct LDConfig *const config, const LDBoolean sendEvents);
 
 /**
  * @brief The capacity of the events buffer. The client buffers up to this many
@@ -95,8 +98,9 @@ LD_EXPORT(void) LDConfigSetSendEvents(struct LDConfig *const config,
  * @param[in] eventsCapacity
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetEventsCapacity(struct LDConfig *const config,
-    const unsigned int eventsCapacity);
+LD_EXPORT(void)
+LDConfigSetEventsCapacity(
+    struct LDConfig *const config, const unsigned int eventsCapacity);
 
 /**
  * @brief The connection timeout to use when making requests to LaunchDarkly.
@@ -104,8 +108,9 @@ LD_EXPORT(void) LDConfigSetEventsCapacity(struct LDConfig *const config,
  * @param[in] milliseconds
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetTimeout(struct LDConfig *const config,
-    const unsigned int milliseconds);
+LD_EXPORT(void)
+LDConfigSetTimeout(
+    struct LDConfig *const config, const unsigned int milliseconds);
 
 /**
  * @brief The time between flushes of the event buffer. Decreasing the flush
@@ -114,8 +119,9 @@ LD_EXPORT(void) LDConfigSetTimeout(struct LDConfig *const config,
  * @param[in] milliseconds
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetFlushInterval(struct LDConfig *const config,
-    const unsigned int milliseconds);
+LD_EXPORT(void)
+LDConfigSetFlushInterval(
+    struct LDConfig *const config, const unsigned int milliseconds);
 
 /**
  * @brief The polling interval (when streaming is disabled).
@@ -123,8 +129,9 @@ LD_EXPORT(void) LDConfigSetFlushInterval(struct LDConfig *const config,
  * @param[in] milliseconds
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetPollInterval(struct LDConfig *const config,
-    const unsigned int milliseconds);
+LD_EXPORT(void)
+LDConfigSetPollInterval(
+    struct LDConfig *const config, const unsigned int milliseconds);
 
 /**
  * @brief Sets whether this client is offline.
@@ -134,8 +141,8 @@ LD_EXPORT(void) LDConfigSetPollInterval(struct LDConfig *const config,
  * @param[in] offline
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetOffline(struct LDConfig *const config,
-    const LDBoolean offline);
+LD_EXPORT(void)
+LDConfigSetOffline(struct LDConfig *const config, const LDBoolean offline);
 
 /**
  * @brief Sets whether this client should use the LaunchDarkly relay
@@ -145,8 +152,8 @@ LD_EXPORT(void) LDConfigSetOffline(struct LDConfig *const config,
  * @param[in] useLDD
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetUseLDD(struct LDConfig *const config,
-    const LDBoolean useLDD);
+LD_EXPORT(void)
+LDConfigSetUseLDD(struct LDConfig *const config, const LDBoolean useLDD);
 
 /**
  * @brief Sets whether or not all user attributes (other than the key) should be
@@ -156,8 +163,9 @@ LD_EXPORT(void) LDConfigSetUseLDD(struct LDConfig *const config,
  * @param[in] allAttributesPrivate
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
-    const LDBoolean allAttributesPrivate);
+LD_EXPORT(void)
+LDConfigSetAllAttributesPrivate(
+    struct LDConfig *const config, const LDBoolean allAttributesPrivate);
 
 /**
  * @brief Set to true if you need to see the full user details in every
@@ -166,8 +174,9 @@ LD_EXPORT(void) LDConfigSetAllAttributesPrivate(struct LDConfig *const config,
  * @param[in] inlineUsersInEvents
  * @return Void.
  */
-LD_EXPORT(void) LDConfigInlineUsersInEvents(struct LDConfig *const config,
-    const LDBoolean inlineUsersInEvents);
+LD_EXPORT(void)
+LDConfigInlineUsersInEvents(
+    struct LDConfig *const config, const LDBoolean inlineUsersInEvents);
 
 /**
  * @brief The number of user keys that the event processor can remember at an
@@ -176,8 +185,9 @@ LD_EXPORT(void) LDConfigInlineUsersInEvents(struct LDConfig *const config,
  * @param[in] userKeysCapacity
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetUserKeysCapacity(struct LDConfig *const config,
-    const unsigned int userKeysCapacity);
+LD_EXPORT(void)
+LDConfigSetUserKeysCapacity(
+    struct LDConfig *const config, const unsigned int userKeysCapacity);
 
 /**
  * @brief The interval at which the event processor will reset its set of known
@@ -186,8 +196,9 @@ LD_EXPORT(void) LDConfigSetUserKeysCapacity(struct LDConfig *const config,
  * @param[in] milliseconds
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
-    const unsigned int milliseconds);
+LD_EXPORT(void)
+LDConfigSetUserKeysFlushInterval(
+    struct LDConfig *const config, const unsigned int milliseconds);
 
 /**
  * @brief Marks a set of user attribute names private. Any users sent to
@@ -197,8 +208,9 @@ LD_EXPORT(void) LDConfigSetUserKeysFlushInterval(struct LDConfig *const config,
  * @param[in] attribute May not be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(LDBoolean) LDConfigAddPrivateAttribute(struct LDConfig *const config,
-    const char *const attribute);
+LD_EXPORT(LDBoolean)
+LDConfigAddPrivateAttribute(
+    struct LDConfig *const config, const char *const attribute);
 
 /**
  * @brief Sets the implementation of FeatureStore for holding feature flags and
@@ -207,8 +219,9 @@ LD_EXPORT(LDBoolean) LDConfigAddPrivateAttribute(struct LDConfig *const config,
  * @param[in] backend May be `NULL`.
  * @return Void.
  */
-LD_EXPORT(void) LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
-    struct LDStoreInterface *const backend);
+LD_EXPORT(void)
+LDConfigSetFeatureStoreBackend(
+    struct LDConfig *const config, struct LDStoreInterface *const backend);
 
 /**
  * @brief When a feature store backend is provided, configure how long items
@@ -219,8 +232,9 @@ LD_EXPORT(void) LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
  * @param[in] milliseconds How long the cache should live.
  * @return Void.
  */
- LD_EXPORT(void) LDConfigSetFeatureStoreBackendCacheTTL(
-     struct LDConfig *const config, const unsigned int milliseconds);
+LD_EXPORT(void)
+LDConfigSetFeatureStoreBackendCacheTTL(
+    struct LDConfig *const config, const unsigned int milliseconds);
 
 /**
  * @brief Indicates to LaunchDarkly the name and version of an SDK wrapper
@@ -230,6 +244,8 @@ LD_EXPORT(void) LDConfigSetFeatureStoreBackend(struct LDConfig *const config,
  * @param[in] wrapperVersion The version of the wrapper. May be `NULL`.
  * @return True on success, False on failure.
  */
-LD_EXPORT(LDBoolean) LDConfigSetWrapperInfo(
-    struct LDConfig *const config, const char *const wrapperName,
-    const char *const wrapperVersion);
+LD_EXPORT(LDBoolean)
+LDConfigSetWrapperInfo(
+    struct LDConfig *const config,
+    const char *const      wrapperName,
+    const char *const      wrapperVersion);

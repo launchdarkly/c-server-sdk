@@ -10,8 +10,8 @@
 static void
 testBoolVariationDefaultValueOffline()
 {
-    bool value;
-    struct LDUser *user;
+    bool             value;
+    struct LDUser *  user;
     struct LDClient *client;
     struct LDDetails details;
     /* prep */
@@ -33,8 +33,8 @@ testBoolVariationDefaultValueOffline()
 static void
 testIntVariationDefaultValueOffline()
 {
-    int value;
-    struct LDUser *user;
+    int              value;
+    struct LDUser *  user;
     struct LDClient *client;
     struct LDDetails details;
     /* prep */
@@ -56,8 +56,8 @@ testIntVariationDefaultValueOffline()
 static void
 testDoubleVariationDefaultValueOffline()
 {
-    double value;
-    struct LDUser *user;
+    double           value;
+    struct LDUser *  user;
     struct LDClient *client;
     struct LDDetails details;
     /* prep */
@@ -79,8 +79,8 @@ testDoubleVariationDefaultValueOffline()
 static void
 testStringVariationDefaultValueOffline()
 {
-    char *value;
-    struct LDUser *user;
+    char *           value;
+    struct LDUser *  user;
     struct LDClient *client;
     struct LDDetails details;
     /* prep */
@@ -103,8 +103,8 @@ testStringVariationDefaultValueOffline()
 static void
 testJSONVariationDefaultValueOffline()
 {
-    struct LDJSON *actual, *expected;
-    struct LDUser *user;
+    struct LDJSON *  actual, *expected;
+    struct LDUser *  user;
     struct LDClient *client;
     struct LDDetails details;
     /* prep */
