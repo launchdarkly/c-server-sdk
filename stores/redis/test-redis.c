@@ -1,18 +1,20 @@
+#include <string.h>
+
 #include <launchdarkly/api.h>
 #include <launchdarkly/store/redis.h>
 
 #include "assertion.h"
-#include "utility.h"
 #include "src/redis.h"
+#include "utility.h"
 
-#include "test-utils/store.h"
 #include "test-utils/flags.h"
+#include "test-utils/store.h"
 
 static void
 flushDB()
 {
     redisContext *connection;
-    redisReply *reply;
+    redisReply *  reply;
 
     LD_ASSERT(connection = redisConnect("127.0.0.1", 6379));
     LD_ASSERT(!connection->err);
@@ -25,10 +27,10 @@ flushDB()
 static struct LDStore *
 prepareEmptyStore()
 {
-    struct LDStore* store;
+    struct LDStore *         store;
     struct LDStoreInterface *interface;
-    struct LDRedisConfig* redisConfig;
-    struct LDConfig *config;
+    struct LDRedisConfig *   redisConfig;
+    struct LDConfig *        config;
 
     flushDB();
 
@@ -45,13 +47,15 @@ prepareEmptyStore()
 }
 
 static struct LDStore *concurrentStore;
-static struct LDJSON *concurrentFlagCopy;
+static struct LDJSON * concurrentFlagCopy;
 
 static void
 hook()
 {
     struct LDJSON *concurrentFlag;
-    LD_ASSERT(concurrentFlag = makeMinimalFlag("abc", 70, true, false));
+    LD_ASSERT(
+        concurrentFlag =
+            makeMinimalFlag("abc", 70, LDBooleanTrue, LDBooleanFalse));
     LD_ASSERT(concurrentFlagCopy = LDJSONDuplicate(concurrentFlag));
     LDStoreUpsert(concurrentStore, LD_FLAG, concurrentFlag);
 }
@@ -59,13 +63,13 @@ hook()
 static void
 testWriteConflict()
 {
-    struct LDJSON *flag;
-    struct LDJSONRC *lookup;
-    struct LDStoreInterface *interface;
-    struct LDRedisConfig *redisConfig;
+    struct LDJSON *              flag;
+    struct LDJSONRC *            lookup;
+    struct LDStoreInterface *    interface;
+    struct LDRedisConfig *       redisConfig;
     struct LDStoreCollectionItem collectionItem;
-    struct LDConfig *config;
-    char *serialized;
+    struct LDConfig *            config;
+    char *                       serialized;
 
     flushDB();
 
@@ -77,19 +81,19 @@ testWriteConflict()
     config->storeBackend = NULL;
     LD_ASSERT(!LDStoreInitialized(concurrentStore));
 
-    LD_ASSERT(flag = makeMinimalFlag("abc", 50, true, false));
+    LD_ASSERT(flag = makeMinimalFlag("abc", 50, LDBooleanTrue, LDBooleanFalse));
 
     LD_ASSERT(LDStoreInitEmpty(concurrentStore));
     LDStoreUpsert(concurrentStore, LD_FLAG, flag);
 
-    LD_ASSERT(flag = makeMinimalFlag("abc", 60, true, false));
+    LD_ASSERT(flag = makeMinimalFlag("abc", 60, LDBooleanTrue, LDBooleanFalse));
     LD_ASSERT(serialized = LDJSONSerialize(flag));
     LD_ASSERT(collectionItem.buffer = (void *)serialized);
     LD_ASSERT(collectionItem.bufferSize = strlen(serialized));
     collectionItem.version = 60;
     LDJSONFree(flag);
-    storeUpsertInternal(interface->context, "features", &collectionItem, "abc",
-        hook);
+    storeUpsertInternal(
+        interface->context, "features", &collectionItem, "abc", hook);
     LDFree(serialized);
 
     LD_ASSERT(LDStoreGet(concurrentStore, LD_FLAG, "abc", &lookup));

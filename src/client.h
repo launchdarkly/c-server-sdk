@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdbool.h>
-
 #include <launchdarkly/json.h>
 
 #include "concurrency.h"
@@ -10,11 +8,11 @@
 
 struct LDClient
 {
-    bool                   shuttingdown;
+    LDBoolean              shuttingdown;
     struct LDConfig *      config;
     ld_thread_t            thread;
     ld_rwlock_t            lock;
-    bool                   shouldFlush;
+    LDBoolean              shouldFlush;
     struct LDStore *       store;
     struct EventProcessor *eventProcessor;
 };

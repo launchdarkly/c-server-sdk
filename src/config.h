@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdbool.h>
-
 #include <launchdarkly/json.h>
 #include <launchdarkly/store.h>
 
@@ -11,17 +9,17 @@ struct LDConfig
     char *                   baseURI;
     char *                   streamURI;
     char *                   eventsURI;
-    bool                     stream;
-    bool                     sendEvents;
+    LDBoolean                stream;
+    LDBoolean                sendEvents;
     unsigned int             eventsCapacity;
     unsigned int             timeout;
     unsigned int             flushInterval;
     unsigned int             pollInterval;
-    bool                     offline;
-    bool                     useLDD;
-    bool                     allAttributesPrivate;
+    LDBoolean                offline;
+    LDBoolean                useLDD;
+    LDBoolean                allAttributesPrivate;
     struct LDJSON *          privateAttributeNames; /* Array of Text */
-    bool                     inlineUsersInEvents;
+    LDBoolean                inlineUsersInEvents;
     unsigned int             userKeysCapacity;
     unsigned int             userKeysFlushInterval;
     struct LDStoreInterface *storeBackend;

@@ -65,11 +65,11 @@ booleanFlagWithClause(struct LDJSON *const clause)
 
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag, "rules", rules));
     setFallthrough(flag, 0);
-    addVariation(flag, LDNewBool(false));
-    addVariation(flag, LDNewBool(true));
+    addVariation(flag, LDNewBool(LDBooleanFalse));
+    addVariation(flag, LDNewBool(LDBooleanTrue));
 
     return flag;
 }
@@ -91,7 +91,7 @@ returnsOffVariationIfFlagIsOff()
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
     LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanFalse)));
     addVariations1(flag);
     setFallthrough(flag, 0);
 
@@ -105,7 +105,7 @@ returnsOffVariationIfFlagIsOff()
             &details,
             &events,
             &result,
-            false) == EVAL_MISS);
+            LDBooleanFalse) == EVAL_MISS);
 
     /* validation */
     LD_ASSERT(strcmp("off", LDGetText(result)) == 0);
@@ -136,7 +136,7 @@ testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
     /* flag */
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanFalse)));
     setFallthrough(flag, 0);
     addVariations1(flag);
 
@@ -150,7 +150,7 @@ testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
             &details,
             &events,
             &result,
-            false) == EVAL_MISS);
+            LDBooleanFalse) == EVAL_MISS);
 
     /* validation */
     LD_ASSERT(!result);
@@ -184,7 +184,7 @@ testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
     /* flag */
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag, "rules", LDNewArray()));
     setFallthrough(flag, 0);
     addVariations1(flag);
@@ -199,7 +199,7 @@ testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
             &details,
             &events,
             &result,
-            false) == EVAL_MATCH);
+            LDBooleanFalse) == EVAL_MATCH);
 
     /* validate */
     LD_ASSERT(strcmp(LDGetText(result), "fall") == 0);
@@ -236,7 +236,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     /* flag1 */
     LD_ASSERT(flag1 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("feature0")));
-    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag1, "offVariation", LDNewNumber(1)));
     addPrerequisite(flag1, "feature1", 1);
     setFallthrough(flag1, 0);
@@ -245,7 +245,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     /* flag2 */
     LD_ASSERT(flag2 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag2, "key", LDNewText("feature1")));
-    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanFalse)));
     LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(3)));
     LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
     addVariations2(flag2);
@@ -256,7 +256,14 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
 
     /* run */
     LD_ASSERT(LDi_evaluate(
-        client, flag1, user, store, &details, &events, &result, false));
+        client,
+        flag1,
+        user,
+        store,
+        &details,
+        &events,
+        &result,
+        LDBooleanFalse));
 
     /* validate */
     LD_ASSERT(strcmp(LDGetText(result), "off") == 0);
@@ -308,7 +315,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     /* flag1 */
     LD_ASSERT(flag1 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("feature0")));
-    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag1, "offVariation", LDNewNumber(1)));
     addPrerequisite(flag1, "feature1", 1);
     setFallthrough(flag1, 0);
@@ -317,7 +324,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     /* flag2 */
     LD_ASSERT(flag2 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag2, "key", LDNewText("feature1")));
-    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(2)));
     LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
     addVariations2(flag2);
@@ -329,7 +336,14 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
 
     /* run */
     LD_ASSERT(LDi_evaluate(
-        client, flag1, user, store, &details, &events, &result, false));
+        client,
+        flag1,
+        user,
+        store,
+        &details,
+        &events,
+        &result,
+        LDBooleanFalse));
 
     /* validate */
     LD_ASSERT(strcmp(LDGetText(result), "off") == 0);
@@ -380,7 +394,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     /* flag1 */
     LD_ASSERT(flag1 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("feature0")));
-    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag1, "offVariation", LDNewNumber(1)));
     addPrerequisite(flag1, "feature1", 1);
     setFallthrough(flag1, 0);
@@ -389,7 +403,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     /* flag2 */
     LD_ASSERT(flag2 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag2, "key", LDNewText("feature1")));
-    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(3)));
     LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
     setFallthrough(flag2, 1);
@@ -401,7 +415,14 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
 
     /* run */
     LD_ASSERT(LDi_evaluate(
-        client, flag1, user, store, &details, &events, &result, false));
+        client,
+        flag1,
+        user,
+        store,
+        &details,
+        &events,
+        &result,
+        LDBooleanFalse));
 
     /* validate */
     LD_ASSERT(strcmp(LDGetText(result), "fall") == 0);
@@ -452,7 +473,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     /* flag1 */
     LD_ASSERT(flag1 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("feature0")));
-    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag1, "offVariation", LDNewNumber(1)));
     addPrerequisite(flag1, "feature1", 1);
     setFallthrough(flag1, 0);
@@ -461,7 +482,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     /* flag2 */
     LD_ASSERT(flag2 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag2, "key", LDNewText("feature1")));
-    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(3)));
     LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
     addPrerequisite(flag2, "feature2", 1);
@@ -471,7 +492,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     /* flag3 */
     LD_ASSERT(flag3 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag3, "key", LDNewText("feature2")));
-    LD_ASSERT(LDObjectSetKey(flag3, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag3, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag3, "version", LDNewNumber(3)));
     LD_ASSERT(LDObjectSetKey(flag3, "offVariation", LDNewNumber(1)));
     setFallthrough(flag3, 1);
@@ -484,7 +505,14 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
 
     /* run */
     LD_ASSERT(LDi_evaluate(
-        client, flag1, user, store, &details, &events, &result, false));
+        client,
+        flag1,
+        user,
+        store,
+        &details,
+        &events,
+        &result,
+        LDBooleanFalse));
 
     /* validate */
     LD_ASSERT(strcmp(LDGetText(result), "fall") == 0);
@@ -542,7 +570,7 @@ testFlagMatchesUserFromTarget()
     /* flag */
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
     setFallthrough(flag, 0);
     addVariations1(flag);
@@ -574,7 +602,7 @@ testFlagMatchesUserFromTarget()
         &details,
         &events,
         &result,
-        false));
+        LDBooleanFalse));
 
     /* validate */
     LD_ASSERT(strcmp(LDGetText(result), "on") == 0);
@@ -617,7 +645,7 @@ testFlagMatchesUserFromRules()
         &details,
         &events,
         &result,
-        false));
+        LDBooleanFalse));
 
     /* validate */
     LD_ASSERT(strcmp(LDGetText(result), "on") == 0);
@@ -670,10 +698,10 @@ testClauseCanMatchBuiltInAttribute()
         &details,
         &events,
         &result,
-        false));
+        LDBooleanFalse));
 
     /* validate */
-    LD_ASSERT(LDGetBool(result) == true);
+    LD_ASSERT(LDGetBool(result) == LDBooleanTrue);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -719,10 +747,10 @@ testClauseCanMatchCustomAttribute()
         &details,
         &events,
         &result,
-        false));
+        LDBooleanFalse));
 
     /* validate */
-    LD_ASSERT(LDGetBool(result) == true);
+    LD_ASSERT(LDGetBool(result) == LDBooleanTrue);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -766,10 +794,10 @@ testClauseReturnsFalseForMissingAttribute()
         &details,
         &events,
         &result,
-        false));
+        LDBooleanFalse));
 
     /* validate */
-    LD_ASSERT(LDGetBool(result) == false);
+    LD_ASSERT(LDGetBool(result) == LDBooleanFalse);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -801,7 +829,7 @@ testClauseCanBeNegated()
     LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
     LD_ASSERT(LDObjectSetKey(clause, "values", values));
     LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("name")));
-    LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(LDBooleanTrue)));
 
     LD_ASSERT(flag = booleanFlagWithClause(clause));
 
@@ -814,10 +842,10 @@ testClauseCanBeNegated()
         &details,
         &events,
         &result,
-        false));
+        LDBooleanFalse));
 
     /* validate */
-    LD_ASSERT(LDGetBool(result) == false);
+    LD_ASSERT(LDGetBool(result) == LDBooleanFalse);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -849,7 +877,7 @@ testClauseForMissingAttributeIsFalseEvenIfNegate()
     LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
     LD_ASSERT(LDObjectSetKey(clause, "values", values));
     LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("legs")));
-    LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(LDBooleanTrue)));
 
     LD_ASSERT(flag = booleanFlagWithClause(clause));
 
@@ -862,10 +890,10 @@ testClauseForMissingAttributeIsFalseEvenIfNegate()
         &details,
         &events,
         &result,
-        false));
+        LDBooleanFalse));
 
     /* validate */
-    LD_ASSERT(LDGetBool(result) == false);
+    LD_ASSERT(LDGetBool(result) == LDBooleanFalse);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -910,10 +938,10 @@ testClauseWithUnknownOperatorDoesNotMatch()
             &details,
             &events,
             &result,
-            false) == EVAL_MATCH);
+            LDBooleanFalse) == EVAL_MATCH);
 
     /* validate */
-    LD_ASSERT(LDGetBool(result) == false);
+    LD_ASSERT(LDGetBool(result) == LDBooleanFalse);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -964,11 +992,17 @@ testSegmentMatchClauseRetrievesSegmentFromStore()
     /* run */
     LD_ASSERT(
         LDi_evaluate(
-            NULL, flag, user, store, &details, &events, &result, false) ==
-        EVAL_MATCH);
+            NULL,
+            flag,
+            user,
+            store,
+            &details,
+            &events,
+            &result,
+            LDBooleanFalse) == EVAL_MATCH);
 
     /* validate */
-    LD_ASSERT(LDGetBool(result) == true);
+    LD_ASSERT(LDGetBool(result) == LDBooleanTrue);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -1009,11 +1043,17 @@ testSegmentMatchClauseFallsThroughIfSegmentNotFound()
     /* run */
     LD_ASSERT(
         LDi_evaluate(
-            NULL, flag, user, store, &details, &events, &result, false) ==
-        EVAL_MATCH);
+            NULL,
+            flag,
+            user,
+            store,
+            &details,
+            &events,
+            &result,
+            LDBooleanFalse) == EVAL_MATCH);
 
     /* validate */
-    LD_ASSERT(LDGetBool(result) == false);
+    LD_ASSERT(LDGetBool(result) == LDBooleanFalse);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -1066,11 +1106,17 @@ testCanMatchJustOneSegmentFromList()
     /* run */
     LD_ASSERT(
         LDi_evaluate(
-            NULL, flag, user, store, &details, &events, &result, false) ==
-        EVAL_MATCH);
+            NULL,
+            flag,
+            user,
+            store,
+            &details,
+            &events,
+            &result,
+            LDBooleanFalse) == EVAL_MATCH);
 
     /* validate */
-    LD_ASSERT(LDGetBool(result) == true);
+    LD_ASSERT(LDGetBool(result) == LDBooleanTrue);
     LD_ASSERT(!events);
 
     LDJSONFree(flag);
@@ -1080,7 +1126,7 @@ testCanMatchJustOneSegmentFromList()
     LDDetailsClear(&details);
 }
 
-static bool
+static LDBoolean
 floateq(const float left, const float right)
 {
     return fabs(left - right) < FLT_EPSILON;

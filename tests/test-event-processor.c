@@ -41,8 +41,10 @@ testMakeSummaryKeyIncrementsCounters()
     LD_ASSERT(config = LDConfigNew("key"));
     LD_ASSERT(processor = LDi_newEventProcessor(config));
 
-    LD_ASSERT(flag1 = makeMinimalFlag("key1", 11, true, false));
-    LD_ASSERT(flag2 = makeMinimalFlag("key2", 22, true, false));
+    LD_ASSERT(
+        flag1 = makeMinimalFlag("key1", 11, LDBooleanTrue, LDBooleanFalse));
+    LD_ASSERT(
+        flag2 = makeMinimalFlag("key2", 22, LDBooleanTrue, LDBooleanFalse));
 
     LD_ASSERT(value1 = LDNewText("value1"));
     LD_ASSERT(value2 = LDNewText("value2"));
@@ -112,11 +114,11 @@ testMakeSummaryKeyIncrementsCounters()
             NULL,
             0));
 
-    LD_ASSERT(LDi_summarizeEvent(processor, event1, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event2, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event3, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event4, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event5, false));
+    LD_ASSERT(LDi_summarizeEvent(processor, event1, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event2, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event3, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event4, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event5, LDBooleanFalse));
 
     LD_ASSERT(summary = LDi_prepareSummaryEvent(processor, 0));
     LD_ASSERT(features = LDObjectLookup(summary, "features"))
@@ -189,7 +191,8 @@ testCounterForNilVariationIsDistinctFromOthers()
     LD_ASSERT(config = LDConfigNew("key"));
     LD_ASSERT(processor = LDi_newEventProcessor(config));
 
-    LD_ASSERT(flag = makeMinimalFlag("key1", 11, true, false));
+    LD_ASSERT(
+        flag = makeMinimalFlag("key1", 11, LDBooleanTrue, LDBooleanFalse));
 
     LD_ASSERT(value1 = LDNewText("value1"));
     LD_ASSERT(value2 = LDNewText("value2"));
@@ -232,9 +235,9 @@ testCounterForNilVariationIsDistinctFromOthers()
             NULL,
             0));
 
-    LD_ASSERT(LDi_summarizeEvent(processor, event1, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event2, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event3, false));
+    LD_ASSERT(LDi_summarizeEvent(processor, event1, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event2, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event3, LDBooleanFalse));
 
     LD_ASSERT(summary = LDi_prepareSummaryEvent(processor, 0));
     LD_ASSERT(features = LDObjectLookup(summary, "features"))
@@ -369,7 +372,7 @@ testIndexEventGeneration()
     LD_ASSERT(user1 = LDUserNew("user1"));
     LD_ASSERT(user2 = LDUserNew("user2"));
 
-    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, LDBooleanTrue, LDBooleanTrue));
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(42));
 
@@ -441,11 +444,11 @@ testInlineUsersInEvents()
     struct LDUser *  user;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigInlineUsersInEvents(config, true);
+    LDConfigInlineUsersInEvents(config, LDBooleanTrue);
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("user"));
 
-    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, LDBooleanTrue, LDBooleanTrue));
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(51));
 
@@ -481,11 +484,11 @@ testDetailsNotIncludedIfNotDetailed()
     struct LDUser *  user;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigInlineUsersInEvents(config, true);
+    LDConfigInlineUsersInEvents(config, LDBooleanTrue);
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("user"));
 
-    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, LDBooleanTrue, LDBooleanTrue));
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(51));
 
@@ -516,11 +519,11 @@ testDetailsIncludedIfDetailed()
     char *           reason;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigInlineUsersInEvents(config, true);
+    LDConfigInlineUsersInEvents(config, LDBooleanTrue);
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("user"));
 
-    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, LDBooleanTrue, LDBooleanTrue));
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(51));
 
@@ -554,14 +557,14 @@ testExperimentationFallthroughNonDetailed()
     char *           reason;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigInlineUsersInEvents(config, true);
+    LDConfigInlineUsersInEvents(config, LDBooleanTrue);
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("user"));
 
-    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, LDBooleanTrue, LDBooleanTrue));
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(51));
-    LD_ASSERT(tmp = LDNewBool(true));
+    LD_ASSERT(tmp = LDNewBool(LDBooleanTrue));
     LD_ASSERT(LDObjectSetKey(flag, "trackEventsFallthrough", tmp));
 
     LD_ASSERT(LDStoreInitEmpty(client->store));
@@ -594,7 +597,7 @@ testExperimentationRuleNonDetailed()
     char *           reason;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigInlineUsersInEvents(config, true);
+    LDConfigInlineUsersInEvents(config, LDBooleanTrue);
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("user"));
 
@@ -603,9 +606,10 @@ testExperimentationRuleNonDetailed()
     LD_ASSERT(LDObjectSetKey(variation, "variation", LDNewNumber(2)));
     flag = makeFlagToMatchUser("user", variation);
     LD_ASSERT(tmp = LDArrayLookup(LDObjectLookup(flag, "rules"), 0))
-    LD_ASSERT(LDObjectSetKey(tmp, "trackEvents", LDNewBool(true)));
-    LD_ASSERT(LDObjectSetKey(flag, "trackEvents", LDNewBool(false)));
-    LD_ASSERT(LDObjectSetKey(flag, "trackEventsFallthrough", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(tmp, "trackEvents", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "trackEvents", LDNewBool(LDBooleanFalse)));
+    LD_ASSERT(LDObjectSetKey(
+        flag, "trackEventsFallthrough", LDNewBool(LDBooleanFalse)));
 
     LD_ASSERT(LDStoreInitEmpty(client->store));
     LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag));
@@ -640,7 +644,7 @@ testConstructAliasEvent()
     LD_ASSERT(previous = LDUserNew("a"));
     LD_ASSERT(current = LDUserNew("b"));
 
-    LDUserSetAnonymous(previous, true);
+    LDUserSetAnonymous(previous, LDBooleanTrue);
 
     LD_ASSERT(result = LDi_newAliasEvent(current, previous, 52));
 

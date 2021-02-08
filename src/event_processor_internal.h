@@ -19,11 +19,11 @@ struct EventProcessor
     const struct LDConfig *config;
 };
 
-bool
+LDBoolean
 LDi_summarizeEvent(
     struct EventProcessor *const context,
     const struct LDJSON *const   event,
-    const bool                   unknown);
+    const LDBoolean              unknown);
 
 void
 LDi_addEvent(struct EventProcessor *const context, struct LDJSON *const event);
@@ -31,7 +31,7 @@ LDi_addEvent(struct EventProcessor *const context, struct LDJSON *const event);
 struct LDJSON *
 LDi_newBaseEvent(const char *const kind, const double now);
 
-bool
+LDBoolean
 LDi_addUserInfoToEvent(
     const struct EventProcessor *const context,
     struct LDJSON *const               event,
@@ -53,7 +53,7 @@ LDi_newCustomEvent(
     const char *const                  key,
     struct LDJSON *const               data,
     const double                       metric,
-    const bool                         hasMetric,
+    const LDBoolean                    hasMetric,
     const double                       now);
 
 struct LDJSON *
@@ -67,9 +67,9 @@ LDi_possiblyQueueEvent(
     struct EventProcessor *const context,
     struct LDJSON *              event,
     const double                 now,
-    const bool                   detailedEvaluation);
+    const LDBoolean              detailedEvaluation);
 
-bool
+LDBoolean
 LDi_maybeMakeIndexEvent(
     struct EventProcessor *const context,
     const struct LDUser *const   user,

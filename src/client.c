@@ -42,9 +42,8 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     /* construction of store takes ownership of backend */
     config->storeBackend = NULL;
-
-    client->shouldFlush  = false;
-    client->shuttingdown = false;
+    client->shouldFlush  = LDBooleanFalse;
+    client->shuttingdown = LDBooleanFalse;
     client->config       = config;
 
     if (!(client->eventProcessor = LDi_newEventProcessor(config))) {
@@ -84,7 +83,7 @@ LDClientClose(struct LDClient *const client)
     if (client) {
         /* signal shutdown to background */
         LDi_rwlock_wrlock(&client->lock);
-        client->shuttingdown = true;
+        client->shuttingdown = LDBooleanTrue;
         LDi_rwlock_wrunlock(&client->lock);
 
         /* wait until background exits */
@@ -103,7 +102,7 @@ LDClientClose(struct LDClient *const client)
         LD_LOG(LD_LOG_INFO, "trace client cleanup");
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
 LDBoolean
@@ -115,7 +114,7 @@ LDClientIsInitialized(struct LDClient *const client)
     if (client == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientIsInitialized NULL client");
 
-        return false;
+        return LDBooleanFalse;
     }
 #endif
 
@@ -137,23 +136,24 @@ LDClientTrack(
     if (client == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL client");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (key == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL key");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (user == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL user");
 
-        return false;
+        return LDBooleanFalse;
     }
 #endif
 
-    return LDi_track(client->eventProcessor, user, key, data, 0, false);
+    return LDi_track(
+        client->eventProcessor, user, key, data, 0, LDBooleanFalse);
 }
 
 LDBoolean
@@ -172,23 +172,24 @@ LDClientTrackMetric(
     if (client == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL client");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (key == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL key");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (user == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL user");
 
-        return false;
+        return LDBooleanFalse;
     }
 #endif
 
-    return LDi_track(client->eventProcessor, user, key, data, metric, true);
+    return LDi_track(
+        client->eventProcessor, user, key, data, metric, LDBooleanTrue);
 }
 
 LDBoolean
@@ -205,19 +206,19 @@ LDClientAlias(
     if (client == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL client");
 
-        return 0;
+        return LDBooleanFalse;
     }
 
     if (currentUser == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL currentUser");
 
-        return 0;
+        return LDBooleanFalse;
     }
 
     if (previousUser == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL previousUser");
 
-        return 0;
+        return LDBooleanFalse;
     }
 #endif
 
@@ -234,13 +235,13 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
     if (client == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientIdentify NULL client");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (user == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientIdentify NULL user");
 
-        return false;
+        return LDBooleanFalse;
     }
 #endif
 
@@ -256,7 +257,7 @@ LDClientIsOffline(struct LDClient *const client)
     if (client == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientIsOffline NULL client");
 
-        return false;
+        return LDBooleanFalse;
     }
 #endif
 
@@ -272,13 +273,13 @@ LDClientFlush(struct LDClient *const client)
     if (client == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDClientFlush NULL client");
 
-        return false;
+        return LDBooleanFalse;
     }
 #endif
 
     LDi_rwlock_wrlock(&client->lock);
-    client->shouldFlush = true;
+    client->shouldFlush = LDBooleanTrue;
     LDi_rwlock_wrunlock(&client->lock);
 
-    return true;
+    return LDBooleanTrue;
 }

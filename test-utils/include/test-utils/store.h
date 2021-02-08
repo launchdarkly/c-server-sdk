@@ -4,4 +4,5 @@
 
 #include <store.h>
 
-void runSharedStoreTests(struct LDStore *(*const prepareEmptyStore)());
+void
+runSharedStoreTests(struct LDStore *(*const prepareEmptyStore)());

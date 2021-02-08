@@ -15,7 +15,7 @@
 #include "user.h"
 #include "utility.h"
 
-bool
+LDBoolean
 LDi_isEvalError(const EvalStatus status)
 {
     return status == EVAL_MEM || status == EVAL_SCHEMA || status == EVAL_STORE;
@@ -51,7 +51,7 @@ maybeNegate(const struct LDJSON *const clause, const EvalStatus status)
     return status;
 }
 
-static bool
+static LDBoolean
 addValue(
     const struct LDJSON *const flag,
     struct LDJSON **           result,
@@ -69,12 +69,12 @@ addValue(
     variation  = NULL;
 
     if (LDi_notNull(index)) {
-        details->hasVariation = true;
+        details->hasVariation = LDBooleanTrue;
 
         if (LDJSONGetType(index) != LDNumber) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         details->variationIndex = LDGetNumber(index);
@@ -82,25 +82,25 @@ addValue(
         if (!(variations = LDObjectLookup(flag, "variations"))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (LDJSONGetType(variations) != LDArray) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (!(variation = LDArrayLookup(variations, LDGetNumber(index)))) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (!(tmp = LDJSONDuplicate(variation))) {
             LD_LOG(LD_LOG_ERROR, "allocation error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         *result = tmp;
@@ -109,7 +109,7 @@ addValue(
         details->hasVariation = false;
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
 EvalStatus
@@ -121,7 +121,7 @@ LDi_evaluate(
     struct LDDetails *const    details,
     struct LDJSON **const      o_events,
     struct LDJSON **const      o_value,
-    const bool                 recordReason)
+    const LDBoolean            recordReason)
 {
     EvalStatus           substatus;
     const struct LDJSON *iter, *rules, *targets, *on;
@@ -366,7 +366,7 @@ LDi_checkPrerequisites(
     struct LDStore *const      store,
     const char **const         failedKey,
     struct LDJSON **const      events,
-    const bool                 recordReason)
+    const LDBoolean            recordReason)
 {
     struct LDJSON *prerequisites, *iter;
 
@@ -1110,7 +1110,7 @@ LDi_hexToDecimal(const char *const input)
     return acc;
 }
 
-bool
+LDBoolean
 LDi_bucketUser(
     const struct LDUser *const user,
     const char *const          segmentKey,
@@ -1150,7 +1150,7 @@ LDi_bucketUser(
         if (!bucketable) {
             LDJSONFree(attributeValue);
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (snprintf(
@@ -1176,16 +1176,16 @@ LDi_bucketUser(
 
             LDJSONFree(attributeValue);
 
-            return true;
+            return LDBooleanTrue;
         }
 
         LDJSONFree(attributeValue);
     }
 
-    return false;
+    return LDBooleanFalse;
 }
 
-bool
+LDBoolean
 LDi_variationIndexForUser(
     const struct LDJSON *const  varOrRoll,
     const struct LDUser *const  user,
@@ -1213,12 +1213,12 @@ LDi_variationIndexForUser(
         if (LDJSONGetType(variation) != LDNumber) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         *index = variation;
 
-        return true;
+        return LDBooleanTrue;
     }
 
     LD_ASSERT(user);
@@ -1229,13 +1229,13 @@ LDi_variationIndexForUser(
     if (!LDi_notNull(rollout)) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (LDJSONGetType(rollout) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     variations = LDObjectLookup(rollout, "variations");
@@ -1243,19 +1243,19 @@ LDi_variationIndexForUser(
     if (!LDi_notNull(variations)) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (LDJSONGetType(variations) != LDArray) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (LDCollectionGetSize(variations) == 0) {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     variation = LDGetIter(variations);
@@ -1264,7 +1264,7 @@ LDi_variationIndexForUser(
     if (!LDi_bucketUser(user, key, "key", salt, &userBucket)) {
         LD_LOG(LD_LOG_ERROR, "failed to bucket user");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     for (; variation; variation = LDIterNext(variation)) {
@@ -1273,13 +1273,13 @@ LDi_variationIndexForUser(
         if (!LDi_notNull(weight)) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (LDJSONGetType(weight) != LDNumber) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         sum += LDGetNumber(weight) / 100000.0;
@@ -1289,19 +1289,19 @@ LDi_variationIndexForUser(
         if (!LDi_notNull(subvariation)) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (LDJSONGetType(subvariation) != LDNumber) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (userBucket < sum) {
             *index = subvariation;
 
-            return true;
+            return LDBooleanTrue;
         }
     }
 
@@ -1316,10 +1316,10 @@ LDi_variationIndexForUser(
 
     *index = subvariation;
 
-    return true;
+    return LDBooleanTrue;
 }
 
-bool
+LDBoolean
 LDi_getIndexForVariationOrRollout(
     const struct LDJSON *const  flag,
     const struct LDJSON *const  varOrRoll,
@@ -1343,7 +1343,7 @@ LDi_getIndexForVariationOrRollout(
         if (LDJSONGetType(jkey) != LDText) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         key = LDGetText(jkey);
@@ -1353,7 +1353,7 @@ LDi_getIndexForVariationOrRollout(
         if (LDJSONGetType(jsalt) != LDText) {
             LD_LOG(LD_LOG_ERROR, "schema error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         salt = LDGetText(jsalt);
@@ -1362,8 +1362,8 @@ LDi_getIndexForVariationOrRollout(
     if (!LDi_variationIndexForUser(varOrRoll, user, key, salt, result)) {
         LD_LOG(LD_LOG_ERROR, "failed to get variation index");
 
-        return false;
+        return LDBooleanFalse;
     }
 
-    return true;
+    return LDBooleanTrue;
 }

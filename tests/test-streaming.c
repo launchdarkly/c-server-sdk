@@ -170,8 +170,8 @@ testStreamContext(void (*const action)())
     struct StreamContext *context;
 
     LD_ASSERT(config = LDConfigNew("key"));
-    LDConfigSetUseLDD(config, true);
-    LDConfigSetSendEvents(config, false);
+    LDConfigSetUseLDD(config, LDBooleanTrue);
+    LDConfigSetSendEvents(config, LDBooleanFalse);
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(context = LDi_constructStreamContext(client, NULL, NULL));
 

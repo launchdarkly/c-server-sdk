@@ -9,9 +9,13 @@ extern "C" {
 #include <launchdarkly/boolean.h>
 #include <launchdarkly/store/redis.h>
 
-LDBoolean storeUpsertInternal(void *const contextRaw, const char *const kind,
+LDBoolean
+storeUpsertInternal(
+    void *const                               contextRaw,
+    const char *const                         kind,
     const struct LDStoreCollectionItem *const feature,
-    const char *const featureKey, void (*const hook)());
+    const char *const                         featureKey,
+    void (*const hook)());
 
 #ifdef __cplusplus
 }

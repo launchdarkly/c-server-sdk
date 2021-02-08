@@ -10,7 +10,7 @@
 static void
 testBoolVariationDefaultValueOffline()
 {
-    bool             value;
+    LDBoolean        value;
     struct LDUser *  user;
     struct LDClient *client;
     struct LDDetails details;
@@ -19,9 +19,10 @@ testBoolVariationDefaultValueOffline()
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(client = makeOfflineClient());
     /* test */
-    value = LDBoolVariation(client, user, "featureKey", true, &details);
+    value =
+        LDBoolVariation(client, user, "featureKey", LDBooleanTrue, &details);
     /* validate */
-    LD_ASSERT(value == true);
+    LD_ASSERT(value == LDBooleanTrue);
     LD_ASSERT(details.reason == LD_ERROR);
     LD_ASSERT(details.extra.errorKind == LD_CLIENT_NOT_READY);
     /* cleanup */
@@ -135,7 +136,7 @@ testOfflineClientReturnsAsOffline()
 
     LD_ASSERT(client = makeOfflineClient());
 
-    LD_ASSERT(LDClientIsOffline(client) == true);
+    LD_ASSERT(LDClientIsOffline(client) == LDBooleanTrue);
 
     LDClientClose(client);
 }

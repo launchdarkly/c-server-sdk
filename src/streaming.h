@@ -15,7 +15,7 @@
 struct StreamContext
 {
     struct LDSSEParser       parser;
-    bool                     active;
+    LDBoolean                active;
     struct curl_slist *      headers;
     struct LDClient *        client;
     struct NetworkInterface *networkInterface;
@@ -27,12 +27,12 @@ struct StreamContext
     /* record when stream started for backoff purposes */
     unsigned long startedOn;
     /* if stream should never retry */
-    bool permanentFailure;
+    LDBoolean permanentFailure;
     /* used to track stream read timeouts */
     double lastReadTimeMilliseconds;
 };
 
-bool
+LDBoolean
 LDi_parsePath(
     const char *path, enum FeatureKind *const kind, const char **const key);
 

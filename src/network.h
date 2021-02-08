@@ -27,7 +27,7 @@ struct NetworkInterface
     CURL *current;
 };
 
-bool
+LDBoolean
 LDi_prepareShared(
     const struct LDConfig *const config,
     const char *const            url,
@@ -44,14 +44,14 @@ LDi_constructAnalytics(struct LDClient *const client);
 THREAD_RETURN
 LDi_networkthread(void *const clientref);
 
-bool
+LDBoolean
 validatePutBody(const struct LDJSON *const put);
 
-bool
+LDBoolean
 LDi_addHandle(
     CURLM *const                   multi,
     struct NetworkInterface *const networkInterface,
     CURL *const                    handle);
 
-bool
+LDBoolean
 LDi_removeAndFreeHandle(CURLM *const multi, CURL *const handle);

@@ -17,7 +17,7 @@ mockFailInit(
     (void)context;
     LD_ASSERT(collections || collectionCount == 0);
 
-    return false;
+    return LDBooleanFalse;
 }
 
 static LDBoolean
@@ -32,7 +32,7 @@ mockFailGet(
     LD_ASSERT(featureKey);
     LD_ASSERT(result);
 
-    return false;
+    return LDBooleanFalse;
 }
 
 static LDBoolean
@@ -47,7 +47,7 @@ mockFailAll(
     LD_ASSERT(result);
     LD_ASSERT(resultCount);
 
-    return false;
+    return LDBooleanFalse;
 }
 
 static LDBoolean
@@ -62,7 +62,7 @@ mockFailUpsert(
     LD_ASSERT(feature);
     LD_ASSERT(featureKey);
 
-    return false;
+    return LDBooleanFalse;
 }
 
 static LDBoolean
@@ -70,7 +70,7 @@ mockFailInitialized(void *const context)
 {
     (void)context;
 
-    return false;
+    return LDBooleanFalse;
 }
 
 static void
@@ -170,7 +170,7 @@ testFailUpsert()
     struct LDStoreInterface *handle;
     struct LDJSON *          flag;
 
-    LD_ASSERT(flag = makeMinimalFlag("abc", 52, true, false));
+    LD_ASSERT(flag = makeMinimalFlag("abc", 52, LDBooleanTrue, LDBooleanFalse));
     LD_ASSERT(handle = makeMockFailInterface());
     LD_ASSERT(store = prepareStore(handle));
 
@@ -223,7 +223,7 @@ mockFailGetInvalidJSON(
     result->bufferSize = strlen(result->buffer) + 1;
     result->version    = 52;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
@@ -262,7 +262,7 @@ mockFailAllInvalidJSON(
     (*result)->bufferSize = strlen((*result)->buffer) + 1;
     (*result)->version    = 52;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
@@ -298,7 +298,7 @@ mockFailGetInvalidFlag(
     result->bufferSize = strlen(result->buffer) + 1;
     result->version    = 52;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
@@ -337,7 +337,7 @@ mockFailAllInvalidFlag(
     (*result)->bufferSize = strlen((*result)->buffer) + 1;
     (*result)->version    = 52;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
@@ -362,7 +362,7 @@ testFailAllInvalidFlag()
     LDStoreDestroy(store);
 }
 
-static bool         staticInitializedValue;
+static LDBoolean    staticInitializedValue;
 static unsigned int staticInitializedCount;
 
 static LDBoolean
@@ -385,7 +385,7 @@ testInitializedCache()
     handle->initialized = mockStaticInitialized;
     LD_ASSERT(store = prepareStore(handle));
 
-    staticInitializedValue = false;
+    staticInitializedValue = LDBooleanFalse;
     staticInitializedCount = 0;
 
     LD_ASSERT(!LDStoreInitialized(store));
@@ -395,7 +395,7 @@ testInitializedCache()
     LDi_expireAll(store);
     LD_ASSERT(!LDStoreInitialized(store));
     LD_ASSERT(staticInitializedCount == 2);
-    staticInitializedValue = true;
+    staticInitializedValue = LDBooleanTrue;
     LDi_expireAll(store);
     LD_ASSERT(LDStoreInitialized(store));
     LD_ASSERT(staticInitializedCount == 3);
@@ -436,7 +436,7 @@ mockStaticGet(
 
     staticGetCount++;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
@@ -467,7 +467,9 @@ testGetCache()
 
     LDi_expireAll(store);
 
-    LD_ASSERT(staticGetValue = makeMinimalFlag("abc", 12, true, true));
+    LD_ASSERT(
+        staticGetValue =
+            makeMinimalFlag("abc", 12, LDBooleanTrue, LDBooleanTrue));
 
     LD_ASSERT(LDStoreGet(store, LD_FLAG, "abc", &item1));
     LD_ASSERT(item1);
@@ -503,7 +505,7 @@ mockStaticUpsert(
 
     staticUpsertCount++;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
@@ -518,7 +520,9 @@ testUpsertCache()
     LD_ASSERT(store = prepareStore(handle));
 
     staticUpsertKey = "abc";
-    LD_ASSERT(staticUpsertValue = makeMinimalFlag("abc", 12, true, true));
+    LD_ASSERT(
+        staticUpsertValue =
+            makeMinimalFlag("abc", 12, LDBooleanTrue, LDBooleanTrue));
 
     LD_ASSERT(LDStoreUpsert(store, LD_FLAG, staticUpsertValue));
     LD_ASSERT(staticUpsertCount == 1);
@@ -580,7 +584,7 @@ mockStaticAll(
 
     staticAllCount++;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
@@ -618,13 +622,13 @@ testAllCache()
     LD_ASSERT(full = LDNewObject());
 
     staticUpsertKey = "abc";
-    LD_ASSERT(tmp = makeMinimalFlag("abc", 12, true, true));
+    LD_ASSERT(tmp = makeMinimalFlag("abc", 12, LDBooleanTrue, LDBooleanTrue));
     LD_ASSERT(LDStoreUpsert(store, LD_FLAG, LDJSONDuplicate(tmp)));
     LD_ASSERT(LDObjectSetKey(full, "abc", tmp));
     LD_ASSERT(staticUpsertCount == 1);
 
     staticUpsertKey = "123";
-    LD_ASSERT(tmp = makeMinimalFlag("123", 13, true, true));
+    LD_ASSERT(tmp = makeMinimalFlag("123", 13, LDBooleanTrue, LDBooleanTrue));
     LD_ASSERT(LDStoreUpsert(store, LD_FLAG, LDJSONDuplicate(tmp)));
     LD_ASSERT(LDObjectSetKey(full, "123", tmp));
     LD_ASSERT(staticUpsertCount == 2);

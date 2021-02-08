@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <time.h>
 
@@ -18,5 +17,5 @@ LDi_onHeader(
     const size_t itemcount,
     void *const  context);
 
-bool
+LDBoolean
 LDi_parseRFC822(const char *const date, struct tm *tm);

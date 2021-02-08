@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -128,7 +129,7 @@ strnchr(const char *str, const char c, size_t len)
     return NULL;
 }
 
-bool
+LDBoolean
 LDi_parseRFC822(const char *const date, struct tm *tm)
 {
     return strptime(date, "%a, %d %b %Y %H:%M:%S %Z", tm) != NULL;

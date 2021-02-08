@@ -5,10 +5,10 @@
 #include "config.h"
 
 /*******************************************************************************
-* @name Reference counted wrapper for JSON
-* Used as an optimization to reduce allocations.
-* @{
-*******************************************************************************/
+ * @name Reference counted wrapper for JSON
+ * Used as an optimization to reduce allocations.
+ * @{
+ *******************************************************************************/
 
 struct LDJSONRC;
 
@@ -35,13 +35,13 @@ LDStoreNew(const struct LDConfig *const config);
 
 /* **** Flag Utilities **** */
 
-bool
+LDBoolean
 LDi_validateFeature(const struct LDJSON *const feature);
 
 struct LDJSON *
 LDi_makeDeleted(const char *const key, const unsigned int version);
 
-bool
+LDBoolean
 LDi_isFeatureDeleted(const struct LDJSON *const feature);
 
 /** @brief Get version of a non validated feature value */
@@ -57,10 +57,10 @@ void
 LDi_expireAll(struct LDStore *const store);
 
 /*******************************************************************************
-* @name Store convenience functions
-* Allows treating `LDStore` as more of an object
-* @{
-*******************************************************************************/
+ * @name Store convenience functions
+ * Allows treating `LDStore` as more of an object
+ * @{
+ *******************************************************************************/
 
 enum FeatureKind
 {
@@ -72,11 +72,11 @@ enum FeatureKind
  *
  * Input is consumed even on failure.
  */
-bool
+LDBoolean
 LDStoreInit(struct LDStore *const store, struct LDJSON *const sets);
 
 /** @brief A convenience wrapper around `store->get`. */
-bool
+LDBoolean
 LDStoreGet(
     struct LDStore *const   store,
     const enum FeatureKind  kind,
@@ -84,14 +84,14 @@ LDStoreGet(
     struct LDJSONRC **const result);
 
 /** @brief A convenience wrapper around `store->all`. */
-bool
+LDBoolean
 LDStoreAll(
     struct LDStore *const   store,
     const enum FeatureKind  kind,
     struct LDJSONRC **const result);
 
 /** @brief A convenience wrapper around `store->remove`. */
-bool
+LDBoolean
 LDStoreRemove(
     struct LDStore *const  store,
     const enum FeatureKind kind,
@@ -102,14 +102,14 @@ LDStoreRemove(
  *
  * Input is consumed even on failure.
  */
-bool
+LDBoolean
 LDStoreUpsert(
     struct LDStore *const  store,
     const enum FeatureKind kind,
     struct LDJSON *const   feature);
 
 /** @brief A convenience wrapper around `store->initialized`. */
-bool
+LDBoolean
 LDStoreInitialized(struct LDStore *const store);
 
 /** @brief A convenience wrapper around `store->destructor.` */
@@ -117,7 +117,7 @@ void
 LDStoreDestroy(struct LDStore *const store);
 
 /** @brief Calls LDStoreInit with empty sets. */
-bool
+LDBoolean
 LDStoreInitEmpty(struct LDStore *const store);
 
 /*@}*/

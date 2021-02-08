@@ -14,7 +14,7 @@ makeTestSegment(struct LDJSON *const rules)
     LD_ASSERT(LDObjectSetKey(segment, "salt", LDNewText("abcdef")));
     LD_ASSERT(LDObjectSetKey(segment, "rules", rules));
     LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(LDBooleanFalse)));
 
     return segment;
 }
@@ -33,7 +33,7 @@ testExplicitIncludeUser()
     LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("test")));
     LD_ASSERT(LDObjectSetKey(segment, "salt", LDNewText("abcdef")));
     LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(LDBooleanFalse)));
 
     LD_ASSERT(tmp = LDNewArray());
     LD_ASSERT(LDArrayPush(tmp, LDNewText("foo")));
@@ -60,7 +60,7 @@ testExplicitExcludeUser()
     LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("test")));
     LD_ASSERT(LDObjectSetKey(segment, "salt", LDNewText("abcdef")));
     LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(LDBooleanFalse)));
 
     LD_ASSERT(tmp = LDNewArray());
     LD_ASSERT(LDArrayPush(tmp, LDNewText("foo")));
@@ -87,7 +87,7 @@ testExplicitIncludeHasPrecedence()
     LD_ASSERT(LDObjectSetKey(segment, "key", LDNewText("test")));
     LD_ASSERT(LDObjectSetKey(segment, "salt", LDNewText("abcdef")));
     LD_ASSERT(LDObjectSetKey(segment, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(segment, "deleted", LDNewBool(LDBooleanFalse)));
 
     LD_ASSERT(tmp = LDNewArray());
     LD_ASSERT(LDArrayPush(tmp, LDNewText("foo")));
@@ -122,7 +122,7 @@ testMatchingRuleWithFullRollout()
     LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("email")));
     LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
     LD_ASSERT(LDObjectSetKey(clause, "values", values));
-    LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(LDBooleanFalse)));
 
     LD_ASSERT(clauses = LDNewArray());
     LD_ASSERT(LDArrayPush(clauses, clause));
@@ -161,7 +161,7 @@ testMatchingRuleWithZeroRollout()
     LD_ASSERT(LDObjectSetKey(clause, "attribute", LDNewText("email")));
     LD_ASSERT(LDObjectSetKey(clause, "op", LDNewText("in")));
     LD_ASSERT(LDObjectSetKey(clause, "values", values));
-    LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(clause, "negate", LDNewBool(LDBooleanFalse)));
 
     LD_ASSERT(clauses = LDNewArray());
     LD_ASSERT(LDArrayPush(clauses, clause));
@@ -202,7 +202,7 @@ testMatchingRuleWithMultipleClauses()
     LD_ASSERT(LDObjectSetKey(clause1, "attribute", LDNewText("email")));
     LD_ASSERT(LDObjectSetKey(clause1, "op", LDNewText("in")));
     LD_ASSERT(LDObjectSetKey(clause1, "values", values1));
-    LD_ASSERT(LDObjectSetKey(clause1, "negate", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(clause1, "negate", LDNewBool(LDBooleanFalse)));
 
     LD_ASSERT(values2 = LDNewArray());
     LD_ASSERT(LDArrayPush(values2, LDNewText("bob")));
@@ -211,7 +211,7 @@ testMatchingRuleWithMultipleClauses()
     LD_ASSERT(LDObjectSetKey(clause2, "attribute", LDNewText("name")));
     LD_ASSERT(LDObjectSetKey(clause2, "op", LDNewText("in")));
     LD_ASSERT(LDObjectSetKey(clause2, "values", values2));
-    LD_ASSERT(LDObjectSetKey(clause2, "negate", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(clause2, "negate", LDNewBool(LDBooleanFalse)));
 
     LD_ASSERT(clauses = LDNewArray());
     LD_ASSERT(LDArrayPush(clauses, clause1));
@@ -252,7 +252,7 @@ testNonMatchingRuleWithMultipleClauses()
     LD_ASSERT(LDObjectSetKey(clause1, "attribute", LDNewText("email")));
     LD_ASSERT(LDObjectSetKey(clause1, "op", LDNewText("in")));
     LD_ASSERT(LDObjectSetKey(clause1, "values", values1));
-    LD_ASSERT(LDObjectSetKey(clause1, "negate", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(clause1, "negate", LDNewBool(LDBooleanFalse)));
 
     LD_ASSERT(values2 = LDNewArray());
     LD_ASSERT(LDArrayPush(values2, LDNewText("bill")));
@@ -261,7 +261,7 @@ testNonMatchingRuleWithMultipleClauses()
     LD_ASSERT(LDObjectSetKey(clause2, "attribute", LDNewText("name")));
     LD_ASSERT(LDObjectSetKey(clause2, "op", LDNewText("in")));
     LD_ASSERT(LDObjectSetKey(clause2, "values", values2));
-    LD_ASSERT(LDObjectSetKey(clause2, "negate", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(clause2, "negate", LDNewBool(LDBooleanFalse)));
 
     LD_ASSERT(clauses = LDNewArray());
     LD_ASSERT(LDArrayPush(clauses, clause1));

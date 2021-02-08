@@ -13,7 +13,7 @@
 #include "user.h"
 #include "utility.h"
 
-bool
+LDBoolean
 LDi_parsePath(
     const char *path, enum FeatureKind *const kind, const char **const key)
 {
@@ -37,13 +37,13 @@ LDi_parsePath(
         *key  = path + flagslen;
         *kind = LD_FLAG;
     } else {
-        return false;
+        return LDBooleanFalse;
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
-static bool
+static LDBoolean
 getEventPath(
     const struct LDJSON *const event,
     enum FeatureKind *const    kind,
@@ -59,25 +59,25 @@ getEventPath(
     if (!(tmp = LDObjectLookup(event, "path"))) {
         LD_LOG(LD_LOG_ERROR, "event does not have a path");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (LDJSONGetType(tmp) != LDText) {
         LD_LOG(LD_LOG_ERROR, "event path is not a string");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!LDi_parsePath(LDGetText(tmp), kind, key)) {
         LD_LOG(LD_LOG_ERROR, "event path is not recognized");
 
-        return false;
+        return LDBooleanFalse;
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
-bool
+LDBoolean
 validatePutBody(const struct LDJSON *const put)
 {
     struct LDJSON *tmp;
@@ -87,34 +87,34 @@ validatePutBody(const struct LDJSON *const put)
     if (LDJSONGetType(put) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "put is not an object");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!(tmp = LDObjectLookup(put, "flags"))) {
         LD_LOG(LD_LOG_ERROR, "put.flags does not exist");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (LDJSONGetType(tmp) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "put.flags is not an object");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!(tmp = LDObjectLookup(put, "segments"))) {
         LD_LOG(LD_LOG_ERROR, "put.segments does not exist");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (LDJSONGetType(tmp) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "put.segments is not an object");
 
-        return false;
+        return LDBooleanFalse;
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
 /* consumes input even on failure */
@@ -122,7 +122,7 @@ static LDBoolean
 onPut(struct LDClient *const client, const char *const eventBuffer)
 {
     struct LDJSON *data, *features, *put;
-    bool           success;
+    LDBoolean      success;
 
     LD_ASSERT(client);
     LD_ASSERT(eventBuffer);
@@ -191,7 +191,7 @@ onPatch(struct LDClient *const client, const char *const eventBuffer)
 {
     struct LDJSON *  tmp, *data;
     const char *     key;
-    bool             success;
+    LDBoolean        success;
     enum FeatureKind kind;
 
     LD_ASSERT(client);
@@ -374,24 +374,24 @@ done(
     const int              responseCode)
 {
     struct StreamContext *context;
-    bool                  success;
+    LDBoolean             success;
 
     LD_ASSERT(client);
     LD_ASSERT(rawcontext);
 
     context = (struct StreamContext *)rawcontext;
 
-    context->active = false;
+    context->active = LDBooleanFalse;
 
     if (responseCode == 200) {
-        success = true;
+        success = LDBooleanTrue;
     } else {
-        success = false;
+        success = LDBooleanFalse;
         /* Most 4xx unrecoverable */
         if (responseCode >= 400 && responseCode < 500) {
             if (responseCode != 400 && responseCode != 408 &&
                 responseCode != 429) {
-                context->permanentFailure = true;
+                context->permanentFailure = LDBooleanTrue;
             }
         }
     }
@@ -568,7 +568,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         goto error;
     }
 
-    context->active = true;
+    context->active = LDBooleanTrue;
     LDi_getMonotonicMilliseconds(&context->lastReadTimeMilliseconds);
 
     return curl;
@@ -596,13 +596,13 @@ LDi_constructStreamContext(
 
     LDSSEParserInitialize(&context->parser, LDi_onEvent, context);
 
-    context->active                   = false;
+    context->active                   = LDBooleanFalse;
     context->headers                  = NULL;
     context->client                   = client;
     context->attempts                 = 0;
     context->waitUntil                = 0;
     context->startedOn                = 0;
-    context->permanentFailure         = false;
+    context->permanentFailure         = LDBooleanFalse;
     context->multi                    = multi;
     context->networkInterface         = networkInterface;
     context->lastReadTimeMilliseconds = 0;

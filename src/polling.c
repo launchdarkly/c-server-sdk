@@ -11,7 +11,7 @@
 #include "user.h"
 #include "utility.h"
 
-static bool
+static LDBoolean
 updateStore(struct LDStore *const store, const char *const rawupdate)
 {
     struct LDJSON *update, *features;
@@ -24,7 +24,7 @@ updateStore(struct LDStore *const store, const char *const rawupdate)
     if (!(update = LDJSONDeserialize(rawupdate))) {
         LD_LOG(LD_LOG_ERROR, "failed to deserialize put");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!validatePutBody(update)) {
@@ -50,7 +50,7 @@ updateStore(struct LDStore *const store, const char *const rawupdate)
 error:
     LDJSONFree(update);
 
-    return false;
+    return LDBooleanFalse;
 }
 
 struct PollContext
@@ -58,7 +58,7 @@ struct PollContext
     char *             memory;
     size_t             size;
     struct curl_slist *headers;
-    bool               active;
+    LDBoolean          active;
     double             lastpoll;
 };
 
@@ -110,13 +110,13 @@ done(
     const int              responseCode)
 {
     struct PollContext *context;
-    const bool          success = responseCode == 200;
+    const LDBoolean     success = responseCode == 200;
 
     LD_ASSERT(client);
     LD_ASSERT(rawcontext);
 
     context         = (struct PollContext *)rawcontext;
-    context->active = false;
+    context->active = LDBooleanFalse;
 
     if (success) {
         if (!updateStore(client->store, context->memory)) {
@@ -198,7 +198,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         goto error;
     }
 
-    context->active = true;
+    context->active = LDBooleanTrue;
 
     return curl;
 
@@ -235,7 +235,7 @@ LDi_constructPolling(struct LDClient *const client)
     context->memory   = NULL;
     context->size     = 0;
     context->headers  = NULL;
-    context->active   = false;
+    context->active   = LDBooleanFalse;
     context->lastpoll = 0;
 
     netInterface->done    = done;

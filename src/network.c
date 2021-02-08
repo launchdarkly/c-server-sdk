@@ -12,7 +12,7 @@
 
 #define LD_USER_AGENT "User-Agent: CServerClient/" LD_SDK_VERSION
 
-bool
+LDBoolean
 LDi_prepareShared(
     const struct LDConfig *const config,
     const char *const            url,
@@ -124,17 +124,17 @@ LDi_prepareShared(
     *o_curl    = curl;
     *o_headers = headers;
 
-    return true;
+    return LDBooleanTrue;
 
 error:
     curl_easy_cleanup(curl);
 
     curl_slist_free_all(headers);
 
-    return false;
+    return LDBooleanFalse;
 }
 
-bool
+LDBoolean
 LDi_addHandle(
     CURLM *const                   multi,
     struct NetworkInterface *const networkInterface,
@@ -148,19 +148,19 @@ LDi_addHandle(
     {
         LD_LOG(LD_LOG_ERROR, "failed to associate context");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (curl_multi_add_handle(multi, handle) != CURLM_OK) {
         LD_LOG(LD_LOG_ERROR, "failed to add handle");
 
-        return false;
+        return LDBooleanFalse;
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
-bool
+LDBoolean
 LDi_removeAndFreeHandle(CURLM *const multi, CURL *const handle)
 {
     LD_ASSERT(multi);
@@ -169,12 +169,12 @@ LDi_removeAndFreeHandle(CURLM *const multi, CURL *const handle)
     if (curl_multi_remove_handle(multi, handle) != CURLM_OK) {
         LD_LOG(LD_LOG_ERROR, "curl_multi_remove_handle failed");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     curl_easy_cleanup(handle);
 
-    return true;
+    return LDBooleanTrue;
 }
 
 THREAD_RETURN
@@ -219,11 +219,11 @@ LDi_networkthread(void *const clientref)
         return THREAD_RETURN_DEFAULT;
     }
 
-    while (true) {
+    while (LDBooleanTrue) {
         struct CURLMsg *info;
         int             running_handles, active_events;
         unsigned int    i;
-        bool            offline;
+        LDBoolean       offline;
 
         info            = NULL;
         running_handles = 0;

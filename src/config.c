@@ -48,16 +48,16 @@ LDConfigNew(const char *const key)
         goto error;
     }
 
-    config->stream                 = true;
-    config->sendEvents             = true;
+    config->stream                 = LDBooleanTrue;
+    config->sendEvents             = LDBooleanTrue;
     config->eventsCapacity         = 10000;
     config->timeout                = 5000;
     config->flushInterval          = 5000;
     config->pollInterval           = 30000;
-    config->offline                = false;
-    config->useLDD                 = false;
-    config->allAttributesPrivate   = false;
-    config->inlineUsersInEvents    = false;
+    config->offline                = LDBooleanFalse;
+    config->useLDD                 = LDBooleanFalse;
+    config->allAttributesPrivate   = LDBooleanFalse;
+    config->inlineUsersInEvents    = LDBooleanFalse;
     config->userKeysCapacity       = 1000;
     config->userKeysFlushInterval  = 300000;
     config->storeBackend           = NULL;
@@ -106,13 +106,13 @@ LDConfigSetBaseURI(struct LDConfig *const config, const char *const baseURI)
     if (config == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDConfigSetBaseURI NULL config");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (baseURI == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDConfigSetBaseURI NULL baseURI");
 
-        return false;
+        return LDBooleanFalse;
     }
 #endif
 
@@ -129,13 +129,13 @@ LDConfigSetStreamURI(struct LDConfig *const config, const char *const streamURI)
     if (config == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDConfigSetStreamURI NULL config");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (streamURI == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDConfigSetStreamURI NULL streamURI");
 
-        return false;
+        return LDBooleanFalse;
     }
 #endif
 
@@ -152,13 +152,13 @@ LDConfigSetEventsURI(struct LDConfig *const config, const char *const eventsURI)
     if (config == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDConfigSetEventsURI NULL config");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (eventsURI == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDConfigSetEventsURI NULL eventsURI");
 
-        return false;
+        return LDBooleanFalse;
     }
 #endif
 
@@ -378,20 +378,20 @@ LDConfigAddPrivateAttribute(
     if (config == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDConfigAddPrivateAttribute NULL config");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (attribute == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDConfigAddPrivateAttribute NULL attribute");
 
-        return false;
+        return LDBooleanFalse;
     }
 #endif
 
     if ((temp = LDNewText(attribute))) {
         return LDArrayPush(config->privateAttributeNames, temp);
     } else {
-        return false;
+        return LDBooleanFalse;
     }
 }
 
@@ -451,7 +451,7 @@ LDConfigSetWrapperInfo(
     if (config == NULL) {
         LD_LOG(LD_LOG_WARNING, "LDConfigSetWrapperInfo NULL config");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!wrapperName && wrapperVersion) {
@@ -459,7 +459,7 @@ LDConfigSetWrapperInfo(
             LD_LOG_WARNING,
             "LDConfigSetWrapperInfo wrapperVersion set without wrapperName");
 
-        return false;
+        return LDBooleanFalse;
     }
 #endif
 
@@ -467,7 +467,7 @@ LDConfigSetWrapperInfo(
         if (!(nameTmp = LDStrDup(wrapperName))) {
             LD_LOG(LD_LOG_WARNING, "LDConfigSetWrapperInfo malloc error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (wrapperVersion) {
@@ -476,7 +476,7 @@ LDConfigSetWrapperInfo(
 
                 LDFree(nameTmp);
 
-                return false;
+                return LDBooleanFalse;
             }
         } else {
             versionTmp = NULL;
@@ -492,5 +492,5 @@ LDConfigSetWrapperInfo(
     config->wrapperName    = nameTmp;
     config->wrapperVersion = versionTmp;
 
-    return true;
+    return LDBooleanTrue;
 }

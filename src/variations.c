@@ -20,7 +20,7 @@ LDDetailsInit(struct LDDetails *const details)
     }
 
     details->variationIndex = 0;
-    details->hasVariation   = false;
+    details->hasVariation   = LDBooleanFalse;
     details->reason         = LD_UNKNOWN;
 }
 
@@ -196,7 +196,7 @@ variation(
     const struct LDUser *const user,
     const char *const          key,
     struct LDJSON *const       fallback,
-    bool (*const checkType)(const LDJSONType type),
+    LDBoolean (*const checkType)(const LDJSONType type),
     struct LDDetails *const o_details)
 {
     struct LDStore *     store;
@@ -352,7 +352,7 @@ error:
     return fallback;
 }
 
-static bool
+static LDBoolean
 isBool(const LDJSONType type)
 {
     return type == LDBool;
@@ -366,7 +366,7 @@ LDBoolVariation(
     const LDBoolean            fallback,
     struct LDDetails *const    details)
 {
-    bool           value;
+    LDBoolean      value;
     struct LDJSON *result, *fallbackJSON;
 
     result       = NULL;
@@ -391,7 +391,7 @@ LDBoolVariation(
     }
 }
 
-static bool
+static LDBoolean
 isNumber(const LDJSONType type)
 {
     return type == LDNumber;
@@ -463,7 +463,7 @@ LDDoubleVariation(
     }
 }
 
-static bool
+static LDBoolean
 isText(const LDJSONType type)
 {
     return type == LDText;
@@ -518,7 +518,7 @@ LDStringVariation(
     }
 }
 
-static bool
+static LDBoolean
 isArrayOrObject(const LDJSONType type)
 {
     return type == LDArray || type == LDObject;
@@ -644,7 +644,7 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
             &details,
             &events,
             &value,
-            false);
+            LDBooleanFalse);
 
         if (LDi_isEvalError(status)) {
             LDJSONFree(events);
