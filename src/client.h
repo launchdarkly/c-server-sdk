@@ -16,4 +16,9 @@ struct LDClient {
     bool shouldFlush;
     struct LDStore *store;
     struct EventProcessor *eventProcessor;
+    bool inClientInit;
+
+    ld_mutex_t threadSleepLock;
+    ld_cond_t threadSleepCond;
+    bool threadAwaken;
 };

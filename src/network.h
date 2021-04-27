@@ -42,3 +42,6 @@ bool LDi_addHandle(CURLM *const multi,
     struct NetworkInterface *const networkInterface, CURL *const handle);
 
 bool LDi_removeAndFreeHandle(CURLM *const multi, CURL *const handle);
+
+bool LDi_interruptableSleep(struct LDClient *const client,
+    const unsigned long milliseconds);
