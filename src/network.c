@@ -163,6 +163,31 @@ LDi_removeAndFreeHandle(CURLM *const multi, CURL *const handle)
     return true;
 }
 
+bool
+LDi_interruptableSleep(struct LDClient *const client,
+    const unsigned long milliseconds)
+{
+  double deadline;
+  double now;
+  bool awoken = false;
+  LDi_getMonotonicMilliseconds(&now);
+  deadline = now + milliseconds;
+  LDi_mutex_lock(&client->threadSleepLock);
+  while (now < deadline && !client->threadAwaken) {
+    int wait_ms = deadline - now;
+    if (wait_ms < 10) {
+      wait_ms = 10;
+    }
+
+    LDi_cond_wait(&client->threadSleepCond, &client->threadSleepLock, wait_ms);
+    LDi_getMonotonicMilliseconds(&now);
+  }
+  awoken = client->threadAwaken;
+  client->threadAwaken = false;
+  LDi_mutex_unlock(&client->threadSleepLock);
+  return awoken;
+}
+
 THREAD_RETURN
 LDi_networkthread(void* const clientref)
 {
@@ -205,11 +230,14 @@ LDi_networkthread(void* const clientref)
         return THREAD_RETURN_DEFAULT;
     }
 
+    unsigned long sleep_ms = 10;
+
     while (true) {
         struct CURLMsg *info;
         int running_handles, active_events;
         unsigned int i;
         bool offline;
+        bool inClientInit;
 
         info            = NULL;
         running_handles = 0;
@@ -222,6 +250,7 @@ LDi_networkthread(void* const clientref)
             break;
         }
         offline = client->config->offline;
+        inClientInit = client->inClientInit;
         LDi_rwlock_rdunlock(&client->lock);
 
         curl_multi_perform(multihandle, &running_handles);
@@ -303,7 +332,20 @@ LDi_networkthread(void* const clientref)
 
         if (!active_events) {
             /* if curl is not doing anything wait so we don't burn CPU */
-            LDi_sleepMilliseconds(10);
+            /* If there are no active events, we aren't interrupted and we aren't
+             * intializing, we'll backoff. If we're doing something interesting
+             * we'll start over at 10ms for responsiveness.
+             */
+            bool interrupted = LDi_interruptableSleep(client, sleep_ms);
+            if (inClientInit || interrupted) {
+              sleep_ms = 10;
+            } else if (sleep_ms * 2 < 100) {
+              sleep_ms *= 2;
+            } else {
+              sleep_ms = 100;
+            }
+        } else {
+          sleep_ms = 10;
         }
     }
 

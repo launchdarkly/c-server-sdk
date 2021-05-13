@@ -47,6 +47,9 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     client->shuttingdown   = false;
     client->config         = config;
 
+    client->threadAwaken   = false;
+    client->inClientInit   = true;
+
     if (!(client->eventProcessor = LDi_newEventProcessor(config))) {
         LDStoreDestroy(client->store);
         LDFree(client);
@@ -55,6 +58,8 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     }
 
     LDi_rwlock_init(&client->lock);
+    LDi_mutex_init(&client->threadSleepLock);
+    LDi_cond_init(&client->threadSleepCond);
 
     LDi_thread_create(&client->thread, LDi_networkthread, client);
 
@@ -74,6 +79,9 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
         } while ((diff = now - start) < maxwaitmilli);
     }
     LD_LOG(LD_LOG_INFO, "initialized");
+    LDi_rwlock_wrlock(&client->lock);
+    client->inClientInit = false;
+    LDi_rwlock_wrunlock(&client->lock);
 
     return client;
 }
@@ -87,11 +95,18 @@ LDClientClose(struct LDClient *const client)
         client->shuttingdown = true;
         LDi_rwlock_wrunlock(&client->lock);
 
+        LDi_mutex_lock(&client->threadSleepLock);
+        client->threadAwaken = true;
+        LDi_cond_signal(&client->threadSleepCond);
+        LDi_mutex_unlock(&client->threadSleepLock);
+
         /* wait until background exits */
         LDi_thread_join(&client->thread);
 
         /* cleanup resources */
         LDi_rwlock_destroy(&client->lock);
+        LDi_mutex_destroy(&client->threadSleepLock);
+        LDi_cond_destroy(&client->threadSleepCond);
         LDi_freeEventProcessor(client->eventProcessor);
 
         LDStoreDestroy(client->store);
@@ -273,6 +288,11 @@ LDClientFlush(struct LDClient *const client)
     LDi_rwlock_wrlock(&client->lock);
     client->shouldFlush = true;
     LDi_rwlock_wrunlock(&client->lock);
+
+    LDi_mutex_lock(&client->threadSleepLock);
+    client->threadAwaken = true;
+    LDi_cond_signal(&client->threadSleepCond);
+    LDi_mutex_unlock(&client->threadSleepLock);
 
     return true;
 }
