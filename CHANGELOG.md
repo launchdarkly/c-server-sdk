@@ -2,6 +2,18 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.3.1] - 2021-05-12
+### Changed:
+- Now building with -Werror on Linux and macOS
+- Refactored to reduce code duplication between c-client and c-server
+- Improved c89 compatibility
+- Added clang-format
+
+### Fixed:
+- A race condition inside the in memory cache when utilizing an external data store. Thanks @lcapaldo
+- An instance of using the incorrect enum `LD_ERROR` instead of `LD_LOG_ERROR` with `LD_LOG`
+- Resolved many build warnings (that do not impact semantics)
+
 ## [2.3.0] - 2021-01-28
 ### Added:
 - Added the `LDClientAlias` function. This can be used to associate two user objects for analytics purposes with an alias event.
