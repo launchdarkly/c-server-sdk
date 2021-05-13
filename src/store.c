@@ -875,6 +875,7 @@ tryGetBackend(struct LDStore *const store, const char *const kind,
     const char *const key, struct LDJSONRC **const result)
 {
     struct LDStoreCollectionItem collectionItem;
+    bool status;
 
     LD_ASSERT(store);
     LD_ASSERT(kind);
@@ -921,7 +922,11 @@ tryGetBackend(struct LDStore *const store, const char *const kind,
         }
 
         if (LDi_isFeatureDeleted(deserialized)) {
-            return upsertMemory(store, kind, deserialized);
+            LDi_rwlock_wrlock(&store->cache->lock);
+            status = upsertMemory(store, kind, deserialized);
+            LDi_rwlock_wrunlock(&store->cache->lock);
+
+            return status;
         } else {
             if (!(deserializedRef = LDJSONRCNew(deserialized))) {
                 LDJSONFree(deserialized);
@@ -937,10 +942,13 @@ tryGetBackend(struct LDStore *const store, const char *const kind,
 
             *result = deserializedRef;
 
-            return upsertMemory(store, kind, dupe);
+            LDi_rwlock_wrlock(&store->cache->lock);
+            status = upsertMemory(store, kind, dupe);
+            LDi_rwlock_wrunlock(&store->cache->lock);
+
+            return status;
         }
     } else {
-        bool status;
         struct LDJSON *placeholder;
 
         LD_ASSERT(store->cache);
