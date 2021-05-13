@@ -3,8 +3,11 @@
 #include "assertion.h"
 
 struct LDJSON *
-makeMinimalFlag(const char *const key, const unsigned int version,
-    const bool on, const bool trackEvents)
+makeMinimalFlag(
+    const char *const  key,
+    const unsigned int version,
+    const LDBoolean    on,
+    const LDBoolean    trackEvents)
 {
     struct LDJSON *flag;
 
@@ -56,8 +59,8 @@ addVariations2(struct LDJSON *const flag)
 }
 
 struct LDJSON *
-makeFlagToMatchUser(const char *const key,
-    struct LDJSON *const variationOrRollout)
+makeFlagToMatchUser(
+    const char *const key, struct LDJSON *const variationOrRollout)
 {
     struct LDJSON *flag, *clause, *tmp, *rule;
 
@@ -78,7 +81,7 @@ makeFlagToMatchUser(const char *const key,
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
     LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     addVariations1(flag);
     setFallthrough(flag, 0);
     LD_ASSERT(tmp = LDNewArray());

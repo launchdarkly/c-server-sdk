@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <launchdarkly/config.h>
-#include <launchdarkly/user.h>
-#include <launchdarkly/json.h>
-#include <launchdarkly/export.h>
 #include <launchdarkly/boolean.h>
+#include <launchdarkly/config.h>
+#include <launchdarkly/export.h>
+#include <launchdarkly/json.h>
+#include <launchdarkly/user.h>
 
 /**
  * @struct LDClient
@@ -25,8 +25,8 @@ struct LDClient;
  * If the timeout is reached a non fully initialized client will be returned.
  * @return A fresh client.
  */
-LD_EXPORT(struct LDClient *) LDClientInit(struct LDConfig *const config,
-    const unsigned int maxwaitmilli);
+LD_EXPORT(struct LDClient *)
+LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli);
 
 /**
  * @brief Shuts down the LaunchDarkly client. This will block until all
@@ -57,9 +57,12 @@ LD_EXPORT(LDBoolean) LDClientIsInitialized(struct LDClient *const client);
  * transferred. May be `NULL`.
  * @return True if the event was queued, False on error.
  */
-LD_EXPORT(LDBoolean) LDClientTrack(struct LDClient *const client,
-    const char *const key, const struct LDUser *const user,
-    struct LDJSON *const data);
+LD_EXPORT(LDBoolean)
+LDClientTrack(
+    struct LDClient *const     client,
+    const char *const          key,
+    const struct LDUser *const user,
+    struct LDJSON *const       data);
 
 /**
  * @brief Reports that a user has performed an event. Custom data, and a metric
@@ -73,9 +76,13 @@ LD_EXPORT(LDBoolean) LDClientTrack(struct LDClient *const client,
  * @param[in] metric A metric to be assocated with the event.
  * @return True if the event was queued, False on error.
  */
-LD_EXPORT(LDBoolean) LDClientTrackMetric(struct LDClient *const client,
-    const char *const key, const struct LDUser *const user,
-    struct LDJSON *const data, const double metric);
+LD_EXPORT(LDBoolean)
+LDClientTrackMetric(
+    struct LDClient *const     client,
+    const char *const          key,
+    const struct LDUser *const user,
+    struct LDJSON *const       data,
+    const double               metric);
 
 /**
  * @brief Record a alias event
@@ -86,7 +93,9 @@ LD_EXPORT(LDBoolean) LDClientTrackMetric(struct LDClient *const client,
  * transferred. May not be `NULL`.
  * @return True if the event was queued, False on error.
  */
-LD_EXPORT(LDBoolean) LDClientAlias(struct LDClient *const client,
+LD_EXPORT(LDBoolean)
+LDClientAlias(
+    struct LDClient *const     client,
     const struct LDUser *const currentUser,
     const struct LDUser *const previousUser);
 
@@ -97,8 +106,9 @@ LD_EXPORT(LDBoolean) LDClientAlias(struct LDClient *const client,
  * transferred. May not be `NULL`.
  * @return True if the event was queued, False on error.
  */
-LD_EXPORT(LDBoolean) LDClientIdentify(struct LDClient *const client,
-    const struct LDUser *const user);
+LD_EXPORT(LDBoolean)
+LDClientIdentify(
+    struct LDClient *const client, const struct LDUser *const user);
 
 /**
  * @brief Whether the LaunchDarkly client is in offline mode.

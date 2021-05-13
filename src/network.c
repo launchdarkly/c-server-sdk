@@ -1,22 +1,25 @@
-#include <stdio.h>
-#include <math.h>
 #include <curl/curl.h>
+#include <math.h>
+#include <stdio.h>
 
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
-#include "network.h"
-#include "config.h"
 #include "client.h"
+#include "config.h"
+#include "network.h"
 #include "utility.h"
 
 #define LD_USER_AGENT "User-Agent: CServerClient/" LD_SDK_VERSION
 
-bool
-LDi_prepareShared(const struct LDConfig *const config, const char *const url,
-    CURL **const o_curl, struct curl_slist **const o_headers)
+LDBoolean
+LDi_prepareShared(
+    const struct LDConfig *const config,
+    const char *const            url,
+    CURL **const                 o_curl,
+    struct curl_slist **const    o_headers)
 {
-    CURL *curl;
+    CURL *             curl;
     struct curl_slist *headers;
 
     LD_ASSERT(config);
@@ -42,8 +45,11 @@ LDi_prepareShared(const struct LDConfig *const config, const char *const url,
     {
         char headerAuth[256];
 
-        if (snprintf(headerAuth, sizeof(headerAuth), "Authorization: %s",
-            config->key) < 0)
+        if (snprintf(
+                headerAuth,
+                sizeof(headerAuth),
+                "Authorization: %s",
+                config->key) < 0)
         {
             LD_LOG(LD_LOG_CRITICAL, "snprintf for headerAuth failed");
 
@@ -61,17 +67,23 @@ LDi_prepareShared(const struct LDConfig *const config, const char *const url,
         char headerWrapper[256];
 
         if (config->wrapperVersion) {
-            if (snprintf(headerWrapper, sizeof(headerWrapper),
-                "X-LaunchDarkly-Wrapper: %s/%s", config->wrapperName,
-                config->wrapperVersion) < 0)
+            if (snprintf(
+                    headerWrapper,
+                    sizeof(headerWrapper),
+                    "X-LaunchDarkly-Wrapper: %s/%s",
+                    config->wrapperName,
+                    config->wrapperVersion) < 0)
             {
                 LD_LOG(LD_LOG_CRITICAL, "snprintf for headerWrapper failed");
 
                 goto error;
             }
         } else {
-            if (snprintf(headerWrapper, sizeof(headerWrapper),
-                "X-LaunchDarkly-Wrapper: %s", config->wrapperName) < 0)
+            if (snprintf(
+                    headerWrapper,
+                    sizeof(headerWrapper),
+                    "X-LaunchDarkly-Wrapper: %s",
+                    config->wrapperName) < 0)
             {
                 LD_LOG(LD_LOG_CRITICAL, "snprintf for headerWrapper failed");
 
@@ -80,8 +92,8 @@ LDi_prepareShared(const struct LDConfig *const config, const char *const url,
         }
 
         if (!(headers = curl_slist_append(headers, headerWrapper))) {
-            LD_LOG(LD_LOG_CRITICAL,
-                "curl_slist_append failed for headerWrapper");
+            LD_LOG(
+                LD_LOG_CRITICAL, "curl_slist_append failed for headerWrapper");
 
             goto error;
         }
@@ -99,10 +111,11 @@ LDi_prepareShared(const struct LDConfig *const config, const char *const url,
         goto error;
     }
 
-    if (curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS,
-        (long)config->timeout) != CURLE_OK)
+    if (curl_easy_setopt(
+            curl, CURLOPT_CONNECTTIMEOUT_MS, (long)config->timeout) != CURLE_OK)
     {
-        LD_LOG(LD_LOG_CRITICAL,
+        LD_LOG(
+            LD_LOG_CRITICAL,
             "curl_easy_setopt CURLOPT_CONNECTTIMEOUT_MS failed");
 
         goto error;
@@ -111,60 +124,61 @@ LDi_prepareShared(const struct LDConfig *const config, const char *const url,
     *o_curl    = curl;
     *o_headers = headers;
 
-    return true;
+    return LDBooleanTrue;
 
-  error:
+error:
     curl_easy_cleanup(curl);
 
     curl_slist_free_all(headers);
 
-    return false;
+    return LDBooleanFalse;
 }
 
-bool
-LDi_addHandle(CURLM *const multi, struct NetworkInterface *networkInterface,
-    CURL *const handle)
+LDBoolean
+LDi_addHandle(
+    CURLM *const                   multi,
+    struct NetworkInterface *const networkInterface,
+    CURL *const                    handle)
 {
     LD_ASSERT(multi);
     LD_ASSERT(networkInterface);
     LD_ASSERT(handle);
 
-    if (curl_easy_setopt(
-        handle, CURLOPT_PRIVATE, networkInterface) != CURLE_OK)
+    if (curl_easy_setopt(handle, CURLOPT_PRIVATE, networkInterface) != CURLE_OK)
     {
         LD_LOG(LD_LOG_ERROR, "failed to associate context");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (curl_multi_add_handle(multi, handle) != CURLM_OK) {
         LD_LOG(LD_LOG_ERROR, "failed to add handle");
 
-        return false;
+        return LDBooleanFalse;
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
-bool
+LDBoolean
 LDi_removeAndFreeHandle(CURLM *const multi, CURL *const handle)
 {
     LD_ASSERT(multi);
     LD_ASSERT(handle);
-    
-    if (curl_multi_remove_handle(multi, handle) != CURLM_OK) {
-        LD_LOG(LD_ERROR, "curl_multi_remove_handle failed");
 
-        return false;
+    if (curl_multi_remove_handle(multi, handle) != CURLM_OK) {
+        LD_LOG(LD_LOG_ERROR, "curl_multi_remove_handle failed");
+
+        return LDBooleanFalse;
     }
 
     curl_easy_cleanup(handle);
 
-    return true;
+    return LDBooleanTrue;
 }
 
 THREAD_RETURN
-LDi_networkthread(void* const clientref)
+LDi_networkthread(void *const clientref)
 {
     struct LDClient *const client = (struct LDClient *)clientref;
 
@@ -191,7 +205,7 @@ LDi_networkthread(void* const clientref)
         }
 
         if (!(interfaces[interfacecount++] =
-            LDi_constructStreaming(client, multihandle)))
+                  LDi_constructStreaming(client, multihandle)))
         {
             LD_LOG(LD_LOG_ERROR, "failed to construct streaming");
 
@@ -205,11 +219,11 @@ LDi_networkthread(void* const clientref)
         return THREAD_RETURN_DEFAULT;
     }
 
-    while (true) {
+    while (LDBooleanTrue) {
         struct CURLMsg *info;
-        int running_handles, active_events;
-        unsigned int i;
-        bool offline;
+        int             running_handles, active_events;
+        unsigned int    i;
+        LDBoolean       offline;
 
         info            = NULL;
         running_handles = 0;
@@ -234,7 +248,7 @@ LDi_networkthread(void* const clientref)
 
                 if (handle) {
                     interfaces[i]->current = handle;
-                   
+
                     if (!LDi_addHandle(multihandle, interfaces[i], handle)) {
                         goto cleanup;
                     }
@@ -248,13 +262,13 @@ LDi_networkthread(void* const clientref)
             info = curl_multi_info_read(multihandle, &inqueue);
 
             if (info && (info->msg == CURLMSG_DONE)) {
-                long responseCode;
-                CURL *easy = info->easy_handle;
+                long                     responseCode;
+                CURL *                   easy         = info->easy_handle;
                 struct NetworkInterface *netInterface = NULL;
 
                 if (curl_easy_getinfo(
-                    easy, CURLINFO_RESPONSE_CODE, &responseCode) != CURLE_OK)
-                {
+                        easy, CURLINFO_RESPONSE_CODE, &responseCode) !=
+                    CURLE_OK) {
                     LD_LOG(LD_LOG_ERROR, "failed to get response code");
 
                     goto cleanup;
@@ -266,13 +280,14 @@ LDi_networkthread(void* const clientref)
                     goto cleanup;
                 }
 
-                LD_LOG_2(LD_LOG_TRACE, "message done code %s %ld",
+                LD_LOG_2(
+                    LD_LOG_TRACE,
+                    "message done code %s %ld",
                     curl_easy_strerror(info->data.result),
                     responseCode);
 
-                if (curl_easy_getinfo(
-                    easy, CURLINFO_PRIVATE, &netInterface) != CURLE_OK)
-                {
+                if (curl_easy_getinfo(easy, CURLINFO_PRIVATE, &netInterface) !=
+                    CURLE_OK) {
                     LD_LOG(LD_LOG_ERROR, "failed to get context");
 
                     goto cleanup;
@@ -282,20 +297,21 @@ LDi_networkthread(void* const clientref)
                 LD_ASSERT(netInterface->done);
                 LD_ASSERT(netInterface->context);
 
-                netInterface->done(client, netInterface->context,
+                netInterface->done(
+                    client,
+                    netInterface->context,
                     info->data.result == CURLE_OK ? responseCode : 0);
 
                 netInterface->current = NULL;
-                
+
                 if (!LDi_removeAndFreeHandle(multihandle, easy)) {
                     goto cleanup;
                 }
             }
         } while (info);
 
-        if (curl_multi_wait(
-            multihandle, NULL, 0, 5, &active_events) != CURLM_OK)
-        {
+        if (curl_multi_wait(multihandle, NULL, 0, 5, &active_events) !=
+            CURLM_OK) {
             LD_LOG(LD_LOG_ERROR, "failed to wait on handles");
 
             goto cleanup;
@@ -307,20 +323,19 @@ LDi_networkthread(void* const clientref)
         }
     }
 
-  cleanup:
+cleanup:
     LD_LOG(LD_LOG_INFO, "cleanup up networking thread");
 
     {
-        CURLMcode status;
+        CURLMcode    status;
         unsigned int i;
 
         for (i = 0; i < interfacecount; i++) {
             struct NetworkInterface *const netInterface = interfaces[i];
 
             if (netInterface->current) {
-                if (!LDi_removeAndFreeHandle(multihandle,
-                    netInterface->current))
-                {
+                if (!LDi_removeAndFreeHandle(
+                        multihandle, netInterface->current)) {
                     return THREAD_RETURN_DEFAULT;
                 }
             }

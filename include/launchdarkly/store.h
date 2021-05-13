@@ -9,36 +9,39 @@
 
 #include <launchdarkly/boolean.h>
 
-/***************************************************************************//**
+/*******************************************************************************
  * @name Store collections and individual items.
  * Used to provide an opaque interface for interacting with feature values.
  * @{
  ******************************************************************************/
 
 /** @brief Opaque value representing an item. */
-struct LDStoreCollectionItem {
+struct LDStoreCollectionItem
+{
     /** @brief May be NULL to indicate a deleted item */
-    void *buffer;
-    size_t bufferSize;
+    void *       buffer;
+    size_t       bufferSize;
     unsigned int version;
 };
 
 /** @brief Stores a single item and its key */
-struct LDStoreCollectionStateItem {
-    const char *key;
+struct LDStoreCollectionStateItem
+{
+    const char *                 key;
     struct LDStoreCollectionItem item;
 };
 
 /** @brief Stores the set of items in a single namespace */
-struct LDStoreCollectionState {
-    const char *kind;
+struct LDStoreCollectionState
+{
+    const char *                       kind;
     struct LDStoreCollectionStateItem *items;
-    unsigned int itemCount;
+    unsigned int                       itemCount;
 };
 
 /*@}*/
 
-/***************************************************************************//**
+/*******************************************************************************
  * @name Generic Store Interface
  * Used to provide all interaction with a feature store. Redis, Consul, Dynamo.
  *
@@ -53,7 +56,8 @@ struct LDStoreCollectionState {
  * @brief An opaque client object.
  */
 
-struct LDStoreInterface {
+struct LDStoreInterface
+{
     /**
      * @brief Used to store implementation specific data
      */
@@ -65,9 +69,10 @@ struct LDStoreInterface {
      * @param[in] collectionCount The number of items in the array.
      * @return True on success, False on failure.
      */
-    LDBoolean (*init)(void *const context,
+    LDBoolean (*init)(
+        void *const                          context,
         const struct LDStoreCollectionState *collections,
-        const unsigned int collectionCount);
+        const unsigned int                   collectionCount);
     /**
      * @brief Fetch a feature from the store
      * @param[in] context Implementation specific context.
@@ -79,8 +84,10 @@ struct LDStoreInterface {
      * @param[out] result Returns the feature, or NULL if it does not exist.
      * @return True on success, False on failure.
      */
-    LDBoolean (*get)(void *const context, const char *const kind,
-        const char *const featureKey,
+    LDBoolean (*get)(
+        void *const                         context,
+        const char *const                   kind,
+        const char *const                   featureKey,
         struct LDStoreCollectionItem *const result);
     /**
      * @brief Fetch all features in a given namespace
@@ -92,9 +99,11 @@ struct LDStoreInterface {
      * @param[out] result Count Returns the number of items in the result array.
      * @return True on success, False on failure.
      */
-    LDBoolean (*all)(void *const context, const char *const kind,
+    LDBoolean (*all)(
+        void *const                          context,
+        const char *const                    kind,
         struct LDStoreCollectionItem **const result,
-        unsigned int *const resultCount);
+        unsigned int *const                  resultCount);
     /**
      * @brief Replace an existing feature with a newer one or delete a feature
      * @param[in] context Implementation specific context.
@@ -107,9 +116,11 @@ struct LDStoreInterface {
      * @param[in] featureKey Key of the new item.
      * @return True on success, False on failure.
      */
-    LDBoolean (*upsert)(void *const context, const char *const kind,
+    LDBoolean (*upsert)(
+        void *const                               context,
+        const char *const                         kind,
         const struct LDStoreCollectionItem *const feature,
-        const char *const featureKey);
+        const char *const                         featureKey);
     /**
      * @brief Determine if the store is initialized with features yet.
      * @param[in] context Implementation specific context.

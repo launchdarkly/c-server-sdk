@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
@@ -18,7 +20,7 @@ testNull()
 static void
 testBool()
 {
-    const bool value = true;
+    const LDBoolean value = LDBooleanTrue;
 
     struct LDJSON *json = LDNewBool(value);
 
@@ -70,17 +72,17 @@ testArray()
 
     LD_ASSERT(json = LDNewArray());
 
-    LD_ASSERT(tmp = LDNewBool(true));
+    LD_ASSERT(tmp = LDNewBool(LDBooleanTrue));
     LD_ASSERT(LDArrayPush(json, tmp));
 
-    LD_ASSERT(tmp = LDNewBool(false));
+    LD_ASSERT(tmp = LDNewBool(LDBooleanFalse));
     LD_ASSERT(LDArrayPush(json, tmp));
 
     LD_ASSERT(iter = LDGetIter(json));
-    LD_ASSERT(LDGetBool(iter) == true);
+    LD_ASSERT(LDGetBool(iter) == LDBooleanTrue);
 
     LD_ASSERT(iter = LDIterNext(iter));
-    LD_ASSERT(LDGetBool(iter) == false);
+    LD_ASSERT(LDGetBool(iter) == LDBooleanFalse);
 
     LD_ASSERT(LDCollectionGetSize(json) == 2);
 
@@ -94,25 +96,25 @@ testObject()
 
     LD_ASSERT(json = LDNewObject());
 
-    LD_ASSERT(tmp = LDNewBool(true));
+    LD_ASSERT(tmp = LDNewBool(LDBooleanTrue));
     LD_ASSERT(LDObjectSetKey(json, "a", tmp));
 
-    LD_ASSERT(tmp = LDNewBool(false));
+    LD_ASSERT(tmp = LDNewBool(LDBooleanFalse));
     LD_ASSERT(LDObjectSetKey(json, "b", tmp));
 
     LD_ASSERT(iter = LDGetIter(json));
     LD_ASSERT(strcmp(LDIterKey(iter), "a") == 0);
-    LD_ASSERT(LDGetBool(iter) == true);
+    LD_ASSERT(LDGetBool(iter) == LDBooleanTrue);
 
     LD_ASSERT(iter = LDIterNext(iter));
     LD_ASSERT(strcmp(LDIterKey(iter), "b") == 0);
-    LD_ASSERT(LDGetBool(iter) == false);
+    LD_ASSERT(LDGetBool(iter) == LDBooleanFalse);
 
     LD_ASSERT(tmp = LDObjectLookup(json, "b"));
-    LD_ASSERT(LDGetBool(tmp) == false);
+    LD_ASSERT(LDGetBool(tmp) == LDBooleanFalse);
 
     LD_ASSERT(tmp = LDObjectLookup(json, "a"));
-    LD_ASSERT(LDGetBool(tmp) == true);
+    LD_ASSERT(LDGetBool(tmp) == LDBooleanTrue);
 
     LDJSONFree(json);
 }

@@ -1,23 +1,24 @@
+#include <string.h>
 #include <time.h>
 
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
 #include "client.h"
-#include "events.h"
-#include "event_processor_internal.h"
-#include "utility.h"
 #include "config.h"
-#include "user.h"
+#include "event_processor_internal.h"
+#include "events.h"
 #include "store.h"
+#include "user.h"
+#include "utility.h"
 
-#include "test-utils/flags.h"
 #include "test-utils/client.h"
+#include "test-utils/flags.h"
 
 static void
 testParseHTTPDate()
 {
-    struct tm tm;
+    struct tm         tm;
     const char *const header = "Fri, 29 Mar 2019 17:55:35 GMT";
     LD_ASSERT(LDi_parseRFC822(header, &tm));
 }
@@ -25,9 +26,9 @@ testParseHTTPDate()
 static void
 testParseServerTimeHeaderActual()
 {
-    struct LDClient *client;
+    struct LDClient * client;
     const char *const header = "Date: Fri, 29 Mar 2019 17:55:35 GMT\r\n";
-    const size_t total = strlen(header);
+    const size_t      total  = strlen(header);
 
     LD_ASSERT(client = makeOfflineClient());
 
@@ -41,9 +42,9 @@ testParseServerTimeHeaderActual()
 static void
 testParseServerTimeHeaderAlt()
 {
-    struct LDClient *client;
+    struct LDClient * client;
     const char *const header = "date:Fri, 29 Mar 2019 17:55:35 GMT   \r\n";
-    const size_t total = strlen(header);
+    const size_t      total  = strlen(header);
 
     LD_ASSERT(client = makeOfflineClient());
 
@@ -57,11 +58,11 @@ testParseServerTimeHeaderAlt()
 static void
 testParseServerTimeHeaderBad()
 {
-    struct LDClient *client;
+    struct LDClient * client;
     const char *const header1 = "Date: not a valid date\r\n";
-    const size_t total1 = strlen(header1);
+    const size_t      total1  = strlen(header1);
     const char *const header2 = "Date:\r\n";
-    const size_t total2 = strlen(header2);
+    const size_t      total2  = strlen(header2);
 
     LD_ASSERT(client = makeOfflineClient());
 

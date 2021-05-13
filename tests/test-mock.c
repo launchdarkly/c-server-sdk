@@ -5,15 +5,15 @@
 #include <launchdarkly/json.h>
 
 /* http_server must be imported before concurrency.h because of windows.h */
-#include "test-utils/http_server.h"
 #include "test-utils/flags.h"
+#include "test-utils/http_server.h"
 
 #include "assertion.h"
 #include "concurrency.h"
 #include "network.h"
 
 static ld_socket_t acceptFD;
-static int acceptPort;
+static int         acceptPort;
 
 static struct LDJSON *
 makeBasicPutBody()
@@ -55,7 +55,7 @@ makeBasicStreamPutBody()
 static void
 testBasicPoll_sendResponse(ld_socket_t fd)
 {
-    char *serialized;
+    char *         serialized;
     struct LDJSON *payload;
 
     LD_ASSERT(payload = makeBasicPutBody());
@@ -83,15 +83,17 @@ testBasicPoll_thread(void *const unused)
     LD_ASSERT(strcmp("GET", request.requestMethod) == 0);
     LD_ASSERT(request.requestBody == NULL);
 
-    LD_ASSERT(strcmp(
-        "key",
-        LDGetText(LDObjectLookup(request.requestHeaders, "Authorization"))
-    ) == 0);
+    LD_ASSERT(
+        strcmp(
+            "key",
+            LDGetText(
+                LDObjectLookup(request.requestHeaders, "Authorization"))) == 0);
 
-    LD_ASSERT(strcmp(
-        "CServerClient/" LD_SDK_VERSION,
-        LDGetText(LDObjectLookup(request.requestHeaders, "User-Agent"))
-    ) == 0);
+    LD_ASSERT(
+        strcmp(
+            "CServerClient/" LD_SDK_VERSION,
+            LDGetText(LDObjectLookup(request.requestHeaders, "User-Agent"))) ==
+        0);
 
     testBasicPoll_sendResponse(request.requestSocket);
 
@@ -103,11 +105,11 @@ testBasicPoll_thread(void *const unused)
 static void
 testBasicPoll()
 {
-    ld_thread_t thread;
+    ld_thread_t      thread;
     struct LDConfig *config;
     struct LDClient *client;
-    struct LDUser *user;
-    char pollURL[1024];
+    struct LDUser *  user;
+    char             pollURL[1024];
 
     LDi_listenOnRandomPort(&acceptFD, &acceptPort);
     LDi_thread_create(&thread, testBasicPoll_thread, NULL);
@@ -132,16 +134,17 @@ testBasicPoll()
 static void
 testBasicStream_sendResponse(ld_socket_t fd)
 {
-    char *putBodySerialized;
+    char *         putBodySerialized;
     struct LDJSON *putBody;
-    char payload[1024];
+    char           payload[1024];
 
     LD_ASSERT(putBody = makeBasicStreamPutBody());
 
     LD_ASSERT(putBodySerialized = LDJSONSerialize(putBody));
 
-    LD_ASSERT(snprintf(payload, 1024, "event: put\ndata: %s\n\n",
-        putBodySerialized) > 0);
+    LD_ASSERT(
+        snprintf(payload, 1024, "event: put\ndata: %s\n\n", putBodySerialized) >
+        0);
 
     LDi_send200(fd, payload);
 
@@ -164,20 +167,22 @@ testBasicStream_thread(void *const unused)
     LD_ASSERT(strcmp("GET", request.requestMethod) == 0);
     LD_ASSERT(request.requestBody == NULL);
 
-    LD_ASSERT(strcmp(
-        "key",
-        LDGetText(LDObjectLookup(request.requestHeaders, "Authorization"))
-    ) == 0);
+    LD_ASSERT(
+        strcmp(
+            "key",
+            LDGetText(
+                LDObjectLookup(request.requestHeaders, "Authorization"))) == 0);
 
-    LD_ASSERT(strcmp(
-        "CServerClient/" LD_SDK_VERSION,
-        LDGetText(LDObjectLookup(request.requestHeaders, "User-Agent"))
-    ) == 0);
+    LD_ASSERT(
+        strcmp(
+            "CServerClient/" LD_SDK_VERSION,
+            LDGetText(LDObjectLookup(request.requestHeaders, "User-Agent"))) ==
+        0);
 
-    LD_ASSERT(strcmp(
-        "text/event-stream",
-        LDGetText(LDObjectLookup(request.requestHeaders, "Accept"))
-    ) == 0);
+    LD_ASSERT(
+        strcmp(
+            "text/event-stream",
+            LDGetText(LDObjectLookup(request.requestHeaders, "Accept"))) == 0);
 
     testBasicStream_sendResponse(request.requestSocket);
 
@@ -189,11 +194,11 @@ testBasicStream_thread(void *const unused)
 static void
 testBasicStream()
 {
-    ld_thread_t thread;
+    ld_thread_t      thread;
     struct LDConfig *config;
     struct LDClient *client;
-    struct LDUser *user;
-    char streamURL[1024];
+    struct LDUser *  user;
+    char             streamURL[1024];
 
     LDi_listenOnRandomPort(&acceptFD, &acceptPort);
     LDi_thread_create(&thread, testBasicStream_thread, NULL);
@@ -228,27 +233,28 @@ testWrapperHeader_thread(void *const unused)
     LDi_readHTTPRequest(acceptFD, &request);
 
     switch (wrapperHeaderCase) {
-        case 0:
-            LD_ASSERT(strcmp(
+    case 0:
+        LD_ASSERT(
+            strcmp(
                 "abc/123",
-                LDGetText(LDObjectLookup(request.requestHeaders,
-                    "X-LaunchDarkly-Wrapper"))
-            ) == 0);
-            break;
-        case 1:
-            LD_ASSERT(strcmp(
+                LDGetText(LDObjectLookup(
+                    request.requestHeaders, "X-LaunchDarkly-Wrapper"))) == 0);
+        break;
+    case 1:
+        LD_ASSERT(
+            strcmp(
                 "xyz",
-                LDGetText(LDObjectLookup(request.requestHeaders,
-                    "X-LaunchDarkly-Wrapper"))
-            ) == 0);
-            break;
-        case 2:
-            LD_ASSERT(LDObjectLookup(request.requestHeaders,
-                "X-LaunchDarkly-Wrapper") == NULL);
-            break;
-        default:
-            LD_ASSERT(false);
-            break;
+                LDGetText(LDObjectLookup(
+                    request.requestHeaders, "X-LaunchDarkly-Wrapper"))) == 0);
+        break;
+    case 2:
+        LD_ASSERT(
+            LDObjectLookup(request.requestHeaders, "X-LaunchDarkly-Wrapper") ==
+            NULL);
+        break;
+    default:
+        LD_ASSERT(false);
+        break;
     }
 
     testBasicStream_sendResponse(request.requestSocket);
@@ -261,10 +267,10 @@ testWrapperHeader_thread(void *const unused)
 static void
 testWrapperHeader()
 {
-    ld_thread_t thread;
+    ld_thread_t      thread;
     struct LDConfig *config;
     struct LDClient *client;
-    char streamURL[1024];
+    char             streamURL[1024];
 
     LDi_listenOnRandomPort(&acceptFD, &acceptPort);
     LDi_thread_create(&thread, testBasicStream_thread, NULL);
@@ -274,18 +280,18 @@ testWrapperHeader()
     LD_ASSERT(config = LDConfigNew("key"));
 
     switch (wrapperHeaderCase) {
-        case 0:
-            LD_ASSERT(LDConfigSetWrapperInfo(config, "abc", "123"));
-            break;
-        case 1:
-            LD_ASSERT(LDConfigSetWrapperInfo(config, "xyz", NULL));
-            break;
-        case 2:
-            /* do nothing */
-            break;
-        default:
-            LD_ASSERT(false);
-            break;
+    case 0:
+        LD_ASSERT(LDConfigSetWrapperInfo(config, "abc", "123"));
+        break;
+    case 1:
+        LD_ASSERT(LDConfigSetWrapperInfo(config, "xyz", NULL));
+        break;
+    case 2:
+        /* do nothing */
+        break;
+    default:
+        LD_ASSERT(false);
+        break;
     }
 
     LDConfigSetStreamURI(config, streamURL);
@@ -301,7 +307,7 @@ static THREAD_RETURN
 testBasicFlush_thread(void *const unused)
 {
     struct LDHTTPRequest request;
-    struct LDJSON *got, *expected, *tmp;
+    struct LDJSON *      got, *expected, *tmp;
 
     LD_ASSERT(unused == NULL);
 
@@ -312,21 +318,25 @@ testBasicFlush_thread(void *const unused)
     LD_ASSERT(strcmp("/bulk", request.requestURL) == 0);
     LD_ASSERT(strcmp("POST", request.requestMethod) == 0);
 
-    LD_ASSERT(strcmp(
-        "key",
-        LDGetText(LDObjectLookup(request.requestHeaders, "Authorization"))
-    ) == 0);
+    LD_ASSERT(
+        strcmp(
+            "key",
+            LDGetText(
+                LDObjectLookup(request.requestHeaders, "Authorization"))) == 0);
 
-    LD_ASSERT(strcmp(
-        "CServerClient/" LD_SDK_VERSION,
-        LDGetText(LDObjectLookup(request.requestHeaders, "User-Agent"))
-    ) == 0);
+    LD_ASSERT(
+        strcmp(
+            "CServerClient/" LD_SDK_VERSION,
+            LDGetText(LDObjectLookup(request.requestHeaders, "User-Agent"))) ==
+        0);
 
     LD_ASSERT(request.requestBody != NULL);
 
     LD_ASSERT(got = LDJSONDeserialize(request.requestBody));
-    LD_ASSERT(expected = LDJSONDeserialize("[{\"kind\":\"identify\","
-      "\"key\":\"my-user\",\"user\":{\"key\":\"my-user\"}}]"));
+    LD_ASSERT(
+        expected = LDJSONDeserialize(
+            "[{\"kind\":\"identify\","
+            "\"key\":\"my-user\",\"user\":{\"key\":\"my-user\"}}]"));
 
     LDObjectDeleteKey(LDArrayLookup(got, 0), "creationDate");
 
@@ -341,14 +351,14 @@ testBasicFlush_thread(void *const unused)
     return THREAD_RETURN_DEFAULT;
 }
 
-static void 
+static void
 testBasicFlush()
 {
-    ld_thread_t thread;
+    ld_thread_t      thread;
     struct LDConfig *config;
     struct LDClient *client;
-    struct LDUser *user;
-    char pollURL[1024];
+    struct LDUser *  user;
+    char             pollURL[1024];
 
     LDi_listenOnRandomPort(&acceptFD, &acceptPort);
     LDi_thread_create(&thread, testBasicFlush_thread, NULL);

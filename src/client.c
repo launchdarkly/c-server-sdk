@@ -1,17 +1,17 @@
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
+#include "client.h"
+#include "concurrency.h"
+#include "config.h"
 #include "event_processor.h"
 #include "network.h"
-#include "client.h"
-#include "config.h"
-#include "utility.h"
-#include "user.h"
 #include "store.h"
-#include "concurrency.h"
+#include "user.h"
+#include "utility.h"
 
 struct LDClient *
 LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
@@ -20,13 +20,13 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     LD_ASSERT_API(config);
 
-    #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (config == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientInit NULL config");
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (config == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientInit NULL config");
 
-            return NULL;
-        }
-    #endif
+        return NULL;
+    }
+#endif
 
     if (!(client = (struct LDClient *)LDAlloc(sizeof(struct LDClient)))) {
         return NULL;
@@ -41,11 +41,10 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     }
 
     /* construction of store takes ownership of backend */
-    config->storeBackend   = NULL;
-
-    client->shouldFlush    = false;
-    client->shuttingdown   = false;
-    client->config         = config;
+    config->storeBackend = NULL;
+    client->shouldFlush  = LDBooleanFalse;
+    client->shuttingdown = LDBooleanFalse;
+    client->config       = config;
 
     if (!(client->eventProcessor = LDi_newEventProcessor(config))) {
         LDStoreDestroy(client->store);
@@ -59,7 +58,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     LDi_thread_create(&client->thread, LDi_networkthread, client);
 
     LD_LOG(LD_LOG_INFO, "waiting to initialize");
-    if (maxwaitmilli){
+    if (maxwaitmilli) {
         double start, diff, now;
 
         LDi_getMonotonicMilliseconds(&start);
@@ -84,7 +83,7 @@ LDClientClose(struct LDClient *const client)
     if (client) {
         /* signal shutdown to background */
         LDi_rwlock_wrlock(&client->lock);
-        client->shuttingdown = true;
+        client->shuttingdown = LDBooleanTrue;
         LDi_rwlock_wrunlock(&client->lock);
 
         /* wait until background exits */
@@ -103,7 +102,7 @@ LDClientClose(struct LDClient *const client)
         LD_LOG(LD_LOG_INFO, "trace client cleanup");
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
 LDBoolean
@@ -111,109 +110,117 @@ LDClientIsInitialized(struct LDClient *const client)
 {
     LD_ASSERT_API(client);
 
-    #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientIsInitialized NULL client");
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (client == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientIsInitialized NULL client");
 
-            return false;
-        }
-    #endif
+        return LDBooleanFalse;
+    }
+#endif
 
     return LDStoreInitialized(client->store);
 }
 
 LDBoolean
-LDClientTrack(struct LDClient *const client, const char *const key,
-    const struct LDUser *const user, struct LDJSON *const data)
+LDClientTrack(
+    struct LDClient *const     client,
+    const char *const          key,
+    const struct LDUser *const user,
+    struct LDJSON *const       data)
 {
     LD_ASSERT_API(client);
     LD_ASSERT_API(key);
     LD_ASSERT_API(user);
 
-    #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL client");
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (client == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL client");
 
-            return false;
-        }
+        return LDBooleanFalse;
+    }
 
-        if (key == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL key");
+    if (key == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL key");
 
-            return false;
-        }
+        return LDBooleanFalse;
+    }
 
-        if (user == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL user");
+    if (user == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientTrack NULL user");
 
-            return false;
-        }
-    #endif
+        return LDBooleanFalse;
+    }
+#endif
 
-    return LDi_track(client->eventProcessor, user, key, data, 0, false);
+    return LDi_track(
+        client->eventProcessor, user, key, data, 0, LDBooleanFalse);
 }
 
 LDBoolean
-LDClientTrackMetric(struct LDClient *const client, const char *const key,
-    const struct LDUser *const user, struct LDJSON *const data,
-    const double metric)
+LDClientTrackMetric(
+    struct LDClient *const     client,
+    const char *const          key,
+    const struct LDUser *const user,
+    struct LDJSON *const       data,
+    const double               metric)
 {
     LD_ASSERT_API(client);
     LD_ASSERT_API(key);
     LD_ASSERT_API(user);
 
-    #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL client");
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (client == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL client");
 
-            return false;
-        }
+        return LDBooleanFalse;
+    }
 
-        if (key == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL key");
+    if (key == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL key");
 
-            return false;
-        }
+        return LDBooleanFalse;
+    }
 
-        if (user == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL user");
+    if (user == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientTrackMetric NULL user");
 
-            return false;
-        }
-    #endif
+        return LDBooleanFalse;
+    }
+#endif
 
-    return LDi_track(client->eventProcessor, user, key, data, metric, true);
+    return LDi_track(
+        client->eventProcessor, user, key, data, metric, LDBooleanTrue);
 }
 
 LDBoolean
 LDClientAlias(
     struct LDClient *const     client,
     const struct LDUser *const currentUser,
-    const struct LDUser *const previousUser
-) {
+    const struct LDUser *const previousUser)
+{
     LD_ASSERT_API(client);
     LD_ASSERT_API(currentUser);
     LD_ASSERT_API(previousUser);
 
-    #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL client");
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (client == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL client");
 
-            return 0;
-        }
+        return LDBooleanFalse;
+    }
 
-        if (currentUser == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL currentUser");
+    if (currentUser == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL currentUser");
 
-            return 0;
-        }
+        return LDBooleanFalse;
+    }
 
-        if (previousUser == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL previousUser");
+    if (previousUser == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientAlias NULL previousUser");
 
-            return 0;
-        }
-    #endif
+        return LDBooleanFalse;
+    }
+#endif
 
     return LDi_alias(client->eventProcessor, currentUser, previousUser);
 }
@@ -224,19 +231,19 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
     LD_ASSERT_API(client);
     LD_ASSERT_API(user);
 
-    #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientIdentify NULL client");
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (client == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientIdentify NULL client");
 
-            return false;
-        }
+        return LDBooleanFalse;
+    }
 
-        if (user == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientIdentify NULL user");
+    if (user == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientIdentify NULL user");
 
-            return false;
-        }
-    #endif
+        return LDBooleanFalse;
+    }
+#endif
 
     return LDi_identify(client->eventProcessor, user);
 }
@@ -246,13 +253,13 @@ LDClientIsOffline(struct LDClient *const client)
 {
     LD_ASSERT_API(client);
 
-    #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientIsOffline NULL client");
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (client == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientIsOffline NULL client");
 
-            return false;
-        }
-    #endif
+        return LDBooleanFalse;
+    }
+#endif
 
     return client->config->offline;
 }
@@ -262,17 +269,17 @@ LDClientFlush(struct LDClient *const client)
 {
     LD_ASSERT_API(client);
 
-    #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDClientFlush NULL client");
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (client == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDClientFlush NULL client");
 
-            return false;
-        }
-    #endif
+        return LDBooleanFalse;
+    }
+#endif
 
     LDi_rwlock_wrlock(&client->lock);
-    client->shouldFlush = true;
+    client->shouldFlush = LDBooleanTrue;
     LDi_rwlock_wrunlock(&client->lock);
 
-    return true;
+    return LDBooleanTrue;
 }

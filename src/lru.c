@@ -4,18 +4,20 @@
 #include "lru.h"
 #include "utility.h"
 
-#include "utlist.h"
 #include "uthash.h"
+#include "utlist.h"
 
-struct LDLRUNode {
-    char *key;
+struct LDLRUNode
+{
+    char *            key;
     struct LDLRUNode *next, *prev;
-    UT_hash_handle hh;
+    UT_hash_handle    hh;
 };
 
-struct LDLRU {
-    unsigned int elements;
-    unsigned int capacity;
+struct LDLRU
+{
+    unsigned int      elements;
+    unsigned int      capacity;
     struct LDLRUNode *list;
     struct LDLRUNode *hash;
 };
@@ -31,8 +33,8 @@ LDLRUInit(const unsigned int capacity)
 
     lru->elements = 0;
     lru->capacity = capacity;
-    lru->list = NULL;
-    lru->hash = NULL;
+    lru->list     = NULL;
+    lru->hash     = NULL;
 
     return lru;
 }
@@ -63,7 +65,7 @@ LDLRUInsert(struct LDLRU *const lru, const char *const key)
 
     if (existing == NULL) {
         struct LDLRUNode *node;
-        char *keyDuplicate;
+        char *            keyDuplicate;
 
         if (!(keyDuplicate = LDStrDup(key))) {
             return LDLRUSTATUS_ERROR;
@@ -114,13 +116,15 @@ LDLRUClear(struct LDLRU *const lru)
     tmp1 = NULL;
     tmp2 = NULL;
 
-    HASH_ITER(hh, lru->hash, iter, tmp1) {
+    HASH_ITER(hh, lru->hash, iter, tmp1)
+    {
         HASH_DEL(lru->hash, iter);
 
         LDFree(iter->key);
     }
 
-    CDL_FOREACH_SAFE(lru->list, iter, tmp1, tmp2) {
+    CDL_FOREACH_SAFE(lru->list, iter, tmp1, tmp2)
+    {
         CDL_DELETE(lru->list, iter);
 
         LDFree(iter);

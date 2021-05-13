@@ -14,7 +14,7 @@ LDi_newEventProcessor(const struct LDConfig *const config)
     struct EventProcessor *context;
 
     if (!(context =
-        (struct EventProcessor *)LDAlloc(sizeof(struct EventProcessor))))
+              (struct EventProcessor *)LDAlloc(sizeof(struct EventProcessor))))
     {
         goto error;
     }
@@ -41,7 +41,7 @@ LDi_newEventProcessor(const struct LDConfig *const config)
 
     return context;
 
-  error:
+error:
     LDi_freeEventProcessor(context);
 
     return NULL;
@@ -59,31 +59,31 @@ LDi_freeEventProcessor(struct EventProcessor *const context)
     }
 }
 
-bool
+LDBoolean
 LDi_processEvaluation(
     /* required */
-    struct EventProcessor *const  context,
+    struct EventProcessor *const context,
     /* required */
-    const struct LDUser *const    user,
+    const struct LDUser *const user,
     /* optional */
-    struct LDJSON *const          subEvents,
+    struct LDJSON *const subEvents,
     /* required */
-    const char *const             flagKey,
+    const char *const flagKey,
     /* required */
-    const struct LDJSON *const    actualValue,
+    const struct LDJSON *const actualValue,
     /* required */
-    const struct LDJSON *const    fallbackValue,
+    const struct LDJSON *const fallbackValue,
     /* optional */
-    const struct LDJSON *const    flag,
+    const struct LDJSON *const flag,
     /* required */
     const struct LDDetails *const details,
     /* required */
-    const bool                    detailedEvaluation
-) {
-    struct LDJSON *indexEvent, *featureEvent;
+    const LDBoolean detailedEvaluation)
+{
+    struct LDJSON *      indexEvent, *featureEvent;
     const struct LDJSON *evaluationValue;
-    const unsigned int *variationIndexRef;
-    double now;
+    const unsigned int * variationIndexRef;
+    double               now;
 
     indexEvent        = NULL;
     featureEvent      = NULL;
@@ -107,16 +107,24 @@ LDi_processEvaluation(
 
     LDi_mutex_lock(&context->lock);
 
-    featureEvent = LDi_newFeatureRequestEvent(context, flagKey, user,
-        variationIndexRef, evaluationValue, fallbackValue, NULL, flag,
-        details, now);
+    featureEvent = LDi_newFeatureRequestEvent(
+        context,
+        flagKey,
+        user,
+        variationIndexRef,
+        evaluationValue,
+        fallbackValue,
+        NULL,
+        flag,
+        details,
+        now);
 
     if (!featureEvent) {
         LDi_mutex_unlock(&context->lock);
 
         LDJSONFree(subEvents);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!LDi_maybeMakeIndexEvent(context, user, now, &indexEvent)) {
@@ -125,7 +133,7 @@ LDi_processEvaluation(
         LDJSONFree(featureEvent);
         LDJSONFree(subEvents);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!LDi_summarizeEvent(context, featureEvent, !flag)) {
@@ -134,7 +142,7 @@ LDi_processEvaluation(
         LDJSONFree(featureEvent);
         LDJSONFree(subEvents);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (indexEvent) {
@@ -158,14 +166,14 @@ LDi_processEvaluation(
         /* different loop to make cleanup easier */
         for (iter = LDGetIter(subEvents); iter; iter = LDIterNext(iter)) {
             /* should lock here */
-            if (!LDi_summarizeEvent(context, iter, false)) {
+            if (!LDi_summarizeEvent(context, iter, LDBooleanFalse)) {
                 LD_LOG(LD_LOG_ERROR, "summary failed");
 
                 LDJSONFree(subEvents);
 
                 LDi_mutex_unlock(&context->lock);
 
-                return false;
+                return LDBooleanFalse;
             }
         }
 
@@ -176,8 +184,7 @@ LDi_processEvaluation(
                 context,
                 LDCollectionDetachIter(subEvents, iter),
                 now,
-                detailedEvaluation
-            );
+                detailedEvaluation);
 
             iter = next;
         }
@@ -187,17 +194,19 @@ LDi_processEvaluation(
 
     LDi_mutex_unlock(&context->lock);
 
-    return true;
+    return LDBooleanTrue;
 }
 
-bool
-LDi_summarizeEvent(struct EventProcessor *const context,
-    const struct LDJSON *const event, const bool unknown)
+LDBoolean
+LDi_summarizeEvent(
+    struct EventProcessor *const context,
+    const struct LDJSON *const   event,
+    const LDBoolean              unknown)
 {
-    char *keytext;
-    const char *flagKey;
+    char *         keytext;
+    const char *   flagKey;
     struct LDJSON *tmp, *entry, *flagContext, *counters;
-    bool success;
+    LDBoolean      success;
 
     LD_ASSERT(context);
     LD_ASSERT(event);
@@ -208,7 +217,7 @@ LDi_summarizeEvent(struct EventProcessor *const context,
     entry       = NULL;
     flagContext = NULL;
     counters    = NULL;
-    success     = false;
+    success     = LDBooleanFalse;
 
     tmp = LDObjectLookup(event, "key");
     LD_ASSERT(tmp);
@@ -219,7 +228,7 @@ LDi_summarizeEvent(struct EventProcessor *const context,
     if (!(keytext = LDi_makeSummaryKey(event))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (context->summaryStart == 0) {
@@ -376,7 +385,7 @@ LDi_summarizeEvent(struct EventProcessor *const context,
         }
 
         if (unknown) {
-            if (!(tmp = LDNewBool(true))) {
+            if (!(tmp = LDNewBool(LDBooleanTrue))) {
                 LD_LOG(LD_LOG_ERROR, "alloc error");
 
                 LDJSONFree(entry);
@@ -402,22 +411,22 @@ LDi_summarizeEvent(struct EventProcessor *const context,
             goto cleanup;
         }
     } else {
-        bool status;
+        LDBoolean status;
         tmp = LDObjectLookup(entry, "count");
         LD_ASSERT(tmp);
         status = LDSetNumber(tmp, LDGetNumber(tmp) + 1);
         LD_ASSERT(status);
     }
 
-    success = true;
+    success = LDBooleanTrue;
 
-  cleanup:
+cleanup:
     LDFree(keytext);
 
     return success;
 }
 
-static bool
+static LDBoolean
 convertToDebug(struct LDJSON *const event)
 {
     struct LDJSON *kind;
@@ -436,17 +445,20 @@ convertToDebug(struct LDJSON *const event)
         goto error;
     }
 
-    return true;
+    return LDBooleanTrue;
 
-  error:
-    return false;
+error:
+    return LDBooleanFalse;
 }
 
 void
-LDi_possiblyQueueEvent(struct EventProcessor *const context,
-    struct LDJSON *event, const double now, const bool detailedEvaluation)
+LDi_possiblyQueueEvent(
+    struct EventProcessor *const context,
+    struct LDJSON *              event,
+    const double                 now,
+    const LDBoolean              detailedEvaluation)
 {
-    bool shouldTrack;
+    LDBoolean      shouldTrack;
     struct LDJSON *tmp;
 
     LD_ASSERT(context);
@@ -468,7 +480,7 @@ LDi_possiblyQueueEvent(struct EventProcessor *const context,
         /* ensure we don't send trackEvents to LD */
         LDJSONFree(LDCollectionDetachIter(event, tmp));
     } else {
-        shouldTrack = false;
+        shouldTrack = LDBooleanFalse;
     }
 
     if (LDi_notNull(tmp = LDObjectLookup(event, "debugEventsUntilDate"))) {
@@ -516,23 +528,22 @@ LDi_addEvent(struct EventProcessor *const context, struct LDJSON *const event)
     /* sanity check */
     LD_ASSERT(LDJSONGetType(context->events) == LDArray);
 
-    if (
-        LDCollectionGetSize(context->events) >= context->config->eventsCapacity
-    ) {
+    if (LDCollectionGetSize(context->events) >= context->config->eventsCapacity)
+    {
         LD_LOG(LD_LOG_WARNING, "event capacity exceeded, dropping event");
     } else {
         LDArrayPush(context->events, event);
     }
 }
 
-bool
+LDBoolean
 LDi_maybeMakeIndexEvent(
     struct EventProcessor *const context,
     const struct LDUser *const   user,
     const double                 now,
-    struct LDJSON **const        result
-) {
-    struct LDJSON *event, *tmp;
+    struct LDJSON **const        result)
+{
+    struct LDJSON *  event, *tmp;
     enum LDLRUStatus status;
 
     LD_ASSERT(context);
@@ -542,12 +553,11 @@ LDi_maybeMakeIndexEvent(
     if (context->config->inlineUsersInEvents) {
         *result = NULL;
 
-        return true;
+        return LDBooleanTrue;
     }
 
-    if (
-        now > context->lastUserKeyFlush + context->config->userKeysFlushInterval
-    ) {
+    if (now >
+        context->lastUserKeyFlush + context->config->userKeysFlushInterval) {
         LDLRUClear(context->userKeys);
 
         context->lastUserKeyFlush = now;
@@ -556,25 +566,30 @@ LDi_maybeMakeIndexEvent(
     status = LDLRUInsert(context->userKeys, user->key);
 
     if (status == LDLRUSTATUS_ERROR) {
-        return false;
+        return LDBooleanFalse;
     } else if (status == LDLRUSTATUS_EXISTED) {
         *result = NULL;
 
-        return true;
+        return LDBooleanTrue;
     }
 
     if (!(event = LDi_newBaseEvent("index", now))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
-        return false;
+        return LDBooleanFalse;
     }
 
-    if (!(tmp = LDUserToJSON(context->config, user, true))) {
+    if (!(tmp = LDi_userToJSON(
+              user,
+              LDBooleanTrue,
+              context->config->allAttributesPrivate,
+              context->config->privateAttributeNames)))
+    {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         LDJSONFree(event);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!(LDObjectSetKey(event, "user", tmp))) {
@@ -583,12 +598,12 @@ LDi_maybeMakeIndexEvent(
         LDJSONFree(tmp);
         LDJSONFree(event);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     *result = event;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 struct LDJSON *
@@ -602,10 +617,10 @@ LDi_newFeatureRequestEvent(
     const char *const                  prereqOf,
     const struct LDJSON *const         flag,
     const struct LDDetails *const      details,
-    const double                       now
-) {
+    const double                       now)
+{
     struct LDJSON *tmp, *event;
-    bool shouldTrack, shouldAlwaysDetail;
+    LDBoolean      shouldTrack, shouldAlwaysDetail;
 
     LD_ASSERT(context);
     LD_ASSERT(key);
@@ -613,8 +628,8 @@ LDi_newFeatureRequestEvent(
 
     tmp                = NULL;
     event              = NULL;
-    shouldTrack        = false;
-    shouldAlwaysDetail = false;
+    shouldTrack        = LDBooleanFalse;
+    shouldAlwaysDetail = LDBooleanFalse;
 
     if (!(event = LDi_newBaseEvent("feature", now))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -759,7 +774,7 @@ LDi_newFeatureRequestEvent(
             }
 
             if (LDGetBool(tmp)) {
-                shouldTrack = true;
+                shouldTrack = LDBooleanTrue;
             }
         }
     }
@@ -789,27 +804,26 @@ LDi_newFeatureRequestEvent(
             }
 
             if (LDGetBool(tmp) && details->reason == LD_FALLTHROUGH) {
-                shouldTrack        = true;
-                shouldAlwaysDetail = true;
+                shouldTrack        = LDBooleanTrue;
+                shouldAlwaysDetail = LDBooleanTrue;
             }
         }
 
         if (details->reason == LD_RULE_MATCH) {
-            tmp = LDArrayLookup(LDObjectLookup(
-                flag, "rules"), details->extra.rule.ruleIndex);
+            tmp = LDArrayLookup(
+                LDObjectLookup(flag, "rules"), details->extra.rule.ruleIndex);
 
-            if (LDi_notNull(tmp = LDObjectLookup(tmp, "trackEvents"))
-                && LDJSONGetType(tmp) == LDBool
-                && LDGetBool(tmp) == true
-            ) {
-                shouldTrack        = true;
-                shouldAlwaysDetail = true;
+            if (LDi_notNull(tmp = LDObjectLookup(tmp, "trackEvents")) &&
+                LDJSONGetType(tmp) == LDBool && LDGetBool(tmp) == LDBooleanTrue)
+            {
+                shouldTrack        = LDBooleanTrue;
+                shouldAlwaysDetail = LDBooleanTrue;
             }
         }
     }
 
     if (shouldTrack) {
-        if (!(tmp = LDNewBool(true))) {
+        if (!(tmp = LDNewBool(LDBooleanTrue))) {
             LD_LOG(LD_LOG_ERROR, "memory error");
 
             goto error;
@@ -825,7 +839,7 @@ LDi_newFeatureRequestEvent(
     }
 
     if (shouldAlwaysDetail) {
-        if (!(tmp = LDNewBool(true))) {
+        if (!(tmp = LDNewBool(LDBooleanTrue))) {
             LD_LOG(LD_LOG_ERROR, "memory error");
 
             goto error;
@@ -854,7 +868,7 @@ LDi_newFeatureRequestEvent(
 
     return event;
 
-  error:
+error:
     LDJSONFree(event);
 
     return NULL;
@@ -865,8 +879,8 @@ LDi_newBaseEvent(const char *const kind, const double now)
 {
     struct LDJSON *tmp, *event;
 
-    tmp          = NULL;
-    event        = NULL;
+    tmp   = NULL;
+    event = NULL;
 
     if (!(event = LDNewObject())) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
@@ -902,18 +916,18 @@ LDi_newBaseEvent(const char *const kind, const double now)
 
     return event;
 
-  error:
+error:
     LDJSONFree(event);
 
     return NULL;
 }
 
-bool
+LDBoolean
 LDi_addUserInfoToEvent(
     const struct EventProcessor *const context,
     struct LDJSON *const               event,
-    const struct LDUser *const         user
-) {
+    const struct LDUser *const         user)
+{
     struct LDJSON *tmp;
 
     LD_ASSERT(context);
@@ -921,10 +935,15 @@ LDi_addUserInfoToEvent(
     LD_ASSERT(user);
 
     if (context->config->inlineUsersInEvents) {
-        if (!(tmp = LDUserToJSON(context->config, user, true))) {
+        if (!(tmp = LDi_userToJSON(
+                  user,
+                  LDBooleanTrue,
+                  context->config->allAttributesPrivate,
+                  context->config->privateAttributeNames)))
+        {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (!(LDObjectSetKey(event, "user", tmp))) {
@@ -932,13 +951,13 @@ LDi_addUserInfoToEvent(
 
             LDJSONFree(tmp);
 
-            return false;
+            return LDBooleanFalse;
         }
     } else {
         if (!(tmp = LDNewText(user->key))) {
             LD_LOG(LD_LOG_ERROR, "alloc error");
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (!(LDObjectSetKey(event, "userKey", tmp))) {
@@ -946,17 +965,17 @@ LDi_addUserInfoToEvent(
 
             LDJSONFree(tmp);
 
-            return false;
+            return LDBooleanFalse;
         }
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
 char *
 LDi_makeSummaryKey(const struct LDJSON *const event)
 {
-    char *keytext;
+    char *         keytext;
     struct LDJSON *key, *tmp;
 
     LD_ASSERT(event);
@@ -1030,13 +1049,12 @@ LDi_makeSummaryKey(const struct LDJSON *const event)
     return keytext;
 }
 
-bool
+LDBoolean
 LDi_identify(
-    struct EventProcessor *const context,
-    const struct LDUser *const   user
-) {
+    struct EventProcessor *const context, const struct LDUser *const user)
+{
     struct LDJSON *event;
-    double now;
+    double         now;
 
     LD_ASSERT(context);
     LD_ASSERT(user);
@@ -1046,7 +1064,7 @@ LDi_identify(
     if (!(event = LDi_newIdentifyEvent(context, user, now))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct identify event");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     LDi_mutex_lock(&context->lock);
@@ -1055,15 +1073,15 @@ LDi_identify(
 
     LDi_mutex_unlock(&context->lock);
 
-    return true;
+    return LDBooleanTrue;
 }
 
 struct LDJSON *
 LDi_newIdentifyEvent(
     const struct EventProcessor *const context,
     const struct LDUser *const         user,
-    const double                       now
-) {
+    const double                       now)
+{
     struct LDJSON *event, *tmp;
 
     LD_ASSERT(context);
@@ -1083,7 +1101,7 @@ LDi_newIdentifyEvent(
 
         LDJSONFree(event);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!(LDObjectSetKey(event, "key", tmp))) {
@@ -1092,10 +1110,15 @@ LDi_newIdentifyEvent(
         LDJSONFree(event);
         LDJSONFree(tmp);
 
-        return false;
+        return LDBooleanFalse;
     }
 
-    if (!(tmp = LDUserToJSON(context->config, user, true))) {
+    if (!(tmp = LDi_userToJSON(
+              user,
+              LDBooleanTrue,
+              context->config->allAttributesPrivate,
+              context->config->privateAttributeNames)))
+    {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         LDJSONFree(event);
@@ -1122,9 +1145,9 @@ LDi_newCustomEvent(
     const char *const                  key,
     struct LDJSON *const               data,
     const double                       metric,
-    const bool                         hasMetric,
-    const double                       now
-) {
+    const LDBoolean                    hasMetric,
+    const double                       now)
+{
     struct LDJSON *tmp, *event;
 
     LD_ASSERT(context);
@@ -1198,7 +1221,7 @@ LDi_newCustomEvent(
 
     return event;
 
-  error:
+error:
     LDJSONFree(event);
 
     return NULL;
@@ -1239,10 +1262,8 @@ LDi_objectToArray(const struct LDJSON *const object)
 }
 
 struct LDJSON *
-LDi_prepareSummaryEvent(
-    struct EventProcessor *const context,
-    const double                 now
-) {
+LDi_prepareSummaryEvent(struct EventProcessor *const context, const double now)
+{
     struct LDJSON *tmp, *summary, *iter, *counters;
 
     LD_ASSERT(context);
@@ -1339,24 +1360,24 @@ LDi_prepareSummaryEvent(
 
     return summary;
 
-  error:
+error:
     LDJSONFree(summary);
     LDJSONFree(counters);
 
     return NULL;
 }
 
-bool
+LDBoolean
 LDi_track(
     struct EventProcessor *const context,
     const struct LDUser *const   user,
     const char *const            key,
     struct LDJSON *const         data,
     const double                 metric,
-    const bool                   hasMetric
-) {
+    const LDBoolean              hasMetric)
+{
     struct LDJSON *event, *indexEvent;
-    double now;
+    double         now;
 
     LD_ASSERT(context);
     LD_ASSERT(user);
@@ -1370,11 +1391,11 @@ LDi_track(
 
         LDi_mutex_unlock(&context->lock);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!(event = LDi_newCustomEvent(
-        context, user, key, data, metric, hasMetric, now)))
+              context, user, key, data, metric, hasMetric, now)))
     {
         LD_LOG(LD_LOG_ERROR, "failed to construct custom event");
 
@@ -1382,7 +1403,7 @@ LDi_track(
 
         LDJSONFree(indexEvent);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     LDi_addEvent(context, event);
@@ -1393,7 +1414,7 @@ LDi_track(
 
     LDi_mutex_unlock(&context->lock);
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static struct LDJSON *
@@ -1408,10 +1429,10 @@ contextKindString(const struct LDUser *const user)
 
 struct LDJSON *
 LDi_newAliasEvent(
-    const struct LDUser *const   currentUser,
-    const struct LDUser *const   previousUser,
-    const double                 now
-) {
+    const struct LDUser *const currentUser,
+    const struct LDUser *const previousUser,
+    const double               now)
+{
     struct LDJSON *tmp, *event;
 
     LD_ASSERT(currentUser);
@@ -1458,7 +1479,7 @@ LDi_newAliasEvent(
 
     return event;
 
-  error:
+error:
     LDJSONFree(event);
     LDJSONFree(tmp);
 
@@ -1469,10 +1490,10 @@ LDBoolean
 LDi_alias(
     struct EventProcessor *const context,
     const struct LDUser *const   currentUser,
-    const struct LDUser *const   previousUser
-) {
+    const struct LDUser *const   previousUser)
+{
     struct LDJSON *event;
-    double now;
+    double         now;
 
     LD_ASSERT(context);
     LD_ASSERT(currentUser);
@@ -1483,23 +1504,22 @@ LDi_alias(
     if (!(event = LDi_newAliasEvent(currentUser, previousUser, now))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct alias event");
 
-        return 0;
+        return LDBooleanFalse;
     }
 
     LDi_mutex_lock(&context->lock);
     LDi_addEvent(context, event);
     LDi_mutex_unlock(&context->lock);
 
-    return 1;
+    return LDBooleanTrue;
 }
 
-bool
+LDBoolean
 LDi_bundleEventPayload(
-    struct EventProcessor *const context,
-    struct LDJSON **const        result
-) {
+    struct EventProcessor *const context, struct LDJSON **const result)
+{
     struct LDJSON *nextEvents, *nextSummaryCounters, *summaryEvent;
-    double now;
+    double         now;
 
     LD_ASSERT(context);
     LD_ASSERT(result);
@@ -1519,7 +1539,7 @@ LDi_bundleEventPayload(
 
         /* succesful but no events to send */
 
-        return true;
+        return LDBooleanTrue;
     }
 
     if (!(nextEvents = LDNewArray())) {
@@ -1527,7 +1547,7 @@ LDi_bundleEventPayload(
 
         LDi_mutex_unlock(&context->lock);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (LDCollectionGetSize(context->summaryCounters) != 0) {
@@ -1538,7 +1558,7 @@ LDi_bundleEventPayload(
 
             LDJSONFree(nextEvents);
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (!(summaryEvent = LDi_prepareSummaryEvent(context, now))) {
@@ -1549,7 +1569,7 @@ LDi_bundleEventPayload(
             LDJSONFree(nextEvents);
             LDJSONFree(nextSummaryCounters);
 
-            return false;
+            return LDBooleanFalse;
         }
 
         LDArrayPush(context->events, summaryEvent);
@@ -1565,14 +1585,12 @@ LDi_bundleEventPayload(
 
     LDi_mutex_unlock(&context->lock);
 
-    return true;
+    return LDBooleanTrue;
 }
 
 void
-LDi_setServerTime(
-    struct EventProcessor *const context,
-    const double                 serverTime
-) {
+LDi_setServerTime(struct EventProcessor *const context, const double serverTime)
+{
     LD_ASSERT(context);
     LDi_mutex_lock(&context->lock);
     context->lastServerTime = serverTime;

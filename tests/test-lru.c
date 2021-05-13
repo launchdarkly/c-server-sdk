@@ -48,7 +48,6 @@ testAccessBumpsPosition()
     LD_ASSERT(LDLRUSTATUS_EXISTED == LDLRUInsert(lru, "123"));
     LD_ASSERT(LDLRUSTATUS_NEW == LDLRUInsert(lru, "456"));
 
-
     LDLRUFree(lru);
 }
 

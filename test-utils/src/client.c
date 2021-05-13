@@ -21,7 +21,7 @@ makeOfflineClient()
     struct LDClient *client;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigSetOffline(config, true);
+    LDConfigSetOffline(config, LDBooleanTrue);
 
     LD_ASSERT(client = LDClientInit(config, 0));
 

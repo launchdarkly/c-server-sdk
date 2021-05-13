@@ -1,25 +1,30 @@
+#include <string.h>
+
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
-#include "utility.h"
 #include "store.h"
+#include "utility.h"
 
 #include "test-utils/flags.h"
 
 static LDBoolean
-mockFailInit(void *const context,
+mockFailInit(
+    void *const                          context,
     const struct LDStoreCollectionState *collections,
-    const unsigned int collectionCount)
+    const unsigned int                   collectionCount)
 {
     (void)context;
     LD_ASSERT(collections || collectionCount == 0);
 
-    return false;
+    return LDBooleanFalse;
 }
 
 static LDBoolean
-mockFailGet(void *const context, const char *const kind,
-    const char *const featureKey,
+mockFailGet(
+    void *const                         context,
+    const char *const                   kind,
+    const char *const                   featureKey,
     struct LDStoreCollectionItem *const result)
 {
     (void)context;
@@ -27,33 +32,37 @@ mockFailGet(void *const context, const char *const kind,
     LD_ASSERT(featureKey);
     LD_ASSERT(result);
 
-    return false;
+    return LDBooleanFalse;
 }
 
 static LDBoolean
-mockFailAll(void *const context, const char *const kind,
+mockFailAll(
+    void *const                          context,
+    const char *const                    kind,
     struct LDStoreCollectionItem **const result,
-    unsigned int *const resultCount)
+    unsigned int *const                  resultCount)
 {
     (void)context;
     LD_ASSERT(kind);
     LD_ASSERT(result);
     LD_ASSERT(resultCount);
 
-    return false;
+    return LDBooleanFalse;
 }
 
 static LDBoolean
-mockFailUpsert(void *const context, const char *const kind,
+mockFailUpsert(
+    void *const                               context,
+    const char *const                         kind,
     const struct LDStoreCollectionItem *const feature,
-    const char *const featureKey)
+    const char *const                         featureKey)
 {
     (void)context;
     LD_ASSERT(kind);
     LD_ASSERT(feature);
     LD_ASSERT(featureKey);
 
-    return false;
+    return LDBooleanFalse;
 }
 
 static LDBoolean
@@ -61,7 +70,7 @@ mockFailInitialized(void *const context)
 {
     (void)context;
 
-    return false;
+    return LDBooleanFalse;
 }
 
 static void
@@ -75,8 +84,9 @@ makeMockFailInterface()
 {
     struct LDStoreInterface *handle;
 
-    LD_ASSERT(handle = (struct LDStoreInterface *)
-        LDAlloc(sizeof(struct LDStoreInterface)));
+    LD_ASSERT(
+        handle = (struct LDStoreInterface *)LDAlloc(
+            sizeof(struct LDStoreInterface)));
 
     handle->context     = NULL;
     handle->init        = mockFailInit;
@@ -92,7 +102,7 @@ makeMockFailInterface()
 static struct LDStore *
 prepareStore(struct LDStoreInterface *const handle)
 {
-    struct LDStore *store;
+    struct LDStore * store;
     struct LDConfig *config;
 
     LD_ASSERT(config = LDConfigNew(""));
@@ -110,7 +120,7 @@ prepareStore(struct LDStoreInterface *const handle)
 static void
 testFailInit()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
 
     LD_ASSERT(handle = makeMockFailInterface());
@@ -124,9 +134,9 @@ testFailInit()
 static void
 testFailGet()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
-    struct LDJSONRC *item;
+    struct LDJSONRC *        item;
 
     LD_ASSERT(handle = makeMockFailInterface());
     LD_ASSERT(store = prepareStore(handle));
@@ -140,9 +150,9 @@ testFailGet()
 static void
 testFailAll()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
-    struct LDJSONRC *items;
+    struct LDJSONRC *        items;
 
     LD_ASSERT(handle = makeMockFailInterface());
     LD_ASSERT(store = prepareStore(handle));
@@ -156,11 +166,11 @@ testFailAll()
 static void
 testFailUpsert()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
-    struct LDJSON *flag;
+    struct LDJSON *          flag;
 
-    LD_ASSERT(flag = makeMinimalFlag("abc", 52, true, false));
+    LD_ASSERT(flag = makeMinimalFlag("abc", 52, LDBooleanTrue, LDBooleanFalse));
     LD_ASSERT(handle = makeMockFailInterface());
     LD_ASSERT(store = prepareStore(handle));
 
@@ -172,7 +182,7 @@ testFailUpsert()
 static void
 testFailRemove()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
 
     LD_ASSERT(handle = makeMockFailInterface());
@@ -186,7 +196,7 @@ testFailRemove()
 static void
 testFailInitialized()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
 
     LD_ASSERT(handle = makeMockFailInterface());
@@ -198,8 +208,10 @@ testFailInitialized()
 }
 
 static LDBoolean
-mockFailGetInvalidJSON(void *const context, const char *const kind,
-    const char *const featureKey,
+mockFailGetInvalidJSON(
+    void *const                         context,
+    const char *const                   kind,
+    const char *const                   featureKey,
     struct LDStoreCollectionItem *const result)
 {
     (void)context;
@@ -211,15 +223,15 @@ mockFailGetInvalidJSON(void *const context, const char *const kind,
     result->bufferSize = strlen(result->buffer) + 1;
     result->version    = 52;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
 testFailGetInvalidJSON()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
-    struct LDJSONRC *item;
+    struct LDJSONRC *        item;
 
     LD_ASSERT(handle = makeMockFailInterface());
     handle->get = mockFailGetInvalidJSON;
@@ -232,9 +244,11 @@ testFailGetInvalidJSON()
 }
 
 static LDBoolean
-mockFailAllInvalidJSON(void *const context, const char *const kind,
+mockFailAllInvalidJSON(
+    void *const                          context,
+    const char *const                    kind,
     struct LDStoreCollectionItem **const result,
-    unsigned int *const resultCount)
+    unsigned int *const                  resultCount)
 {
     (void)context;
     LD_ASSERT(kind);
@@ -248,15 +262,15 @@ mockFailAllInvalidJSON(void *const context, const char *const kind,
     (*result)->bufferSize = strlen((*result)->buffer) + 1;
     (*result)->version    = 52;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
 testFailAllInvalidJSON()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
-    struct LDJSONRC *items;
+    struct LDJSONRC *        items;
 
     LD_ASSERT(handle = makeMockFailInterface());
     handle->all = mockFailAllInvalidJSON;
@@ -269,8 +283,10 @@ testFailAllInvalidJSON()
 }
 
 static LDBoolean
-mockFailGetInvalidFlag(void *const context, const char *const kind,
-    const char *const featureKey,
+mockFailGetInvalidFlag(
+    void *const                         context,
+    const char *const                   kind,
+    const char *const                   featureKey,
     struct LDStoreCollectionItem *const result)
 {
     (void)context;
@@ -282,15 +298,15 @@ mockFailGetInvalidFlag(void *const context, const char *const kind,
     result->bufferSize = strlen(result->buffer) + 1;
     result->version    = 52;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
 testFailGetInvalidFlag()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
-    struct LDJSONRC *item;
+    struct LDJSONRC *        item;
 
     LD_ASSERT(handle = makeMockFailInterface());
     handle->get = mockFailGetInvalidFlag;
@@ -303,9 +319,11 @@ testFailGetInvalidFlag()
 }
 
 static LDBoolean
-mockFailAllInvalidFlag(void *const context, const char *const kind,
+mockFailAllInvalidFlag(
+    void *const                          context,
+    const char *const                    kind,
     struct LDStoreCollectionItem **const result,
-    unsigned int *const resultCount)
+    unsigned int *const                  resultCount)
 {
     (void)context;
     LD_ASSERT(kind);
@@ -319,16 +337,16 @@ mockFailAllInvalidFlag(void *const context, const char *const kind,
     (*result)->bufferSize = strlen((*result)->buffer) + 1;
     (*result)->version    = 52;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
 testFailAllInvalidFlag()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
-    struct LDJSONRC *items;
-    struct LDJSON *expected;
+    struct LDJSONRC *        items;
+    struct LDJSON *          expected;
 
     LD_ASSERT(expected = LDNewObject());
     LD_ASSERT(handle = makeMockFailInterface());
@@ -344,7 +362,7 @@ testFailAllInvalidFlag()
     LDStoreDestroy(store);
 }
 
-static bool staticInitializedValue;
+static LDBoolean    staticInitializedValue;
 static unsigned int staticInitializedCount;
 
 static LDBoolean
@@ -360,14 +378,14 @@ mockStaticInitialized(void *const context)
 static void
 testInitializedCache()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
 
     LD_ASSERT(handle = makeMockFailInterface());
     handle->initialized = mockStaticInitialized;
     LD_ASSERT(store = prepareStore(handle));
 
-    staticInitializedValue = false;
+    staticInitializedValue = LDBooleanFalse;
     staticInitializedCount = 0;
 
     LD_ASSERT(!LDStoreInitialized(store));
@@ -377,7 +395,7 @@ testInitializedCache()
     LDi_expireAll(store);
     LD_ASSERT(!LDStoreInitialized(store));
     LD_ASSERT(staticInitializedCount == 2);
-    staticInitializedValue = true;
+    staticInitializedValue = LDBooleanTrue;
     LDi_expireAll(store);
     LD_ASSERT(LDStoreInitialized(store));
     LD_ASSERT(staticInitializedCount == 3);
@@ -387,13 +405,15 @@ testInitializedCache()
     LDStoreDestroy(store);
 }
 
-static unsigned int staticGetCount;
+static unsigned int   staticGetCount;
 static struct LDJSON *staticGetValue;
-static char *staticGetKey;
+static char *         staticGetKey;
 
 static LDBoolean
-mockStaticGet(void *const context, const char *const kind,
-    const char *const featureKey,
+mockStaticGet(
+    void *const                         context,
+    const char *const                   kind,
+    const char *const                   featureKey,
     struct LDStoreCollectionItem *const result)
 {
     (void)context;
@@ -406,8 +426,8 @@ mockStaticGet(void *const context, const char *const kind,
     if (staticGetValue) {
         LD_ASSERT(result->buffer = LDJSONSerialize(staticGetValue));
         result->bufferSize = strlen(result->buffer) + 1;
-        result->version = LDGetNumber(
-            LDObjectLookup(staticGetValue, "version"));
+        result->version =
+            LDGetNumber(LDObjectLookup(staticGetValue, "version"));
     } else {
         result->buffer     = NULL;
         result->bufferSize = 0;
@@ -416,15 +436,15 @@ mockStaticGet(void *const context, const char *const kind,
 
     staticGetCount++;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
 testGetCache()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
-    struct LDJSONRC *item1, *item2;
+    struct LDJSONRC *        item1, *item2;
 
     item1 = NULL;
     item2 = NULL;
@@ -434,7 +454,7 @@ testGetCache()
     LD_ASSERT(store = prepareStore(handle));
 
     staticGetValue = NULL;
-    staticGetKey = "abc";
+    staticGetKey   = "abc";
     staticGetCount = 0;
 
     LD_ASSERT(LDStoreGet(store, LD_FLAG, "abc", &item1));
@@ -447,7 +467,9 @@ testGetCache()
 
     LDi_expireAll(store);
 
-    LD_ASSERT(staticGetValue = makeMinimalFlag("abc", 12, true, true));
+    LD_ASSERT(
+        staticGetValue =
+            makeMinimalFlag("abc", 12, LDBooleanTrue, LDBooleanTrue));
 
     LD_ASSERT(LDStoreGet(store, LD_FLAG, "abc", &item1));
     LD_ASSERT(item1);
@@ -464,14 +486,16 @@ testGetCache()
     LDStoreDestroy(store);
 }
 
-static unsigned int staticUpsertCount;
+static unsigned int   staticUpsertCount;
 static struct LDJSON *staticUpsertValue;
-static char *staticUpsertKey;
+static char *         staticUpsertKey;
 
 static LDBoolean
-mockStaticUpsert(void *const context, const char *const kind,
+mockStaticUpsert(
+    void *const                               context,
+    const char *const                         kind,
     const struct LDStoreCollectionItem *const feature,
-    const char *const featureKey)
+    const char *const                         featureKey)
 {
     (void)context;
     LD_ASSERT(kind);
@@ -481,22 +505,24 @@ mockStaticUpsert(void *const context, const char *const kind,
 
     staticUpsertCount++;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
 testUpsertCache()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
-    struct LDJSONRC *item;
+    struct LDJSONRC *        item;
 
     LD_ASSERT(handle = makeMockFailInterface());
     handle->upsert = mockStaticUpsert;
     LD_ASSERT(store = prepareStore(handle));
 
     staticUpsertKey = "abc";
-    LD_ASSERT(staticUpsertValue = makeMinimalFlag("abc", 12, true, true));
+    LD_ASSERT(
+        staticUpsertValue =
+            makeMinimalFlag("abc", 12, LDBooleanTrue, LDBooleanTrue));
 
     LD_ASSERT(LDStoreUpsert(store, LD_FLAG, staticUpsertValue));
     LD_ASSERT(staticUpsertCount == 1);
@@ -515,12 +541,14 @@ testUpsertCache()
 }
 
 static struct LDJSON *staticAllValue;
-static unsigned int staticAllCount;
+static unsigned int   staticAllCount;
 
 static LDBoolean
-mockStaticAll(void *const context, const char *const kind,
+mockStaticAll(
+    void *const                          context,
+    const char *const                    kind,
     struct LDStoreCollectionItem **const result,
-    unsigned int *const resultCount)
+    unsigned int *const                  resultCount)
 {
     (void)context;
     LD_ASSERT(kind);
@@ -528,9 +556,9 @@ mockStaticAll(void *const context, const char *const kind,
     LD_ASSERT(resultCount);
 
     if (staticAllValue) {
-        struct LDJSON *valueIter;
+        struct LDJSON *               valueIter;
         struct LDStoreCollectionItem *resultIter;
-        size_t resultBytes;
+        size_t                        resultBytes;
 
         *resultCount = LDCollectionGetSize(staticAllValue);
         LD_ASSERT(*resultCount);
@@ -540,7 +568,7 @@ mockStaticAll(void *const context, const char *const kind,
         resultIter = *result;
 
         for (valueIter = LDGetIter(staticAllValue); valueIter;
-            valueIter = LDIterNext(valueIter))
+             valueIter = LDIterNext(valueIter))
         {
             LD_ASSERT(resultIter->buffer = LDJSONSerialize(valueIter));
             resultIter->bufferSize = strlen(resultIter->buffer) + 1;
@@ -556,16 +584,16 @@ mockStaticAll(void *const context, const char *const kind,
 
     staticAllCount++;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 static void
 testAllCache()
 {
-    struct LDStore *store;
+    struct LDStore *         store;
     struct LDStoreInterface *handle;
-    struct LDJSON *empty, *tmp, *full;
-    struct LDJSONRC *values;
+    struct LDJSON *          empty, *tmp, *full;
+    struct LDJSONRC *        values;
 
     staticAllValue    = NULL;
     staticAllCount    = 0;
@@ -573,7 +601,7 @@ testAllCache()
     staticUpsertKey   = 0;
 
     LD_ASSERT(handle = makeMockFailInterface());
-    handle->all = mockStaticAll;
+    handle->all    = mockStaticAll;
     handle->upsert = mockStaticUpsert;
     LD_ASSERT(store = prepareStore(handle));
 
@@ -594,13 +622,13 @@ testAllCache()
     LD_ASSERT(full = LDNewObject());
 
     staticUpsertKey = "abc";
-    LD_ASSERT(tmp = makeMinimalFlag("abc", 12, true, true));
+    LD_ASSERT(tmp = makeMinimalFlag("abc", 12, LDBooleanTrue, LDBooleanTrue));
     LD_ASSERT(LDStoreUpsert(store, LD_FLAG, LDJSONDuplicate(tmp)));
     LD_ASSERT(LDObjectSetKey(full, "abc", tmp));
     LD_ASSERT(staticUpsertCount == 1);
 
     staticUpsertKey = "123";
-    LD_ASSERT(tmp = makeMinimalFlag("123", 13, true, true));
+    LD_ASSERT(tmp = makeMinimalFlag("123", 13, LDBooleanTrue, LDBooleanTrue));
     LD_ASSERT(LDStoreUpsert(store, LD_FLAG, LDJSONDuplicate(tmp)));
     LD_ASSERT(LDObjectSetKey(full, "123", tmp));
     LD_ASSERT(staticUpsertCount == 2);

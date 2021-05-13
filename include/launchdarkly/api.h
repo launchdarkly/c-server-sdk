@@ -14,15 +14,15 @@
 extern "C" {
 #endif
 
-#include <launchdarkly/json.h>
-#include <launchdarkly/config.h>
-#include <launchdarkly/user.h>
-#include <launchdarkly/client.h>
-#include <launchdarkly/memory.h>
-#include <launchdarkly/logging.h>
-#include <launchdarkly/variations.h>
-#include <launchdarkly/store.h>
 #include <launchdarkly/boolean.h>
+#include <launchdarkly/client.h>
+#include <launchdarkly/config.h>
+#include <launchdarkly/json.h>
+#include <launchdarkly/logging.h>
+#include <launchdarkly/memory.h>
+#include <launchdarkly/store.h>
+#include <launchdarkly/user.h>
+#include <launchdarkly/variations.h>
 
 #ifdef __cplusplus
 }

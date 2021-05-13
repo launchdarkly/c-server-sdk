@@ -1,12 +1,12 @@
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
-#include "config.h"
 #include "client.h"
-#include "user.h"
+#include "config.h"
 #include "evaluate.h"
-#include "utility.h"
 #include "store.h"
+#include "user.h"
+#include "utility.h"
 
 void
 LDDetailsInit(struct LDDetails *const details)
@@ -20,7 +20,7 @@ LDDetailsInit(struct LDDetails *const details)
     }
 
     details->variationIndex = 0;
-    details->hasVariation   = false;
+    details->hasVariation   = LDBooleanFalse;
     details->reason         = LD_UNKNOWN;
 }
 
@@ -42,13 +42,20 @@ const char *
 LDEvalReasonKindToString(const enum LDEvalReason kind)
 {
     switch (kind) {
-        case LD_ERROR:               return "ERROR";
-        case LD_OFF:                 return "OFF";
-        case LD_PREREQUISITE_FAILED: return "PREREQUISITE_FAILED";
-        case LD_TARGET_MATCH:        return "TARGET_MATCH";
-        case LD_RULE_MATCH:          return "RULE_MATCH";
-        case LD_FALLTHROUGH:         return "FALLTHROUGH";
-        default: return NULL;
+    case LD_ERROR:
+        return "ERROR";
+    case LD_OFF:
+        return "OFF";
+    case LD_PREREQUISITE_FAILED:
+        return "PREREQUISITE_FAILED";
+    case LD_TARGET_MATCH:
+        return "TARGET_MATCH";
+    case LD_RULE_MATCH:
+        return "RULE_MATCH";
+    case LD_FALLTHROUGH:
+        return "FALLTHROUGH";
+    default:
+        return NULL;
     }
 }
 
@@ -56,15 +63,24 @@ const char *
 LDEvalErrorKindToString(const enum LDEvalErrorKind kind)
 {
     switch (kind) {
-        case LD_CLIENT_NOT_READY:     return "CLIENT_NOT_READY";
-        case LD_NULL_KEY:             return "NULL_KEY";
-        case LD_STORE_ERROR:          return "STORE_ERROR";
-        case LD_FLAG_NOT_FOUND:       return "FLAG_NOT_FOUND";
-        case LD_USER_NOT_SPECIFIED:   return "USER_NOT_SPECIFIED";
-        case LD_CLIENT_NOT_SPECIFIED: return "CLIENT_NOT_SPECIFIED";
-        case LD_MALFORMED_FLAG:       return "MALFORMED_FLAG";
-        case LD_WRONG_TYPE:           return "WRONG_TYPE";
-        default: return NULL;
+    case LD_CLIENT_NOT_READY:
+        return "CLIENT_NOT_READY";
+    case LD_NULL_KEY:
+        return "NULL_KEY";
+    case LD_STORE_ERROR:
+        return "STORE_ERROR";
+    case LD_FLAG_NOT_FOUND:
+        return "FLAG_NOT_FOUND";
+    case LD_USER_NOT_SPECIFIED:
+        return "USER_NOT_SPECIFIED";
+    case LD_CLIENT_NOT_SPECIFIED:
+        return "CLIENT_NOT_SPECIFIED";
+    case LD_MALFORMED_FLAG:
+        return "MALFORMED_FLAG";
+    case LD_WRONG_TYPE:
+        return "WRONG_TYPE";
+    default:
+        return NULL;
     }
 }
 
@@ -72,7 +88,7 @@ struct LDJSON *
 LDReasonToJSON(const struct LDDetails *const details)
 {
     struct LDJSON *result, *tmp;
-    const char *kind;
+    const char *   kind;
 
     LD_ASSERT_API(details);
 
@@ -120,7 +136,8 @@ LDReasonToJSON(const struct LDDetails *const details)
 
             goto error;
         }
-    } else if (details->reason == LD_PREREQUISITE_FAILED &&
+    } else if (
+        details->reason == LD_PREREQUISITE_FAILED &&
         details->extra.prerequisiteKey)
     {
         if (!(tmp = LDNewText(details->extra.prerequisiteKey))) {
@@ -158,7 +175,7 @@ LDReasonToJSON(const struct LDDetails *const details)
 
     return result;
 
-  error:
+error:
     LDJSONFree(result);
 
     return NULL;
@@ -174,16 +191,19 @@ setDetailsOOM(struct LDDetails *const details)
 }
 
 static struct LDJSON *
-variation(struct LDClient *const client, const struct LDUser *const user,
-    const char *const key, struct LDJSON *const fallback,
-    bool (*const checkType)(const LDJSONType type),
+variation(
+    struct LDClient *const     client,
+    const struct LDUser *const user,
+    const char *const          key,
+    struct LDJSON *const       fallback,
+    LDBoolean (*const checkType)(const LDJSONType type),
     struct LDDetails *const o_details)
 {
-    struct LDStore *store;
+    struct LDStore *     store;
     const struct LDJSON *flag;
-    struct LDJSON *value, *subEvents;
-    struct LDDetails details, *detailsRef;
-    struct LDJSONRC *flagrc;
+    struct LDJSON *      value, *subEvents;
+    struct LDDetails     details, *detailsRef;
+    struct LDJSONRC *    flagrc;
 
     LD_ASSERT_API(client);
     LD_ASSERT_API(user);
@@ -192,12 +212,12 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     LD_ASSERT(fallback);
     LD_ASSERT(checkType);
 
-    flag       = NULL;
-    flagrc     = NULL;
-    value      = NULL;
-    store      = NULL;
-    value      = NULL;
-    subEvents  = NULL;
+    flag      = NULL;
+    flagrc    = NULL;
+    value     = NULL;
+    store     = NULL;
+    value     = NULL;
+    subEvents = NULL;
 
     LDDetailsInit(&details);
 
@@ -208,33 +228,33 @@ variation(struct LDClient *const client, const struct LDUser *const user,
         detailsRef = &details;
     }
 
-    #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL) {
-            LD_LOG(LD_LOG_WARNING, "variation NULL client");
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (client == NULL) {
+        LD_LOG(LD_LOG_WARNING, "variation NULL client");
 
-            detailsRef->reason = LD_ERROR;
-            detailsRef->extra.errorKind = LD_CLIENT_NOT_SPECIFIED;
+        detailsRef->reason          = LD_ERROR;
+        detailsRef->extra.errorKind = LD_CLIENT_NOT_SPECIFIED;
 
-            goto error;
-        } else if (user == NULL) {
-            LD_LOG(LD_LOG_WARNING, "variation NULL user");
+        goto error;
+    } else if (user == NULL) {
+        LD_LOG(LD_LOG_WARNING, "variation NULL user");
 
-            detailsRef->reason = LD_ERROR;
-            detailsRef->extra.errorKind = LD_USER_NOT_SPECIFIED;
+        detailsRef->reason          = LD_ERROR;
+        detailsRef->extra.errorKind = LD_USER_NOT_SPECIFIED;
 
-            goto error;
-        } else if (key == NULL) {
-            LD_LOG(LD_LOG_WARNING, "variation NULL key");
+        goto error;
+    } else if (key == NULL) {
+        LD_LOG(LD_LOG_WARNING, "variation NULL key");
 
-            detailsRef->reason = LD_ERROR;
-            detailsRef->extra.errorKind = LD_NULL_KEY;
+        detailsRef->reason          = LD_ERROR;
+        detailsRef->extra.errorKind = LD_NULL_KEY;
 
-            goto error;
-        }
-    #endif
+        goto error;
+    }
+#endif
 
     if (!LDClientIsInitialized(client)) {
-        detailsRef->reason = LD_ERROR;
+        detailsRef->reason          = LD_ERROR;
         detailsRef->extra.errorKind = LD_CLIENT_NOT_READY;
 
         goto error;
@@ -244,7 +264,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     LD_ASSERT(store);
 
     if (!LDStoreGet(store, LD_FLAG, key, &flagrc)) {
-        detailsRef->reason = LD_ERROR;
+        detailsRef->reason          = LD_ERROR;
         detailsRef->extra.errorKind = LD_STORE_ERROR;
 
         goto error;
@@ -255,24 +275,31 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!flag) {
-        detailsRef->reason = LD_ERROR;
+        detailsRef->reason          = LD_ERROR;
         detailsRef->extra.errorKind = LD_FLAG_NOT_FOUND;
     } else if (!user) {
-        detailsRef->reason = LD_ERROR;
+        detailsRef->reason          = LD_ERROR;
         detailsRef->extra.errorKind = LD_USER_NOT_SPECIFIED;
     } else {
-        const EvalStatus status = LDi_evaluate(client, flag, user, store,
-            detailsRef, &subEvents, &value, o_details != NULL);
+        const EvalStatus status = LDi_evaluate(
+            client,
+            flag,
+            user,
+            store,
+            detailsRef,
+            &subEvents,
+            &value,
+            o_details != NULL);
 
         if (status == EVAL_MEM) {
-            detailsRef->reason = LD_ERROR;
+            detailsRef->reason          = LD_ERROR;
             detailsRef->extra.errorKind = LD_OOM;
 
             LDJSONFree(subEvents);
 
             goto error;
         } else if (status == EVAL_SCHEMA) {
-            detailsRef->reason = LD_ERROR;
+            detailsRef->reason          = LD_ERROR;
             detailsRef->extra.errorKind = LD_MALFORMED_FLAG;
 
             LDJSONFree(subEvents);
@@ -282,16 +309,16 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!LDi_processEvaluation(
-        client->eventProcessor,
-        user,
-        subEvents,
-        key,
-        value,
-        fallback,
-        flag,
-        detailsRef,
-        o_details != NULL
-    )) {
+            client->eventProcessor,
+            user,
+            subEvents,
+            key,
+            value,
+            fallback,
+            flag,
+            detailsRef,
+            o_details != NULL))
+    {
         subEvents = NULL;
 
         goto error;
@@ -303,7 +330,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     }
 
     if (!checkType(LDJSONGetType(value))) {
-        detailsRef->reason = LD_ERROR;
+        detailsRef->reason          = LD_ERROR;
         detailsRef->extra.errorKind = LD_WRONG_TYPE;
 
         goto error;
@@ -316,7 +343,7 @@ variation(struct LDClient *const client, const struct LDUser *const user,
 
     return value;
 
-  error:
+error:
     LDJSONFree(value);
     LDDetailsClear(&details);
     LDJSONRCDecrement(flagrc);
@@ -325,18 +352,21 @@ variation(struct LDClient *const client, const struct LDUser *const user,
     return fallback;
 }
 
-static bool
+static LDBoolean
 isBool(const LDJSONType type)
 {
     return type == LDBool;
 }
 
 LDBoolean
-LDBoolVariation(struct LDClient *const client, const struct LDUser *const user,
-    const char *const key, const LDBoolean fallback,
-    struct LDDetails *const details)
+LDBoolVariation(
+    struct LDClient *const     client,
+    const struct LDUser *const user,
+    const char *const          key,
+    const LDBoolean            fallback,
+    struct LDDetails *const    details)
 {
-    bool value;
+    LDBoolean      value;
     struct LDJSON *result, *fallbackJSON;
 
     result       = NULL;
@@ -361,18 +391,21 @@ LDBoolVariation(struct LDClient *const client, const struct LDUser *const user,
     }
 }
 
-static bool
+static LDBoolean
 isNumber(const LDJSONType type)
 {
     return type == LDNumber;
 }
 
 int
-LDIntVariation(struct LDClient *const client, const struct LDUser *const user,
-    const char *const key, const int fallback,
-    struct LDDetails *const details)
+LDIntVariation(
+    struct LDClient *const     client,
+    const struct LDUser *const user,
+    const char *const          key,
+    const int                  fallback,
+    struct LDDetails *const    details)
 {
-    int value;
+    int            value;
     struct LDJSON *result, *fallbackJSON;
 
     result       = NULL;
@@ -398,11 +431,14 @@ LDIntVariation(struct LDClient *const client, const struct LDUser *const user,
 }
 
 double
-LDDoubleVariation(struct LDClient *const client,
-    const struct LDUser *const user, const char *const key,
-    const double fallback, struct LDDetails *const details)
+LDDoubleVariation(
+    struct LDClient *const     client,
+    const struct LDUser *const user,
+    const char *const          key,
+    const double               fallback,
+    struct LDDetails *const    details)
 {
-    double value;
+    double         value;
     struct LDJSON *result, *fallbackJSON;
 
     result       = NULL;
@@ -427,18 +463,21 @@ LDDoubleVariation(struct LDClient *const client,
     }
 }
 
-static bool
+static LDBoolean
 isText(const LDJSONType type)
 {
     return type == LDText;
 }
 
 char *
-LDStringVariation(struct LDClient *const client, const struct LDUser *const user,
-    const char *const key, const char* const fallback,
-    struct LDDetails *const details)
+LDStringVariation(
+    struct LDClient *const     client,
+    const struct LDUser *const user,
+    const char *const          key,
+    const char *const          fallback,
+    struct LDDetails *const    details)
 {
-    char *value;
+    char *         value;
     struct LDJSON *result, *fallbackJSON;
 
     result       = NULL;
@@ -479,16 +518,19 @@ LDStringVariation(struct LDClient *const client, const struct LDUser *const user
     }
 }
 
-static bool
+static LDBoolean
 isArrayOrObject(const LDJSONType type)
 {
     return type == LDArray || type == LDObject;
 }
 
 struct LDJSON *
-LDJSONVariation(struct LDClient *const client, const struct LDUser *const user,
-    const char *const key, const struct LDJSON *const fallback,
-    struct LDDetails *const details)
+LDJSONVariation(
+    struct LDClient *const     client,
+    const struct LDUser *const user,
+    const char *const          key,
+    const struct LDJSON *const fallback,
+    struct LDDetails *const    details)
 {
     struct LDJSON *result, *fallbackJSON;
 
@@ -507,8 +549,8 @@ LDJSONVariation(struct LDClient *const client, const struct LDUser *const user,
         }
     }
 
-    result = variation(client, user, key, fallbackJSON, isArrayOrObject,
-        details);
+    result =
+        variation(client, user, key, fallbackJSON, isArrayOrObject, details);
 
     if (fallback == NULL && result == fallbackJSON) {
         LDJSONFree(fallbackJSON);
@@ -522,7 +564,7 @@ LDJSONVariation(struct LDClient *const client, const struct LDUser *const user,
 struct LDJSON *
 LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
 {
-    struct LDJSON *evaluatedFlags, *rawFlags, *rawFlagsIter;
+    struct LDJSON *  evaluatedFlags, *rawFlags, *rawFlagsIter;
     struct LDJSONRC *rawFlagsRC;
 
     LD_ASSERT_API(client);
@@ -533,19 +575,19 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
     rawFlagsRC     = NULL;
     evaluatedFlags = NULL;
 
-    #ifdef LAUNCHDARKLY_DEFENSIVE
-        if (client == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDAllFlags NULL client");
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (client == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDAllFlags NULL client");
 
-            return NULL;
-        }
+        return NULL;
+    }
 
-        if (user == NULL) {
-            LD_LOG(LD_LOG_WARNING, "LDAllFlags NULL user");
+    if (user == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDAllFlags NULL user");
 
-            return NULL;
-        }
-    #endif
+        return NULL;
+    }
+#endif
 
     if (client->config->offline) {
         LD_LOG(LD_LOG_WARNING, "LDAllFlags called when offline returning NULL");
@@ -577,25 +619,32 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
     LD_ASSERT(rawFlags);
 
     for (rawFlagsIter = LDGetIter(rawFlags); rawFlagsIter;
-        rawFlagsIter = LDIterNext(rawFlagsIter))
+         rawFlagsIter = LDIterNext(rawFlagsIter))
     {
-        struct LDJSON *value, *events;
-        EvalStatus status;
+        struct LDJSON *  value, *events;
+        EvalStatus       status;
         struct LDDetails details;
-        struct LDJSON *flag;
-        const char *key;
+        struct LDJSON *  flag;
+        const char *     key;
 
-        value   = NULL;
-        events  = NULL;
-        key     = NULL;
+        value  = NULL;
+        events = NULL;
+        key    = NULL;
 
         flag = rawFlagsIter;
         LD_ASSERT(flag);
 
         LDDetailsInit(&details);
 
-        status = LDi_evaluate(client, flag, user, client->store,
-            &details, &events, &value, false);
+        status = LDi_evaluate(
+            client,
+            flag,
+            user,
+            client->store,
+            &details,
+            &events,
+            &value,
+            LDBooleanFalse);
 
         if (LDi_isEvalError(status)) {
             LDJSONFree(events);
@@ -625,7 +674,7 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
 
     return evaluatedFlags;
 
-  error:
+error:
     LDJSONRCDecrement(rawFlagsRC);
     LDJSONFree(evaluatedFlags);
 

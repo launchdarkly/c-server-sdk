@@ -1,8 +1,8 @@
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
-#include "utility.h"
 #include "store.h"
+#include "utility.h"
 
 #include "test-utils/store.h"
 
@@ -19,7 +19,7 @@ makeVersioned(const char *const key, const unsigned int version)
     LD_ASSERT(tmp = LDNewNumber(version));
     LD_ASSERT(LDObjectSetKey(feature, "version", tmp));
 
-    LD_ASSERT(tmp = LDNewBool(false));
+    LD_ASSERT(tmp = LDNewBool(LDBooleanFalse));
     LD_ASSERT(LDObjectSetKey(feature, "deleted", tmp));
 
     return feature;
@@ -41,7 +41,7 @@ initializeEmpty(struct LDStore *const store)
 static void
 getAll(struct LDStore *const store)
 {
-    struct LDJSON *all, *category;
+    struct LDJSON *  all, *category;
     struct LDJSONRC *rawFlags;
 
     LD_ASSERT(!LDStoreInitialized(store));
@@ -64,7 +64,7 @@ static void
 testUpsertUpdatesAll(struct LDStore *const store)
 {
     struct LDJSONRC *result;
-    struct LDJSON *flag1, *flag1Dupe, *flag2, *flag2Dupe, *all;
+    struct LDJSON *  flag1, *flag1Dupe, *flag2, *flag2Dupe, *all;
 
     LD_ASSERT(all = LDNewObject());
 
@@ -113,7 +113,7 @@ deletedOnly(struct LDStore *const store)
 static void
 basicExists(struct LDStore *const store)
 {
-    struct LDJSON *feature, *featureCopy;
+    struct LDJSON *  feature, *featureCopy;
     struct LDJSONRC *lookup;
 
     LD_ASSERT(LDStoreInitEmpty(store));
@@ -145,13 +145,13 @@ basicDoesNotExist(struct LDStore *const store)
 static void
 upsertNewer(struct LDStore *const store)
 {
-    struct LDJSON *feature, *featureCopy;
+    struct LDJSON *  feature, *featureCopy;
     struct LDJSONRC *lookup;
 
     LD_ASSERT(LDStoreInitEmpty(store));
 
     LD_ASSERT(feature = makeVersioned("my-heap-key", 3))
-    LD_ASSERT(LDStoreUpsert(store,  LD_SEGMENT, feature));
+    LD_ASSERT(LDStoreUpsert(store, LD_SEGMENT, feature));
 
     LD_ASSERT(feature = makeVersioned("my-heap-key", 5))
     LD_ASSERT(featureCopy = LDJSONDuplicate(feature));
@@ -168,7 +168,7 @@ upsertNewer(struct LDStore *const store)
 static void
 upsertOlder(struct LDStore *const store)
 {
-    struct LDJSON *feature1, *feature2, *feature1Copy;
+    struct LDJSON *  feature1, *feature2, *feature1Copy;
     struct LDJSONRC *lookup;
 
     LD_ASSERT(LDStoreInitEmpty(store));
@@ -191,7 +191,7 @@ upsertOlder(struct LDStore *const store)
 static void
 upsertDelete(struct LDStore *const store)
 {
-    struct LDJSON *feature;
+    struct LDJSON *  feature;
     struct LDJSONRC *lookup;
 
     LD_ASSERT(LDStoreInitEmpty(store));
@@ -208,7 +208,7 @@ upsertDelete(struct LDStore *const store)
 static void
 conflictDifferentNamespace(struct LDStore *const store)
 {
-    struct LDJSON *feature1, *feature2, *feature1Copy, *feature2Copy;
+    struct LDJSON *  feature1, *feature2, *feature1Copy, *feature2Copy;
     struct LDJSONRC *lookup;
 
     LD_ASSERT(LDStoreInitEmpty(store));
@@ -238,7 +238,7 @@ conflictDifferentNamespace(struct LDStore *const store)
 static void
 testUpsertFeatureNotAnObject(struct LDStore *const store)
 {
-    struct LDJSON *feature;
+    struct LDJSON *  feature;
     struct LDJSONRC *lookup;
 
     LD_ASSERT(LDStoreInitEmpty(store));
@@ -254,7 +254,7 @@ testUpsertFeatureNotAnObject(struct LDStore *const store)
 static void
 testUpsertFeatureMissingVersion(struct LDStore *const store)
 {
-    struct LDJSON *feature;
+    struct LDJSON *  feature;
     struct LDJSONRC *lookup;
 
     LD_ASSERT(LDStoreInitEmpty(store));
@@ -271,7 +271,7 @@ testUpsertFeatureMissingVersion(struct LDStore *const store)
 static void
 testUpsertFeatureVersionNotNumber(struct LDStore *const store)
 {
-    struct LDJSON *feature;
+    struct LDJSON *  feature;
     struct LDJSONRC *lookup;
 
     LD_ASSERT(LDStoreInitEmpty(store));
@@ -289,7 +289,7 @@ testUpsertFeatureVersionNotNumber(struct LDStore *const store)
 static void
 testUpsertFeatureMissingKey(struct LDStore *const store)
 {
-    struct LDJSON *feature;
+    struct LDJSON *  feature;
     struct LDJSONRC *lookup;
 
     LD_ASSERT(LDStoreInitEmpty(store));
@@ -306,7 +306,7 @@ testUpsertFeatureMissingKey(struct LDStore *const store)
 static void
 testUpsertFeatureKeyNotText(struct LDStore *const store)
 {
-    struct LDJSON *feature;
+    struct LDJSON *  feature;
     struct LDJSONRC *lookup;
 
     LD_ASSERT(LDStoreInitEmpty(store));
@@ -324,7 +324,7 @@ testUpsertFeatureKeyNotText(struct LDStore *const store)
 static void
 testUpsertFeatureDeletedNotBool(struct LDStore *const store)
 {
-    struct LDJSON *feature;
+    struct LDJSON *  feature;
     struct LDJSONRC *lookup;
 
     LD_ASSERT(LDStoreInitEmpty(store));
@@ -344,7 +344,7 @@ typedef void (*test)(struct LDStore *const store);
 void
 runSharedStoreTests(struct LDStore *(*const prepareEmptyStore)())
 {
-    unsigned int i;
+    unsigned int    i;
     struct LDStore *store;
 
     test tests[] = {
@@ -364,8 +364,7 @@ runSharedStoreTests(struct LDStore *(*const prepareEmptyStore)())
         testUpsertFeatureVersionNotNumber,
         testUpsertFeatureMissingKey,
         testUpsertFeatureKeyNotText,
-        testUpsertFeatureDeletedNotBool
-    };
+        testUpsertFeatureDeletedNotBool};
 
     LD_ASSERT(prepareEmptyStore);
 

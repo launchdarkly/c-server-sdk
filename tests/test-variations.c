@@ -1,26 +1,27 @@
-#include <math.h>
 #include <float.h>
+#include <math.h>
+#include <string.h>
 
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
-#include "user.h"
-#include "config.h"
 #include "client.h"
+#include "config.h"
 #include "evaluate.h"
-#include "utility.h"
 #include "store.h"
+#include "user.h"
+#include "utility.h"
 
-#include "test-utils/flags.h"
 #include "test-utils/client.h"
+#include "test-utils/flags.h"
 
 static void
 testBoolVariation()
 {
-    struct LDJSON *flag;
+    struct LDJSON *  flag;
     struct LDClient *client;
-    struct LDUser *user;
-    bool actual;
+    struct LDUser *  user;
+    LDBoolean        actual;
     struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
@@ -29,16 +30,17 @@ testBoolVariation()
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("validFeatureKey")));
     LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     setFallthrough(flag, 1);
-    addVariation(flag, LDNewBool(false));
-    addVariation(flag, LDNewBool(true));
+    addVariation(flag, LDNewBool(LDBooleanFalse));
+    addVariation(flag, LDNewBool(LDBooleanTrue));
     LD_ASSERT(LDStoreInitEmpty(client->store));
     LDStoreUpsert(client->store, LD_FLAG, flag);
     /* run */
-    actual = LDBoolVariation(client, user, "validFeatureKey", false, &details);
+    actual = LDBoolVariation(
+        client, user, "validFeatureKey", LDBooleanFalse, &details);
     /* validate */
-    LD_ASSERT(actual == true);
+    LD_ASSERT(actual == LDBooleanTrue);
     LD_ASSERT(details.reason == LD_FALLTHROUGH);
     /* cleanup */
     LDUserFree(user);
@@ -49,10 +51,10 @@ testBoolVariation()
 static void
 testIntVariation()
 {
-    struct LDJSON *flag;
+    struct LDJSON *  flag;
     struct LDClient *client;
-    struct LDUser *user;
-    int actual;
+    struct LDUser *  user;
+    int              actual;
     struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
@@ -61,7 +63,7 @@ testIntVariation()
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("validFeatureKey")));
     LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     setFallthrough(flag, 1);
     addVariation(flag, LDNewNumber(-1));
     addVariation(flag, LDNewNumber(100));
@@ -81,10 +83,10 @@ testIntVariation()
 static void
 testDoubleVariation()
 {
-    struct LDJSON *flag;
+    struct LDJSON *  flag;
     struct LDClient *client;
-    struct LDUser *user;
-    double actual;
+    struct LDUser *  user;
+    double           actual;
     struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
@@ -93,7 +95,7 @@ testDoubleVariation()
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("validFeatureKey")));
     LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     setFallthrough(flag, 1);
     addVariation(flag, LDNewNumber(-1));
     addVariation(flag, LDNewNumber(100.01));
@@ -113,15 +115,17 @@ testDoubleVariation()
 static void
 testDoubleVariationAsIntHelper(const int expected, const double flagValue)
 {
-    struct LDJSON *flag;
+    struct LDJSON *  flag;
     struct LDClient *client;
-    struct LDUser *user;
-    int actual;
+    struct LDUser *  user;
+    int              actual;
     /* setup */
     LD_ASSERT(client = makeTestClient());
     LD_ASSERT(user = LDUserNew("userkey"));
     /* flag */
-    LD_ASSERT(flag = makeMinimalFlag("validFeatureKey", 1, true, false))
+    LD_ASSERT(
+        flag = makeMinimalFlag(
+            "validFeatureKey", 1, LDBooleanTrue, LDBooleanFalse))
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(flagValue));
     LD_ASSERT(LDStoreInitEmpty(client->store));
@@ -146,10 +150,10 @@ testDoubleVariationAsInt()
 static void
 testStringVariation()
 {
-    struct LDJSON *flag;
+    struct LDJSON *  flag;
     struct LDClient *client;
-    struct LDUser *user;
-    char *actual;
+    struct LDUser *  user;
+    char *           actual;
     struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
@@ -158,7 +162,7 @@ testStringVariation()
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("validFeatureKey")));
     LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     setFallthrough(flag, 1);
     addVariation(flag, LDNewText("a"));
     addVariation(flag, LDNewText("b"));
@@ -180,16 +184,16 @@ static void
 testStringVariationNullFallback()
 {
     struct LDClient *client;
-    struct LDUser *user;
-    char *actual;
+    struct LDUser *  user;
+    char *           actual;
     struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
     LD_ASSERT(user = LDUserNew("userkey"));
     LD_ASSERT(LDStoreInitEmpty(client->store));
     /* run */
-    actual = LDStringVariation(client, user, "invalidFeatureKey", NULL,
-        &details);
+    actual =
+        LDStringVariation(client, user, "invalidFeatureKey", NULL, &details);
     /* validate */
     LD_ASSERT(actual == NULL);
     LD_ASSERT(details.reason == LD_ERROR);
@@ -204,8 +208,8 @@ static void
 testJSONVariation()
 {
     struct LDClient *client;
-    struct LDUser *user;
-    struct LDJSON *actual, *flag, *expected, *other, *def;
+    struct LDUser *  user;
+    struct LDJSON *  actual, *flag, *expected, *other, *def;
     struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
@@ -221,7 +225,7 @@ testJSONVariation()
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("validFeatureKey")));
     LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     setFallthrough(flag, 1);
     addVariation(flag, other);
     addVariation(flag, expected);
@@ -244,16 +248,15 @@ static void
 testJSONVariationNullFallback()
 {
     struct LDClient *client;
-    struct LDUser *user;
-    struct LDJSON *actual;
+    struct LDUser *  user;
+    struct LDJSON *  actual;
     struct LDDetails details;
     /* setup */
     LD_ASSERT(client = makeTestClient());
     LD_ASSERT(user = LDUserNew("userkey"));
     LD_ASSERT(LDStoreInitEmpty(client->store));
     /* run */
-    actual = LDJSONVariation(client, user, "invalidFeatureKey", NULL,
-        &details);
+    actual = LDJSONVariation(client, user, "invalidFeatureKey", NULL, &details);
     /* validate */
     LD_ASSERT(actual == NULL);
     LD_ASSERT(details.reason == LD_ERROR);

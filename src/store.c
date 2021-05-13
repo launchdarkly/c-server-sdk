@@ -1,11 +1,13 @@
+#include <stdio.h>
+
 #include "uthash.h"
 
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
 #include "concurrency.h"
-#include "utility.h"
 #include "store.h"
+#include "utility.h"
 
 /* **** Forward Declarations **** */
 
@@ -16,17 +18,19 @@ static const char *const LD_SS_FEATURES   = "features";
 static const char *const LD_SS_SEGMENTS   = "segments";
 static const char *const INIT_CHECKED_KEY = "$initChecked";
 
-static bool memoryInit(struct LDStore *const context,
-    struct LDJSON *const sets);
+static LDBoolean
+memoryInit(struct LDStore *const context, struct LDJSON *const sets);
 
-static void memoryDestructor(struct MemoryContext *const context);
+static void
+memoryDestructor(struct MemoryContext *const context);
 
-static int isExpired(const struct LDStore *const store,
-    const struct CacheItem *const item);
+static int
+isExpired(
+    const struct LDStore *const store, const struct CacheItem *const item);
 
 /* **** Flag Utilities **** */
 
-bool
+LDBoolean
 LDi_validateFeature(const struct LDJSON *const feature)
 {
     const struct LDJSON *tmp;
@@ -36,42 +40,42 @@ LDi_validateFeature(const struct LDJSON *const feature)
     if (LDJSONGetType(feature) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "feature is not an object");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!(tmp = LDObjectLookup(feature, "version"))) {
         LD_LOG(LD_LOG_ERROR, "feature missing version");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (LDJSONGetType(tmp) != LDNumber) {
         LD_LOG(LD_LOG_ERROR, "feature version is not a number");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (!(tmp = LDObjectLookup(feature, "key"))) {
         LD_LOG(LD_LOG_ERROR, "feature missing key");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (LDJSONGetType(tmp) != LDText) {
         LD_LOG(LD_LOG_ERROR, "feature key is not a string");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if ((tmp = LDObjectLookup(feature, "deleted"))) {
         if (LDJSONGetType(tmp) != LDBool) {
             LD_LOG(LD_LOG_ERROR, "feature deleted field is not boolean");
 
-            return false;
+            return LDBooleanFalse;
         }
     }
 
-    return true;
+    return LDBooleanTrue;
 }
 
 unsigned int
@@ -116,16 +120,18 @@ static const char *
 featureKindToString(const enum FeatureKind kind)
 {
     switch (kind) {
-        case LD_FLAG:    return LD_SS_FEATURES;
-        case LD_SEGMENT: return LD_SS_SEGMENTS;
-        default:
-            LD_LOG(LD_LOG_FATAL, "invalid feature kind");
+    case LD_FLAG:
+        return LD_SS_FEATURES;
+    case LD_SEGMENT:
+        return LD_SS_SEGMENTS;
+    default:
+        LD_LOG(LD_LOG_FATAL, "invalid feature kind");
 
-            LD_ASSERT(false);
+        LD_ASSERT(LDBooleanFalse);
     }
 }
 
-bool
+LDBoolean
 LDi_isFeatureDeleted(const struct LDJSON *const feature)
 {
     const struct LDJSON *tmp;
@@ -136,13 +142,13 @@ LDi_isFeatureDeleted(const struct LDJSON *const feature)
         if (LDJSONGetType(tmp) != LDBool) {
             LD_LOG(LD_LOG_ERROR, "feature deletion status is not boolean");
 
-            return true;
+            return LDBooleanTrue;
         }
 
         return LDGetBool(tmp);
     }
 
-    return false;
+    return LDBooleanFalse;
 }
 
 struct LDJSON *
@@ -180,7 +186,7 @@ LDi_makeDeleted(const char *const key, const unsigned int version)
         return NULL;
     }
 
-    if (!(tmp = LDNewBool(true))) {
+    if (!(tmp = LDNewBool(LDBooleanTrue))) {
         LDFree(placeholder);
 
         return NULL;
@@ -198,18 +204,20 @@ LDi_makeDeleted(const char *const key, const unsigned int version)
 
 /* **** LDStore **** */
 
-struct LDStore {
-    struct MemoryContext *cache;
+struct LDStore
+{
+    struct MemoryContext *   cache;
     struct LDStoreInterface *backend;
-    unsigned int cacheMilliseconds;
+    unsigned int             cacheMilliseconds;
 };
 
 /* ***** Reference counting **** */
 
-struct LDJSONRC {
+struct LDJSONRC
+{
     struct LDJSON *value;
-    ld_mutex_t lock;
-    unsigned int count;
+    ld_mutex_t     lock;
+    unsigned int   count;
 };
 
 struct LDJSONRC *
@@ -284,10 +292,11 @@ LDJSONRCGet(struct LDJSONRC *const rc)
 /* **** Memory Implementation **** */
 
 /* Feature Key -> JSON */
-struct CacheItem {
-    char *key;
+struct CacheItem
+{
+    char *           key;
     struct LDJSONRC *feature;
-    UT_hash_handle hh;
+    UT_hash_handle   hh;
     /* monotonic milliseconds */
     double updatedOn;
 };
@@ -303,8 +312,8 @@ deleteCacheItem(struct CacheItem *const item)
 }
 
 static void
-deleteAndRemoveCacheItem(struct CacheItem **const collection,
-    struct CacheItem *const item)
+deleteAndRemoveCacheItem(
+    struct CacheItem **const collection, struct CacheItem *const item)
 {
     if (collection && item) {
         LDFree(item->key);
@@ -317,9 +326,9 @@ deleteAndRemoveCacheItem(struct CacheItem **const collection,
 static struct CacheItem *
 makeCacheItem(const char *const key, struct LDJSON *value)
 {
-    char *keyDupe;
+    char *            keyDupe;
     struct CacheItem *item;
-    struct LDJSONRC *valueRC;
+    struct LDJSONRC * valueRC;
 
     LD_ASSERT(key);
 
@@ -339,9 +348,7 @@ makeCacheItem(const char *const key, struct LDJSON *value)
         value = NULL;
     }
 
-    if (!(item = (struct CacheItem *)
-        LDAlloc(sizeof(struct CacheItem))))
-    {
+    if (!(item = (struct CacheItem *)LDAlloc(sizeof(struct CacheItem)))) {
         goto error;
     }
 
@@ -356,7 +363,7 @@ makeCacheItem(const char *const key, struct LDJSON *value)
 
     return item;
 
-  error:
+error:
     LDFree(item);
     LDFree(keyDupe);
     LDJSONFree(value);
@@ -364,19 +371,20 @@ makeCacheItem(const char *const key, struct LDJSON *value)
     return NULL;
 }
 
-struct MemoryContext {
-    bool initialized;
+struct MemoryContext
+{
+    LDBoolean initialized;
     /* ut hash table */
     struct CacheItem *items;
-    ld_rwlock_t lock;
+    ld_rwlock_t       lock;
 };
 
 static char *
 featureStoreCacheKey(const char *const kind, const char *const key)
 {
     char *result;
-    int bytes;
-    int status;
+    int   bytes;
+    int   status;
 
     LD_ASSERT(kind);
     LD_ASSERT(key);
@@ -397,8 +405,8 @@ static char *
 featureStoreAllCacheKey(const char *const kind)
 {
     char *result;
-    int bytes;
-    int status;
+    int   bytes;
+    int   status;
 
     LD_ASSERT(kind);
 
@@ -415,22 +423,24 @@ featureStoreAllCacheKey(const char *const kind)
 }
 
 /* expects write lock */
-static bool
-upsertMemory(struct LDStore *const store, const char *const kind,
-    struct LDJSON *replacement)
+static LDBoolean
+upsertMemory(
+    struct LDStore *const store,
+    const char *const     kind,
+    struct LDJSON *       replacement)
 {
-    bool success;
-    struct LDJSON *weakReplacementRef;
+    LDBoolean         success;
+    struct LDJSON *   weakReplacementRef;
     struct CacheItem *currentItem, *replacementItem, *allItems;
-    char *cacheKey;
-    char *allCacheKey;
+    char *            cacheKey;
+    char *            allCacheKey;
 
     LD_ASSERT(store);
     LD_ASSERT(store->cache);
     LD_ASSERT(kind);
     LD_ASSERT(replacement);
 
-    success            = false;
+    success            = LDBooleanFalse;
     currentItem        = NULL;
     replacementItem    = NULL;
     cacheKey           = NULL;
@@ -439,14 +449,14 @@ upsertMemory(struct LDStore *const store, const char *const kind,
     allCacheKey = featureStoreAllCacheKey(kind);
     LD_ASSERT(allCacheKey);
 
-    cacheKey = featureStoreCacheKey(kind,
-        LDi_getFeatureKeyTrusted(replacement));
+    cacheKey =
+        featureStoreCacheKey(kind, LDi_getFeatureKeyTrusted(replacement));
     LD_ASSERT(cacheKey);
 
     HASH_FIND_STR(store->cache->items, cacheKey, currentItem);
 
     if (currentItem) {
-        int expired;
+        int            expired;
         struct LDJSON *current;
 
         expired = 0;
@@ -460,9 +470,9 @@ upsertMemory(struct LDStore *const store, const char *const kind,
         LD_ASSERT(current);
 
         if (expired == 0 && LDi_getFeatureVersionTrusted(current) >=
-            LDi_getFeatureVersionTrusted(replacement))
+                                LDi_getFeatureVersionTrusted(replacement))
         {
-            success = true;
+            success = LDBooleanTrue;
 
             goto cleanup;
         }
@@ -488,7 +498,7 @@ upsertMemory(struct LDStore *const store, const char *const kind,
         }
 
         if (allItems) {
-            struct LDJSON *allDupe;
+            struct LDJSON *   allDupe;
             struct CacheItem *allDupeItem;
 
             if (!(allDupe = LDJSONDuplicate(LDJSONRCGet(allItems->feature)))) {
@@ -496,14 +506,16 @@ upsertMemory(struct LDStore *const store, const char *const kind,
             }
 
             if (itemDupe) {
-                if (!LDObjectSetKey(allDupe,
-                    LDi_getFeatureKeyTrusted(weakReplacementRef), itemDupe))
+                if (!LDObjectSetKey(
+                        allDupe,
+                        LDi_getFeatureKeyTrusted(weakReplacementRef),
+                        itemDupe))
                 {
                     goto cleanup;
                 }
             } else {
-                LDObjectDeleteKey(allDupe,
-                    LDi_getFeatureKeyTrusted(weakReplacementRef));
+                LDObjectDeleteKey(
+                    allDupe, LDi_getFeatureKeyTrusted(weakReplacementRef));
             }
 
             if (!(allDupeItem = makeCacheItem(allCacheKey, allDupe))) {
@@ -512,30 +524,38 @@ upsertMemory(struct LDStore *const store, const char *const kind,
 
             deleteAndRemoveCacheItem(&store->cache->items, allItems);
 
-            HASH_ADD_KEYPTR(hh, store->cache->items, allDupeItem->key,
-                strlen(allDupeItem->key), allDupeItem);
+            HASH_ADD_KEYPTR(
+                hh,
+                store->cache->items,
+                allDupeItem->key,
+                strlen(allDupeItem->key),
+                allDupeItem);
         } else if (itemDupe) {
-            struct LDJSON *singleton;
+            struct LDJSON *   singleton;
             struct CacheItem *singletonItem;
 
             if (!(singleton = LDNewObject())) {
                 goto cleanup;
             }
 
-            if (!LDObjectSetKey(singleton,
-                LDi_getFeatureKeyTrusted(weakReplacementRef), itemDupe))
+            if (!LDObjectSetKey(
+                    singleton,
+                    LDi_getFeatureKeyTrusted(weakReplacementRef),
+                    itemDupe))
             {
                 goto cleanup;
             }
 
-            if (!(singletonItem =
-                makeCacheItem(allCacheKey, singleton)))
-            {
+            if (!(singletonItem = makeCacheItem(allCacheKey, singleton))) {
                 goto cleanup;
             }
 
-            HASH_ADD_KEYPTR(hh, store->cache->items, singletonItem->key,
-                strlen(singletonItem->key), singletonItem);
+            HASH_ADD_KEYPTR(
+                hh,
+                store->cache->items,
+                singletonItem->key,
+                strlen(singletonItem->key),
+                singletonItem);
         }
     } else if (allItems) {
         deleteAndRemoveCacheItem(&store->cache->items, allItems);
@@ -545,14 +565,18 @@ upsertMemory(struct LDStore *const store, const char *const kind,
         deleteAndRemoveCacheItem(&store->cache->items, currentItem);
     }
 
-    HASH_ADD_KEYPTR(hh, store->cache->items, replacementItem->key,
-        strlen(replacementItem->key), replacementItem);
+    HASH_ADD_KEYPTR(
+        hh,
+        store->cache->items,
+        replacementItem->key,
+        strlen(replacementItem->key),
+        replacementItem);
 
     replacementItem = NULL;
 
-    success = true;
+    success = LDBooleanTrue;
 
-  cleanup:
+cleanup:
     LDFree(allCacheKey);
     LDFree(cacheKey);
     LDJSONFree(replacement);
@@ -562,11 +586,14 @@ upsertMemory(struct LDStore *const store, const char *const kind,
 }
 
 /* expects write lock */
-static bool
-filterAndCacheItems(struct LDStore *const store, const char *const kind,
-    struct LDJSON *const features, struct LDJSON **const result)
+static LDBoolean
+filterAndCacheItems(
+    struct LDStore *const store,
+    const char *const     kind,
+    struct LDJSON *const  features,
+    struct LDJSON **const result)
 {
-    bool success;
+    LDBoolean      success;
     struct LDJSON *filteredItems, *featuresIter, *dupe, *next;
 
     LD_ASSERT(store);
@@ -574,7 +601,7 @@ filterAndCacheItems(struct LDStore *const store, const char *const kind,
     LD_ASSERT(features);
     LD_ASSERT(LDJSONGetType(features) == LDObject);
 
-    success       = false;
+    success       = LDBooleanFalse;
     filteredItems = NULL;
     dupe          = NULL;
 
@@ -591,30 +618,28 @@ filterAndCacheItems(struct LDStore *const store, const char *const kind,
                 goto cleanup;
             }
 
-            if (!LDObjectSetKey(filteredItems, LDi_getFeatureKeyTrusted(dupe),
-                dupe))
-            {
+            if (!LDObjectSetKey(
+                    filteredItems, LDi_getFeatureKeyTrusted(dupe), dupe)) {
                 goto cleanup;
             }
 
             dupe = NULL;
         }
 
-        if (!upsertMemory(store, kind,
-            LDCollectionDetachIter(features, featuresIter)))
-        {
+        if (!upsertMemory(
+                store, kind, LDCollectionDetachIter(features, featuresIter))) {
             goto cleanup;
         }
     }
 
-    success = true;
+    success = LDBooleanTrue;
 
     if (result) {
         *result       = filteredItems;
         filteredItems = NULL;
     }
 
-  cleanup:
+cleanup:
     LDJSONFree(dupe);
     LDJSONFree(filteredItems);
     LDJSONFree(features);
@@ -632,14 +657,15 @@ memoryCacheFlush(struct MemoryContext *const context)
     item    = NULL;
     itemTmp = NULL;
 
-    HASH_ITER(hh, context->items, item, itemTmp) {
+    HASH_ITER(hh, context->items, item, itemTmp)
+    {
         deleteAndRemoveCacheItem(&context->items, item);
     }
 
     context->items = NULL;
 }
 
-static bool
+static LDBoolean
 memoryInit(struct LDStore *const store, struct LDJSON *const sets)
 {
     struct LDJSON *iter, *next;
@@ -656,8 +682,11 @@ memoryInit(struct LDStore *const store, struct LDJSON *const sets)
     for (iter = LDGetIter(sets); iter; iter = next) {
         next = LDIterNext(iter);
 
-        if (!filterAndCacheItems(store, LDIterKey(iter),
-            LDCollectionDetachIter(sets, iter), NULL))
+        if (!filterAndCacheItems(
+                store,
+                LDIterKey(iter),
+                LDCollectionDetachIter(sets, iter),
+                NULL))
         {
             memoryCacheFlush(store->cache);
 
@@ -665,27 +694,29 @@ memoryInit(struct LDStore *const store, struct LDJSON *const sets)
 
             LDJSONFree(sets);
 
-            return false;
+            return LDBooleanFalse;
         }
     }
 
     if (!store->backend) {
-        store->cache->initialized = true;
+        store->cache->initialized = LDBooleanTrue;
     }
 
     LDi_rwlock_wrunlock(&store->cache->lock);
 
     LDJSONFree(sets);
 
-    return true;
+    return LDBooleanTrue;
 }
 
-static bool
-memoryGetCollectionItem(struct MemoryContext *const context,
-    const char *const kind, const char *const key,
-    struct CacheItem **result)
+static LDBoolean
+memoryGetCollectionItem(
+    struct MemoryContext *const context,
+    const char *const           kind,
+    const char *const           key,
+    struct CacheItem **         result)
 {
-    char *cacheKey;
+    char *            cacheKey;
     struct CacheItem *current;
 
     LD_ASSERT(context);
@@ -697,7 +728,7 @@ memoryGetCollectionItem(struct MemoryContext *const context,
     *result  = NULL;
 
     if (!(cacheKey = featureStoreCacheKey(kind, key))) {
-        return false;
+        return LDBooleanFalse;
     }
 
     HASH_FIND_STR(context->items, cacheKey, current);
@@ -706,13 +737,12 @@ memoryGetCollectionItem(struct MemoryContext *const context,
 
     *result = current;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 /* -1 error, 0 not expired, 1 expired */
 static int
-isExpired(const struct LDStore *const store,
-    const struct CacheItem *const item)
+isExpired(const struct LDStore *const store, const struct CacheItem *const item)
 {
     double now;
 
@@ -739,23 +769,25 @@ isExpired(const struct LDStore *const store,
 }
 
 /* if there is a backend use it to fetch all features */
-static bool
-tryGetAllBackend(struct LDStore *const store, const char *const kind,
+static LDBoolean
+tryGetAllBackend(
+    struct LDStore *const   store,
+    const char *const       kind,
     struct LDJSONRC **const result)
 {
-    bool success;
+    LDBoolean                     success;
     struct LDStoreCollectionItem *rawFeatureItems;
-    unsigned int rawFeaturesCount, i;
-    struct LDJSON *active, *rawFeatures, *activeDupe;
-    struct LDJSONRC *activeRC;
-    char *cacheKey;
-    struct CacheItem *cacheItem;
+    unsigned int                  rawFeaturesCount, i;
+    struct LDJSON *               active, *rawFeatures, *activeDupe;
+    struct LDJSONRC *             activeRC;
+    char *                        cacheKey;
+    struct CacheItem *            cacheItem;
 
     LD_ASSERT(store);
     LD_ASSERT(kind);
     LD_ASSERT(result);
 
-    success          = false;
+    success          = LDBooleanFalse;
     *result          = NULL;
     rawFeatureItems  = NULL;
     rawFeaturesCount = 0;
@@ -768,15 +800,15 @@ tryGetAllBackend(struct LDStore *const store, const char *const kind,
     activeDupe       = NULL;
 
     if (!store->backend) {
-        success = true;
+        success = LDBooleanTrue;
 
         goto cleanup;
     }
 
     LD_ASSERT(store->backend->all);
 
-    if (!store->backend->all(store->backend->context, kind, &rawFeatureItems,
-        &rawFeaturesCount))
+    if (!store->backend->all(
+            store->backend->context, kind, &rawFeatureItems, &rawFeaturesCount))
     {
         goto cleanup;
     }
@@ -786,7 +818,7 @@ tryGetAllBackend(struct LDStore *const store, const char *const kind,
     }
 
     for (i = 0; i < rawFeaturesCount; i++) {
-        const char *key;
+        const char *   key;
         struct LDJSON *deserialized;
 
         deserialized = NULL;
@@ -842,8 +874,12 @@ tryGetAllBackend(struct LDStore *const store, const char *const kind,
     }
     activeDupe = NULL;
 
-    HASH_ADD_KEYPTR(hh, store->cache->items, cacheItem->key,
-        strlen(cacheItem->key), cacheItem);
+    HASH_ADD_KEYPTR(
+        hh,
+        store->cache->items,
+        cacheItem->key,
+        strlen(cacheItem->key),
+        cacheItem);
 
     LDi_rwlock_wrunlock(&store->cache->lock);
 
@@ -853,9 +889,9 @@ tryGetAllBackend(struct LDStore *const store, const char *const kind,
 
     active  = NULL;
     *result = activeRC;
-    success = true;
+    success = LDBooleanTrue;
 
-  cleanup:
+cleanup:
     LDFree(active);
     LDFree(rawFeatures);
     LDFree(cacheKey);
@@ -870,12 +906,15 @@ tryGetAllBackend(struct LDStore *const store, const char *const kind,
     return success;
 }
 
-static bool
-tryGetBackend(struct LDStore *const store, const char *const kind,
-    const char *const key, struct LDJSONRC **const result)
+static LDBoolean
+tryGetBackend(
+    struct LDStore *const   store,
+    const char *const       kind,
+    const char *const       key,
+    struct LDJSONRC **const result)
 {
     struct LDStoreCollectionItem collectionItem;
-    bool status;
+    LDBoolean status;
 
     LD_ASSERT(store);
     LD_ASSERT(kind);
@@ -886,29 +925,27 @@ tryGetBackend(struct LDStore *const store, const char *const kind,
     memset(&collectionItem, 0, sizeof(struct LDStoreCollectionItem));
 
     if (!store->backend) {
-        return true;
+        return LDBooleanTrue;
     }
 
     LD_ASSERT(store->backend->get);
 
-    if (!store->backend->get(store->backend->context, kind, key,
-        &collectionItem))
-    {
-        return false;
+    if (!store->backend->get(
+            store->backend->context, kind, key, &collectionItem)) {
+        return LDBooleanFalse;
     }
 
     if (collectionItem.buffer) {
-        struct LDJSON *deserialized, *dupe;
+        struct LDJSON *  deserialized, *dupe;
         struct LDJSONRC *deserializedRef;
 
-        if (!(deserialized = LDJSONDeserialize(
-            (const char *)collectionItem.buffer)))
-        {
+        if (!(deserialized =
+                  LDJSONDeserialize((const char *)collectionItem.buffer))) {
             LD_LOG(LD_LOG_ERROR, "LDStoreGet failed to deserialize JSON");
 
             LDFree(collectionItem.buffer);
 
-            return false;
+            return LDBooleanFalse;
         }
 
         LDFree(collectionItem.buffer);
@@ -918,7 +955,7 @@ tryGetBackend(struct LDStore *const store, const char *const kind,
 
             LDJSONFree(deserialized);
 
-            return false;
+            return LDBooleanFalse;
         }
 
         if (LDi_isFeatureDeleted(deserialized)) {
@@ -931,13 +968,13 @@ tryGetBackend(struct LDStore *const store, const char *const kind,
             if (!(deserializedRef = LDJSONRCNew(deserialized))) {
                 LDJSONFree(deserialized);
 
-                return false;
+                return LDBooleanFalse;
             }
 
             if (!(dupe = LDJSONDuplicate(deserialized))) {
                 LDJSONRCDecrement(deserializedRef);
 
-                return false;
+                return LDBooleanFalse;
             }
 
             *result = deserializedRef;
@@ -954,7 +991,7 @@ tryGetBackend(struct LDStore *const store, const char *const kind,
         LD_ASSERT(store->cache);
 
         if (!(placeholder = LDi_makeDeleted(key, collectionItem.version))) {
-            return false;
+            return LDBooleanFalse;
         }
 
         LDi_rwlock_wrlock(&store->cache->lock);
@@ -964,14 +1001,16 @@ tryGetBackend(struct LDStore *const store, const char *const kind,
         return status;
     }
 
-    return false;
+    return LDBooleanFalse;
 }
 
-static bool
-memoryAllCollectionItem(struct MemoryContext *const context,
-    const char *const kind, struct CacheItem **const result)
+static LDBoolean
+memoryAllCollectionItem(
+    struct MemoryContext *const context,
+    const char *const           kind,
+    struct CacheItem **const    result)
 {
-    char *key;
+    char *            key;
     struct CacheItem *filtered;
 
     LD_ASSERT(context);
@@ -979,7 +1018,7 @@ memoryAllCollectionItem(struct MemoryContext *const context,
     LD_ASSERT(result);
 
     if (!(key = featureStoreAllCacheKey(kind))) {
-        return false;
+        return LDBooleanFalse;
     }
 
     HASH_FIND_STR(context->items, key, filtered);
@@ -988,7 +1027,7 @@ memoryAllCollectionItem(struct MemoryContext *const context,
 
     *result = filtered;
 
-    return true;
+    return LDBooleanTrue;
 }
 
 /* used for testing */
@@ -1004,7 +1043,8 @@ LDi_expireAll(struct LDStore *const store)
 
     LD_ASSERT(LDi_rwlock_wrlock(&store->cache->lock));
 
-    HASH_ITER(hh, store->cache->items, item, itemTmp) {
+    HASH_ITER(hh, store->cache->items, item, itemTmp)
+    {
         item->updatedOn = 0;
     }
 
@@ -1026,7 +1066,7 @@ memoryDestructor(struct MemoryContext *const context)
 struct LDStore *
 LDStoreNew(const struct LDConfig *const config)
 {
-    struct LDStore *store;
+    struct LDStore *      store;
     struct MemoryContext *cache;
 
     LD_ASSERT(config);
@@ -1039,15 +1079,14 @@ LDStoreNew(const struct LDConfig *const config)
     }
 
     if (!(cache =
-        (struct MemoryContext *)LDAlloc(sizeof(struct MemoryContext))))
-    {
+              (struct MemoryContext *)LDAlloc(sizeof(struct MemoryContext)))) {
         goto error;
     }
 
     LDi_rwlock_init(&cache->lock);
 
-    cache->initialized       = false;
-    cache->items             = NULL;
+    cache->initialized = LDBooleanFalse;
+    cache->items       = NULL;
 
     store->cache             = cache;
     store->backend           = config->storeBackend;
@@ -1055,7 +1094,7 @@ LDStoreNew(const struct LDConfig *const config)
 
     return store;
 
-  error:
+error:
     LDFree(store);
     LDFree(cache);
 
@@ -1064,7 +1103,7 @@ LDStoreNew(const struct LDConfig *const config)
 
 /* **** Store API Operations **** */
 
-bool
+LDBoolean
 LDStoreInit(struct LDStore *const store, struct LDJSON *const sets)
 {
     LD_ASSERT(store);
@@ -1075,22 +1114,22 @@ LDStoreInit(struct LDStore *const store, struct LDJSON *const sets)
     LD_LOG(LD_LOG_TRACE, "LDStoreInit");
 
     if (store->backend) {
-        bool success;
-        struct LDJSON *set, *setItem;
+        LDBoolean                      success;
+        struct LDJSON *                set, *setItem;
         struct LDStoreCollectionState *collections, *collectionsIter;
-        unsigned int x;
+        unsigned int                   x;
 
         LD_ASSERT(store->backend->init);
 
-        success         = false;
+        success         = LDBooleanFalse;
         set             = NULL;
         setItem         = NULL;
         collections     = NULL;
         collectionsIter = NULL;
 
-        if (!(collections = (struct LDStoreCollectionState *)
-            LDAlloc(sizeof(struct LDStoreCollectionState) *
-            LDCollectionGetSize(sets))))
+        if (!(collections = (struct LDStoreCollectionState *)LDAlloc(
+                  sizeof(struct LDStoreCollectionState) *
+                  LDCollectionGetSize(sets))))
         {
             LD_LOG(LD_LOG_ERROR, "LDAlloc failed");
 
@@ -1112,10 +1151,11 @@ LDStoreInit(struct LDStore *const store, struct LDJSON *const sets)
                 unsigned int allocated;
 
                 allocated = sizeof(struct LDStoreCollectionStateItem) *
-                    LDCollectionGetSize(set);
+                            LDCollectionGetSize(set);
 
                 if (!(collectionsIter->items =
-                    (struct LDStoreCollectionStateItem *)LDAlloc(allocated)))
+                          (struct LDStoreCollectionStateItem *)LDAlloc(
+                              allocated)))
                 {
                     LD_LOG(LD_LOG_ERROR, "LDAlloc failed");
 
@@ -1127,14 +1167,14 @@ LDStoreInit(struct LDStore *const store, struct LDJSON *const sets)
                 itemIter = collectionsIter->items;
 
                 for (setItem = LDGetIter(set); setItem;
-                    setItem = LDIterNext(setItem))
-                {
+                     setItem = LDIterNext(setItem)) {
                     char *serialized;
 
                     serialized = NULL;
 
                     if (!LDi_validateFeature(setItem)) {
-                        LD_LOG(LD_LOG_ERROR,
+                        LD_LOG(
+                            LD_LOG_ERROR,
                             "LDStoreInit failed to validate feature");
 
                         goto next;
@@ -1150,7 +1190,7 @@ LDStoreInit(struct LDStore *const store, struct LDJSON *const sets)
                     itemIter->item.bufferSize = strlen(serialized);
                     itemIter->item.version    = LDi_getFeatureVersion(setItem);
 
-                  next:
+                next:
                     itemIter++;
                 }
             }
@@ -1158,14 +1198,14 @@ LDStoreInit(struct LDStore *const store, struct LDJSON *const sets)
             collectionsIter++;
         }
 
-        success = store->backend->init(store->backend->context, collections,
-            LDCollectionGetSize(sets));
+        success = store->backend->init(
+            store->backend->context, collections, LDCollectionGetSize(sets));
 
-      cleanup:
+    cleanup:
         if (collections) {
             for (x = 0; x < LDCollectionGetSize(sets); x++) {
                 struct LDStoreCollectionState *collection;
-                unsigned int y;
+                unsigned int                   y;
 
                 collection = &(collections[x]);
 
@@ -1186,16 +1226,19 @@ LDStoreInit(struct LDStore *const store, struct LDJSON *const sets)
         if (!success) {
             LDJSONFree(sets);
 
-            return false;
+            return LDBooleanFalse;
         }
     }
 
     return memoryInit(store, sets);
 }
 
-bool
-LDStoreGet(struct LDStore *const store, const enum FeatureKind kind,
-    const char *const key, struct LDJSONRC **const result)
+LDBoolean
+LDStoreGet(
+    struct LDStore *const   store,
+    const enum FeatureKind  kind,
+    const char *const       key,
+    struct LDJSONRC **const result)
 {
     struct CacheItem *item;
 
@@ -1211,12 +1254,12 @@ LDStoreGet(struct LDStore *const store, const enum FeatureKind kind,
 
     LDi_rwlock_rdlock(&store->cache->lock);
 
-    if (!memoryGetCollectionItem(store->cache, featureKindToString(kind),
-        key, &item))
+    if (!memoryGetCollectionItem(
+            store->cache, featureKindToString(kind), key, &item))
     {
         LDi_rwlock_rdunlock(&store->cache->lock);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (item) {
@@ -1227,12 +1270,12 @@ LDStoreGet(struct LDStore *const store, const enum FeatureKind kind,
         if (expired < 0) {
             LDi_rwlock_rdunlock(&store->cache->lock);
 
-            return false;
+            return LDBooleanFalse;
         } else if (expired == 0) {
             if (LDi_isFeatureDeleted(LDJSONRCGet(item->feature))) {
                 LDi_rwlock_rdunlock(&store->cache->lock);
 
-                return true;
+                return LDBooleanTrue;
             } else {
                 LDJSONRCIncrement(item->feature);
 
@@ -1240,7 +1283,7 @@ LDStoreGet(struct LDStore *const store, const enum FeatureKind kind,
 
                 LDi_rwlock_rdunlock(&store->cache->lock);
 
-                return true;
+                return LDBooleanTrue;
             }
         } else if (expired > 0) {
             LDi_rwlock_rdunlock(&store->cache->lock);
@@ -1253,15 +1296,17 @@ LDStoreGet(struct LDStore *const store, const enum FeatureKind kind,
         if (store->backend) {
             return tryGetBackend(store, featureKindToString(kind), key, result);
         } else {
-            return true;
+            return LDBooleanTrue;
         }
     }
 
-    return false;
+    return LDBooleanFalse;
 }
 
-bool
-LDStoreAll(struct LDStore *const store, const enum FeatureKind kind,
+LDBoolean
+LDStoreAll(
+    struct LDStore *const   store,
+    const enum FeatureKind  kind,
     struct LDJSONRC **const result)
 {
     struct CacheItem *item;
@@ -1277,12 +1322,11 @@ LDStoreAll(struct LDStore *const store, const enum FeatureKind kind,
 
     LDi_rwlock_rdlock(&store->cache->lock);
 
-    if (!memoryAllCollectionItem(store->cache, featureKindToString(kind),
-        &item))
-    {
+    if (!memoryAllCollectionItem(
+            store->cache, featureKindToString(kind), &item)) {
         LDi_rwlock_rdunlock(&store->cache->lock);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (item) {
@@ -1293,7 +1337,7 @@ LDStoreAll(struct LDStore *const store, const enum FeatureKind kind,
         if (expired < 0) {
             LDi_rwlock_rdunlock(&store->cache->lock);
 
-            return false;
+            return LDBooleanFalse;
         } else if (expired == 0) {
             LDJSONRCIncrement(item->feature);
 
@@ -1301,7 +1345,7 @@ LDStoreAll(struct LDStore *const store, const enum FeatureKind kind,
 
             LDi_rwlock_rdunlock(&store->cache->lock);
 
-            return true;
+            return LDBooleanTrue;
         } else if (expired > 0) {
             LDi_rwlock_rdunlock(&store->cache->lock);
             /* When there is no backend a flag will never be expired */
@@ -1314,16 +1358,19 @@ LDStoreAll(struct LDStore *const store, const enum FeatureKind kind,
     }
 
     /* work around invalid warning, execution should never get here  */
-    LD_ASSERT(false);
+    LD_ASSERT(LDBooleanFalse);
 
-    return false;
+    return LDBooleanFalse;
 }
 
-bool
-LDStoreRemove(struct LDStore *const store, const enum FeatureKind kind,
-    const char *const key, const unsigned int version)
+LDBoolean
+LDStoreRemove(
+    struct LDStore *const  store,
+    const enum FeatureKind kind,
+    const char *const      key,
+    const unsigned int     version)
 {
-    bool status;
+    LDBoolean      status;
     struct LDJSON *placeholder;
 
     LD_LOG(LD_LOG_TRACE, "LDStoreRemove");
@@ -1331,7 +1378,7 @@ LDStoreRemove(struct LDStore *const store, const enum FeatureKind kind,
     LD_ASSERT(store);
     LD_ASSERT(key);
 
-    status      = false;
+    status      = LDBooleanFalse;
     placeholder = NULL;
 
     if (store->backend) {
@@ -1343,15 +1390,15 @@ LDStoreRemove(struct LDStore *const store, const enum FeatureKind kind,
         item.bufferSize = 0;
         item.version    = version;
 
-        if (!store->backend->upsert(store->backend->context,
-            featureKindToString(kind), &item, key))
+        if (!store->backend->upsert(
+                store->backend->context, featureKindToString(kind), &item, key))
         {
-            return false;
+            return LDBooleanFalse;
         }
     }
 
     if (!(placeholder = LDi_makeDeleted(key, version))) {
-        return false;
+        return LDBooleanFalse;
     }
 
     LDi_rwlock_wrlock(&store->cache->lock);
@@ -1361,11 +1408,13 @@ LDStoreRemove(struct LDStore *const store, const enum FeatureKind kind,
     return status;
 }
 
-bool
-LDStoreUpsert(struct LDStore *const store, const enum FeatureKind kind,
-    struct LDJSON *const feature)
+LDBoolean
+LDStoreUpsert(
+    struct LDStore *const  store,
+    const enum FeatureKind kind,
+    struct LDJSON *const   feature)
 {
-    bool status;
+    LDBoolean status;
 
     LD_ASSERT(store);
     LD_ASSERT(feature);
@@ -1377,15 +1426,15 @@ LDStoreUpsert(struct LDStore *const store, const enum FeatureKind kind,
 
         LDJSONFree(feature);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (store->backend) {
-        bool success;
-        char *serialized;
+        LDBoolean                    success;
+        char *                       serialized;
         struct LDStoreCollectionItem collectionItem;
 
-        success    = false;
+        success    = LDBooleanFalse;
         serialized = NULL;
 
         LD_ASSERT(store->backend->upsert);
@@ -1393,15 +1442,17 @@ LDStoreUpsert(struct LDStore *const store, const enum FeatureKind kind,
         if (!(serialized = LDJSONSerialize(feature))) {
             LDJSONFree(feature);
 
-            return false;
+            return LDBooleanFalse;
         }
 
         collectionItem.buffer     = (void *)serialized;
         collectionItem.bufferSize = strlen(serialized);
         collectionItem.version    = LDi_getFeatureVersionTrusted(feature);
 
-        success = store->backend->upsert(store->backend->context,
-            featureKindToString(kind), &collectionItem,
+        success = store->backend->upsert(
+            store->backend->context,
+            featureKindToString(kind),
+            &collectionItem,
             LDi_getFeatureKeyTrusted(feature));
 
         LDFree(serialized);
@@ -1409,7 +1460,7 @@ LDStoreUpsert(struct LDStore *const store, const enum FeatureKind kind,
         if (!success) {
             LDJSONFree(feature);
 
-            return false;
+            return LDBooleanFalse;
         }
     }
 
@@ -1420,10 +1471,10 @@ LDStoreUpsert(struct LDStore *const store, const enum FeatureKind kind,
     return status;
 }
 
-bool
+LDBoolean
 LDStoreInitialized(struct LDStore *const store)
 {
-    bool isInitialized;
+    LDBoolean         isInitialized;
     struct CacheItem *item;
 
     LD_ASSERT(store);
@@ -1447,11 +1498,11 @@ LDStoreInitialized(struct LDStore *const store)
         if (expired < 0) {
             LDi_rwlock_rdunlock(&store->cache->lock);
 
-            return false;
+            return LDBooleanFalse;
         } else if (expired == 0) {
             LDi_rwlock_rdunlock(&store->cache->lock);
 
-            return false;
+            return LDBooleanFalse;
         } else if (expired > 0) {
             deleteAndRemoveCacheItem(&store->cache->items, item);
         }
@@ -1463,16 +1514,16 @@ LDStoreInitialized(struct LDStore *const store)
 
     if (isInitialized) {
         LDi_rwlock_wrlock(&store->cache->lock);
-        store->cache->initialized = true;
+        store->cache->initialized = LDBooleanTrue;
         LDi_rwlock_wrunlock(&store->cache->lock);
     } else {
         if (!(item = makeCacheItem(INIT_CHECKED_KEY, NULL))) {
-            return false;
+            return LDBooleanFalse;
         }
 
         LDi_rwlock_wrlock(&store->cache->lock);
-        HASH_ADD_KEYPTR(hh, store->cache->items, item->key, strlen(item->key),
-            item);
+        HASH_ADD_KEYPTR(
+            hh, store->cache->items, item->key, strlen(item->key), item);
         LDi_rwlock_wrunlock(&store->cache->lock);
     }
 
@@ -1499,15 +1550,15 @@ LDStoreDestroy(struct LDStore *const store)
     }
 }
 
-bool
+LDBoolean
 LDStoreInitEmpty(struct LDStore *const store)
 {
     struct LDJSON *values;
-    bool success;
+    LDBoolean      success;
 
     LD_ASSERT(store);
 
-    success = false;
+    success = LDBooleanFalse;
 
     if (!(values = LDNewObject())) {
         goto cleanup;
@@ -1517,7 +1568,7 @@ LDStoreInitEmpty(struct LDStore *const store)
     /* values consumed even on failure */
     values = NULL;
 
-  cleanup:
+cleanup:
     LDJSONFree(values);
 
     return success;

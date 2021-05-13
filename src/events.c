@@ -1,39 +1,41 @@
-#include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
-#include "events.h"
-#include "network.h"
-#include "user.h"
 #include "client.h"
 #include "config.h"
-#include "utility.h"
+#include "events.h"
 #include "lru.h"
+#include "network.h"
+#include "user.h"
+#include "utility.h"
 
-bool
+LDBoolean
 LDi_notNull(const struct LDJSON *const json)
 {
     if (json) {
         if (LDJSONGetType(json) != LDNull) {
-            return true;
+            return LDBooleanTrue;
         }
     }
 
-    return false;
+    return LDBooleanFalse;
 }
 
-struct AnalyticsContext {
-    bool active;
-    double lastFlush;
+struct AnalyticsContext
+{
+    bool               active;
+    double             lastFlush;
     struct curl_slist *headers;
-    struct LDClient *client;
-    char *buffer;
-    unsigned int failureTime;
-    char payloadId[LD_UUID_SIZE + 1];
+    struct LDClient *  client;
+    char *             buffer;
+    unsigned int       failureTime;
+    char               payloadId[LD_UUID_SIZE + 1];
 };
 
 static void
@@ -51,8 +53,10 @@ resetMemory(struct AnalyticsContext *const context)
 }
 
 static void
-done(struct LDClient *const client, void *const rawcontext,
-    const int responseCode)
+done(
+    struct LDClient *const client,
+    void *const            rawcontext,
+    const int              responseCode)
 {
     struct AnalyticsContext *context;
     const bool success = responseCode == 200 || responseCode == 202;
@@ -125,7 +129,7 @@ strnchr(const char *str, const char c, size_t len)
     return NULL;
 }
 
-bool
+LDBoolean
 LDi_parseRFC822(const char *const date, struct tm *tm)
 {
     return strptime(date, "%a, %d %b %Y %H:%M:%S %Z", tm) != NULL;
@@ -133,16 +137,19 @@ LDi_parseRFC822(const char *const date, struct tm *tm)
 
 /* curl spec says these may not be NULL terminated */
 size_t
-LDi_onHeader(const char *buffer, const size_t size,
-    const size_t itemcount, void *const context)
+LDi_onHeader(
+    const char * buffer,
+    const size_t size,
+    const size_t itemcount,
+    void *const  context)
 {
-    struct LDClient *client;
-    const size_t total = size * itemcount;
-    const char *const dateheader = "Date:";
-    const size_t dateheaderlen = strlen(dateheader);
-    struct tm tm;
-    char datebuffer[128];
-    const char *headerend;
+    struct LDClient * client;
+    const size_t      total         = size * itemcount;
+    const char *const dateheader    = "Date:";
+    const size_t      dateheaderlen = strlen(dateheader);
+    struct tm         tm;
+    char              datebuffer[128];
+    const char *      headerend;
 
     LD_ASSERT(context);
 
@@ -189,24 +196,20 @@ LDi_onHeader(const char *buffer, const size_t size,
         return total;
     }
 
-    LDi_setServerTime(
-        client->eventProcessor,
-        1000.0 * (double)mktime(&tm)
-    );
+    LDi_setServerTime(client->eventProcessor, 1000.0 * (double)mktime(&tm));
 
     return total;
-
 }
 
 static CURL *
 poll(struct LDClient *const client, void *const rawcontext)
 {
-    CURL *curl;
+    CURL *                   curl;
     struct AnalyticsContext *context;
-    char url[4096];
-    const char *mime, *schema;
-    bool shouldFlush;
-    bool lastFailed;
+    char                     url[4096];
+    const char *             mime, *schema;
+    bool                     shouldFlush;
+    bool                     lastFailed;
 
     LD_ASSERT(rawcontext);
 
@@ -249,9 +252,7 @@ poll(struct LDClient *const client, void *const rawcontext)
             LDi_getMonotonicMilliseconds(&now);
             LD_ASSERT(now >= context->lastFlush);
 
-            if (now - context->lastFlush <
-                client->config->flushInterval)
-            {
+            if (now - context->lastFlush < client->config->flushInterval) {
                 return NULL;
             }
         }
@@ -294,9 +295,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     /* prepare request */
 
-    if (snprintf(url, sizeof(url), "%s/bulk",
-        client->config->eventsURI) < 0)
-    {
+    if (snprintf(url, sizeof(url), "%s/bulk", client->config->eventsURI) < 0) {
         LD_LOG(LD_LOG_CRITICAL, "snprintf URL failed");
 
         return NULL;
@@ -318,47 +317,45 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     {
         int status;
-        /* This is done as a macro so that the string is a literal */
-        #define LD_PAYLOAD_ID_HEADER "X-LaunchDarkly-Payload-ID: "
+/* This is done as a macro so that the string is a literal */
+#define LD_PAYLOAD_ID_HEADER "X-LaunchDarkly-Payload-ID: "
 
         /* do not need to add space for null termination because of sizeof */
         char payloadIdHeader[sizeof(LD_PAYLOAD_ID_HEADER) + LD_UUID_SIZE];
 
-        status = snprintf(payloadIdHeader, sizeof(payloadIdHeader),
-            "%s%s", LD_PAYLOAD_ID_HEADER, context->payloadId);
+        status = snprintf(
+            payloadIdHeader,
+            sizeof(payloadIdHeader),
+            "%s%s",
+            LD_PAYLOAD_ID_HEADER,
+            context->payloadId);
         LD_ASSERT(status == sizeof(payloadIdHeader) - 1);
 
-        #undef LD_PAYLOAD_ID_HEADER
+#undef LD_PAYLOAD_ID_HEADER
 
-        if (!(context->headers = curl_slist_append(context->headers,
-            payloadIdHeader)))
-        {
+        if (!(context->headers =
+                  curl_slist_append(context->headers, payloadIdHeader))) {
             goto error;
         }
     }
 
-    if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, context->headers)
-        != CURLE_OK)
-    {
+    if (curl_easy_setopt(curl, CURLOPT_HTTPHEADER, context->headers) !=
+        CURLE_OK) {
         goto error;
     }
 
-    if (curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, LDi_onHeader)
-        != CURLE_OK)
-    {
+    if (curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, LDi_onHeader) !=
+        CURLE_OK) {
         goto error;
     }
 
-    if (curl_easy_setopt(curl, CURLOPT_HEADERDATA, client)
-        != CURLE_OK)
-    {
+    if (curl_easy_setopt(curl, CURLOPT_HEADERDATA, client) != CURLE_OK) {
         goto error;
     }
 
     /* add outgoing buffer */
 
-    if (curl_easy_setopt(curl, CURLOPT_POSTFIELDS, context->buffer)
-        != CURLE_OK)
+    if (curl_easy_setopt(curl, CURLOPT_POSTFIELDS, context->buffer) != CURLE_OK)
     {
         goto error;
     }
@@ -367,7 +364,7 @@ poll(struct LDClient *const client, void *const rawcontext)
 
     return curl;
 
-  error:
+error:
     curl_slist_free_all(context->headers);
 
     curl_easy_cleanup(curl);
@@ -386,14 +383,14 @@ LDi_constructAnalytics(struct LDClient *const client)
     netInterface = NULL;
     context      = NULL;
 
-    if (!(netInterface =
-        (struct NetworkInterface *)LDAlloc(sizeof(struct NetworkInterface))))
+    if (!(netInterface = (struct NetworkInterface *)LDAlloc(
+              sizeof(struct NetworkInterface))))
     {
         goto error;
     }
 
-    if (!(context =
-        (struct AnalyticsContext *)LDAlloc(sizeof(struct AnalyticsContext))))
+    if (!(context = (struct AnalyticsContext *)LDAlloc(
+              sizeof(struct AnalyticsContext))))
     {
         goto error;
     }
@@ -406,15 +403,15 @@ LDi_constructAnalytics(struct LDClient *const client)
 
     LDi_getMonotonicMilliseconds(&context->lastFlush);
 
-    netInterface->done     = done;
-    netInterface->poll     = poll;
-    netInterface->context  = context;
-    netInterface->destroy  = destroy;
-    netInterface->current  = NULL;
+    netInterface->done    = done;
+    netInterface->poll    = poll;
+    netInterface->context = context;
+    netInterface->destroy = destroy;
+    netInterface->current = NULL;
 
     return netInterface;
 
-  error:
+error:
     LDFree(context);
 
     LDFree(netInterface);

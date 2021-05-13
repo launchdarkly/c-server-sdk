@@ -1,21 +1,21 @@
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
+#include "client.h"
 #include "event_processor.h"
 #include "event_processor_internal.h"
 #include "store.h"
-#include "client.h"
 
-#include "test-utils/flags.h"
 #include "test-utils/client.h"
+#include "test-utils/flags.h"
 
 static void
 testConstructAndFree()
 {
-    struct LDConfig *config;
+    struct LDConfig *      config;
     struct EventProcessor *processor;
 
     LD_ASSERT(config = LDConfigNew("abc"));
@@ -28,8 +28,8 @@ testConstructAndFree()
 static void
 testMakeSummaryKeyIncrementsCounters()
 {
-    struct LDUser *user;
-    struct LDConfig *config;
+    struct LDUser *        user;
+    struct LDConfig *      config;
     struct EventProcessor *processor;
     struct LDJSON *flag1, *flag2, *event1, *event2, *event3, *event4, *event5,
         *summary, *features, *summaryEntry, *counterEntry, *value1, *value2,
@@ -41,8 +41,10 @@ testMakeSummaryKeyIncrementsCounters()
     LD_ASSERT(config = LDConfigNew("key"));
     LD_ASSERT(processor = LDi_newEventProcessor(config));
 
-    LD_ASSERT(flag1 = makeMinimalFlag("key1", 11, true, false));
-    LD_ASSERT(flag2 = makeMinimalFlag("key2", 22, true, false));
+    LD_ASSERT(
+        flag1 = makeMinimalFlag("key1", 11, LDBooleanTrue, LDBooleanFalse));
+    LD_ASSERT(
+        flag2 = makeMinimalFlag("key2", 22, LDBooleanTrue, LDBooleanFalse));
 
     LD_ASSERT(value1 = LDNewText("value1"));
     LD_ASSERT(value2 = LDNewText("value2"));
@@ -51,22 +53,72 @@ testMakeSummaryKeyIncrementsCounters()
     LD_ASSERT(default2 = LDNewText("default2"));
     LD_ASSERT(default3 = LDNewText("default3"));
 
-    LD_ASSERT(event1 = LDi_newFeatureRequestEvent(processor, "key1", user,
-        &variation1, value1, default1, NULL, flag1, NULL, 0));
-    LD_ASSERT(event2 = LDi_newFeatureRequestEvent(processor, "key1", user,
-        &variation2, value2, default1, NULL, flag1, NULL, 0));
-    LD_ASSERT(event3 = LDi_newFeatureRequestEvent(processor, "key2", user,
-        &variation1, value99, default2, NULL, flag2, NULL, 0));
-    LD_ASSERT(event4 = LDi_newFeatureRequestEvent(processor, "key1", user,
-        &variation1, value1, default1, NULL, flag1, NULL, 0));
-    LD_ASSERT(event5 = LDi_newFeatureRequestEvent(processor, "badkey", user,
-        NULL, default3, default3, NULL, NULL, NULL, 0));
+    LD_ASSERT(
+        event1 = LDi_newFeatureRequestEvent(
+            processor,
+            "key1",
+            user,
+            &variation1,
+            value1,
+            default1,
+            NULL,
+            flag1,
+            NULL,
+            0));
+    LD_ASSERT(
+        event2 = LDi_newFeatureRequestEvent(
+            processor,
+            "key1",
+            user,
+            &variation2,
+            value2,
+            default1,
+            NULL,
+            flag1,
+            NULL,
+            0));
+    LD_ASSERT(
+        event3 = LDi_newFeatureRequestEvent(
+            processor,
+            "key2",
+            user,
+            &variation1,
+            value99,
+            default2,
+            NULL,
+            flag2,
+            NULL,
+            0));
+    LD_ASSERT(
+        event4 = LDi_newFeatureRequestEvent(
+            processor,
+            "key1",
+            user,
+            &variation1,
+            value1,
+            default1,
+            NULL,
+            flag1,
+            NULL,
+            0));
+    LD_ASSERT(
+        event5 = LDi_newFeatureRequestEvent(
+            processor,
+            "badkey",
+            user,
+            NULL,
+            default3,
+            default3,
+            NULL,
+            NULL,
+            NULL,
+            0));
 
-    LD_ASSERT(LDi_summarizeEvent(processor, event1, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event2, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event3, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event4, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event5, false));
+    LD_ASSERT(LDi_summarizeEvent(processor, event1, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event2, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event3, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event4, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event5, LDBooleanFalse));
 
     LD_ASSERT(summary = LDi_prepareSummaryEvent(processor, 0));
     LD_ASSERT(features = LDObjectLookup(summary, "features"))
@@ -127,8 +179,8 @@ testMakeSummaryKeyIncrementsCounters()
 static void
 testCounterForNilVariationIsDistinctFromOthers()
 {
-    struct LDUser *user;
-    struct LDConfig *config;
+    struct LDUser *        user;
+    struct LDConfig *      config;
     struct EventProcessor *processor;
     struct LDJSON *flag, *event1, *event2, *event3, *value1, *value2, *default1,
         *summary, *features, *summaryEntry, *counterEntry;
@@ -139,22 +191,53 @@ testCounterForNilVariationIsDistinctFromOthers()
     LD_ASSERT(config = LDConfigNew("key"));
     LD_ASSERT(processor = LDi_newEventProcessor(config));
 
-    LD_ASSERT(flag = makeMinimalFlag("key1", 11, true, false));
+    LD_ASSERT(
+        flag = makeMinimalFlag("key1", 11, LDBooleanTrue, LDBooleanFalse));
 
     LD_ASSERT(value1 = LDNewText("value1"));
     LD_ASSERT(value2 = LDNewText("value2"));
     LD_ASSERT(default1 = LDNewText("default1"));
 
-    LD_ASSERT(event1 = LDi_newFeatureRequestEvent(processor, "key1", user,
-        &variation1, value1, default1, NULL, flag, NULL, 0));
-    LD_ASSERT(event2 = LDi_newFeatureRequestEvent(processor, "key1", user,
-        &variation2, value2, default1, NULL, flag, NULL, 0));
-    LD_ASSERT(event3 = LDi_newFeatureRequestEvent(processor, "key1", user,
-        NULL, default1, default1, NULL, flag, NULL, 0));
+    LD_ASSERT(
+        event1 = LDi_newFeatureRequestEvent(
+            processor,
+            "key1",
+            user,
+            &variation1,
+            value1,
+            default1,
+            NULL,
+            flag,
+            NULL,
+            0));
+    LD_ASSERT(
+        event2 = LDi_newFeatureRequestEvent(
+            processor,
+            "key1",
+            user,
+            &variation2,
+            value2,
+            default1,
+            NULL,
+            flag,
+            NULL,
+            0));
+    LD_ASSERT(
+        event3 = LDi_newFeatureRequestEvent(
+            processor,
+            "key1",
+            user,
+            NULL,
+            default1,
+            default1,
+            NULL,
+            flag,
+            NULL,
+            0));
 
-    LD_ASSERT(LDi_summarizeEvent(processor, event1, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event2, false));
-    LD_ASSERT(LDi_summarizeEvent(processor, event3, false));
+    LD_ASSERT(LDi_summarizeEvent(processor, event1, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event2, LDBooleanFalse));
+    LD_ASSERT(LDi_summarizeEvent(processor, event3, LDBooleanFalse));
 
     LD_ASSERT(summary = LDi_prepareSummaryEvent(processor, 0));
     LD_ASSERT(features = LDObjectLookup(summary, "features"))
@@ -195,10 +278,10 @@ testCounterForNilVariationIsDistinctFromOthers()
 static void
 testTrackQueued()
 {
-    const char *key;
+    const char *     key;
     struct LDClient *client;
-    struct LDUser *user;
-    struct LDJSON *event;
+    struct LDUser *  user;
+    struct LDJSON *  event;
 
     key = "metric-key1";
     LD_ASSERT(client = makeOfflineClient());
@@ -223,13 +306,13 @@ testTrackQueued()
 static void
 testTrackMetricQueued()
 {
-    double metric;
-    const char *key;
+    double           metric;
+    const char *     key;
     struct LDClient *client;
-    struct LDUser *user;
-    struct LDJSON *event;
+    struct LDUser *  user;
+    struct LDJSON *  event;
 
-    key = "metric-key";
+    key    = "metric-key";
     metric = 12.5;
     LD_ASSERT(client = makeOfflineClient());
     LD_ASSERT(user = LDUserNew("abc"));
@@ -255,8 +338,8 @@ static void
 testIdentifyQueued()
 {
     struct LDClient *client;
-    struct LDUser *user;
-    struct LDJSON *event;
+    struct LDUser *  user;
+    struct LDJSON *  event;
 
     LD_ASSERT(client = makeOfflineClient());
     LD_ASSERT(user = LDUserNew("abc"));
@@ -268,8 +351,8 @@ testIdentifyQueued()
     LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 1);
     LD_ASSERT(event = LDGetIter(client->eventProcessor->events));
     LD_ASSERT(LDJSONGetType(event) == LDObject);
-    LD_ASSERT(strcmp("identify",
-      LDGetText(LDObjectLookup(event, "kind"))) == 0);
+    LD_ASSERT(
+        strcmp("identify", LDGetText(LDObjectLookup(event, "kind"))) == 0);
     LD_ASSERT(strcmp("abc", LDGetText(LDObjectLookup(event, "key"))) == 0);
 
     LDUserFree(user);
@@ -281,15 +364,15 @@ testIndexEventGeneration()
 {
     struct LDConfig *config;
     struct LDClient *client;
-    struct LDJSON *flag, *event, *tmp;
-    struct LDUser *user1, *user2;
+    struct LDJSON *  flag, *event, *tmp;
+    struct LDUser *  user1, *user2;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user1 = LDUserNew("user1"));
     LD_ASSERT(user2 = LDUserNew("user2"));
 
-    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, LDBooleanTrue, LDBooleanTrue));
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(42));
 
@@ -305,14 +388,19 @@ testIndexEventGeneration()
     /* index event */
     LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 0));
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "index") == 0);
-    LD_ASSERT(tmp = LDUserToJSON(config, user1, true));
+    LD_ASSERT(
+        tmp = LDi_userToJSON(
+            user1,
+            LDBooleanTrue,
+            config->allAttributesPrivate,
+            config->privateAttributeNames));
     LD_ASSERT(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
     LDJSONFree(tmp);
     /* feature event */
     LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 1));
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
-    LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "userKey")), "user1")
-        == 0);
+    LD_ASSERT(
+        strcmp(LDGetText(LDObjectLookup(event, "userKey")), "user1") == 0);
     LD_ASSERT(LDObjectLookup(event, "user") == NULL);
 
     /* second evaluation with same user does not generate another event */
@@ -330,7 +418,12 @@ testIndexEventGeneration()
     LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 5);
     LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 3));
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "index") == 0);
-    LD_ASSERT(tmp = LDUserToJSON(config, user2, true));
+    LD_ASSERT(
+        tmp = LDi_userToJSON(
+            user2,
+            LDBooleanTrue,
+            config->allAttributesPrivate,
+            config->privateAttributeNames));
     LD_ASSERT(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
     LDJSONFree(tmp);
     LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 4));
@@ -347,15 +440,15 @@ testInlineUsersInEvents()
 {
     struct LDConfig *config;
     struct LDClient *client;
-    struct LDJSON *flag, *event, *tmp;
-    struct LDUser *user;
+    struct LDJSON *  flag, *event, *tmp;
+    struct LDUser *  user;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigInlineUsersInEvents(config, true);
+    LDConfigInlineUsersInEvents(config, LDBooleanTrue);
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("user"));
 
-    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, LDBooleanTrue, LDBooleanTrue));
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(51));
 
@@ -369,7 +462,12 @@ testInlineUsersInEvents()
     LD_ASSERT(LDCollectionGetSize(client->eventProcessor->events) == 1);
     LD_ASSERT(event = LDArrayLookup(client->eventProcessor->events, 0));
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
-    LD_ASSERT(tmp = LDUserToJSON(config, user, true));
+    LD_ASSERT(
+        tmp = LDi_userToJSON(
+            user,
+            LDBooleanTrue,
+            config->allAttributesPrivate,
+            config->privateAttributeNames));
     LD_ASSERT(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
     LDJSONFree(tmp);
 
@@ -382,15 +480,15 @@ testDetailsNotIncludedIfNotDetailed()
 {
     struct LDConfig *config;
     struct LDClient *client;
-    struct LDJSON *flag, *event;
-    struct LDUser *user;
+    struct LDJSON *  flag, *event;
+    struct LDUser *  user;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigInlineUsersInEvents(config, true);
+    LDConfigInlineUsersInEvents(config, LDBooleanTrue);
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("user"));
 
-    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, LDBooleanTrue, LDBooleanTrue));
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(51));
 
@@ -415,17 +513,17 @@ testDetailsIncludedIfDetailed()
 {
     struct LDConfig *config;
     struct LDClient *client;
-    struct LDJSON *flag, *event, *tmp;
-    struct LDUser *user;
+    struct LDJSON *  flag, *event, *tmp;
+    struct LDUser *  user;
     struct LDDetails details;
-    char *reason;
+    char *           reason;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigInlineUsersInEvents(config, true);
+    LDConfigInlineUsersInEvents(config, LDBooleanTrue);
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("user"));
 
-    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, LDBooleanTrue, LDBooleanTrue));
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(51));
 
@@ -454,19 +552,19 @@ testExperimentationFallthroughNonDetailed()
 {
     struct LDConfig *config;
     struct LDClient *client;
-    struct LDJSON *flag, *event, *tmp;
-    struct LDUser *user;
-    char *reason;
+    struct LDJSON *  flag, *event, *tmp;
+    struct LDUser *  user;
+    char *           reason;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigInlineUsersInEvents(config, true);
+    LDConfigInlineUsersInEvents(config, LDBooleanTrue);
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("user"));
 
-    LD_ASSERT(flag = makeMinimalFlag("flag", 11, true, true));
+    LD_ASSERT(flag = makeMinimalFlag("flag", 11, LDBooleanTrue, LDBooleanTrue));
     setFallthrough(flag, 0);
     addVariation(flag, LDNewNumber(51));
-    LD_ASSERT(tmp = LDNewBool(true));
+    LD_ASSERT(tmp = LDNewBool(LDBooleanTrue));
     LD_ASSERT(LDObjectSetKey(flag, "trackEventsFallthrough", tmp));
 
     LD_ASSERT(LDStoreInitEmpty(client->store));
@@ -493,13 +591,13 @@ testExperimentationRuleNonDetailed()
 {
     struct LDConfig *config;
     struct LDClient *client;
-    struct LDJSON *flag, *event, *tmp, *variation;
-    struct LDUser *user;
-    char *result;
-    char *reason;
+    struct LDJSON *  flag, *event, *tmp, *variation;
+    struct LDUser *  user;
+    char *           result;
+    char *           reason;
 
     LD_ASSERT(config = LDConfigNew("api_key"));
-    LDConfigInlineUsersInEvents(config, true);
+    LDConfigInlineUsersInEvents(config, LDBooleanTrue);
     LD_ASSERT(client = LDClientInit(config, 0));
     LD_ASSERT(user = LDUserNew("user"));
 
@@ -508,9 +606,10 @@ testExperimentationRuleNonDetailed()
     LD_ASSERT(LDObjectSetKey(variation, "variation", LDNewNumber(2)));
     flag = makeFlagToMatchUser("user", variation);
     LD_ASSERT(tmp = LDArrayLookup(LDObjectLookup(flag, "rules"), 0))
-    LD_ASSERT(LDObjectSetKey(tmp, "trackEvents", LDNewBool(true)));
-    LD_ASSERT(LDObjectSetKey(flag, "trackEvents", LDNewBool(false)));
-    LD_ASSERT(LDObjectSetKey(flag, "trackEventsFallthrough", LDNewBool(false)));
+    LD_ASSERT(LDObjectSetKey(tmp, "trackEvents", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "trackEvents", LDNewBool(LDBooleanFalse)));
+    LD_ASSERT(LDObjectSetKey(
+        flag, "trackEventsFallthrough", LDNewBool(LDBooleanFalse)));
 
     LD_ASSERT(LDStoreInitEmpty(client->store));
     LD_ASSERT(LDStoreUpsert(client->store, LD_FLAG, flag));
@@ -524,9 +623,11 @@ testExperimentationRuleNonDetailed()
     LD_ASSERT(strcmp(LDGetText(LDObjectLookup(event, "kind")), "feature") == 0);
     LD_ASSERT(tmp = LDObjectLookup(event, "reason"));
     LD_ASSERT(reason = LDJSONSerialize(tmp));
-    LD_ASSERT(strcmp(reason,
-        "{\"kind\":\"RULE_MATCH\",\"ruleId\":\"rule-id\",\"ruleIndex\":0}")
-        == 0);
+    LD_ASSERT(
+        strcmp(
+            reason,
+            "{\"kind\":\"RULE_MATCH\",\"ruleId\":\"rule-id\",\"ruleIndex\":"
+            "0}") == 0);
 
     LDFree(result);
     LDFree(reason);
@@ -543,7 +644,7 @@ testConstructAliasEvent()
     LD_ASSERT(previous = LDUserNew("a"));
     LD_ASSERT(current = LDUserNew("b"));
 
-    LDUserSetAnonymous(previous, true);
+    LDUserSetAnonymous(previous, LDBooleanTrue);
 
     LD_ASSERT(result = LDi_newAliasEvent(current, previous, 52));
 
@@ -553,8 +654,8 @@ testConstructAliasEvent()
     LD_ASSERT(LDObjectSetKey(expected, "key", LDNewText("b")));
     LD_ASSERT(LDObjectSetKey(expected, "contextKind", LDNewText("user")));
     LD_ASSERT(LDObjectSetKey(expected, "previousKey", LDNewText("a")));
-    LD_ASSERT(LDObjectSetKey(expected, "previousContextKind",
-      LDNewText("anonymousUser")));
+    LD_ASSERT(LDObjectSetKey(
+        expected, "previousContextKind", LDNewText("anonymousUser")));
 
     LD_ASSERT(LDJSONCompare(result, expected));
 
@@ -568,10 +669,10 @@ static void
 testAliasEventIsQueued()
 {
     struct LDClient *client;
-    double metricValue;
-    const char *metricName;
-    struct LDJSON *payload, *event;
-    struct LDUser *previous, *current;
+    double           metricValue;
+    const char *     metricName;
+    struct LDJSON *  payload, *event;
+    struct LDUser *  previous, *current;
 
     LD_ASSERT(previous = LDUserNew("p"));
     LD_ASSERT(current = LDUserNew("c"));

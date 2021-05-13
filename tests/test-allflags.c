@@ -1,21 +1,23 @@
+#include <string.h>
+
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
 #include "client.h"
 #include "config.h"
 #include "evaluate.h"
-#include "utility.h"
 #include "store.h"
+#include "utility.h"
 
-#include "test-utils/flags.h"
 #include "test-utils/client.h"
+#include "test-utils/flags.h"
 
 static void
 testAllFlags()
 {
-    struct LDJSON *flag1, *flag2, *allFlags;
+    struct LDJSON *  flag1, *flag2, *allFlags;
     struct LDClient *client;
-    struct LDUser *user;
+    struct LDUser *  user;
 
     LD_ASSERT(client = makeTestClient());
     LD_ASSERT(user = LDUserNew("userkey"));
@@ -24,7 +26,7 @@ testAllFlags()
     LD_ASSERT(flag1 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("flag1")));
     LD_ASSERT(LDObjectSetKey(flag1, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
     setFallthrough(flag1, 1);
     addVariation(flag1, LDNewText("a"));
     addVariation(flag1, LDNewText("b"));
@@ -33,7 +35,7 @@ testAllFlags()
     LD_ASSERT(flag2 = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag2, "key", LDNewText("flag2")));
     LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(1)));
-    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(true)));
+    LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanTrue)));
     setFallthrough(flag2, 1);
     addVariation(flag2, LDNewText("c"));
     addVariation(flag2, LDNewText("d"));

@@ -1,6 +1,7 @@
-#include <time.h>
-#include <pcre.h>
 #include <math.h>
+#include <pcre.h>
+#include <string.h>
+#include <time.h>
 
 #include "semver.h"
 
@@ -10,30 +11,27 @@
 #include "operators.h"
 #include "utility.h"
 
-#define CHECKSTRING(uvalue, cvalue) \
-    if (LDJSONGetType(uvalue) != LDText || \
-        LDJSONGetType(cvalue) != LDText) \
-    { \
-        return false; \
+#define CHECKSTRING(uvalue, cvalue)                                            \
+    if (LDJSONGetType(uvalue) != LDText || LDJSONGetType(cvalue) != LDText) {  \
+        return LDBooleanFalse;                                                 \
     }
 
-#define CHECKNUMBER(uvalue, cvalue) \
-    if (LDJSONGetType(uvalue) != LDNumber || \
-        LDJSONGetType(cvalue) != LDNumber) \
-    { \
-        return false; \
+#define CHECKNUMBER(uvalue, cvalue)                                            \
+    if (LDJSONGetType(uvalue) != LDNumber ||                                   \
+        LDJSONGetType(cvalue) != LDNumber) {                                   \
+        return LDBooleanFalse;                                                 \
     }
 
-static bool
-operatorInFn(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorInFn(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     return LDJSONCompare(uvalue, cvalue);
 }
 
-static bool
-operatorStartsWithFn(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorStartsWithFn(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     size_t ulen, clen;
 
@@ -43,15 +41,15 @@ operatorStartsWithFn(const struct LDJSON *const uvalue,
     clen = strlen(LDGetText(cvalue));
 
     if (clen > ulen) {
-        return false;
+        return LDBooleanFalse;
     }
 
     return strncmp(LDGetText(uvalue), LDGetText(cvalue), clen) == 0;
 }
 
-static bool
-operatorEndsWithFn(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorEndsWithFn(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     size_t ulen, clen;
 
@@ -61,24 +59,24 @@ operatorEndsWithFn(const struct LDJSON *const uvalue,
     clen = strlen(LDGetText(cvalue));
 
     if (clen > ulen) {
-        return false;
+        return LDBooleanFalse;
     }
 
     return strcmp(LDGetText(uvalue) + ulen - clen, LDGetText(cvalue)) == 0;
 }
 
-static bool
-operatorMatchesFn(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorMatchesFn(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
-    bool matches;
-    pcre *context;
+    LDBoolean   matches;
+    pcre *      context;
     const char *subject, *error, *regex;
-    int errorOffset;
+    int         errorOffset;
 
     CHECKSTRING(uvalue, cvalue);
 
-    matches     = false;
+    matches     = LDBooleanFalse;
     context     = NULL;
     subject     = NULL;
     error       = NULL;
@@ -90,64 +88,67 @@ operatorMatchesFn(const struct LDJSON *const uvalue,
     regex = LDGetText(cvalue);
     LD_ASSERT(regex);
 
-    context = pcre_compile(
-        regex, PCRE_JAVASCRIPT_COMPAT, &error, &errorOffset, NULL);
+    context =
+        pcre_compile(regex, PCRE_JAVASCRIPT_COMPAT, &error, &errorOffset, NULL);
 
     if (!context) {
-        LD_LOG_3(LD_LOG_ERROR,
+        LD_LOG_3(
+            LD_LOG_ERROR,
             "failed to compile regex '%s' got error '%s' with offset %d",
-            regex, error, errorOffset);
+            regex,
+            error,
+            errorOffset);
 
-        return false;
+        return LDBooleanFalse;
     }
 
-    matches = pcre_exec(
-        context, NULL, subject, strlen(subject), 0, 0, NULL, 0) >= 0;
+    matches =
+        pcre_exec(context, NULL, subject, strlen(subject), 0, 0, NULL, 0) >= 0;
 
     pcre_free(context);
 
     return matches;
 }
 
-static bool
-operatorContainsFn(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorContainsFn(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     CHECKSTRING(uvalue, cvalue);
 
     return strstr(LDGetText(uvalue), LDGetText(cvalue)) != NULL;
 }
 
-static bool
-operatorLessThanFn(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorLessThanFn(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     CHECKNUMBER(uvalue, cvalue);
 
     return LDGetNumber(uvalue) < LDGetNumber(cvalue);
 }
 
-static bool
-operatorLessThanOrEqualFn(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorLessThanOrEqualFn(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     CHECKNUMBER(uvalue, cvalue);
 
     return LDGetNumber(uvalue) <= LDGetNumber(cvalue);
 }
 
-static bool
-operatorGreaterThanFn(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorGreaterThanFn(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     CHECKNUMBER(uvalue, cvalue);
 
     return LDGetNumber(uvalue) > LDGetNumber(cvalue);
 }
 
-static bool
-operatorGreaterThanOrEqualFn(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorGreaterThanOrEqualFn(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     CHECKNUMBER(uvalue, cvalue);
 
@@ -155,11 +156,12 @@ operatorGreaterThanOrEqualFn(const struct LDJSON *const uvalue,
 }
 
 static double
-floorAtMagnitude(const double n, const unsigned int magnitude) {
+floorAtMagnitude(const double n, const unsigned int magnitude)
+{
     return n - fmod(n, magnitude);
 }
 
-bool
+LDBoolean
 LDi_parseTime(const struct LDJSON *const json, timestamp_t *result)
 {
     LD_ASSERT(json);
@@ -173,7 +175,7 @@ LDi_parseTime(const struct LDJSON *const json, timestamp_t *result)
         result->nsec   = (original - rounded) * 1000000;
         result->offset = 0;
 
-        return true;
+        return LDBooleanTrue;
     } else if (LDJSONGetType(json) == LDText) {
         const char *text;
 
@@ -183,18 +185,20 @@ LDi_parseTime(const struct LDJSON *const json, timestamp_t *result)
         if (timestamp_parse(text, strlen(text), result)) {
             LD_LOG(LD_LOG_ERROR, "failed to parse date uvalue");
 
-            return false;
+            return LDBooleanFalse;
         }
 
-        return true;
+        return LDBooleanTrue;
     }
 
-    return false;
+    return LDBooleanFalse;
 }
 
-static bool
-compareTime(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue, bool (*op) (double, double))
+static LDBoolean
+compareTime(
+    const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue,
+    LDBoolean (*op)(double, double))
 {
     timestamp_t ustamp;
     timestamp_t cstamp;
@@ -205,41 +209,43 @@ compareTime(const struct LDJSON *const uvalue,
         }
     }
 
-    return false;
+    return LDBooleanFalse;
 }
 
-static bool
+static LDBoolean
 fnLT(const double l, const double r)
 {
     return l < r;
 }
 
-static bool
+static LDBoolean
 fnGT(const double l, const double r)
 {
     return l > r;
 }
 
-static bool
-operatorBefore(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorBefore(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     return compareTime(uvalue, cvalue, fnLT);
 }
 
-static bool
-operatorAfter(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorAfter(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     return compareTime(uvalue, cvalue, fnGT);
 }
 
-static bool
-compareSemVer(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue, int (*op)(semver_t, semver_t))
+static LDBoolean
+compareSemVer(
+    const struct LDJSON *const uvalue,
+    const struct LDJSON *const cvalue,
+    int (*op)(semver_t, semver_t))
 {
-    bool result;
-    semver_t usem, csem;
+    LDBoolean result;
+    semver_t  usem, csem;
 
     CHECKSTRING(uvalue, cvalue);
 
@@ -249,7 +255,7 @@ compareSemVer(const struct LDJSON *const uvalue,
     if (semver_parse(LDGetText(uvalue), &usem)) {
         LD_LOG(LD_LOG_ERROR, "failed to parse uvalue");
 
-        return false;
+        return LDBooleanFalse;
     }
 
     if (semver_parse(LDGetText(cvalue), &csem)) {
@@ -257,7 +263,7 @@ compareSemVer(const struct LDJSON *const uvalue,
 
         semver_free(&usem);
 
-        return false;
+        return LDBooleanFalse;
     }
 
     result = op(usem, csem);
@@ -268,23 +274,23 @@ compareSemVer(const struct LDJSON *const uvalue,
     return result;
 }
 
-static bool
-operatorSemVerEqual(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorSemVerEqual(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     return compareSemVer(uvalue, cvalue, semver_eq);
 }
 
-static bool
-operatorSemVerLessThan(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorSemVerLessThan(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     return compareSemVer(uvalue, cvalue, semver_lt);
 }
 
-static bool
-operatorSemVerGreaterThan(const struct LDJSON *const uvalue,
-    const struct LDJSON *const cvalue)
+static LDBoolean
+operatorSemVerGreaterThan(
+    const struct LDJSON *const uvalue, const struct LDJSON *const cvalue)
 {
     return compareSemVer(uvalue, cvalue, semver_gt);
 }

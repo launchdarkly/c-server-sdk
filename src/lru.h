@@ -1,6 +1,7 @@
 #pragma once
 
-enum LDLRUStatus {
+enum LDLRUStatus
+{
     LDLRUSTATUS_ERROR,
     LDLRUSTATUS_EXISTED,
     LDLRUSTATUS_NEW
@@ -8,10 +9,14 @@ enum LDLRUStatus {
 
 struct LDLRU;
 
-struct LDLRU *LDLRUInit(const unsigned int capacity);
+struct LDLRU *
+LDLRUInit(const unsigned int capacity);
 
-void LDLRUFree(struct LDLRU *const lru);
+void
+LDLRUFree(struct LDLRU *const lru);
 
-enum LDLRUStatus LDLRUInsert(struct LDLRU *const lru, const char *const key);
+enum LDLRUStatus
+LDLRUInsert(struct LDLRU *const lru, const char *const key);
 
-void LDLRUClear(struct LDLRU *const lru);
+void
+LDLRUClear(struct LDLRU *const lru);

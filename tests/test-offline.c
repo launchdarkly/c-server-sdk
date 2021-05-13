@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <launchdarkly/api.h>
 
 #include "assertion.h"
@@ -8,8 +10,8 @@
 static void
 testBoolVariationDefaultValueOffline()
 {
-    bool value;
-    struct LDUser *user;
+    LDBoolean        value;
+    struct LDUser *  user;
     struct LDClient *client;
     struct LDDetails details;
     /* prep */
@@ -17,9 +19,10 @@ testBoolVariationDefaultValueOffline()
     LD_ASSERT(user = LDUserNew("abc"));
     LD_ASSERT(client = makeOfflineClient());
     /* test */
-    value = LDBoolVariation(client, user, "featureKey", true, &details);
+    value =
+        LDBoolVariation(client, user, "featureKey", LDBooleanTrue, &details);
     /* validate */
-    LD_ASSERT(value == true);
+    LD_ASSERT(value == LDBooleanTrue);
     LD_ASSERT(details.reason == LD_ERROR);
     LD_ASSERT(details.extra.errorKind == LD_CLIENT_NOT_READY);
     /* cleanup */
@@ -31,8 +34,8 @@ testBoolVariationDefaultValueOffline()
 static void
 testIntVariationDefaultValueOffline()
 {
-    int value;
-    struct LDUser *user;
+    int              value;
+    struct LDUser *  user;
     struct LDClient *client;
     struct LDDetails details;
     /* prep */
@@ -54,8 +57,8 @@ testIntVariationDefaultValueOffline()
 static void
 testDoubleVariationDefaultValueOffline()
 {
-    double value;
-    struct LDUser *user;
+    double           value;
+    struct LDUser *  user;
     struct LDClient *client;
     struct LDDetails details;
     /* prep */
@@ -77,8 +80,8 @@ testDoubleVariationDefaultValueOffline()
 static void
 testStringVariationDefaultValueOffline()
 {
-    char *value;
-    struct LDUser *user;
+    char *           value;
+    struct LDUser *  user;
     struct LDClient *client;
     struct LDDetails details;
     /* prep */
@@ -101,8 +104,8 @@ testStringVariationDefaultValueOffline()
 static void
 testJSONVariationDefaultValueOffline()
 {
-    struct LDJSON *actual, *expected;
-    struct LDUser *user;
+    struct LDJSON *  actual, *expected;
+    struct LDUser *  user;
     struct LDClient *client;
     struct LDDetails details;
     /* prep */
@@ -133,7 +136,7 @@ testOfflineClientReturnsAsOffline()
 
     LD_ASSERT(client = makeOfflineClient());
 
-    LD_ASSERT(LDClientIsOffline(client) == true);
+    LD_ASSERT(LDClientIsOffline(client) == LDBooleanTrue);
 
     LDClientClose(client);
 }
