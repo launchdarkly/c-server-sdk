@@ -9,6 +9,5 @@ var dir_efe5b79025e5a9a1c6aba444011d94a7 =
       [ "LDStoreCollectionState", "structLDStoreCollectionState.html", "structLDStoreCollectionState" ],
       [ "LDStoreInterface", "structLDStoreInterface.html", "structLDStoreInterface" ]
     ] ],
-    [ "user.h", "user_8h.html", "user_8h" ],
     [ "variations.h", "variations_8h.html", "variations_8h" ]
 ];
