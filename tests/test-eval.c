@@ -1152,6 +1152,11 @@ testLDi_bucketUserByKey()
     LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", &bucket))
     LD_ASSERT(floateq(0.10343106, bucket));
     LDUserFree(user);
+
+    LD_ASSERT(user = LDUserNew("userKeyC"));
+    LD_ASSERT(!LDi_bucketUser(user, "hashKey", "unknown", "saltyA", &bucket))
+    LD_ASSERT(floateq(0.0, bucket));
+    LDUserFree(user);
 }
 
 int

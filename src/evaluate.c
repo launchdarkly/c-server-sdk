@@ -112,6 +112,27 @@ addValue(
     return LDBooleanTrue;
 }
 
+static const char *
+LDi_getBucketAttribute(const struct LDJSON *const obj)
+{
+    const struct LDJSON *bucketBy;
+
+    LD_ASSERT(obj);
+    LD_ASSERT(LDJSONGetType(obj) == LDObject);
+
+    bucketBy = LDObjectLookup(obj, "bucketBy");
+
+    if (!LDi_notNull(bucketBy)) {
+        return "key";
+    }
+
+    if (LDJSONGetType(bucketBy) != LDText) {
+        return NULL;
+    }
+
+    return LDGetText(bucketBy);
+}
+
 EvalStatus
 LDi_evaluate(
     struct LDClient *const     client,
@@ -914,18 +935,17 @@ LDi_segmentRuleMatchUser(
 
         {
             float bucket;
+            const char *attribute;
 
-            const struct LDJSON *const bucketBy =
-                LDObjectLookup(segmentRule, "bucketBy");
+            attribute = LDi_getBucketAttribute(segmentRule);
 
-            const char *const attribute =
-                LDi_notNull(bucketBy) ? LDGetText(bucketBy) : "key";
+            if (attribute == NULL) {
+                LD_LOG(LD_LOG_ERROR, "failed to parse bucketBy");
 
-            if (!LDi_bucketUser(user, segmentKey, attribute, salt, &bucket)) {
-                LD_LOG(LD_LOG_ERROR, "LDi_bucketUser error");
-
-                return EVAL_MEM;
+                return EVAL_SCHEMA;
             }
+
+            LDi_bucketUser(user, segmentKey, attribute, salt, &bucket);
 
             if (bucket < LDGetNumber(weight) / 100000) {
                 return EVAL_MATCH;
@@ -1127,6 +1147,7 @@ LDi_bucketUser(
     LD_ASSERT(bucket);
 
     attributeValue = NULL;
+    *bucket        = 0;
 
     if ((attributeValue = LDi_valueOfAttribute(user, attribute))) {
         char        raw[256], bucketableBuffer[256];
@@ -1261,10 +1282,18 @@ LDi_variationIndexForUser(
     variation = LDGetIter(variations);
     LD_ASSERT(variation);
 
-    if (!LDi_bucketUser(user, key, "key", salt, &userBucket)) {
-        LD_LOG(LD_LOG_ERROR, "failed to bucket user");
+    {
+        const char *attribute;
 
-        return LDBooleanFalse;
+        attribute = LDi_getBucketAttribute(rollout);
+
+        if (attribute == NULL) {
+            LD_LOG(LD_LOG_ERROR, "failed to parse bucketBy");
+
+            return LDBooleanFalse;
+        }
+
+        LDi_bucketUser(user, key, attribute, salt, &userBucket);
     }
 
     for (; variation; variation = LDIterNext(variation)) {
