@@ -2,6 +2,12 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.3.2] - 2021-05-26
+### Fixed:
+- Corrected rollout bucketing behavior when bucketing by a user attribute that does not exist.
+- Fixed handling of flag rollout bucketing by a specific user attribute.
+
+
 ## [2.3.1] - 2021-05-12
 ### Changed:
 - Now building with -Werror on Linux and macOS
