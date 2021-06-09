@@ -2,6 +2,11 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.3.3] - 2021-06-09
+### Fixed:
+- Removed stray imports of stdbool.h
+
+
 ## [2.3.2] - 2021-05-26
 ### Fixed:
 - Corrected rollout bucketing behavior when bucketing by a user attribute that does not exist.
