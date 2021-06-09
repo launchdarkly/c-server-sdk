@@ -106,7 +106,7 @@ addValue(
         *result = tmp;
     } else {
         *result               = NULL;
-        details->hasVariation = false;
+        details->hasVariation = LDBooleanFalse;
     }
 
     return LDBooleanTrue;
@@ -584,7 +584,7 @@ LDi_checkPrerequisites(
 
         {
             struct LDJSON *on;
-            bool           variationMatch = false;
+            LDBoolean      variationMatch = LDBooleanFalse;
 
             if (!(on = LDObjectLookup(preflag, "on"))) {
                 LDJSONRCDecrement(preflagrc);

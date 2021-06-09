@@ -1,7 +1,7 @@
-#include <stdbool.h>
 #include <string.h>
 
 #include <launchdarkly/api.h>
+#include <launchdarkly/boolean.h>
 
 #include "assertion.h"
 #include "config.h"
@@ -36,13 +36,13 @@ testDefaultAndReplace()
     LD_ASSERT(LDConfigSetEventsURI(config, "https://test6.com"));
     LD_ASSERT(strcmp(config->eventsURI, "https://test6.com") == 0);
 
-    LD_ASSERT(config->stream == true);
-    LDConfigSetStream(config, false);
-    LD_ASSERT(config->stream == false);
+    LD_ASSERT(config->stream == LDBooleanTrue);
+    LDConfigSetStream(config, LDBooleanFalse);
+    LD_ASSERT(config->stream == LDBooleanFalse);
 
-    LD_ASSERT(config->sendEvents == true);
-    LDConfigSetSendEvents(config, false);
-    LD_ASSERT(config->sendEvents == false);
+    LD_ASSERT(config->sendEvents == LDBooleanTrue);
+    LDConfigSetSendEvents(config, LDBooleanFalse);
+    LD_ASSERT(config->sendEvents == LDBooleanFalse);
 
     LD_ASSERT(config->eventsCapacity == 10000);
     LDConfigSetEventsCapacity(config, 50);
@@ -60,21 +60,21 @@ testDefaultAndReplace()
     LDConfigSetPollInterval(config, 20000);
     LD_ASSERT(config->pollInterval == 20000);
 
-    LD_ASSERT(config->offline == false);
-    LDConfigSetOffline(config, true);
-    LD_ASSERT(config->offline == true);
+    LD_ASSERT(config->offline == LDBooleanFalse);
+    LDConfigSetOffline(config, LDBooleanTrue);
+    LD_ASSERT(config->offline == LDBooleanTrue);
 
-    LD_ASSERT(config->useLDD == false);
-    LDConfigSetUseLDD(config, true);
-    LD_ASSERT(config->useLDD == true);
+    LD_ASSERT(config->useLDD == LDBooleanFalse);
+    LDConfigSetUseLDD(config, LDBooleanTrue);
+    LD_ASSERT(config->useLDD == LDBooleanTrue);
 
-    LD_ASSERT(config->allAttributesPrivate == false);
-    LDConfigSetAllAttributesPrivate(config, true);
-    LD_ASSERT(config->allAttributesPrivate == true);
+    LD_ASSERT(config->allAttributesPrivate == LDBooleanFalse);
+    LDConfigSetAllAttributesPrivate(config, LDBooleanTrue);
+    LD_ASSERT(config->allAttributesPrivate == LDBooleanTrue);
 
-    LD_ASSERT(config->inlineUsersInEvents == false);
-    LDConfigInlineUsersInEvents(config, true);
-    LD_ASSERT(config->inlineUsersInEvents == true);
+    LD_ASSERT(config->inlineUsersInEvents == LDBooleanFalse);
+    LDConfigInlineUsersInEvents(config, LDBooleanTrue);
+    LD_ASSERT(config->inlineUsersInEvents == LDBooleanTrue);
 
     LD_ASSERT(config->userKeysCapacity == 1000);
     LDConfigSetUserKeysCapacity(config, 12);

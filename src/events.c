@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,7 +28,7 @@ LDi_notNull(const struct LDJSON *const json)
 
 struct AnalyticsContext
 {
-    bool               active;
+    LDBoolean          active;
     double             lastFlush;
     struct curl_slist *headers;
     struct LDClient *  client;
@@ -59,14 +58,14 @@ done(
     const int              responseCode)
 {
     struct AnalyticsContext *context;
-    const bool success = responseCode == 200 || responseCode == 202;
+    const LDBoolean success = responseCode == 200 || responseCode == 202;
 
     LD_ASSERT(client);
     LD_ASSERT(rawcontext);
 
     context = (struct AnalyticsContext *)rawcontext;
 
-    context->active = false;
+    context->active = LDBooleanFalse;
 
     LD_LOG(LD_LOG_TRACE, "events network interface called done");
 
@@ -74,7 +73,7 @@ done(
         LD_LOG(LD_LOG_TRACE, "event batch send successful");
 
         LDi_rwlock_wrlock(&client->lock);
-        client->shouldFlush = false;
+        client->shouldFlush = LDBooleanFalse;
         LDi_rwlock_wrunlock(&client->lock);
 
         LDi_getMonotonicMilliseconds(&context->lastFlush);
@@ -208,13 +207,13 @@ poll(struct LDClient *const client, void *const rawcontext)
     struct AnalyticsContext *context;
     char                     url[4096];
     const char *             mime, *schema;
-    bool                     shouldFlush;
-    bool                     lastFailed;
+    LDBoolean                shouldFlush;
+    LDBoolean                lastFailed;
 
     LD_ASSERT(rawcontext);
 
     curl        = NULL;
-    shouldFlush = false;
+    shouldFlush = LDBooleanFalse;
     mime        = "Content-Type: application/json";
     schema      = "X-LaunchDarkly-Event-Schema: 3";
     context     = (struct AnalyticsContext *)rawcontext;
@@ -266,7 +265,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         if (!events) {
             /* no events to send */
             LDi_rwlock_wrlock(&client->lock);
-            shouldFlush = false;
+            shouldFlush = LDBooleanFalse;
             LDi_rwlock_wrunlock(&client->lock);
 
             return NULL;
@@ -360,7 +359,7 @@ poll(struct LDClient *const client, void *const rawcontext)
         goto error;
     }
 
-    context->active = true;
+    context->active = LDBooleanTrue;
 
     return curl;
 
@@ -395,7 +394,7 @@ LDi_constructAnalytics(struct LDClient *const client)
         goto error;
     }
 
-    context->active      = false;
+    context->active      = LDBooleanFalse;
     context->headers     = NULL;
     context->client      = client;
     context->buffer      = NULL;
