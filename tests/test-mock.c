@@ -24,8 +24,9 @@ makeBasicPutBody()
     LD_ASSERT(flags = LDNewObject());
     LD_ASSERT(segments = LDNewObject());
 
-    LD_ASSERT(flag = makeMinimalFlag("flag1", 52, true, false));
-    LD_ASSERT(value = LDNewBool(true));
+    LD_ASSERT(
+        flag = makeMinimalFlag("flag1", 52, LDBooleanTrue, LDBooleanFalse));
+    LD_ASSERT(value = LDNewBool(LDBooleanTrue));
     addVariation(flag, value);
     setFallthrough(flag, 0);
 
@@ -117,13 +118,13 @@ testBasicPoll()
     LD_ASSERT(snprintf(pollURL, 1024, "http://127.0.0.1:%d", acceptPort) > 0);
 
     LD_ASSERT(config = LDConfigNew("key"));
-    LDConfigSetStream(config, false);
+    LDConfigSetStream(config, LDBooleanFalse);
     LDConfigSetBaseURI(config, pollURL);
 
     LD_ASSERT(client = LDClientInit(config, 1000 * 10));
     LD_ASSERT(user = LDUserNew("my-user"));
 
-    LD_ASSERT(LDBoolVariation(client, user, "flag1", false, NULL));
+    LD_ASSERT(LDBoolVariation(client, user, "flag1", LDBooleanFalse, NULL));
 
     LDUserFree(user);
     LDClientClose(client);
@@ -211,7 +212,7 @@ testBasicStream()
     LD_ASSERT(client = LDClientInit(config, 1000 * 10));
     LD_ASSERT(user = LDUserNew("my-user"));
 
-    LD_ASSERT(LDBoolVariation(client, user, "flag1", false, NULL));
+    LD_ASSERT(LDBoolVariation(client, user, "flag1", LDBooleanFalse, NULL));
 
     LDUserFree(user);
     LDClientClose(client);
@@ -253,7 +254,7 @@ testWrapperHeader_thread(void *const unused)
             NULL);
         break;
     default:
-        LD_ASSERT(false);
+        LD_ASSERT(LDBooleanFalse);
         break;
     }
 
@@ -290,7 +291,7 @@ testWrapperHeader()
         /* do nothing */
         break;
     default:
-        LD_ASSERT(false);
+        LD_ASSERT(LDBooleanFalse);
         break;
     }
 
