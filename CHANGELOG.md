@@ -2,6 +2,11 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.3.4] - 2021-06-14
+### Fixed:
+- Removed stray imports of stdbool.h
+
+
 ## [2.3.3] - 2021-06-09
 ### Fixed:
 - Removed stray imports of stdbool.h
