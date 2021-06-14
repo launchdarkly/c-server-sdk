@@ -8,6 +8,7 @@ workflows:
   build_and_test_all:
     jobs:
       - build-test-linux
+      - build-test-linux-clang11
       - build-test-linux-optimized
       - build-test-linux-32bit
       - build-test-osx
@@ -54,6 +55,38 @@ jobs:
             cd build
             make test
 
+  build-test-linux-clang11:
+    docker:
+      - image: ubuntu:20.04
+      - image: redis
+    environment:
+      CTEST_OUTPUT_ON_FAILURE: 1
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update -y && apt-get install -y \
+              libcurl4-openssl-dev \
+              libpcre3-dev \
+              libhiredis-dev \
+              cmake \
+              clang-11
+      - run:
+          name: Build
+          command: |
+            export CC=/usr/bin/clang-11
+            export CXX=/usr/bin/clang-cpp-11
+            mkdir build && cd build
+            cmake -D CMAKE_BUILD_TYPE=Release -D REDIS_STORE=ON ..
+            cmake --build .
+      - run:
+          name: Unit test
+          command: |
+            cd build
+            make test
+
   build-test-linux-32bit:
     docker:
       - image: i386/ubuntu:18.04
@@ -86,7 +119,7 @@ jobs:
 
   build-test-osx:
     macos:
-      xcode: "9.4.1"
+      xcode: "12.5.0"
     environment:
       CTEST_OUTPUT_ON_FAILURE: 1
     steps:

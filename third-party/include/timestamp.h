@@ -28,7 +28,6 @@
 #include <stddef.h>
 #include <time.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,7 +41,6 @@ typedef struct {
 
 int         timestamp_parse            (const char *str, size_t len, timestamp_t *tsp);
 int         timestamp_compare          (const timestamp_t *tsp1, const timestamp_t *tsp2);
-bool        timestamp_valid            (const timestamp_t *tsp);
 struct tm * timestamp_to_tm_utc        (const timestamp_t *tsp, struct tm *tmp);
 struct tm * timestamp_to_tm_local      (const timestamp_t *tsp, struct tm *tmp);
 

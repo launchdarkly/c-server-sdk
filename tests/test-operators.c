@@ -17,7 +17,7 @@ addTest(
     const char *const    op,
     struct LDJSON *const uvalue,
     struct LDJSON *const cvalue,
-    const bool           expect)
+    const LDBoolean      expect)
 {
     struct LDJSON *test = NULL;
 
@@ -156,97 +156,176 @@ main()
     LD_ASSERT(tests = LDNewArray());
 
     /* numeric operators */
-    addTest("in", LDNewNumber(99), LDNewNumber(99), true);
-    addTest("in", LDNewNumber(99.0001), LDNewNumber(99.0001), true);
-    addTest("lessThan", LDNewNumber(1), LDNewNumber(1.99999), true);
-    addTest("lessThan", LDNewNumber(1.99999), LDNewNumber(1), false);
-    addTest("lessThan", LDNewNumber(1), LDNewNumber(2), true);
-    addTest("lessThanOrEqual", LDNewNumber(1), LDNewNumber(1), true);
-    addTest("greaterThan", LDNewNumber(2), LDNewNumber(1.99999), true);
-    addTest("greaterThan", LDNewNumber(1.99999), LDNewNumber(2), false);
-    addTest("greaterThan", LDNewNumber(2), LDNewNumber(1), true);
-    addTest("greaterThanOrEqual", LDNewNumber(1), LDNewNumber(1), true);
+    addTest("in", LDNewNumber(99), LDNewNumber(99), LDBooleanTrue);
+    addTest("in", LDNewNumber(99.0001), LDNewNumber(99.0001), LDBooleanTrue);
+    addTest("lessThan", LDNewNumber(1), LDNewNumber(1.99999), LDBooleanTrue);
+    addTest("lessThan", LDNewNumber(1.99999), LDNewNumber(1), LDBooleanFalse);
+    addTest("lessThan", LDNewNumber(1), LDNewNumber(2), LDBooleanTrue);
+    addTest("lessThanOrEqual", LDNewNumber(1), LDNewNumber(1), LDBooleanTrue);
+    addTest("greaterThan", LDNewNumber(2), LDNewNumber(1.99999), LDBooleanTrue);
+    addTest(
+        "greaterThan", LDNewNumber(1.99999), LDNewNumber(2), LDBooleanFalse);
+    addTest("greaterThan", LDNewNumber(2), LDNewNumber(1), LDBooleanTrue);
+    addTest(
+        "greaterThanOrEqual", LDNewNumber(1), LDNewNumber(1), LDBooleanTrue);
 
     /* string operators */
-    addTest("in", LDNewText("x"), LDNewText("x"), true);
-    addTest("in", LDNewText("x"), LDNewText("xyz"), false);
-    addTest("startsWith", LDNewText("xyz"), LDNewText("x"), true);
-    addTest("startsWith", LDNewText("x"), LDNewText("xyz"), false);
-    addTest("endsWith", LDNewText("xyz"), LDNewText("z"), true);
-    addTest("endsWith", LDNewText("z"), LDNewText("xyz"), false);
-    addTest("contains", LDNewText("xyz"), LDNewText("y"), true);
-    addTest("contains", LDNewText("y"), LDNewText("yz"), false);
+    addTest("in", LDNewText("x"), LDNewText("x"), LDBooleanTrue);
+    addTest("in", LDNewText("x"), LDNewText("xyz"), LDBooleanFalse);
+    addTest("startsWith", LDNewText("xyz"), LDNewText("x"), LDBooleanTrue);
+    addTest("startsWith", LDNewText("x"), LDNewText("xyz"), LDBooleanFalse);
+    addTest("endsWith", LDNewText("xyz"), LDNewText("z"), LDBooleanTrue);
+    addTest("endsWith", LDNewText("z"), LDNewText("xyz"), LDBooleanFalse);
+    addTest("contains", LDNewText("xyz"), LDNewText("y"), LDBooleanTrue);
+    addTest("contains", LDNewText("y"), LDNewText("yz"), LDBooleanFalse);
 
     /* mixed strings and numbers */
-    addTest("in", LDNewText("99"), LDNewNumber(99), false);
-    addTest("in", LDNewNumber(99), LDNewText("99"), false);
-    addTest("contains", LDNewText("99"), LDNewNumber(99), false);
-    addTest("startsWith", LDNewText("99"), LDNewNumber(99), false);
-    addTest("endsWith", LDNewText("99"), LDNewNumber(99), false);
-    addTest("lessThanOrEqual", LDNewText("99"), LDNewNumber(99), false);
-    addTest("lessThanOrEqual", LDNewNumber(99), LDNewText("99"), false);
-    addTest("greaterThanOrEqual", LDNewText("99"), LDNewNumber(99), false);
-    addTest("greaterThanOrEqual", LDNewNumber(99), LDNewText("99"), false);
+    addTest("in", LDNewText("99"), LDNewNumber(99), LDBooleanFalse);
+    addTest("in", LDNewNumber(99), LDNewText("99"), LDBooleanFalse);
+    addTest("contains", LDNewText("99"), LDNewNumber(99), LDBooleanFalse);
+    addTest("startsWith", LDNewText("99"), LDNewNumber(99), LDBooleanFalse);
+    addTest("endsWith", LDNewText("99"), LDNewNumber(99), LDBooleanFalse);
+    addTest(
+        "lessThanOrEqual", LDNewText("99"), LDNewNumber(99), LDBooleanFalse);
+    addTest(
+        "lessThanOrEqual", LDNewNumber(99), LDNewText("99"), LDBooleanFalse);
+    addTest(
+        "greaterThanOrEqual", LDNewText("99"), LDNewNumber(99), LDBooleanFalse);
+    addTest(
+        "greaterThanOrEqual", LDNewNumber(99), LDNewText("99"), LDBooleanFalse);
 
     /* date operators */
-    addTest("before", LDNewText(dateStr1), LDNewText(dateStr2), true);
-    addTest("before", LDNewNumber(dateMs1), LDNewNumber(dateMs2), true);
-    addTest("before", LDNewText(dateStr2), LDNewText(dateStr1), false);
-    addTest("before", LDNewNumber(dateMs2), LDNewNumber(dateMs1), false);
-    addTest("before", LDNewText(dateStr1), LDNewText(dateStr1), false);
-    addTest("before", LDNewNumber(dateMs1), LDNewNumber(dateMs1), false);
-    addTest("before", LDNewText(""), LDNewText(dateStr1), false);
-    addTest("before", LDNewText(dateStr1), LDNewText(invalidDate), false);
-    addTest("after", LDNewText(dateStr2), LDNewText(dateStr1), true);
-    addTest("after", LDNewNumber(dateMs2), LDNewNumber(dateMs1), true);
-    addTest("after", LDNewText(dateStr1), LDNewText(dateStr2), false);
-    addTest("after", LDNewNumber(dateMs1), LDNewNumber(dateMs2), false);
-    addTest("after", LDNewText(dateStr1), LDNewText(dateStr1), false);
-    addTest("after", LDNewNumber(dateMs1), LDNewNumber(dateMs1), false);
-    addTest("after", LDNewText(""), LDNewText(dateStr1), false);
-    addTest("after", LDNewText(dateStr1), LDNewText(invalidDate), false);
+    addTest("before", LDNewText(dateStr1), LDNewText(dateStr2), LDBooleanTrue);
+    addTest(
+        "before", LDNewNumber(dateMs1), LDNewNumber(dateMs2), LDBooleanTrue);
+    addTest("before", LDNewText(dateStr2), LDNewText(dateStr1), LDBooleanFalse);
+    addTest(
+        "before", LDNewNumber(dateMs2), LDNewNumber(dateMs1), LDBooleanFalse);
+    addTest("before", LDNewText(dateStr1), LDNewText(dateStr1), LDBooleanFalse);
+    addTest(
+        "before", LDNewNumber(dateMs1), LDNewNumber(dateMs1), LDBooleanFalse);
+    addTest("before", LDNewText(""), LDNewText(dateStr1), LDBooleanFalse);
+    addTest(
+        "before", LDNewText(dateStr1), LDNewText(invalidDate), LDBooleanFalse);
+    addTest("after", LDNewText(dateStr2), LDNewText(dateStr1), LDBooleanTrue);
+    addTest("after", LDNewNumber(dateMs2), LDNewNumber(dateMs1), LDBooleanTrue);
+    addTest("after", LDNewText(dateStr1), LDNewText(dateStr2), LDBooleanFalse);
+    addTest(
+        "after", LDNewNumber(dateMs1), LDNewNumber(dateMs2), LDBooleanFalse);
+    addTest("after", LDNewText(dateStr1), LDNewText(dateStr1), LDBooleanFalse);
+    addTest(
+        "after", LDNewNumber(dateMs1), LDNewNumber(dateMs1), LDBooleanFalse);
+    addTest("after", LDNewText(""), LDNewText(dateStr1), LDBooleanFalse);
+    addTest(
+        "after", LDNewText(dateStr1), LDNewText(invalidDate), LDBooleanFalse);
 
     /* regex */
-    addTest("matches", LDNewText("hello world"), LDNewText("hello.*rld"), true);
-    addTest("matches", LDNewText("hello world"), LDNewText("hello.*orl"), true);
-    addTest("matches", LDNewText("hello world"), LDNewText("l+"), true);
     addTest(
-        "matches", LDNewText("hello world"), LDNewText("(world|planet)"), true);
-    addTest("matches", LDNewText("hello world"), LDNewText("aloha"), false);
-    addTest("matches", LDNewText("hello world"), LDNewText("***bad rg"), false);
+        "matches",
+        LDNewText("hello world"),
+        LDNewText("hello.*rld"),
+        LDBooleanTrue);
+    addTest(
+        "matches",
+        LDNewText("hello world"),
+        LDNewText("hello.*orl"),
+        LDBooleanTrue);
+    addTest(
+        "matches", LDNewText("hello world"), LDNewText("l+"), LDBooleanTrue);
+    addTest(
+        "matches",
+        LDNewText("hello world"),
+        LDNewText("(world|planet)"),
+        LDBooleanTrue);
+    addTest(
+        "matches",
+        LDNewText("hello world"),
+        LDNewText("aloha"),
+        LDBooleanFalse);
+    addTest(
+        "matches",
+        LDNewText("hello world"),
+        LDNewText("***bad rg"),
+        LDBooleanFalse);
 
     /* semver operators */
-    addTest("semVerEqual", LDNewText("2.0.0"), LDNewText("2.0.0"), true);
-    addTest("semVerEqual", LDNewText("2.0"), LDNewText("2.0.0"), true);
-    addTest("semVerEqual", LDNewText("2-rc1"), LDNewText("2.0.0-rc1"), true);
     addTest(
-        "semVerEqual", LDNewText("2+build2"), LDNewText("2.0.0+build2"), true);
-    addTest("semVerEqual", LDNewText("2.0.0"), LDNewText("2.0.1"), false);
-    addTest("semVerLessThan", LDNewText("2.0.0"), LDNewText("2.0.1"), true);
-    addTest("semVerLessThan", LDNewText("2.0"), LDNewText("2.0.1"), true);
-    addTest("semVerLessThan", LDNewText("2.0.1"), LDNewText("2.0.0"), false);
-    addTest("semVerLessThan", LDNewText("2.0.1"), LDNewText("2.0"), false);
-    addTest("semVerLessThan", LDNewText("2.0.1"), LDNewText("xbad%ver"), false);
+        "semVerEqual", LDNewText("2.0.0"), LDNewText("2.0.0"), LDBooleanTrue);
+    addTest("semVerEqual", LDNewText("2.0"), LDNewText("2.0.0"), LDBooleanTrue);
+    addTest(
+        "semVerEqual",
+        LDNewText("2-rc1"),
+        LDNewText("2.0.0-rc1"),
+        LDBooleanTrue);
+    addTest(
+        "semVerEqual",
+        LDNewText("2+build2"),
+        LDNewText("2.0.0+build2"),
+        LDBooleanTrue);
+    addTest(
+        "semVerEqual", LDNewText("2.0.0"), LDNewText("2.0.1"), LDBooleanFalse);
+    addTest(
+        "semVerLessThan",
+        LDNewText("2.0.0"),
+        LDNewText("2.0.1"),
+        LDBooleanTrue);
+    addTest(
+        "semVerLessThan", LDNewText("2.0"), LDNewText("2.0.1"), LDBooleanTrue);
+    addTest(
+        "semVerLessThan",
+        LDNewText("2.0.1"),
+        LDNewText("2.0.0"),
+        LDBooleanFalse);
+    addTest(
+        "semVerLessThan", LDNewText("2.0.1"), LDNewText("2.0"), LDBooleanFalse);
+    addTest(
+        "semVerLessThan",
+        LDNewText("2.0.1"),
+        LDNewText("xbad%ver"),
+        LDBooleanFalse);
     addTest(
         "semVerLessThan",
         LDNewText("2.0.0-rc"),
         LDNewText("2.0.0-rc.beta"),
-        true);
-    addTest("semVerGreaterThan", LDNewText("2.0.1"), LDNewText("2.0"), true);
-    addTest("semVerGreaterThan", LDNewText("2.0.1"), LDNewText("2.0"), true);
-    addTest("semVerGreaterThan", LDNewText("2.0.0"), LDNewText("2.0.1"), false);
-    addTest("semVerGreaterThan", LDNewText("2.0"), LDNewText("2.0.1"), false);
+        LDBooleanTrue);
     addTest(
-        "semVerGreaterThan", LDNewText("2.0.1"), LDNewText("xbad%ver"), false);
+        "semVerGreaterThan",
+        LDNewText("2.0.1"),
+        LDNewText("2.0"),
+        LDBooleanTrue);
+    addTest(
+        "semVerGreaterThan",
+        LDNewText("2.0.1"),
+        LDNewText("2.0"),
+        LDBooleanTrue);
+    addTest(
+        "semVerGreaterThan",
+        LDNewText("2.0.0"),
+        LDNewText("2.0.1"),
+        LDBooleanFalse);
+    addTest(
+        "semVerGreaterThan",
+        LDNewText("2.0"),
+        LDNewText("2.0.1"),
+        LDBooleanFalse);
+    addTest(
+        "semVerGreaterThan",
+        LDNewText("2.0.1"),
+        LDNewText("xbad%ver"),
+        LDBooleanFalse);
     addTest(
         "semVerGreaterThan",
         LDNewText("2.0.0-rc.1"),
         LDNewText("2.0.0-rc.0"),
-        true);
-    addTest("semVerEqual", LDNewText("02.0.0"), LDNewText("2.0.0"), false);
-    addTest("semVerEqual", LDNewText("v2.0.0"), LDNewText("2.0.0"), false);
-    addTest("semVerEqual", LDNewText("2.01.0"), LDNewText("2.1.0"), false);
-    addTest("semVerEqual", LDNewText("2.0.01"), LDNewText("2.0.1"), false);
+        LDBooleanTrue);
+    addTest(
+        "semVerEqual", LDNewText("02.0.0"), LDNewText("2.0.0"), LDBooleanFalse);
+    addTest(
+        "semVerEqual", LDNewText("v2.0.0"), LDNewText("2.0.0"), LDBooleanFalse);
+    addTest(
+        "semVerEqual", LDNewText("2.01.0"), LDNewText("2.1.0"), LDBooleanFalse);
+    addTest(
+        "semVerEqual", LDNewText("2.0.01"), LDNewText("2.0.1"), LDBooleanFalse);
 
     for (iter = LDGetIter(tests); iter; iter = LDIterNext(iter)) {
         OpFn           opfn;
