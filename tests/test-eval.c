@@ -1133,30 +1133,251 @@ floateq(const float left, const float right)
 }
 
 static void
-testLDi_bucketUserByKey()
+testBucketUser()
 {
     float          bucket;
     struct LDUser *user;
 
     LD_ASSERT(user = LDUserNew("userKeyA"));
-    LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", &bucket))
+    LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", NULL, &bucket));
     LD_ASSERT(floateq(0.42157587, bucket));
     LDUserFree(user);
 
     LD_ASSERT(user = LDUserNew("userKeyB"));
-    LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", &bucket))
+    LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", NULL, &bucket));
     LD_ASSERT(floateq(0.6708485, bucket));
     LDUserFree(user);
 
     LD_ASSERT(user = LDUserNew("userKeyC"));
-    LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", &bucket))
+    LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", NULL, &bucket));
     LD_ASSERT(floateq(0.10343106, bucket));
     LDUserFree(user);
 
     LD_ASSERT(user = LDUserNew("userKeyC"));
-    LD_ASSERT(!LDi_bucketUser(user, "hashKey", "unknown", "saltyA", &bucket))
+    LD_ASSERT(
+        !LDi_bucketUser(user, "hashKey", "unknown", "saltyA", NULL, &bucket));
     LD_ASSERT(floateq(0.0, bucket));
     LDUserFree(user);
+
+    LD_ASSERT(user = LDUserNew("primaryKey"));
+    LD_ASSERT(LDUserSetSecondary(user, "secondaryKey"));
+    LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", NULL, &bucket));
+    LD_ASSERT(floateq(0.100876, bucket));
+    LDUserFree(user);
+}
+
+static void
+testBucketUserWithSeed()
+{
+    float          bucket;
+    struct LDUser *user;
+    int            seed;
+
+    seed = 61;
+
+    LD_ASSERT(user = LDUserNew("userKeyA"));
+    LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", &seed, &bucket));
+    LD_ASSERT(floateq(0.09801207, bucket));
+    LDUserFree(user);
+
+    LD_ASSERT(user = LDUserNew("userKeyB"));
+    LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", &seed, &bucket));
+    LD_ASSERT(floateq(0.14483777, bucket));
+    LDUserFree(user);
+
+    LD_ASSERT(user = LDUserNew("userKeyC"));
+    LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", &seed, &bucket));
+    LD_ASSERT(floateq(0.9242641, bucket));
+    LDUserFree(user);
+
+    LD_ASSERT(user = LDUserNew("primaryKey"));
+    LD_ASSERT(LDUserSetSecondary(user, "secondaryKey"));
+    LD_ASSERT(LDi_bucketUser(user, "hashKey", "key", "saltyA", &seed, &bucket));
+    LD_ASSERT(floateq(0.0742077678, bucket));
+    LDUserFree(user);
+}
+
+static void
+testInExperimentExplanation()
+{
+    struct LDUser *user;
+    struct LDJSON *flag, *result, *events, *fallthrough, *rollout, *variations,
+        *variation;
+    struct LDDetails details;
+
+    events = NULL;
+    result = NULL;
+    LDDetailsInit(&details);
+
+    LD_ASSERT(user = LDUserNew("userKeyA"));
+
+    /* flag */
+    LD_ASSERT(flag = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
+    LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("123123")));
+    addVariations1(flag);
+
+    LD_ASSERT(fallthrough = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "fallthrough", fallthrough));
+    LD_ASSERT(rollout = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(fallthrough, "rollout", rollout));
+    LD_ASSERT(LDObjectSetKey(rollout, "kind", LDNewText("experiment")));
+    LD_ASSERT(variations = LDNewArray());
+    LD_ASSERT(LDObjectSetKey(rollout, "variations", variations));
+    LD_ASSERT(variation = LDNewObject());
+    LD_ASSERT(LDArrayPush(variations, variation));
+    LD_ASSERT(LDObjectSetKey(variation, "weight", LDNewNumber(100000)));
+    LD_ASSERT(LDObjectSetKey(variation, "variation", LDNewNumber(0)));
+
+    /* run */
+    LD_ASSERT(
+        LDi_evaluate(
+            NULL,
+            flag,
+            user,
+            (struct LDStore *)1,
+            &details,
+            &events,
+            &result,
+            LDBooleanFalse) == EVAL_MATCH);
+
+    /* validation */
+    LD_ASSERT(strcmp("fall", LDGetText(result)) == 0);
+    LD_ASSERT(details.hasVariation);
+    LD_ASSERT(details.extra.fallthrough.inExperiment);
+    LD_ASSERT(details.variationIndex == 0);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
+    LD_ASSERT(!events);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDUserFree(user);
+    LDDetailsClear(&details);
+}
+
+static void
+testNotInExperimentExplanation()
+{
+    struct LDUser *user;
+    struct LDJSON *flag, *result, *events, *fallthrough, *rollout, *variations,
+        *variation;
+    struct LDDetails details;
+
+    events = NULL;
+    result = NULL;
+    LDDetailsInit(&details);
+
+    LD_ASSERT(user = LDUserNew("userKeyA"));
+
+    /* flag */
+    LD_ASSERT(flag = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
+    LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("123123")));
+    addVariations1(flag);
+
+    LD_ASSERT(fallthrough = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "fallthrough", fallthrough));
+    LD_ASSERT(rollout = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(fallthrough, "rollout", rollout));
+    LD_ASSERT(LDObjectSetKey(rollout, "kind", LDNewText("experiment")));
+    LD_ASSERT(variations = LDNewArray());
+    LD_ASSERT(LDObjectSetKey(rollout, "variations", variations));
+    LD_ASSERT(variation = LDNewObject());
+    LD_ASSERT(LDArrayPush(variations, variation));
+    LD_ASSERT(LDObjectSetKey(variation, "weight", LDNewNumber(100000)));
+    LD_ASSERT(LDObjectSetKey(variation, "untracked", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(variation, "variation", LDNewNumber(0)));
+
+    /* run */
+    LD_ASSERT(
+        LDi_evaluate(
+            NULL,
+            flag,
+            user,
+            (struct LDStore *)1,
+            &details,
+            &events,
+            &result,
+            LDBooleanFalse) == EVAL_MATCH);
+
+    /* validation */
+    LD_ASSERT(strcmp("fall", LDGetText(result)) == 0);
+    LD_ASSERT(details.hasVariation);
+    LD_ASSERT(details.extra.fallthrough.inExperiment == LDBooleanFalse);
+    LD_ASSERT(details.variationIndex == 0);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
+    LD_ASSERT(!events);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDUserFree(user);
+    LDDetailsClear(&details);
+}
+
+static void
+testRolloutCustomSeed()
+{
+    struct LDUser *user;
+    struct LDJSON *flag, *result, *events, *fallthrough, *rollout, *variations,
+        *variation;
+    struct LDDetails details;
+
+    events = NULL;
+    result = NULL;
+    LDDetailsInit(&details);
+
+    LD_ASSERT(user = LDUserNew("userKeyA"));
+
+    /* flag */
+    LD_ASSERT(flag = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
+    LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("123123")));
+    addVariations1(flag);
+
+    LD_ASSERT(fallthrough = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "fallthrough", fallthrough));
+    LD_ASSERT(rollout = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(rollout, "seed", LDNewNumber(50)));
+    LD_ASSERT(LDObjectSetKey(fallthrough, "rollout", rollout));
+    LD_ASSERT(LDObjectSetKey(rollout, "kind", LDNewText("experiment")));
+    LD_ASSERT(variations = LDNewArray());
+    LD_ASSERT(LDObjectSetKey(rollout, "variations", variations));
+    LD_ASSERT(variation = LDNewObject());
+    LD_ASSERT(LDArrayPush(variations, variation));
+    LD_ASSERT(LDObjectSetKey(variation, "weight", LDNewNumber(100000)));
+    LD_ASSERT(LDObjectSetKey(variation, "untracked", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(variation, "variation", LDNewNumber(0)));
+
+    /* run */
+    LD_ASSERT(
+        LDi_evaluate(
+            NULL,
+            flag,
+            user,
+            (struct LDStore *)1,
+            &details,
+            &events,
+            &result,
+            LDBooleanFalse) == EVAL_MATCH);
+
+    /* validation */
+    LD_ASSERT(strcmp("fall", LDGetText(result)) == 0);
+    LD_ASSERT(details.hasVariation);
+    LD_ASSERT(details.extra.fallthrough.inExperiment == LDBooleanFalse);
+    LD_ASSERT(details.variationIndex == 0);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
+    LD_ASSERT(!events);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDUserFree(user);
+    LDDetailsClear(&details);
 }
 
 int
@@ -1184,8 +1405,11 @@ main()
     testSegmentMatchClauseRetrievesSegmentFromStore();
     testSegmentMatchClauseFallsThroughIfSegmentNotFound();
     testCanMatchJustOneSegmentFromList();
-
-    testLDi_bucketUserByKey();
+    testBucketUser();
+    testBucketUserWithSeed();
+    testInExperimentExplanation();
+    testNotInExperimentExplanation();
+    testRolloutCustomSeed();
 
     LDBasicLoggerThreadSafeShutdown();
 

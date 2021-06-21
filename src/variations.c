@@ -171,6 +171,30 @@ LDReasonToJSON(const struct LDDetails *const details)
 
             goto error;
         }
+
+        if (details->extra.rule.inExperiment) {
+            if (!(tmp = LDNewBool(LDBooleanTrue))) {
+                goto error;
+            }
+
+            if (!LDObjectSetKey(result, "inExperiment", tmp)) {
+                LDJSONFree(tmp);
+
+                goto error;
+            }
+        }
+    } else if (details->reason == LD_FALLTHROUGH) {
+        if (details->extra.fallthrough.inExperiment) {
+            if (!(tmp = LDNewBool(LDBooleanTrue))) {
+                goto error;
+            }
+
+            if (!LDObjectSetKey(result, "inExperiment", tmp)) {
+                LDJSONFree(tmp);
+
+                goto error;
+            }
+        }
     }
 
     return result;

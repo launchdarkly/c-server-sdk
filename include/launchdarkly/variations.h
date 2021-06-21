@@ -72,6 +72,19 @@ struct LDDetailsRule
     unsigned int ruleIndex;
     /** @brief The unique identifier of the rule that was matched. */
     char *id;
+    /** @brief Whether the evaluation was part of an experiment. Is
+     * true if the evaluation resulted in an experiment rollout *and* served one
+     * of the variations in the experiment. Otherwise false. */
+    LDBoolean inExperiment;
+};
+
+/** @brief Extra information when reason == LD_FALLTHROUGH */
+struct LDDetailsFallthrough
+{
+    /** @brief Whether the evaluation was part of an experiment. Is
+     * true if the evaluation resulted in an experiment rollout *and* served one
+     * of the variations in the experiment. Otherwise false. */
+    LDBoolean inExperiment;
 };
 
 struct LDDetails
@@ -92,6 +105,8 @@ struct LDDetails
         char *prerequisiteKey;
         /** @brief when reason == LD_RULE_MATCH */
         struct LDDetailsRule rule;
+        /** @brief when reason == LD_FALLTHROUGH */
+        struct LDDetailsFallthrough fallthrough;
     } extra;
 };
 

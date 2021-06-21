@@ -148,6 +148,7 @@ LDi_evaluate(
     const struct LDJSON *iter, *rules, *targets, *on;
     const struct LDJSON *index;
     const char *         failedKey;
+    LDBoolean            inExperiment;
 
     LD_ASSERT(flag);
     LD_ASSERT(user);
@@ -322,11 +323,14 @@ LDi_evaluate(
                 details->extra.rule.id        = NULL;
 
                 if (!LDi_getIndexForVariationOrRollout(
-                        flag, iter, user, &variation)) {
+                        flag, iter, user, &inExperiment, &variation))
+                {
                     LD_LOG(LD_LOG_ERROR, "schema error");
 
                     return EVAL_SCHEMA;
                 }
+
+                details->extra.rule.inExperiment = inExperiment;
 
                 if (!(addValue(flag, o_value, details, variation))) {
                     LD_LOG(LD_LOG_ERROR, "failed to add value");
@@ -363,12 +367,18 @@ LDi_evaluate(
     details->reason = LD_FALLTHROUGH;
 
     if (!LDi_getIndexForVariationOrRollout(
-            flag, LDObjectLookup(flag, "fallthrough"), user, &index))
+            flag,
+            LDObjectLookup(flag, "fallthrough"),
+            user,
+            &inExperiment,
+            &index))
     {
         LD_LOG(LD_LOG_ERROR, "schema error");
 
         return EVAL_SCHEMA;
     }
+
+    details->extra.fallthrough.inExperiment = inExperiment;
 
     if (!(addValue(flag, o_value, details, index))) {
         LD_LOG(LD_LOG_ERROR, "failed to add value");
@@ -934,7 +944,7 @@ LDi_segmentRuleMatchUser(
         }
 
         {
-            float bucket;
+            float       bucket;
             const char *attribute;
 
             attribute = LDi_getBucketAttribute(segmentRule);
@@ -945,7 +955,7 @@ LDi_segmentRuleMatchUser(
                 return EVAL_SCHEMA;
             }
 
-            LDi_bucketUser(user, segmentKey, attribute, salt, &bucket);
+            LDi_bucketUser(user, segmentKey, attribute, salt, NULL, &bucket);
 
             if (bucket < LDGetNumber(weight) / 100000) {
                 return EVAL_MATCH;
@@ -1136,6 +1146,7 @@ LDi_bucketUser(
     const char *const          segmentKey,
     const char *const          attribute,
     const char *const          salt,
+    const int *const           seed,
     float *const               bucket)
 {
     struct LDJSON *attributeValue;
@@ -1152,6 +1163,7 @@ LDi_bucketUser(
     if ((attributeValue = LDi_valueOfAttribute(user, attribute))) {
         char        raw[256], bucketableBuffer[256];
         const char *bucketable;
+        int         snprintfStatus;
 
         bucketable = NULL;
 
@@ -1174,9 +1186,36 @@ LDi_bucketUser(
             return LDBooleanFalse;
         }
 
-        if (snprintf(
-                raw, sizeof(raw), "%s.%s.%s", segmentKey, salt, bucketable) >=
-            0) {
+        if (seed) {
+            if (user->secondary) {
+                snprintfStatus = snprintf(
+                    raw,
+                    sizeof(raw),
+                    "%d.%s.%s",
+                    *seed,
+                    bucketable,
+                    user->secondary);
+            } else {
+                snprintfStatus =
+                    snprintf(raw, sizeof(raw), "%d.%s", *seed, bucketable);
+            }
+        } else {
+            if (user->secondary) {
+                snprintfStatus = snprintf(
+                    raw,
+                    sizeof(raw),
+                    "%s.%s.%s.%s",
+                    segmentKey,
+                    salt,
+                    bucketable,
+                    user->secondary);
+            } else {
+                snprintfStatus = snprintf(
+                    raw, sizeof(raw), "%s.%s.%s", segmentKey, salt, bucketable);
+            }
+        }
+
+        if (snprintfStatus >= 0 && (size_t)snprintfStatus < sizeof(raw)) {
             int         status;
             char        digest[21], encoded[17];
             const float longScale = 1152921504606846975.0;
@@ -1212,21 +1251,26 @@ LDi_variationIndexForUser(
     const struct LDUser *const  user,
     const char *const           key,
     const char *const           salt,
+    LDBoolean *const            inExperiment,
     const struct LDJSON **const index)
 {
-    struct LDJSON *variation, *rollout, *variations, *weight, *subvariation;
-    float          userBucket, sum;
+    struct LDJSON *variation, *rollout, *variations, *weight, *subvariation,
+        *rolloutKind;
+    float     userBucket, sum;
+    LDBoolean untrackedValue;
 
     LD_ASSERT(varOrRoll);
     LD_ASSERT(index);
+    LD_ASSERT(inExperiment);
 
-    variation    = NULL;
-    rollout      = NULL;
-    variations   = NULL;
-    userBucket   = 0;
-    sum          = 0;
-    weight       = NULL;
-    subvariation = NULL;
+    variation     = NULL;
+    rollout       = NULL;
+    variations    = NULL;
+    userBucket    = 0;
+    sum           = 0;
+    weight        = NULL;
+    subvariation  = NULL;
+    *inExperiment = LDBooleanFalse;
 
     variation = LDObjectLookup(varOrRoll, "variation");
 
@@ -1259,6 +1303,18 @@ LDi_variationIndexForUser(
         return LDBooleanFalse;
     }
 
+    if (LDi_notNull((rolloutKind = LDObjectLookup(rollout, "kind")))) {
+        if (LDJSONGetType(rolloutKind) != LDText) {
+            LD_LOG(LD_LOG_ERROR, "rollout.kind expected string");
+
+            return LDBooleanFalse;
+        }
+
+        if (strcmp(LDGetText(rolloutKind), "experiment") == 0) {
+            *inExperiment = LDBooleanTrue;
+        }
+    }
+
     variations = LDObjectLookup(rollout, "variations");
 
     if (!LDi_notNull(variations)) {
@@ -1283,9 +1339,12 @@ LDi_variationIndexForUser(
     LD_ASSERT(variation);
 
     {
-        const char *attribute;
+        const char *         attribute;
+        const struct LDJSON *seedJSON;
+        int                  seedValue, *seedValueRef;
 
-        attribute = LDi_getBucketAttribute(rollout);
+        seedValueRef = NULL;
+        attribute    = LDi_getBucketAttribute(rollout);
 
         if (attribute == NULL) {
             LD_LOG(LD_LOG_ERROR, "failed to parse bucketBy");
@@ -1293,10 +1352,23 @@ LDi_variationIndexForUser(
             return LDBooleanFalse;
         }
 
-        LDi_bucketUser(user, key, attribute, salt, &userBucket);
+        if (LDi_notNull((seedJSON = LDObjectLookup(rollout, "seed")))) {
+            if (LDJSONGetType(seedJSON) != LDNumber) {
+                LD_LOG(LD_LOG_ERROR, "rollout.seed expected number");
+
+                return LDBooleanFalse;
+            }
+
+            seedValue    = (int)LDGetNumber(seedJSON);
+            seedValueRef = &seedValue;
+        }
+
+        LDi_bucketUser(user, key, attribute, salt, seedValueRef, &userBucket);
     }
 
     for (; variation; variation = LDIterNext(variation)) {
+        const struct LDJSON *untracked;
+
         weight = LDObjectLookup(variation, "weight");
 
         if (!LDi_notNull(weight)) {
@@ -1327,8 +1399,24 @@ LDi_variationIndexForUser(
             return LDBooleanFalse;
         }
 
+        untrackedValue = LDBooleanFalse;
+
+        if (LDi_notNull((untracked = LDObjectLookup(variation, "untracked")))) {
+            if (LDJSONGetType(untracked) != LDBool) {
+                LD_LOG(LD_LOG_ERROR, "untracked expected bool");
+
+                return LDBooleanFalse;
+            }
+
+            untrackedValue = LDGetBool(untracked);
+        }
+
         if (userBucket < sum) {
             *index = subvariation;
+
+            if (*inExperiment && untrackedValue) {
+                *inExperiment = LDBooleanFalse;
+            }
 
             return LDBooleanTrue;
         }
@@ -1345,6 +1433,10 @@ LDi_variationIndexForUser(
 
     *index = subvariation;
 
+    if (*inExperiment && untrackedValue) {
+        *inExperiment = LDBooleanFalse;
+    }
+
     return LDBooleanTrue;
 }
 
@@ -1353,6 +1445,7 @@ LDi_getIndexForVariationOrRollout(
     const struct LDJSON *const  flag,
     const struct LDJSON *const  varOrRoll,
     const struct LDUser *const  user,
+    LDBoolean *const            inExperiment,
     const struct LDJSON **const result)
 {
     const struct LDJSON *jkey, *jsalt;
@@ -1360,6 +1453,7 @@ LDi_getIndexForVariationOrRollout(
 
     LD_ASSERT(flag);
     LD_ASSERT(varOrRoll);
+    LD_ASSERT(inExperiment);
     LD_ASSERT(result);
 
     jkey    = NULL;
@@ -1388,7 +1482,9 @@ LDi_getIndexForVariationOrRollout(
         salt = LDGetText(jsalt);
     }
 
-    if (!LDi_variationIndexForUser(varOrRoll, user, key, salt, result)) {
+    if (!LDi_variationIndexForUser(
+            varOrRoll, user, key, salt, inExperiment, result))
+    {
         LD_LOG(LD_LOG_ERROR, "failed to get variation index");
 
         return LDBooleanFalse;

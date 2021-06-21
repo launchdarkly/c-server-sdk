@@ -464,6 +464,13 @@ LDi_possiblyQueueEvent(
     LD_ASSERT(context);
     LD_ASSERT(event);
 
+    shouldTrack = LDBooleanFalse;
+
+    if ((tmp = LDObjectLookup(LDObjectLookup(event, "reason"), "inExperiment")))
+    {
+        shouldTrack = LDGetBool(tmp);
+    }
+
     if (LDi_notNull(tmp = LDObjectLookup(event, "shouldAlwaysTrackDetails"))) {
         if (!LDGetBool(tmp)) {
             LDObjectDeleteKey(event, "reason");
@@ -476,11 +483,11 @@ LDi_possiblyQueueEvent(
 
     if (LDi_notNull(tmp = LDObjectLookup(event, "trackEvents"))) {
         /* validated as Boolean by LDi_newFeatureRequestEvent */
-        shouldTrack = LDGetBool(tmp);
+        if (shouldTrack == LDBooleanFalse) {
+            shouldTrack = LDGetBool(tmp);
+        }
         /* ensure we don't send trackEvents to LD */
         LDJSONFree(LDCollectionDetachIter(event, tmp));
-    } else {
-        shouldTrack = LDBooleanFalse;
     }
 
     if (LDi_notNull(tmp = LDObjectLookup(event, "debugEventsUntilDate"))) {

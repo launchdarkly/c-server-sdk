@@ -78,6 +78,7 @@ LDi_bucketUser(
     const char *const          segmentKey,
     const char *const          attribute,
     const char *const          salt,
+    const int *const           seed,
     float *const               bucket);
 
 LDBoolean
@@ -86,6 +87,7 @@ LDi_variationIndexForUser(
     const struct LDUser *const  user,
     const char *const           key,
     const char *const           salt,
+    LDBoolean *const            inExperiment,
     const struct LDJSON **const index);
 
 LDBoolean
@@ -93,4 +95,5 @@ LDi_getIndexForVariationOrRollout(
     const struct LDJSON *const  flag,
     const struct LDJSON *const  varOrRoll,
     const struct LDUser *const  user,
+    LDBoolean *const            inExperiment,
     const struct LDJSON **const result);
