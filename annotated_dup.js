@@ -3,6 +3,7 @@ var annotated_dup =
     [ "LDClient", "structLDClient.html", null ],
     [ "LDConfig", "structLDConfig.html", null ],
     [ "LDDetails", "structLDDetails.html", "structLDDetails" ],
+    [ "LDDetailsFallthrough", "structLDDetailsFallthrough.html", "structLDDetailsFallthrough" ],
     [ "LDDetailsRule", "structLDDetailsRule.html", "structLDDetailsRule" ],
     [ "LDStoreCollectionItem", "structLDStoreCollectionItem.html", "structLDStoreCollectionItem" ],
     [ "LDStoreCollectionState", "structLDStoreCollectionState.html", "structLDStoreCollectionState" ],

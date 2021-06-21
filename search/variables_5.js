@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['get',['get',['../structLDStoreInterface.html#aaf8e9b74622fc85e8207bcbf1756504d',1,'LDStoreInterface']]]
+  ['fallthrough',['fallthrough',['../structLDDetails.html#a732285c5b8c698a8e203fb15fb0c4115',1,'LDDetails']]]
 ];

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>C Server-Side SDK: LDDetailsRule Struct Reference</title>
+<title>C Server-Side SDK: LDDetailsFallthrough Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
 </div>
 <script type="text/javascript">
-$(document).ready(function(){initNavTree('structLDDetailsRule.html','');});
+$(document).ready(function(){initNavTree('structLDDetailsFallthrough.html','');});
 </script>
 <div id="doc-content">
 <!-- window showing the filter options -->
@@ -92,32 +92,24 @@ $(document).ready(function(){initNavTree('structLDDetailsRule.html','');});
   <div class="summary">
 <a href="#pub-attribs">Data Fields</a>  </div>
   <div class="headertitle">
-<div class="title">LDDetailsRule Struct Reference</div>  </div>
+<div class="title">LDDetailsFallthrough Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Indicates which rule matched a user.  
- <a href="structLDDetailsRule.html#details">More...</a></p>
+<p>Extra information when reason == LD_FALLTHROUGH.  
+ <a href="structLDDetailsFallthrough.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="variations_8h_source.html">variations.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:aee92d30f267753f6d076aadd020bbd4b"><td class="memItemLeft" align="right" valign="top"><a id="aee92d30f267753f6d076aadd020bbd4b"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDDetailsRule.html#aee92d30f267753f6d076aadd020bbd4b">ruleIndex</a></td></tr>
-<tr class="memdesc:aee92d30f267753f6d076aadd020bbd4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The index of the rule that was matched. <br /></td></tr>
-<tr class="separator:aee92d30f267753f6d076aadd020bbd4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae06f0c2733fd6678be1cadea3de64e3e"><td class="memItemLeft" align="right" valign="top"><a id="ae06f0c2733fd6678be1cadea3de64e3e"></a>
-char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDDetailsRule.html#ae06f0c2733fd6678be1cadea3de64e3e">id</a></td></tr>
-<tr class="memdesc:ae06f0c2733fd6678be1cadea3de64e3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The unique identifier of the rule that was matched. <br /></td></tr>
-<tr class="separator:ae06f0c2733fd6678be1cadea3de64e3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a41e2a717067e57e70ccdf39b3aa3f29a"><td class="memItemLeft" align="right" valign="top"><a id="a41e2a717067e57e70ccdf39b3aa3f29a"></a>
-LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDDetailsRule.html#a41e2a717067e57e70ccdf39b3aa3f29a">inExperiment</a></td></tr>
-<tr class="memdesc:a41e2a717067e57e70ccdf39b3aa3f29a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the evaluation was part of an experiment. Is true if the evaluation resulted in an experiment rollout <em>and</em> served one of the variations in the experiment. Otherwise false. <br /></td></tr>
-<tr class="separator:a41e2a717067e57e70ccdf39b3aa3f29a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc44f3ef250590e4a1b498c2f7a567d0"><td class="memItemLeft" align="right" valign="top"><a id="adc44f3ef250590e4a1b498c2f7a567d0"></a>
+LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLDDetailsFallthrough.html#adc44f3ef250590e4a1b498c2f7a567d0">inExperiment</a></td></tr>
+<tr class="memdesc:adc44f3ef250590e4a1b498c2f7a567d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the evaluation was part of an experiment. Is true if the evaluation resulted in an experiment rollout <em>and</em> served one of the variations in the experiment. Otherwise false. <br /></td></tr>
+<tr class="separator:adc44f3ef250590e4a1b498c2f7a567d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Indicates which rule matched a user. </p>
+<div class="textblock"><p>Extra information when reason == LD_FALLTHROUGH. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/launchdarkly/<a class="el" href="variations_8h_source.html">variations.h</a></li>
 </ul>
@@ -126,7 +118,7 @@ LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href=
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="structLDDetailsRule.html">LDDetailsRule</a></li>
+    <li class="navelem"><a class="el" href="structLDDetailsFallthrough.html">LDDetailsFallthrough</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>

@@ -1,6 +1,7 @@
 var variations_8h =
 [
     [ "LDDetailsRule", "structLDDetailsRule.html", "structLDDetailsRule" ],
+    [ "LDDetailsFallthrough", "structLDDetailsFallthrough.html", "structLDDetailsFallthrough" ],
     [ "LDDetails", "structLDDetails.html", "structLDDetails" ],
     [ "LDEvalErrorKind", "variations_8h.html#a8a801b43272f17f44948faf9ae58e42e", [
       [ "LD_CLIENT_NOT_READY", "variations_8h.html#a8a801b43272f17f44948faf9ae58e42eae929e4c744e8e961ba3dd49f4c931d42", null ],

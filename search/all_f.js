@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['variationindex',['variationIndex',['../structLDDetails.html#ae9fb0e7eb346f57d59f9b1f12895fa31',1,'LDDetails']]],
-  ['variations_2eh',['variations.h',['../variations_8h.html',1,'']]]
+  ['upsert',['upsert',['../structLDStoreInterface.html#ae9177dde311a1c76ab590a248a2bbc6e',1,'LDStoreInterface']]],
+  ['user_2eh',['user.h',['../user_8h.html',1,'']]]
 ];

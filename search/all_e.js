@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['upsert',['upsert',['../structLDStoreInterface.html#ae9177dde311a1c76ab590a248a2bbc6e',1,'LDStoreInterface']]],
-  ['user_2eh',['user.h',['../user_8h.html',1,'']]]
+  ['sdk_20layout_20and_20overview',['SDK Layout and Overview',['../index.html',1,'']]],
+  ['store_2eh',['store.h',['../store_8h.html',1,'']]]
 ];
