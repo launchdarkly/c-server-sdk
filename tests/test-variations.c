@@ -31,6 +31,7 @@ testBoolVariation()
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("validFeatureKey")));
     LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(1)));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     setFallthrough(flag, 1);
     addVariation(flag, LDNewBool(LDBooleanFalse));
     addVariation(flag, LDNewBool(LDBooleanTrue));
@@ -64,6 +65,7 @@ testIntVariation()
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("validFeatureKey")));
     LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(1)));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     setFallthrough(flag, 1);
     addVariation(flag, LDNewNumber(-1));
     addVariation(flag, LDNewNumber(100));
@@ -96,6 +98,7 @@ testDoubleVariation()
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("validFeatureKey")));
     LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(1)));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     setFallthrough(flag, 1);
     addVariation(flag, LDNewNumber(-1));
     addVariation(flag, LDNewNumber(100.01));
@@ -163,6 +166,7 @@ testStringVariation()
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("validFeatureKey")));
     LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(1)));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     setFallthrough(flag, 1);
     addVariation(flag, LDNewText("a"));
     addVariation(flag, LDNewText("b"));
@@ -226,6 +230,7 @@ testJSONVariation()
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("validFeatureKey")));
     LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(1)));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     setFallthrough(flag, 1);
     addVariation(flag, other);
     addVariation(flag, expected);

@@ -15,6 +15,7 @@ makeMinimalFlag(
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText(key)));
     LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(version)));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(on)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     LD_ASSERT(LDObjectSetKey(flag, "trackEvents", LDNewBool(trackEvents)));
 
     return flag;
@@ -81,6 +82,7 @@ makeFlagToMatchUser(
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
     LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     addVariations1(flag);
     setFallthrough(flag, 0);
