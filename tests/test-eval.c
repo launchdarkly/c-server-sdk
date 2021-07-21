@@ -65,6 +65,7 @@ booleanFlagWithClause(struct LDJSON *const clause)
 
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag, "rules", rules));
     setFallthrough(flag, 0);
@@ -92,6 +93,7 @@ returnsOffVariationIfFlagIsOff()
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
     LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanFalse)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     addVariations1(flag);
     setFallthrough(flag, 0);
 
@@ -137,6 +139,7 @@ testFlagReturnsNilIfFlagIsOffAndOffVariationIsUnspecified()
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanFalse)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     setFallthrough(flag, 0);
     addVariations1(flag);
 
@@ -186,6 +189,7 @@ testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag, "rules", LDNewArray()));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     setFallthrough(flag, 0);
     addVariations1(flag);
 
@@ -238,6 +242,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("feature0")));
     LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag1, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag1, "salt", LDNewText("abc")));
     addPrerequisite(flag1, "feature1", 1);
     setFallthrough(flag1, 0);
     addVariations1(flag1);
@@ -248,6 +253,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsOff()
     LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanFalse)));
     LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(3)));
     LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag2, "salt", LDNewText("abc")));
     addVariations2(flag2);
 
     /* store setup */
@@ -317,6 +323,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("feature0")));
     LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag1, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag1, "salt", LDNewText("abc")));
     addPrerequisite(flag1, "feature1", 1);
     setFallthrough(flag1, 0);
     addVariations1(flag1);
@@ -327,6 +334,7 @@ testFlagReturnsOffVariationIfPrerequisiteIsNotMet()
     LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(2)));
     LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag2, "salt", LDNewText("abc")));
     addVariations2(flag2);
     setFallthrough(flag2, 0);
 
@@ -396,6 +404,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("feature0")));
     LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag1, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag1, "salt", LDNewText("abc")));
     addPrerequisite(flag1, "feature1", 1);
     setFallthrough(flag1, 0);
     addVariations1(flag1);
@@ -406,6 +415,7 @@ testFlagReturnsFallthroughVariationIfPrerequisiteIsMetAndThereAreNoRules()
     LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(3)));
     LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag2, "salt", LDNewText("abc")));
     setFallthrough(flag2, 1);
     addVariations2(flag2);
 
@@ -475,6 +485,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("feature0")));
     LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag1, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag1, "salt", LDNewText("abc")));
     addPrerequisite(flag1, "feature1", 1);
     setFallthrough(flag1, 0);
     addVariations1(flag1);
@@ -485,6 +496,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(3)));
     LD_ASSERT(LDObjectSetKey(flag2, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag2, "salt", LDNewText("abc")));
     addPrerequisite(flag2, "feature2", 1);
     setFallthrough(flag2, 1);
     addVariations2(flag2);
@@ -495,6 +507,7 @@ testMultipleLevelsOfPrerequisiteProduceMultipleEvents()
     LD_ASSERT(LDObjectSetKey(flag3, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag3, "version", LDNewNumber(3)));
     LD_ASSERT(LDObjectSetKey(flag3, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag3, "salt", LDNewText("abc")));
     setFallthrough(flag3, 1);
     addVariations2(flag3);
 
@@ -572,6 +585,7 @@ testFlagMatchesUserFromTarget()
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature")));
     LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
     LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNumber(1)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
     setFallthrough(flag, 0);
     addVariations1(flag);
 

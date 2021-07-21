@@ -27,6 +27,7 @@ testAllFlags()
     LD_ASSERT(LDObjectSetKey(flag1, "key", LDNewText("flag1")));
     LD_ASSERT(LDObjectSetKey(flag1, "version", LDNewNumber(1)));
     LD_ASSERT(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag1, "salt", LDNewText("abc")));
     setFallthrough(flag1, 1);
     addVariation(flag1, LDNewText("a"));
     addVariation(flag1, LDNewText("b"));
@@ -36,6 +37,7 @@ testAllFlags()
     LD_ASSERT(LDObjectSetKey(flag2, "key", LDNewText("flag2")));
     LD_ASSERT(LDObjectSetKey(flag2, "version", LDNewNumber(1)));
     LD_ASSERT(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag2, "salt", LDNewText("abc")));
     setFallthrough(flag2, 1);
     addVariation(flag2, LDNewText("c"));
     addVariation(flag2, LDNewText("d"));
