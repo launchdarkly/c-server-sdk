@@ -2,6 +2,11 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.4.1] - 2021-07-21
+### Fixed:
+- Refactored parsing logic to provide better error messages and be more reliable.
+
+
 ## [2.4.0] - 2021-06-20
 ### Added:
 - The SDK now supports the ability to control the proportion of traffic allocation to an experiment. This works in conjunction with a new platform feature now available to early access customers.
