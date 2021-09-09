@@ -639,6 +639,11 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
         return NULL;
     }
 
+    /* In this case we have read from the store without error, but there are no flags in it. */
+    if(!rawFlagsRC) {
+        return evaluatedFlags;
+    }
+
     rawFlags = LDJSONRCGet(rawFlagsRC);
     LD_ASSERT(rawFlags);
 
@@ -669,13 +674,6 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
             &events,
             &value,
             LDBooleanFalse);
-
-        /*if (LDi_isEvalError(status)) {
-            LDJSONFree(events);
-            LDDetailsClear(&details);
-
-            goto error;
-        }*/
 
         key = LDGetText(LDObjectLookup(flag, "key"));
         LD_ASSERT(key);
