@@ -651,7 +651,6 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
          rawFlagsIter = LDIterNext(rawFlagsIter))
     {
         struct LDJSON *  value, *events;
-        EvalStatus       status;
         struct LDDetails details;
         struct LDJSON *  flag;
         const char *     key;
@@ -665,7 +664,7 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
 
         LDDetailsInit(&details);
 
-        status = LDi_evaluate(
+        LDi_evaluate(
             client,
             flag,
             user,
@@ -674,11 +673,10 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
             &events,
             &value,
             LDBooleanFalse);
-
-        key = LDGetText(LDObjectLookup(flag, "key"));
-        LD_ASSERT(key);
-
+        
         if (value) {
+            key = LDGetText(LDObjectLookup(flag, "key"));
+            LD_ASSERT(key);
             if (!LDObjectSetKey(evaluatedFlags, key, value)) {
                 LDJSONFree(events);
                 LDJSONFree(value);
