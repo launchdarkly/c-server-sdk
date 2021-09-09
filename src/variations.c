@@ -670,12 +670,12 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
             &value,
             LDBooleanFalse);
 
-        if (LDi_isEvalError(status)) {
+        /*if (LDi_isEvalError(status)) {
             LDJSONFree(events);
             LDDetailsClear(&details);
 
             goto error;
-        }
+        }*/
 
         key = LDGetText(LDObjectLookup(flag, "key"));
         LD_ASSERT(key);
