@@ -1476,9 +1476,9 @@ main()
     testInExperimentExplanation();
     testNotInExperimentExplanation();
     testRolloutCustomSeed();
+    testFlagReturnsErrorForFallthroughWithNoVariationAndNoRollout();
 
     LDBasicLoggerThreadSafeShutdown();
-    testFlagReturnsErrorForFallthroughWithNoVariationAndNoRollout();
 
     return 0;
 }
