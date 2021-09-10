@@ -263,9 +263,9 @@ testFlagReturnsErrorForFallthroughWithNoVariationAndNoRollout()
     LD_ASSERT(!details.hasVariation);
     LD_ASSERT(details.reason == LD_FALLTHROUGH);
     LD_ASSERT(!events);
+    LD_ASSERT(!result);
 
     LDJSONFree(flag);
-    LDJSONFree(result);
     LDUserFree(user);
     LDDetailsClear(&details);
     LDClientClose(client);
