@@ -640,7 +640,7 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
     }
 
     /* In this case we have read from the store without error, but there are no flags in it. */
-    if(!rawFlagsRC) {
+    if (!rawFlagsRC) {
         return evaluatedFlags;
     }
 
