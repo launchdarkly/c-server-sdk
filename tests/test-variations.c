@@ -311,8 +311,6 @@ testFallthroughWithNoVariationOrRollout()
     LD_ASSERT(!actual);
     LD_ASSERT(details.reason == LD_ERROR);
 
-    // Need a way here to check if an event was generated.
-
     /* cleanup */
     LDUserFree(user);
     LDClientClose(client);
