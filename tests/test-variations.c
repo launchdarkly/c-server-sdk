@@ -275,65 +275,65 @@ testJSONVariationNullFallback()
 static void
 testFallthroughWithNoVariationOrRollout()
 {
-struct LDJSON *flag, *fallthrough, *variation, *rollout, *variations;
-struct LDClient *client;
-struct LDUser *  user;
-char              *actual;
-struct LDDetails details;
+    struct LDJSON *flag, *fallthrough, *variation, *rollout, *variations;
+    struct LDClient *client;
+    struct LDUser *  user;
+    char              *actual;
+    struct LDDetails details;
 
-struct LDJSON *events;
+    struct LDJSON *events;
 
-/* setup */
-LD_ASSERT(client = makeTestClient());
-LD_ASSERT(user = LDUserNew("userkey"));
-/* flag */
-/* flag */
-LD_ASSERT(flag = LDNewObject());
-LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
-LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNull()));
-LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
-LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("123123")));
-LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(3)));
+    /* setup */
+    LD_ASSERT(client = makeTestClient());
+    LD_ASSERT(user = LDUserNew("userkey"));
+    /* flag */
+    /* flag */
+    LD_ASSERT(flag = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
+    LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNull()));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("123123")));
+    LD_ASSERT(LDObjectSetKey(flag, "version", LDNewNumber(3)));
 
-LD_ASSERT(fallthrough = LDNewObject());
-LD_ASSERT(LDObjectSetKey(flag, "fallthrough", fallthrough));
+    LD_ASSERT(fallthrough = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "fallthrough", fallthrough));
 
-addVariation(flag, LDNewText("ExpectedPrefix_A"));
-addVariation(flag, LDNewText("ExpectedPrefix_B"));
-addVariation(flag, LDNewText("ExpectedPrefix_C"));
+    addVariation(flag, LDNewText("ExpectedPrefix_A"));
+    addVariation(flag, LDNewText("ExpectedPrefix_B"));
+    addVariation(flag, LDNewText("ExpectedPrefix_C"));
 
-LD_ASSERT(LDStoreInitEmpty(client->store));
-LDStoreUpsert(client->store, LD_FLAG, flag);
-/* run */
-actual = LDStringVariation(client, user, "feature0", NULL, &details);
-/* The schema will fail, so the fallback value will be used. */
-/* validate */
-LD_ASSERT(!actual);
-LD_ASSERT(details.reason == LD_ERROR);
+    LD_ASSERT(LDStoreInitEmpty(client->store));
+    LDStoreUpsert(client->store, LD_FLAG, flag);
+    /* run */
+    actual = LDStringVariation(client, user, "feature0", NULL, &details);
+    /* The schema will fail, so the fallback value will be used. */
+    /* validate */
+    LD_ASSERT(!actual);
+    LD_ASSERT(details.reason == LD_ERROR);
 
-// Need a way here to check if an event was generated.
+    // Need a way here to check if an event was generated.
 
-/* cleanup */
-LDUserFree(user);
-LDClientClose(client);
-LDDetailsClear(&details);
+    /* cleanup */
+    LDUserFree(user);
+    LDClientClose(client);
+    LDDetailsClear(&details);
 }
 
 int
 main()
 {
-//    LDBasicLoggerThreadSafeInitialize();
-//    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
-//    LDGlobalInit();
-//
-//    testBoolVariation();
-//    testIntVariation();
-//    testDoubleVariation();
-//    testDoubleVariationAsInt();
-//    testStringVariation();
-//    testStringVariationNullFallback();
-//    testJSONVariation();
-//    testJSONVariationNullFallback();
+    LDBasicLoggerThreadSafeInitialize();
+    LDConfigureGlobalLogger(LD_LOG_TRACE, LDBasicLoggerThreadSafe);
+    LDGlobalInit();
+
+    testBoolVariation();
+    testIntVariation();
+    testDoubleVariation();
+    testDoubleVariationAsInt();
+    testStringVariation();
+    testStringVariationNullFallback();
+    testJSONVariation();
+    testJSONVariationNullFallback();
     testFallthroughWithNoVariationOrRollout();
 
     LDBasicLoggerThreadSafeShutdown();
