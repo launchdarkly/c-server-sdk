@@ -328,7 +328,8 @@ variation(
 
             LDJSONFree(subEvents);
 
-            goto error;
+            /* In this case the value will be null, so after LDi_processEvaluation the value will be checked,
+             * and then it will move on to the error condition. */
         }
     }
 

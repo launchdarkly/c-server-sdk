@@ -1273,8 +1273,11 @@ LDi_variationIndexForUser(
     {
         const struct LDJSON *rolloutKind;
 
-        lookupOptionalValueOfType(
-                rollout, "rollout", "kind", LDText, &rolloutKind);
+        if (!lookupOptionalValueOfType(
+                rollout, "rollout", "kind", LDText, &rolloutKind))
+        {
+            return LDBooleanFalse;
+        }
 
         if (rolloutKind && strcmp(LDGetText(rolloutKind), "experiment") == 0) {
             *inExperiment = LDBooleanTrue;
