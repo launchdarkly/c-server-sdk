@@ -328,7 +328,8 @@ variation(
 
             LDJSONFree(subEvents);
 
-            goto error;
+            /* In this case the value will be null, so after LDi_processEvaluation the value will be checked,
+             * and then it will move on to the error condition. */
         }
     }
 
@@ -639,6 +640,11 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
         return NULL;
     }
 
+    /* In this case we have read from the store without error, but there are no flags in it. */
+    if (!rawFlagsRC) {
+        return evaluatedFlags;
+    }
+
     rawFlags = LDJSONRCGet(rawFlagsRC);
     LD_ASSERT(rawFlags);
 
@@ -646,7 +652,6 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
          rawFlagsIter = LDIterNext(rawFlagsIter))
     {
         struct LDJSON *  value, *events;
-        EvalStatus       status;
         struct LDDetails details;
         struct LDJSON *  flag;
         const char *     key;
@@ -660,7 +665,7 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
 
         LDDetailsInit(&details);
 
-        status = LDi_evaluate(
+        LDi_evaluate(
             client,
             flag,
             user,
@@ -669,18 +674,10 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
             &events,
             &value,
             LDBooleanFalse);
-
-        if (LDi_isEvalError(status)) {
-            LDJSONFree(events);
-            LDDetailsClear(&details);
-
-            goto error;
-        }
-
-        key = LDGetText(LDObjectLookup(flag, "key"));
-        LD_ASSERT(key);
-
+        
         if (value) {
+            key = LDGetText(LDObjectLookup(flag, "key"));
+            LD_ASSERT(key);
             if (!LDObjectSetKey(evaluatedFlags, key, value)) {
                 LDJSONFree(events);
                 LDJSONFree(value);
