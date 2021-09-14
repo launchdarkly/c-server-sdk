@@ -287,7 +287,6 @@ testFallthroughWithNoVariationOrRollout()
     LD_ASSERT(client = makeTestClient());
     LD_ASSERT(user = LDUserNew("userkey"));
     /* flag */
-    /* flag */
     LD_ASSERT(flag = LDNewObject());
     LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
     LD_ASSERT(LDObjectSetKey(flag, "offVariation", LDNewNull()));
