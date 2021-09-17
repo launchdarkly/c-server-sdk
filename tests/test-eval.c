@@ -220,6 +220,58 @@ testFlagReturnsFallthroughIfFlagIsOnAndThereAreNoRules()
 }
 
 static void
+testFlagReturnsErrorForFallthroughWithNoVariationAndNoRollout()
+{
+    struct LDUser *  user;
+    struct LDJSON *  flag, *result, *events;
+    struct LDDetails details;
+    struct LDClient *client;
+    struct LDConfig *config;
+
+    events = NULL;
+    result = NULL;
+
+    LDDetailsInit(&details);
+    LD_ASSERT(config = LDConfigNew("abc"));
+    LD_ASSERT(client = LDClientInit(config, 0));
+    LD_ASSERT(user = LDUserNew("userKeyA"));
+
+    /* flag */
+    LD_ASSERT(flag = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "key", LDNewText("feature0")));
+    LD_ASSERT(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    LD_ASSERT(LDObjectSetKey(flag, "rules", LDNewArray()));
+    LD_ASSERT(LDObjectSetKey(flag, "salt", LDNewText("abc")));
+
+    /* Set a fallthrough which has no variation or rollout. */
+    struct LDJSON *fallthrough;
+    LD_ASSERT(fallthrough = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(flag, "fallthrough", fallthrough));
+
+    /* run */
+    LD_ASSERT(
+            LDi_evaluate(
+                    client,
+                    flag,
+                    user,
+                    (struct LDStore *)1,
+                    &details,
+                    &events,
+                    &result,
+                    LDBooleanFalse) == EVAL_SCHEMA);
+
+    LD_ASSERT(!details.hasVariation);
+    LD_ASSERT(details.reason == LD_FALLTHROUGH);
+    LD_ASSERT(!events);
+    LD_ASSERT(!result);
+
+    LDJSONFree(flag);
+    LDUserFree(user);
+    LDDetailsClear(&details);
+    LDClientClose(client);
+}
+
+static void
 testFlagReturnsOffVariationIfPrerequisiteIsOff()
 {
     struct LDUser *  user;
@@ -1424,6 +1476,7 @@ main()
     testInExperimentExplanation();
     testNotInExperimentExplanation();
     testRolloutCustomSeed();
+    testFlagReturnsErrorForFallthroughWithNoVariationAndNoRollout();
 
     LDBasicLoggerThreadSafeShutdown();
 
