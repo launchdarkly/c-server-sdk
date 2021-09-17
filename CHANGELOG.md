@@ -2,6 +2,11 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.4.2] - 2021-09-17
+### Fixed:
+- In cases where there was a malformed feature flag `LDAllFlags` would return null instead of all of the valid flags.
+- When a malformed feature flag was evaluated events would not be generated for that flag.
+
 ## [2.4.1] - 2021-07-21
 ### Fixed:
 - Refactored parsing logic to provide better error messages and be more reliable.
