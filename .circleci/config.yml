@@ -24,6 +24,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install dependencies
+          command: |
+            apt-get update -y && apt-get install -y git
+      - run:
           name: Build
           command: |
             mkdir build && cd build
@@ -43,6 +47,10 @@ jobs:
       CTEST_OUTPUT_ON_FAILURE: 1
     steps:
       - checkout
+      - run:
+            name: Install dependencies
+            command: |
+              apt-get update -y && apt-get install -y git
       - run:
           name: Build
           command: |
@@ -72,12 +80,13 @@ jobs:
               libpcre3-dev \
               libhiredis-dev \
               cmake \
-              clang-11
+              clang-11 \
+              git
       - run:
           name: Build
           command: |
             export CC=/usr/bin/clang-11
-            export CXX=/usr/bin/clang-cpp-11
+            export CXX=/usr/bin/clang++-11
             mkdir build && cd build
             cmake -D CMAKE_BUILD_TYPE=Release -D REDIS_STORE=ON ..
             cmake --build .
@@ -104,7 +113,8 @@ jobs:
               libpcre3-dev \
               libhiredis-dev \
               build-essential \
-              cmake
+              cmake \
+              git
       - run:
           name: Build
           command: |

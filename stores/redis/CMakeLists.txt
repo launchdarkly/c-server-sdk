@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 3.10)
 
 project(ldserverapi-redis)
 
@@ -7,6 +7,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeFiles")
 # ldserverapi-redis targets ----------------------------------------------------
 
 find_package(hiredis REQUIRED)
+include(CTest)
 
 add_library(ldserverapi-redis
     "src/redis.c"
@@ -46,7 +47,10 @@ INSTALL(
 
 if(BUILD_TESTING)
     if (NOT SKIP_DATABASE_TESTS)
-        add_executable(test-store-redis test-redis.c)
+        include(GoogleTest)
+
+        add_definitions(-DTEST_REDIS)
+        add_executable(test-store-redis ../../tests/test-stores.cpp ../../tests/commonfixture.cpp)
 
         target_link_libraries(test-store-redis
             ldserverapi
@@ -54,8 +58,9 @@ if(BUILD_TESTING)
             test-utils
         )
 
-        add_test(test-store-redis test-store-redis)
+        target_link_libraries("test-store-redis" gtest_main)
 
+        gtest_discover_tests(test-store-redis)
         target_compile_definitions(test-store-redis
             PRIVATE -D LAUNCHDARKLY_USE_ASSERT
         )
@@ -67,6 +72,7 @@ if(BUILD_TESTING)
                     "../../tests"
                     "../../third-party/include"
                     "../../c-sdk-common/include"
+                    "../../tests"
         )
     endif (NOT SKIP_DATABASE_TESTS)
 endif()
