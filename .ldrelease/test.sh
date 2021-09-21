@@ -6,4 +6,4 @@ set -e
 # to be different, we can instead provide linux-test.sh and mac-test.sh
 
 cd build-static
-CTEST_OUTPUT_ON_FAILURE=1 make test
+CTEST_OUTPUT_ON_FAILURE=1 GTEST_OUTPUT="xml:$(pwd)/../reports/" make test

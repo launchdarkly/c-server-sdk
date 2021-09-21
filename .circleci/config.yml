@@ -37,7 +37,9 @@ jobs:
           name: Unit test with memcheck
           command: |
             cd build
-            ctest -T memcheck
+            GTEST_OUTPUT="xml:$(pwd)/../reports/" ctest -T memcheck
+      - store_test_results:
+          path: reports
 
   build-test-linux-optimized:
     docker:
@@ -61,7 +63,9 @@ jobs:
           name: Unit test
           command: |
             cd build
-            make test
+            GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
+      - store_test_results:
+          path: reports
 
   build-test-linux-clang11:
     docker:
@@ -94,7 +98,9 @@ jobs:
           name: Unit test
           command: |
             cd build
-            make test
+            GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
+      - store_test_results:
+          path: reports
 
   build-test-linux-32bit:
     docker:
@@ -125,7 +131,9 @@ jobs:
           name: Test
           command: |
             cd build
-            make test
+            GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
+      - store_test_results:
+          path: reports
 
   build-test-osx:
     macos:
@@ -154,7 +162,9 @@ jobs:
           name: Test
           command: |
            cd build
-           make test
+           GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
+      - store_test_results:
+          path: reports
 
   build-test-windows:
     executor:
@@ -170,3 +180,5 @@ jobs:
       - run:
           name: Test
           command: ./.ldrelease/test.ps1
+      - store_test_results:
+          path: reports

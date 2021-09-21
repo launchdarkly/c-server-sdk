@@ -6,3 +6,4 @@ build-dynamic/
 build-redis-dynamic/
 build-redis-static/
 build-static/
+reports/
