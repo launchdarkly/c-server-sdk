@@ -2,6 +2,11 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.4.3] - 2021-10-19
+### Changed:
+- Updated the build process to produce release artifacts for Windows.
+- Updated unit tests to use GoogleTest.
+
 ## [2.4.2] - 2021-09-17
 ### Fixed:
 - In cases where there was a malformed feature flag `LDAllFlags` would return null instead of all of the valid flags.
