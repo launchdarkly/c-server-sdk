@@ -1,13 +1,31 @@
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 3.10)
 
 project(ldserverapi)
+
+include(CTest)
+
+if(BUILD_TESTING)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    configure_file(CMakeLists.txt.in
+            ${CMAKE_BINARY_DIR}/googletest-download/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+
+
+    add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
+            ${CMAKE_BINARY_DIR}/googletest-build EXCLUDE_FROM_ALL)
+
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
 
 option(REDIS_STORE "Build optional redis store support" OFF)
 option(COVERAGE "Add support for generating coverage reports" OFF)
 option(SKIP_DATABASE_TESTS "Do not test external store integrations" OFF)
 option(SKIP_BASE_INSTALL "Do not install the base library on install" OFF)
-
-include(CTest)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeFiles")
 
@@ -118,7 +136,6 @@ if(NOT SKIP_BASE_INSTALL)
 endif()
 
 # test targets ----------------------------------------------------------------
-
 if(BUILD_TESTING)
     file(GLOB TEST_UTILS_SRC "test-utils/src/*" "c-sdk-common/test-utils/src/*")
 
@@ -136,18 +153,4 @@ if(BUILD_TESTING)
         PRIVATE -D LAUNCHDARKLY_USE_ASSERT
                 -D LAUNCHDARKLY_CONCURRENCY_ABORT
     )
-
-    file(GLOB TESTS "tests/test-*")
-    foreach(testsource ${TESTS})
-        get_filename_component(testsourceleaf ${testsource} NAME)
-        string(REPLACE ".c" "" testexe ${testsourceleaf})
-        add_executable(${testexe} ${testsource})
-        target_link_libraries(${testexe} ldserverapi test-utils)
-        target_include_directories(${testexe} PRIVATE ${LD_INCLUDE_PATHS})
-        add_test(NAME ${testexe} COMMAND ${CMAKE_BINARY_DIR}/${testexe})
-        target_compile_definitions(${testexe}
-            PRIVATE -D LAUNCHDARKLY_USE_ASSERT
-                    -D LAUNCHDARKLY_CONCURRENCY_ABORT
-        )
-    endforeach(testsource)
 endif()

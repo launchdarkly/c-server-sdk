@@ -2,3 +2,8 @@ docs/build/
 build/
 .idea/
 cmake-build-debug/
+build-dynamic/
+build-redis-dynamic/
+build-redis-static/
+build-static/
+reports/

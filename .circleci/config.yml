@@ -24,6 +24,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install dependencies
+          command: |
+            apt-get update -y && apt-get install -y git
+      - run:
           name: Build
           command: |
             mkdir build && cd build
@@ -33,7 +37,9 @@ jobs:
           name: Unit test with memcheck
           command: |
             cd build
-            ctest -T memcheck
+            GTEST_OUTPUT="xml:$(pwd)/../reports/" ctest -T memcheck
+      - store_test_results:
+          path: reports
 
   build-test-linux-optimized:
     docker:
@@ -44,6 +50,10 @@ jobs:
     steps:
       - checkout
       - run:
+            name: Install dependencies
+            command: |
+              apt-get update -y && apt-get install -y git
+      - run:
           name: Build
           command: |
             mkdir build && cd build
@@ -53,7 +63,9 @@ jobs:
           name: Unit test
           command: |
             cd build
-            make test
+            GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
+      - store_test_results:
+          path: reports
 
   build-test-linux-clang11:
     docker:
@@ -72,12 +84,13 @@ jobs:
               libpcre3-dev \
               libhiredis-dev \
               cmake \
-              clang-11
+              clang-11 \
+              git
       - run:
           name: Build
           command: |
             export CC=/usr/bin/clang-11
-            export CXX=/usr/bin/clang-cpp-11
+            export CXX=/usr/bin/clang++-11
             mkdir build && cd build
             cmake -D CMAKE_BUILD_TYPE=Release -D REDIS_STORE=ON ..
             cmake --build .
@@ -85,7 +98,9 @@ jobs:
           name: Unit test
           command: |
             cd build
-            make test
+            GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
+      - store_test_results:
+          path: reports
 
   build-test-linux-32bit:
     docker:
@@ -104,7 +119,8 @@ jobs:
               libpcre3-dev \
               libhiredis-dev \
               build-essential \
-              cmake
+              cmake \
+              git
       - run:
           name: Build
           command: |
@@ -115,7 +131,9 @@ jobs:
           name: Test
           command: |
             cd build
-            make test
+            GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
+      - store_test_results:
+          path: reports
 
   build-test-osx:
     macos:
@@ -144,7 +162,9 @@ jobs:
           name: Test
           command: |
            cd build
-           make test
+           GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
+      - store_test_results:
+          path: reports
 
   build-test-windows:
     executor:
@@ -160,3 +180,5 @@ jobs:
       - run:
           name: Test
           command: ./.ldrelease/test.ps1
+      - store_test_results:
+          path: reports
