@@ -1,5 +1,4 @@
 #include <curl/curl.h>
-#include <math.h>
 #include <stdio.h>
 
 #include <launchdarkly/api.h>

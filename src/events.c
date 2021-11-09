@@ -9,7 +9,6 @@
 #include "client.h"
 #include "config.h"
 #include "events.h"
-#include "lru.h"
 #include "network.h"
 #include "user.h"
 #include "utility.h"

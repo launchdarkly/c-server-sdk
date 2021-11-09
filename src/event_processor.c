@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include <launchdarkly/memory.h>
 
 #include "assertion.h"
