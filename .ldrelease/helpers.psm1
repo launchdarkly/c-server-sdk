@@ -28,7 +28,7 @@ function DownloadAndUnzip {
         [Parameter(Mandatory)][string]$filename
     )
     Write-Host Downloading and expanding $url
-    ExecuteOrFail { iwr -outf $filename $url }
+    ExecuteOrFail { iwr -UserAgent "curl/7.58.0" -outf $filename $url }
     ExecuteOrFail { unzip $filename | Out-Null }
 }
 
