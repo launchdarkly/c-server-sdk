@@ -31,7 +31,7 @@ If(Test-Path "curl-7.59.0") {
 If(Test-Path "pcre-8.43") {
     Write-Host "PRCE already present."
 } Else {
-    DownloadAndUnzip -url "https://ftp.pcre.org/pub/pcre/pcre-8.43.zip" -filename "pcre.zip"
+    DownloadAndUnzip -url "https://downloads.sourceforge.net/pcre/pcre-8.43.zip" -filename "pcre.zip"
 
     Write-Host
     Write-Host Building PCRE
