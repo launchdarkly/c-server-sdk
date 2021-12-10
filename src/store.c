@@ -1476,6 +1476,7 @@ LDStoreInitialized(struct LDStore *const store)
 {
     LDBoolean         isInitialized;
     struct CacheItem *item;
+    struct CacheItem *replacement;
 
     LD_ASSERT(store);
 
@@ -1495,16 +1496,10 @@ LDStoreInitialized(struct LDStore *const store)
     if (item) {
         int expired = isExpired(store, item);
 
-        if (expired < 0) {
+        if (expired <= 0) {
             LDi_rwlock_rdunlock(&store->cache->lock);
 
             return LDBooleanFalse;
-        } else if (expired == 0) {
-            LDi_rwlock_rdunlock(&store->cache->lock);
-
-            return LDBooleanFalse;
-        } else if (expired > 0) {
-            deleteAndRemoveCacheItem(&store->cache->items, item);
         }
     }
 
@@ -1514,16 +1509,24 @@ LDStoreInitialized(struct LDStore *const store)
 
     if (isInitialized) {
         LDi_rwlock_wrlock(&store->cache->lock);
+        HASH_FIND_STR(store->cache->items, INIT_CHECKED_KEY, item);
+        if (item) {
+          deleteAndRemoveCacheItem(&store->cache->items, item);
+        }
         store->cache->initialized = LDBooleanTrue;
         LDi_rwlock_wrunlock(&store->cache->lock);
     } else {
-        if (!(item = makeCacheItem(INIT_CHECKED_KEY, NULL))) {
+        if (!(replacement = makeCacheItem(INIT_CHECKED_KEY, NULL))) {
             return LDBooleanFalse;
         }
 
         LDi_rwlock_wrlock(&store->cache->lock);
+        HASH_FIND_STR(store->cache->items, INIT_CHECKED_KEY, item);
+        if (item) {
+          deleteAndRemoveCacheItem(&store->cache->items, item);
+        }
         HASH_ADD_KEYPTR(
-            hh, store->cache->items, item->key, strlen(item->key), item);
+            hh, store->cache->items, replacement->key, strlen(replacement->key), replacement);
         LDi_rwlock_wrunlock(&store->cache->lock);
     }
 
