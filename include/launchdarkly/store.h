@@ -1,6 +1,6 @@
 /*!
  * @file store.h
- * @brief Public API Interface for Store implementatons
+ * @brief Public API Interface for Store implementations
  */
 
 #pragma once
@@ -47,7 +47,7 @@ struct LDStoreCollectionState
  *
  * The associated functions use a boolean result to indicate success, or error
  * outside of expected functionality. For example a memory allocation error
- * would return false, but `get` on a non existant item would return true.
+ * would return false, but `get` on a non existent item would return true.
  * @{
  ******************************************************************************/
 
@@ -125,7 +125,7 @@ struct LDStoreInterface
      * @brief Determine if the store is initialized with features yet.
      * @param[in] context Implementation specific context.
      * May not be NULL (assert).
-     * @return True if the store is intialized, false otherwise.
+     * @return True if the store is initialized, false otherwise.
      */
     LDBoolean (*initialized)(void *const context);
     /**

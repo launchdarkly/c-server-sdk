@@ -520,7 +520,7 @@ LDi_possiblyQueueEvent(
         event = NULL;
     }
 
-    /* consume if neither debug or track */
+    /* consume if neither debug nor track */
     LDJSONFree(event);
 }
 
@@ -1542,7 +1542,7 @@ LDi_bundleEventPayload(
     {
         LDi_mutex_unlock(&context->lock);
 
-        /* succesful but no events to send */
+        /* successful but no events to send */
 
         return LDBooleanTrue;
     }

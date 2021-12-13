@@ -73,7 +73,7 @@ LDClientTrack(
  * transferred. May not be `NULL`.
  * @param[in] data The JSON to attach to the event. Ownership of `data` is
  * transferred. May be `NULL`.
- * @param[in] metric A metric to be assocated with the event.
+ * @param[in] metric A metric to be associated with the event.
  * @return True if the event was queued, False on error.
  */
 LD_EXPORT(LDBoolean)
