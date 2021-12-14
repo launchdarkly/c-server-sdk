@@ -16,7 +16,7 @@ digraph "c-sdk-common/include/launchdarkly/boolean.h"
   Node5 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node5 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node1 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node6 [label="include/launchdarkly\l/store.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$store_8h.html",tooltip="Public API Interface for Store implementatons. "];
+  Node6 [label="include/launchdarkly\l/store.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$store_8h.html",tooltip="Public API Interface for Store implementations. "];
   Node6 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node6 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node1 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
