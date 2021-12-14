@@ -2,6 +2,15 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.4.4] - 2021-12-14
+### Changed:
+- Removed unused internal headers
+- Fixed comment spelling issues
+- Updated spelling in an error log message (`checkPrequisites failed` -> `checkPrerequisites failed`)
+
+### Fixed:
+- Fixed Windows CI build by updating PCRE download URL to new host
+
 ## [2.4.3] - 2021-10-19
 ### Changed:
 - Updated the build process to produce release artifacts for Windows.
