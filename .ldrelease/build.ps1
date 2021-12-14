@@ -18,7 +18,12 @@ SetupVSToolsEnv -architecture amd64
 If(Test-Path "curl-7.59.0") {
     Write-Host "Curl already present."
 } Else {
-    DownloadAndUnzip -url "https://curl.haxx.se/download/curl-7.59.0.zip" -filename "curl.zip"
+    # NOTE: Recompute this SHA256 hash whenever the file is updated. This way we can detect
+    # if the file has changed.
+    $CurlSHA256 = "687b77fe00bc6f9dad5623742183028541b4d2c0f64bfd7e0acf7038fda27cdc"
+    $CurlURL = "https://curl.haxx.se/download/curl-7.59.0.zip"
+
+    DownloadAndUnzip -url $CurlURL -filename "curl.zip" -sha256 $CurlSHA256
 
     Write-Host
     Write-Host Building curl
@@ -31,7 +36,12 @@ If(Test-Path "curl-7.59.0") {
 If(Test-Path "pcre-8.43") {
     Write-Host "PRCE already present."
 } Else {
-    DownloadAndUnzip -url "https://ftp.pcre.org/pub/pcre/pcre-8.43.zip" -filename "pcre.zip"
+    # NOTE: Recompute this SHA256 hash whenever the file is updated. This way we can detect
+    # if the file has changed.
+    $PcreSHA256 = "ae236dc25d7e0e738a94e103218e0085eb02ff9bd98f637b6e061a48decdb433"
+    $PcreURL = "https://iweb.dl.sourceforge.net/project/pcre/pcre/8.43/pcre-8.43.zip"
+
+    DownloadAndUnzip -url $PcreURL -filename "pcre.zip" -sha256 $PcreSHA256
 
     Write-Host
     Write-Host Building PCRE

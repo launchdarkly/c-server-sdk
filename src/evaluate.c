@@ -269,7 +269,7 @@ LDi_evaluate(
                     o_events,
                     recordReason)))
         {
-            LD_LOG(LD_LOG_ERROR, "checkPrequisites failed");
+            LD_LOG(LD_LOG_ERROR, "checkPrerequisites failed");
 
             return substatus;
         }

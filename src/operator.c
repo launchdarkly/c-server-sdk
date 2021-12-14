@@ -9,7 +9,6 @@
 
 #include "assertion.h"
 #include "operators.h"
-#include "utility.h"
 
 #define CHECKSTRING(uvalue, cvalue)                                            \
     if (LDJSONGetType(uvalue) != LDText || LDJSONGetType(cvalue) != LDText) {  \

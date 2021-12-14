@@ -27,7 +27,7 @@ cd curl-7.59.0/winbuild
 nmake /f Makefile.vc mode=static
 ```
 
-You can obtain the `libpcre` dependency at [ftp.pcre.org](https://ftp.pcre.org/pub/pcre/pcre-8.43.zip). Extract this archive into the SDK source directory. To build `libpcre` run:
+You can obtain the `libpcre` dependency at [sourceforge.net](https://iweb.dl.sourceforge.net/project/pcre/pcre/8.43/pcre-8.43.zip). Extract this archive into the SDK source directory. To build `libpcre` run:
 
 ```bash
 cd pcre-8.43

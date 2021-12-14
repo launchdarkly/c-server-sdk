@@ -1,5 +1,4 @@
 #include <curl/curl.h>
-#include <math.h>
 #include <stdio.h>
 
 #include <launchdarkly/api.h>
@@ -318,7 +317,7 @@ LDi_networkthread(void *const clientref)
         }
 
         if (!active_events) {
-            /* if curl is not doing anything wait so we don't burn CPU */
+            /* if curl is not doing anything, wait, so we don't burn CPU */
             LDi_sleepMilliseconds(10);
         }
     }

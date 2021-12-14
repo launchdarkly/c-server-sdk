@@ -11,7 +11,7 @@
 #include <launchdarkly/json.h>
 #include <launchdarkly/user.h>
 
-/** @brief The reason an evaluation occured */
+/** @brief The reason an evaluation occurred */
 enum LDEvalReason
 {
     /** @brief A default unset reason */
@@ -95,7 +95,7 @@ struct LDDetails
     /** @brief True if there is a `variationIndex`, false if the default
      * value was returned. */
     LDBoolean hasVariation;
-    /** @brief The reason an evaluation occured */
+    /** @brief The reason an evaluation occurred */
     enum LDEvalReason reason;
     /** @brief Extra information depending on the evaluation reason */
     union {
@@ -228,7 +228,7 @@ LDStringVariation(
  * If `NULL` no explanation will be generated.
  * @return The fallback will be returned on any error but may be `NULL` on
  * allocation failure.
- * The result must be cleanud up with `LDJSONFree`.
+ * The result must be cleaned up with `LDJSONFree`.
  */
 LD_EXPORT(struct LDJSON *)
 LDJSONVariation(

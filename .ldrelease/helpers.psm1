@@ -25,10 +25,18 @@ function ExecuteOrFail {
 function DownloadAndUnzip {
     param(
         [Parameter(Mandatory)][string]$url,
-        [Parameter(Mandatory)][string]$filename
+        [Parameter(Mandatory)][string]$filename,
+        [Parameter(Mandatory)][string]$sha256
     )
     Write-Host Downloading and expanding $url
     ExecuteOrFail { iwr -outf $filename $url }
+    $Hash = Get-FileHash $filename -Algorithm SHA256
+    if ($Hash.Hash -eq $sha256) {
+        Write-Host "SHA256($filename) = ($($Hash.Hash)) OK"
+    } else {
+        Write-Host "SHA256($filename) = ($($Hash.Hash)) MISMATCH"
+        throw "$filename checksum mismatch"
+    }
     ExecuteOrFail { unzip $filename | Out-Null }
 }
 

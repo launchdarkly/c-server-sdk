@@ -2,7 +2,6 @@
 
 #include "assertion.h"
 #include "lru.h"
-#include "utility.h"
 
 #include "uthash.h"
 #include "utlist.h"
