@@ -1,26 +1,29 @@
 version: 2.1
 
 orbs:
-   win: circleci/windows@1.0.0
+  win: circleci/windows@1.0.0
 
 workflows:
   version: 2
   build_and_test_all:
     jobs:
-      - build-test-linux
       - build-test-linux-clang11
       - build-test-linux-optimized
+      - build-test-linux-valgrind:
+          requires:
+            - build-test-linux-optimized
+      - build-test-linux-helgrind:
+          requires:
+            - build-test-linux-optimized
       - build-test-linux-32bit
       - build-test-osx
       - build-test-windows
 
 jobs:
-  build-test-linux:
+  build-test-linux-valgrind:
     docker:
       - image: ldcircleci/ld-c-sdk-ubuntu  # defined in sdks-ci-docker project
       - image: redis
-    environment:
-      CTEST_OUTPUT_ON_FAILURE: 1
     steps:
       - checkout
       - run:
@@ -34,12 +37,32 @@ jobs:
             cmake -D REDIS_STORE=ON ..
             cmake --build .
       - run:
-          name: Unit test with memcheck
+          name: Unit test with valgrind
           command: |
             cd build
-            GTEST_OUTPUT="xml:$(pwd)/../reports/" ctest -T memcheck
-      - store_test_results:
-          path: reports
+            valgrind --error-exitcode=100 --leak-check=full ./tests/google_tests
+
+  build-test-linux-helgrind:
+    docker:
+      - image: ldcircleci/ld-c-sdk-ubuntu  # defined in sdks-ci-docker project
+      - image: redis
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update -y && apt-get install -y git
+      - run:
+          name: Build
+          command: |
+            mkdir build && cd build
+            cmake -D REDIS_STORE=ON ..
+            cmake --build .
+      - run:
+          name: Unit test with helgrind
+          command: |
+            cd build
+            valgrind --tool=helgrind --suppressions=../valgrind-suppressions.supp --error-exitcode=100 ./tests/google_tests
 
   build-test-linux-optimized:
     docker:
@@ -50,9 +73,9 @@ jobs:
     steps:
       - checkout
       - run:
-            name: Install dependencies
-            command: |
-              apt-get update -y && apt-get install -y git
+          name: Install dependencies
+          command: |
+            apt-get update -y && apt-get install -y git
       - run:
           name: Build
           command: |
@@ -161,8 +184,8 @@ jobs:
       - run:
           name: Test
           command: |
-           cd build
-           GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
+            cd build
+            GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
       - store_test_results:
           path: reports
 
