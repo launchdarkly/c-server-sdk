@@ -1,6 +1,6 @@
 /*!
  * @file client.h
- * @brief Public API Interface for Client operations
+ * @brief Public API for Client operations
  */
 
 #pragma once
