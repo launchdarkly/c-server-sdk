@@ -1,6 +1,6 @@
 /*!
  * @file json.h
- * @brief Public API Interface for JSON usage
+ * @brief Public API for JSON usage
  */
 
 #pragma once
