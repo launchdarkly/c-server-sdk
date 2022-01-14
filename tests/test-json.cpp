@@ -7,6 +7,9 @@ extern "C" {
 #include <launchdarkly/api.h>
 
 #include "utility.h"
+
+#include "json_internal_helpers.h"
+
 }
 
 // Inherit from the CommonFixture to give a reasonable name for the test output.
@@ -154,4 +157,115 @@ TEST_F(JSONFixture, Append) {
 
     LDJSONFree(left);
     LDJSONFree(right);
+}
+
+TEST_F(JSONFixture, ObjectSetString) {
+    struct LDJSON* object;
+
+    ASSERT_TRUE(object = LDNewObject());
+
+    ASSERT_TRUE(LDObjectSetString(object, "key1", "value1"));
+    ASSERT_STREQ("value1", LDGetText(LDObjectLookup(object, "key1")));
+
+    ASSERT_TRUE(LDObjectSetString(object, "key1", "value2"));
+    ASSERT_STREQ("value2", LDGetText(LDObjectLookup(object, "key1")));
+
+    LDJSONFree(object);
+}
+
+TEST_F(JSONFixture, ObjectSetBool) {
+    struct LDJSON* object;
+
+    ASSERT_TRUE(object = LDNewObject());
+
+    ASSERT_TRUE(LDObjectSetBool(object, "key1", LDBooleanTrue));
+    ASSERT_TRUE(LDGetBool(LDObjectLookup(object, "key1")));
+
+    ASSERT_TRUE(LDObjectSetBool(object, "key1", LDBooleanFalse));
+    ASSERT_FALSE(LDGetBool(LDObjectLookup(object, "key1")));
+
+    LDJSONFree(object);
+}
+
+TEST_F(JSONFixture, ObjectSetNumber) {
+    struct LDJSON* object;
+
+    ASSERT_TRUE(object = LDNewObject());
+
+    ASSERT_TRUE(LDObjectSetNumber(object, "key1", 10));
+    ASSERT_EQ(10, LDGetNumber(LDObjectLookup(object, "key1")));
+
+    ASSERT_TRUE(LDObjectSetNumber(object, "key1", 20));
+    ASSERT_EQ(20, LDGetNumber(LDObjectLookup(object, "key1")));
+
+    LDJSONFree(object);
+}
+
+TEST_F(JSONFixture, ObjectNewChild) {
+    struct LDJSON* object;
+    struct LDJSON* child1;
+
+    ASSERT_TRUE(object = LDNewObject());
+
+    ASSERT_TRUE(child1 = LDObjectNewChild(object, "child1"));
+    ASSERT_TRUE(LDObjectSetString(child1, "child2", "value"));
+
+    ASSERT_STREQ("value", LDGetText(LDObjectLookup(LDObjectLookup(object, "child1"), "child2")));
+
+    LDJSONFree(object);
+}
+
+
+TEST_F(JSONFixture, ObjectSetReference) {
+    struct LDJSON* object;
+    struct LDJSON* ref;
+
+    ASSERT_TRUE(object = LDNewObject());
+    ASSERT_TRUE(ref = LDNewText("ref"));
+
+    ASSERT_TRUE(LDObjectSetReference(object, "ref", ref));
+    ASSERT_STREQ("ref", LDGetText(LDObjectLookup(object, "ref")));
+
+    LDJSONFree(object);
+
+    // The idea is that LDJSONFree should not have freed ref; therefore we should be able
+    // to access ref as usual. This isn't the most reliable testing technique, since free could
+    // just as well leave the memory intact.
+
+    ASSERT_STREQ("ref", LDGetText(ref));
+
+    LDJSONFree(ref);
+}
+
+TEST_F(JSONFixture, ObjectSetDefensiveChecks) {
+    struct LDJSON* object;
+    struct LDJSON* notObject;
+
+    ASSERT_TRUE(object = LDNewObject());
+    ASSERT_TRUE(notObject = LDNewText("not"));;
+
+    ASSERT_FALSE(LDObjectSetString(nullptr, "key", "value"));
+    ASSERT_FALSE(LDObjectSetString(object, nullptr, "value"));
+    ASSERT_FALSE(LDObjectSetString(object, "key", nullptr));
+    ASSERT_FALSE(LDObjectSetString(notObject, "key", "value"));
+
+    ASSERT_FALSE(LDObjectSetNumber(nullptr, "key", 1));
+    ASSERT_FALSE(LDObjectSetNumber(object, nullptr, 1));
+    ASSERT_FALSE(LDObjectSetNumber(notObject, "key", 1));
+
+    ASSERT_FALSE(LDObjectSetBool(nullptr, "key", LDBooleanTrue));
+    ASSERT_FALSE(LDObjectSetBool(object, nullptr, LDBooleanTrue));
+    ASSERT_FALSE(LDObjectSetBool(notObject, "key", LDBooleanTrue));
+
+    ASSERT_FALSE(LDObjectNewChild(nullptr, "key"));
+    ASSERT_FALSE(LDObjectNewChild(object, nullptr));
+    ASSERT_FALSE(LDObjectNewChild(notObject, "key"));
+
+    ASSERT_FALSE(LDObjectSetReference(nullptr, "key", notObject));
+    ASSERT_FALSE(LDObjectSetReference(object, nullptr, notObject));
+    ASSERT_FALSE(LDObjectSetReference(object, "key", nullptr));
+    ASSERT_FALSE(LDObjectSetReference(notObject, "key", notObject));
+
+    LDJSONFree(object);
+    LDJSONFree(notObject);
 }
