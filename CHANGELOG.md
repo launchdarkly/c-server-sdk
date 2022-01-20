@@ -2,6 +2,14 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.4.5] - 2022-01-20
+### Changed:
+- Updated CI with dedicated valgrind & helgrind jobs
+- Added internal-only JSON helpers.
+
+### Fixed:
+- Various grammar & spelling issues
+
 ## [2.4.4] - 2021-12-14
 ### Changed:
 - Removed unused internal headers
