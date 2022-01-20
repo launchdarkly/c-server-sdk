@@ -1,6 +1,6 @@
 /*!
  * @file variations.h
- * @brief Public API Interface for evaluation variations
+ * @brief Public API for evaluation variations
  */
 
 #pragma once

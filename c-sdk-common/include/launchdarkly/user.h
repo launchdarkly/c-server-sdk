@@ -1,6 +1,6 @@
 /*!
  * @file user.h
- * @brief Public API Interface for User construction
+ * @brief Public API for User construction
  */
 
 #pragma once

@@ -1,6 +1,6 @@
 /*!
  * @file config.h
- * @brief Public API Interface for Configuration
+ * @brief Public API for Configuration
  */
 
 #pragma once

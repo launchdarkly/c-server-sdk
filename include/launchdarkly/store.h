@@ -1,6 +1,6 @@
 /*!
  * @file store.h
- * @brief Public API Interface for Store implementations
+ * @brief Public API for Store implementations
  */
 
 #pragma once
