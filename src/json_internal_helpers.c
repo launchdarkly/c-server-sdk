@@ -49,7 +49,7 @@ LDObjectSetString(struct LDJSON *const rawObject, const char *const key, const c
 }
 
 LDBoolean
-LDObjectSetBool(struct LDJSON *rawObject, const char *const key, LDBoolean value) {
+LDObjectSetBool(struct LDJSON *const rawObject, const char *const key, const LDBoolean value) {
     cJSON *const object = (cJSON *)rawObject;
 
     LD_ASSERT_API(object);
@@ -89,7 +89,7 @@ LDObjectSetBool(struct LDJSON *rawObject, const char *const key, LDBoolean value
 }
 
 struct LDJSON *
-LDObjectNewChild(struct LDJSON *rawObject, const char *const key) {
+LDObjectNewChild(struct LDJSON *const rawObject, const char *const key) {
     cJSON *const object = (cJSON *)rawObject;
     cJSON *child = NULL;
 
@@ -130,7 +130,7 @@ LDObjectNewChild(struct LDJSON *rawObject, const char *const key) {
 }
 
 LDBoolean
-LDObjectSetNumber(struct LDJSON *rawObject, const char *const key, const double number) {
+LDObjectSetNumber(struct LDJSON *const rawObject, const char *const key, const double number) {
     cJSON *const object = (cJSON *)rawObject;
 
     LD_ASSERT_API(object);

@@ -14,3 +14,4 @@ The following pages document the core of the API, every application will use the
 * [json.h](@ref json.h) JSON manipulation functions. Required for use of JSON flags.
 * [logging.h](@ref logging.h) Allows specification of custom log handlers
 * [memory.h](@ref memory.h) Allows specification of custom memory allocators
+* [flag_state.h](@ref flag_state.h) Functionality related to `LDAllFlagsState`.

@@ -10,6 +10,7 @@
 #include <launchdarkly/export.h>
 #include <launchdarkly/json.h>
 #include <launchdarkly/user.h>
+#include <launchdarkly/flag_state.h>
 
 /** @brief The reason an evaluation occurred */
 enum LDEvalReason
@@ -241,6 +242,7 @@ LDJSONVariation(
 /**
  * @brief Returns a map from feature flag keys to values for a given user.
  * This does not send analytics events back to LaunchDarkly.
+ * @deprecated Please use @ref LDAllFlagsState (@ref LDAllFlagsStateToValuesMap) instead.
  * @param[in] client The client to use. May not be `NULL`.
  * @param[in] user The user to evaluate flags for. Ownership is not transferred.
  * May not be `NULL`.
@@ -248,3 +250,18 @@ LDJSONVariation(
  */
 LD_EXPORT(struct LDJSON *)
 LDAllFlags(struct LDClient *const client, const struct LDUser *const user);
+
+
+
+/**
+ * @brief AllFlagsState returns an object that encapsulates the state of all feature flags for a given user.
+ * The state includes flag values, and also metadata that can be used on the front end.
+ * This does not send analytics events back to LaunchDarkly.
+ * @param[in] client The client to use. May not be `NULL`.
+ * @param[in] user The user to evaluate flags for. Ownership is not transferred. May not be `NULL`.
+ * @param[in] options Options affecting the returned flags.
+ * @return Opaque `LDAllFlagsState` object, or `NULL` on failure. User is responsible for freeing with @ref LDAllFlagsStateFree.
+ * Validity of the returned value can be checked with @ref LDAllFlagsStateValid.
+ */
+LD_EXPORT(struct LDAllFlagsState *)
+LDAllFlagsState(struct LDClient *const client, const struct LDUser *const user, unsigned int options);

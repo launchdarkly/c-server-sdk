@@ -29,7 +29,7 @@ LDObjectSetString(struct LDJSON *object, const char * key, const char* value);
  * @return True on success, False on failure.
  */
 LD_EXPORT(LDBoolean)
-LDObjectSetBool(struct LDJSON *object, const char * key,  LDBoolean value);
+LDObjectSetBool(struct LDJSON *object, const char * key, LDBoolean value);
 
 /**
  * @brief Sets the provided key in an object to a double value.
@@ -50,7 +50,7 @@ LDObjectSetNumber(struct LDJSON *object, const char * key, double number);
  * @return Pointer to new object on success, `NULL` on failure.
  */
 LD_EXPORT(struct LDJSON*)
-LDObjectNewChild(struct LDJSON *object, const char * key);
+LDObjectNewChild(struct LDJSON *object, const char *key);
 
 /**
  * @brief Sets the provided key in an object to a reference to another item.
