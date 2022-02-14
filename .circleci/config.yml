@@ -62,7 +62,7 @@ jobs:
           name: Unit test with helgrind
           command: |
             cd build
-            valgrind --tool=helgrind --suppressions=../valgrind-suppressions.supp --error-exitcode=100 ./tests/google_tests
+            valgrind --tool=helgrind --suppressions=../valgrind-suppressions.txt --error-exitcode=100 ./tests/google_tests
 
   build-test-linux-optimized:
     docker:
@@ -108,7 +108,8 @@ jobs:
               libhiredis-dev \
               cmake \
               clang-11 \
-              git
+              git \
+              curl
       - run:
           name: Build
           command: |
@@ -124,6 +125,19 @@ jobs:
             GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
       - store_test_results:
           path: reports
+      - run:
+          name: make contract test output directory
+          command: mkdir /tmp/test-results
+      - run: make build-contract-tests
+      - run:
+          command: make start-contract-test-service
+          background: true
+      - run:
+          name: run contract tests
+          command: TEST_HARNESS_PARAMS="-junit /tmp/test-results/contract-tests-junit.xml -skip-from testharness-suppressions.txt" make run-contract-tests
+      - store_test_results:
+          path: /tmp/test-results/
+
 
   build-test-linux-32bit:
     docker:
