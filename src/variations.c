@@ -547,9 +547,10 @@ LDStringVariation(
 }
 
 static LDBoolean
-isArrayOrObject(const LDJSONType type)
+isAnyType(const LDJSONType type)
 {
-    return type == LDArray || type == LDObject;
+    (void)type; /* unused; satisfy compiler */
+    return LDBooleanTrue;
 }
 
 struct LDJSON *
@@ -578,7 +579,7 @@ LDJSONVariation(
     }
 
     result =
-        variation(client, user, key, fallbackJSON, isArrayOrObject, details);
+        variation(client, user, key, fallbackJSON, isAnyType, details);
 
     if (fallback == NULL && result == fallbackJSON) {
         LDJSONFree(fallbackJSON);
