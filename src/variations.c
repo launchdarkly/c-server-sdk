@@ -360,6 +360,7 @@ variation(
     if (!checkType(LDJSONGetType(value))) {
         detailsRef->reason          = LD_ERROR;
         detailsRef->extra.errorKind = LD_WRONG_TYPE;
+        detailsRef->hasVariation = LDBooleanFalse;
 
         goto error;
     }

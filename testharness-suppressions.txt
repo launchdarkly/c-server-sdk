@@ -13,12 +13,6 @@ data store/updates from stream/segment delete with same version is not applied
 data store/updates from stream/flag delete with lower version is not applied
 data store/updates from stream/segment delete with lower version is not applied
 data store/updates from stream/segment delete for previously nonexistent segment is applied
-evaluation/parameterized/wrong type errors/want bool, got number/evaluate flag with detail
-evaluation/parameterized/wrong type errors/want bool, got string/evaluate flag with detail
-evaluation/parameterized/wrong type errors/want int, got bool/evaluate flag with detail
-evaluation/parameterized/wrong type errors/want int, got string/evaluate flag with detail
-evaluation/parameterized/wrong type errors/want string, got bool/evaluate flag with detail
-evaluation/parameterized/wrong type errors/want string, got number/evaluate flag with detail
 evaluation/parameterized/evaluation failures (bool)/off variation too low/evaluate flag without detail
 evaluation/parameterized/evaluation failures (bool)/off variation too low/evaluate flag with detail
 evaluation/parameterized/evaluation failures (bool)/off variation too low/evaluate all flags
