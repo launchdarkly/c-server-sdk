@@ -68,7 +68,9 @@ static void parserReadExplicit(struct AvailabilityParser *const p, const struct 
  * If NULL, 'clientSide' will be parsed as false.
  */
 static void parserReadDeprecated(struct AvailabilityParser *const p, const struct LDJSON *const object) {
-    p->clientSide = LDGetBool(object);
+    if (LDJSONGetType(object) == LDBool) {
+        p->clientSide = LDGetBool(object);
+    }
 }
 
 /** Stores parsed values into an LDClientAvailability structure.
@@ -126,9 +128,15 @@ LDi_initFlagModel(struct LDFlagModel *const model, const struct LDJSON *const js
         } else if (strcmp(prop, "version") == 0) {
             model->version = (unsigned int) LDGetNumber(iter);
         } else if (strcmp(prop, "trackEvents") == 0) {
-            model->trackEvents = LDGetBool(iter);
+            /* optional */
+            if (LDJSONGetType(iter) == LDBool) {
+                model->trackEvents = LDGetBool(iter);
+            }
         } else if (strcmp(prop, "debugEventsUntilDate") == 0) {
-            model->debugEventsUntilDate = (unsigned int) LDGetNumber(iter);
+            /* optional */
+            if (LDJSONGetType(iter) == LDNumber) {
+                model->debugEventsUntilDate = (unsigned int) LDGetNumber(iter);
+            }
         } else if (strcmp(prop, "clientSideAvailability") == 0) {
             parserReadExplicit(&parser, iter);
         } else if (strcmp(prop, "clientSide") == 0) {
