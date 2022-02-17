@@ -118,3 +118,45 @@ TEST_F(ConfigFixture, DefaultAndReplace) {
     LDJSONFree(attributes);
     LDConfigFree(config);
 }
+
+TEST_F(ConfigFixture, TrimSlashSuffix) {
+    char *s1, *s2, *s3, *s4, *s5;
+
+    ASSERT_TRUE(s1 = LDi_trimTrailingSlash("path/"));
+    ASSERT_STREQ(s1, "path");
+
+    ASSERT_TRUE(s2 = LDi_trimTrailingSlash("path"));
+    ASSERT_STREQ(s2, "path");
+
+    ASSERT_TRUE(s3 = LDi_trimTrailingSlash("/"));
+    ASSERT_STREQ(s3, "");
+
+    ASSERT_TRUE(s4 = LDi_trimTrailingSlash(""));
+    ASSERT_STREQ(s4, "");
+
+    ASSERT_TRUE(s5 = LDi_trimTrailingSlash("//"));
+    ASSERT_STREQ(s5, "/");
+
+    LDFree(s1);
+    LDFree(s2);
+    LDFree(s3);
+    LDFree(s4);
+    LDFree(s5);
+}
+
+TEST_F(ConfigFixture, SetURITrimsSlashSuffix) {
+    struct LDConfig *config;
+
+    ASSERT_TRUE(config = LDConfigNew("a"));
+
+    LDConfigSetStreamURI(config, "https://test1.com/");
+    ASSERT_STREQ(config->streamURI, "https://test1.com");
+
+    LDConfigSetBaseURI(config, "https://test2.com/");
+    ASSERT_STREQ(config->baseURI, "https://test2.com");
+
+    LDConfigSetEventsURI(config, "https://test3.com/");
+    ASSERT_STREQ(config->eventsURI, "https://test3.com");
+
+    LDConfigFree(config);
+}

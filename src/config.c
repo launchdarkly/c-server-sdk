@@ -6,6 +6,38 @@
 #include "config.h"
 #include "utility.h"
 
+char *
+LDi_trimTrailingSlash(const char *const s) {
+    unsigned int len;
+
+    LD_ASSERT(s);
+
+    len = strlen(s);
+
+    if (len == 0 || s[len-1] != '/') {
+        return LDStrDup(s);
+    }
+
+    return LDStrNDup(s, len-1);
+}
+
+LDBoolean
+LDi_setTrimmedString(char **const target, const char *const s) {
+    char *withoutTrailingSlash = NULL;
+    LDBoolean setResult = LDBooleanFalse;
+
+    if (!(withoutTrailingSlash = LDi_trimTrailingSlash(s))) {
+
+        return LDBooleanFalse;
+    }
+
+    setResult = LDSetString(target, withoutTrailingSlash);
+
+    LDFree(withoutTrailingSlash);
+    return setResult;
+}
+
+
 struct LDConfig *
 LDConfigNew(const char *const key)
 {
@@ -115,7 +147,7 @@ LDConfigSetBaseURI(struct LDConfig *const config, const char *const baseURI)
     }
 #endif
 
-    return LDSetString(&config->baseURI, baseURI);
+    return LDi_setTrimmedString(&config->baseURI, baseURI);
 }
 
 LDBoolean
@@ -138,7 +170,7 @@ LDConfigSetStreamURI(struct LDConfig *const config, const char *const streamURI)
     }
 #endif
 
-    return LDSetString(&config->streamURI, streamURI);
+    return LDi_setTrimmedString(&config->streamURI, streamURI);
 }
 
 LDBoolean
@@ -161,7 +193,7 @@ LDConfigSetEventsURI(struct LDConfig *const config, const char *const eventsURI)
     }
 #endif
 
-    return LDSetString(&config->eventsURI, eventsURI);
+    return LDi_setTrimmedString(&config->eventsURI, eventsURI);
 }
 
 void

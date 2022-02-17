@@ -216,7 +216,6 @@ events/user properties/inlineUsers=true, allAttributesPrivate=true/index event
 events/user properties/inlineUsers=true, allAttributesPrivate=true, user-private=[lastName]/index event
 events/user properties/inlineUsers=true, allAttributesPrivate=true, globally-private=[firstName]/index event
 events/user properties/inlineUsers=true, allAttributesPrivate=true, globally-private=[firstName], user-private=[lastName]/index event
-streaming/requests/URL path is correct when base URI has a trailing slash
 streaming/retry behavior/retry after stream is closed
 streaming/retry behavior/initial retry delay is applied
 streaming/retry behavior/retry after IO error on reconnect

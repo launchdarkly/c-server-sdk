@@ -27,3 +27,12 @@ struct LDConfig
     char *                   wrapperName;
     char *                   wrapperVersion;
 };
+
+/* Trims a single trailing slash, if present, from the end of the given string.
+ * Returns a newly allocated string. */
+char *
+LDi_trimTrailingSlash(const char *s);
+
+/* Sets target to the trimmed version of s (via LDi_trimTrailingSlash and LDSetString). */
+LDBoolean
+LDi_setTrimmedString(char **const target, const char *const s);
