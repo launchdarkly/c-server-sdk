@@ -16,6 +16,18 @@ struct CacheItem;
 
 static const char *const LD_SS_FEATURES   = "features";
 static const char *const LD_SS_SEGMENTS   = "segments";
+
+/* The motivation behind $initChecked is to reduce queries to the store backend
+ * while it remains uninitialized. Otherwise, an application evaluating many flags would end up
+ * hitting the backend many times to check if it is initialized.
+ *
+ * This key represents a sentinel value that may be stored in the cache.
+ * If it is present in the cache, and unexpired, then the store is considered uninitialized (even if it is at that moment.)
+ *
+ * Once the value reaches expiry, the store can be queried again for its true initialization status.
+ * At that point $initChecked can be deleted from the cache if the store is initialized, otherwise it can be re-inserted
+ * with a new expiry in the future.
+ * */
 static const char *const INIT_CHECKED_KEY = "$initChecked";
 
 static LDBoolean
@@ -1471,63 +1483,136 @@ LDStoreUpsert(
     return status;
 }
 
-LDBoolean
-LDStoreInitialized(struct LDStore *const store)
-{
-    LDBoolean         isInitialized;
+
+/* Returns true if a value corresponding to key exists in the cache, and that value has not
+ * yet expired.
+ * */
+static LDBoolean
+cache_contains_unexpired(struct LDStore const *const store, const char *key) {
     struct CacheItem *item;
+    double now;
 
-    LD_ASSERT(store);
+    HASH_FIND_STR(store->cache->items, key, item);
 
-    LD_LOG(LD_LOG_TRACE, "LDStoreInitialized");
+    if (!item) {
+        return LDBooleanFalse;
+    }
+
+    /* If the cache was configured to have 0 TTL, then the value is considered expired (hit the database). */
+    if (store->cacheMilliseconds == 0) {
+        return LDBooleanFalse;
+    }
+
+    if (LDi_getMonotonicMilliseconds(&now)) {
+        if ((now - item->updatedOn) > store->cacheMilliseconds) {
+            return LDBooleanFalse; /* expired */
+        } else {
+            return LDBooleanTrue; /* not expired */
+        }
+    }
+
+    /* safe default if the time check fails: not expired (do not hit database) */
+    return LDBooleanTrue;
+}
+
+/* Deletes a value corresponding to key from the cache, if it exists.
+ * */
+static void
+cache_delete_if_exists(struct MemoryContext *cache, const char *key) {
+    struct CacheItem *item = NULL;
+    HASH_FIND_STR(cache->items, key, item);
+    if (item) {
+        deleteAndRemoveCacheItem(&cache->items, item);
+    }
+}
+
+/* Inserts an empty value, named by key, into the cache.
+ *
+ * If the item couldn't be allocated, returns false.
+ * */
+static LDBoolean
+cache_insert(struct MemoryContext *cache, const char *key) {
+    struct CacheItem *item = NULL;
+    if (!(item = makeCacheItem(key, NULL))) {
+        return LDBooleanFalse;
+    }
+    HASH_ADD_KEYPTR(hh, cache->items, item->key, strlen(item->key), item);
+    return LDBooleanTrue;
+}
+
+/* For readability within quick_check_initialization. */
+
+#define INITIALIZED LDBooleanTrue
+#define NOT_INITIALIZED LDBooleanFalse
+
+/* Checks if the store is initialized using only read operations. Intended to complete quickly without
+ * hitting a database.
+ *
+ * Initialization status is available in out_status on success.
+ *
+ * Returns true if the routine succeeded. Otherwise, returns false.
+ * */
+static LDBoolean
+quick_check_initialization(struct LDStore const *const store, LDBoolean *out_status) {
+
+    if (store->cache->initialized) {
+        *out_status = INITIALIZED;
+        return LDBooleanTrue;
+    }
+    if (store->backend == NULL) {
+        *out_status = NOT_INITIALIZED;
+        return LDBooleanTrue;
+    }
+
+    if (cache_contains_unexpired(store, INIT_CHECKED_KEY)) {
+        *out_status = NOT_INITIALIZED;
+        return LDBooleanTrue;
+    }
+
+    return LDBooleanFalse;
+}
+
+/* Checks if the store is initialized by querying the database.
+ * Performs write operations on the LDStore's cache structure.
+ *
+ * Initialization status is available in out_status.
+ * */
+static void
+query_and_update_initialization(struct LDStore *const store, LDBoolean *out_initialized) {
+
+    cache_delete_if_exists(store->cache, INIT_CHECKED_KEY);
+
+    *out_initialized = store->backend->initialized(store->backend->context);
+
+    if (*out_initialized) {
+        store->cache->initialized = LDBooleanTrue;
+        return;
+    }
+
+    if (!cache_insert(store->cache, INIT_CHECKED_KEY)){
+        LD_LOG(LD_LOG_ERROR, "unable to allocate memory in cache initialization check");
+    }
+}
+
+
+LDBoolean
+LDStoreInitialized(struct LDStore *const store) {
+    LDBoolean initialized;
+    LDBoolean checkSucceeded;
 
     LDi_rwlock_rdlock(&store->cache->lock);
-    isInitialized = store->cache->initialized;
-
-    if (isInitialized || !store->backend) {
-        LDi_rwlock_rdunlock(&store->cache->lock);
-
-        return isInitialized;
-    }
-
-    HASH_FIND_STR(store->cache->items, INIT_CHECKED_KEY, item);
-
-    if (item) {
-        int expired = isExpired(store, item);
-
-        if (expired < 0) {
-            LDi_rwlock_rdunlock(&store->cache->lock);
-
-            return LDBooleanFalse;
-        } else if (expired == 0) {
-            LDi_rwlock_rdunlock(&store->cache->lock);
-
-            return LDBooleanFalse;
-        } else if (expired > 0) {
-            deleteAndRemoveCacheItem(&store->cache->items, item);
-        }
-    }
-
+    checkSucceeded = quick_check_initialization(store, &initialized);
     LDi_rwlock_rdunlock(&store->cache->lock);
 
-    isInitialized = store->backend->initialized(store->backend->context);
-
-    if (isInitialized) {
-        LDi_rwlock_wrlock(&store->cache->lock);
-        store->cache->initialized = LDBooleanTrue;
-        LDi_rwlock_wrunlock(&store->cache->lock);
-    } else {
-        if (!(item = makeCacheItem(INIT_CHECKED_KEY, NULL))) {
-            return LDBooleanFalse;
-        }
-
-        LDi_rwlock_wrlock(&store->cache->lock);
-        HASH_ADD_KEYPTR(
-            hh, store->cache->items, item->key, strlen(item->key), item);
-        LDi_rwlock_wrunlock(&store->cache->lock);
+    if (checkSucceeded) {
+        return initialized;
     }
 
-    return isInitialized;
+    LDi_rwlock_wrlock(&store->cache->lock);
+    query_and_update_initialization(store, &initialized);
+    LDi_rwlock_wrunlock(&store->cache->lock);
+
+    return initialized;
 }
 
 void

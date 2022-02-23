@@ -19,6 +19,9 @@ struct LDClient;
 
 /**
  * @brief Initialize a new client, and connect to LaunchDarkly.
+ * It's important to make LDClient a singleton. The client instance maintains 
+ * internal state that allows LaunchDarkly to serve feature flags without making
+ * any remote requests. Do not instantiate a new client with every request.
  * @param[in] config The client configuration. Ownership of `config` is
  * transferred.
  * @param[in] maxwaitmilli How long to wait for flags to download.

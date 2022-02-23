@@ -7,6 +7,9 @@
 #include "store.h"
 #include "user.h"
 #include "utility.h"
+#include "all_flags_state.h"
+#include "flag_model.h"
+
 
 void
 LDDetailsInit(struct LDDetails *const details)
@@ -357,6 +360,7 @@ variation(
     if (!checkType(LDJSONGetType(value))) {
         detailsRef->reason          = LD_ERROR;
         detailsRef->extra.errorKind = LD_WRONG_TYPE;
+        detailsRef->hasVariation = LDBooleanFalse;
 
         goto error;
     }
@@ -544,9 +548,10 @@ LDStringVariation(
 }
 
 static LDBoolean
-isArrayOrObject(const LDJSONType type)
+isAnyType(const LDJSONType type)
 {
-    return type == LDArray || type == LDObject;
+    (void)type; /* unused; satisfy compiler */
+    return LDBooleanTrue;
 }
 
 struct LDJSON *
@@ -575,7 +580,7 @@ LDJSONVariation(
     }
 
     result =
-        variation(client, user, key, fallbackJSON, isArrayOrObject, details);
+        variation(client, user, key, fallbackJSON, isAnyType, details);
 
     if (fallback == NULL && result == fallbackJSON) {
         LDJSONFree(fallbackJSON);
@@ -627,7 +632,7 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
     }
 
     if (!(evaluatedFlags = LDNewObject())) {
-        LD_LOG(LD_LOG_ERROR, "alloc error");
+        LD_LOG(LD_LOG_ERROR, "LDAllFlags alloc error");
 
         return NULL;
     }
@@ -674,7 +679,7 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
             &events,
             &value,
             LDBooleanFalse);
-        
+
         if (value) {
             key = LDGetText(LDObjectLookup(flag, "key"));
             LD_ASSERT(key);
@@ -700,4 +705,148 @@ error:
     LDJSONFree(evaluatedFlags);
 
     return NULL;
+}
+
+
+struct LDAllFlagsState*
+LDAllFlagsState(struct LDClient *const client, const struct LDUser *const user, unsigned int options)
+{
+    struct LDJSON               *rawFlags, *rawFlagsIter;
+    struct LDJSONRC             *rawFlagsRC;
+    struct LDAllFlagsState      *state;
+    struct LDAllFlagsBuilder    *builder;
+    LDBoolean                   success;
+
+    LD_ASSERT_API(client);
+    LD_ASSERT_API(user);
+
+    rawFlags       = NULL;
+    rawFlagsIter   = NULL;
+    rawFlagsRC     = NULL;
+    state          = NULL;
+    builder        = NULL;
+    success        = LDBooleanFalse;
+
+
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (client == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDAllFlagsState NULL client");
+
+        goto cleanup;
+    }
+
+    if (user == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDAllFlagsState NULL user");
+
+        goto cleanup;
+    }
+#endif
+
+    if (client->config->offline) {
+        LD_LOG(LD_LOG_WARNING, "LDAllFlagsState called when offline");
+
+        goto cleanup;
+    }
+
+    if (!LDStoreInitialized(client->store)) {
+        LD_LOG(LD_LOG_WARNING, "LDAllFlagsState data store not initialized");
+
+        goto cleanup;
+    }
+
+    if (!(builder = LDi_newAllFlagsBuilder(options))) {
+        LD_LOG(LD_LOG_ERROR, "LDAllFlagsState builder alloc failed");
+
+        goto cleanup;
+    }
+
+    if (!LDStoreAll(client->store, LD_FLAG, &rawFlagsRC)) {
+        LD_LOG(LD_LOG_ERROR, "LDAllFlagsState failed to fetch flags");
+
+        goto cleanup;
+    }
+
+    /* Flags read from store without error, but there aren't any.
+     * In this case, return a valid but empty LDAllFlagsState. */
+
+    if (rawFlagsRC == NULL) {
+        success = LDBooleanTrue;
+
+        goto cleanup;
+    }
+
+    rawFlags = LDJSONRCGet(rawFlagsRC);
+    LD_ASSERT(rawFlags);
+
+    for (rawFlagsIter = LDGetIter(rawFlags); rawFlagsIter;
+         rawFlagsIter = LDIterNext(rawFlagsIter))
+    {
+        /* LDi_evaluate generates an events object which is not used in this function. */
+        struct LDJSON *eventsUnused = NULL;
+
+        /* JSON returned by the iterator is transformed into an explicit flag model.
+         * This transformation could be refactored to happen at a lower layer of abstraction, such as
+         * LDStoreAll.
+         * The alternative would be directly querying the JSON for each piece of data needed to implement AllFlagsState.
+         * */
+        struct LDFlagModel model;
+
+        /* LDFlagState is the 'value' part of the key-value hashtable embedded in struct LDAllFlagsState, which
+         * is ultimately returned to the caller.
+         * Its members are comprised of the LDi_evaluate results (LDJSON value, and LDDetails) as well
+         * as the data contained in LDFlagModel.
+         * */
+        struct LDFlagState* flag = NULL;
+
+        LD_ASSERT(rawFlagsIter);
+
+        LDi_initFlagModel(&model, rawFlagsIter); /* does not allocate */
+
+        if ((options & LD_CLIENT_SIDE_ONLY) && !model.clientSideAvailability.usingEnvironmentID) {
+
+            continue;
+        }
+
+        if (!(flag = LDi_newFlagState(model.key))) {
+            LD_LOG(LD_LOG_ERROR, "LDAllFlagsState flag alloc failed");
+
+            goto cleanup;
+        }
+
+        LDi_evaluate(
+                client,
+                rawFlagsIter,
+                user,
+                client->store,
+                &flag->details,
+                &eventsUnused,
+                &flag->value,
+                LDBooleanFalse);
+
+        LDJSONFree(eventsUnused);
+
+        LDi_flagModelPopulate(&model, flag);
+
+        if (!LDi_allFlagsBuilderAdd(builder, flag)) {
+            LDi_freeFlagState(flag);
+
+            goto cleanup;
+        }
+    }
+
+    success = LDBooleanTrue;
+
+    cleanup:
+
+    LDJSONRCDecrement(rawFlagsRC);
+
+    if (success) {
+        LD_ASSERT(state = LDi_allFlagsBuilderBuild(builder));
+    } else {
+        LD_ASSERT(state = LDi_newAllFlagsState(LDBooleanFalse));
+    }
+
+    LDi_freeAllFlagsBuilder(builder);
+
+    return state;
 }

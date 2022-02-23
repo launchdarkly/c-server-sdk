@@ -6,7 +6,7 @@ include(CTest)
 
 if(BUILD_TESTING)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    configure_file(CMakeLists.txt.in
+    configure_file(external/googletest/CMakeLists.txt.in
             ${CMAKE_BINARY_DIR}/googletest-download/CMakeLists.txt)
     execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
@@ -153,4 +153,9 @@ if(BUILD_TESTING)
         PRIVATE -D LAUNCHDARKLY_USE_ASSERT
                 -D LAUNCHDARKLY_CONCURRENCY_ABORT
     )
+endif()
+
+
+if (BUILD_TEST_SERVICE)
+    add_subdirectory(contract-tests)
 endif()

@@ -72,9 +72,9 @@ TEST_F(AllFlagsFixture, AllFlagsValid) {
  * nor rollout.
  */
 TEST_F(AllFlagsFixture, AllFlagsWithFlagWithFallthroughWithNoVariationAndNoRollout) {
-    struct LDJSON *  flag1, *flag2, *allFlags;
+    struct LDJSON *flag1, *flag2, *allFlags;
     struct LDClient *client;
-    struct LDUser *  user;
+    struct LDUser *user;
 
     ASSERT_TRUE(client = makeTestClient());
     ASSERT_TRUE(user = LDUserNew("userkey"));
@@ -120,7 +120,7 @@ TEST_F(AllFlagsFixture, AllFlagsWithFlagWithFallthroughWithNoVariationAndNoRollo
 }
 
 TEST_F(AllFlagsFixture, AllFlagsNoFlagsInStore) {
-    struct LDJSON *flag1, *flag2, *allFlags;
+    struct LDJSON *allFlags;
     struct LDClient *client;
     struct LDUser *user;
 

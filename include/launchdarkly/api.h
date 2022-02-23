@@ -24,6 +24,12 @@ extern "C" {
 #include <launchdarkly/user.h>
 #include <launchdarkly/variations.h>
 
+/** @brief Returns the SDK version specified by `LD_SDK_VERSION`.
+* @return SDK version string.
+*/
+LD_EXPORT(const char*) LDVersion(void);
+
 #ifdef __cplusplus
 }
 #endif
+

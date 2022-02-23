@@ -7,3 +7,4 @@ build-redis-dynamic/
 build-redis-static/
 build-static/
 reports/
+.DS_Store
