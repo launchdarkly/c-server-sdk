@@ -1,5 +1,5 @@
 {
-   pthread_mutex_destroy called on non-mutex object
+   pthread_mutex_destroy called on non-mutex object (helgrind)
    Helgrind:Misc
    obj:/usr/lib/x86_64-linux-gnu/valgrind/vgpreload_helgrind-amd64-linux.so
    fun:_dl_fini
@@ -8,10 +8,29 @@
    fun:(below main)
 }
 {
-   pthread_mutex_destroy called on non-mutex object
+   pthread_mutex_destroy called on non-mutex object (helgrind)
    Helgrind:Misc
    obj:/usr/lib/x86_64-linux-gnu/valgrind/vgpreload_helgrind-amd64-linux.so
    obj:/usr/lib/x86_64-linux-gnu/libp11-kit.so.0.3.0
+   fun:_dl_fini
+   fun:__run_exit_handlers
+   fun:exit
+   fun:(below main)
+}
+{
+   The object is not a mutex (drd)
+   drd:MutexErr
+   fun:pthread_mutex_destroy
+   obj:/usr/lib/x86_64-linux-gnu/libp11-kit.so.0.3.0
+   fun:_dl_fini
+   fun:__run_exit_handlers
+   fun:exit
+   fun:(below main)
+}
+{
+   The object is not a mutex (drd)
+   drd:MutexErr
+   fun:pthread_mutex_destroy
    fun:_dl_fini
    fun:__run_exit_handlers
    fun:exit

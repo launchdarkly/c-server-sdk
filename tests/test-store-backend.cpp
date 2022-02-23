@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "commonfixture.h"
+#include "concurrencyfixture.h"
 
 extern "C" {
 #include <string.h>
@@ -104,11 +105,13 @@ makeMockFailInterface() {
 }
 
 static struct LDStore *
-prepareStore(struct LDStoreInterface *const handle) {
+prepareStore(struct LDStoreInterface *const handle, unsigned int storeCacheMilliseconds = 30000) {
     struct LDStore *store;
     struct LDConfig *config;
 
     LD_ASSERT(config = LDConfigNew(""));
+    config->storeCacheMilliseconds = storeCacheMilliseconds;
+
     if (handle) {
         LDConfigSetFeatureStoreBackend(config, handle);
     }
@@ -617,4 +620,33 @@ TEST_F(StoreBackendFixture, AllCache) {
     LDJSONFree(empty);
 
     LDStoreDestroy(store);
+}
+
+// It was previously possible to encounter a double-free when calling LDStoreInitialized,
+// triggered by deleteAndRemoveCacheItem.
+// LDStoreInitialized did not hold a write-lock while removing the INIT_CHECKED_KEY item, which could end up
+// corrupting the hash table, or aborting, presumably depending on the platform.
+// This test can reliably trigger a SIGABRT/SIGSEGV on various hosts by creating many competing threads
+// and utilizing a short cache-timeout.
+// Note: This test does not seem to trigger valgrind's race detection (helgrind or drd).
+// Rather, the normal unit tests (especially OSX) tend to abort.
+TEST_F(ConcurrencyFixture, TestStoreInitializedDoubleFree) {
+    struct LDStore *store;
+    struct LDStoreInterface *handle;
+
+    ASSERT_TRUE(handle = makeMockFailInterface());
+    handle->initialized = mockStaticInitialized;
+    ASSERT_TRUE(store = prepareStore(handle, 5 /* milliseconds */));
+
+    const std::size_t THREAD_CONCURRENCY = 100;
+    const std::size_t CALLS = 10;
+
+    Defer([store]() { LDStoreDestroy(store); });
+
+    RunMany(THREAD_CONCURRENCY, [=]() {
+        for (std::size_t j = 0; j < CALLS; j++) {
+            Sleep();
+            LDStoreInitialized(store);
+        }
+    });
 }
