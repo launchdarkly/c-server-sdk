@@ -2,6 +2,24 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.5.0] - 2022-02-23
+### Added:
+- Added `LDVersion()`, equivalent to `LD_SDK_VERSION`. Useful when wrapping the SDK with a higher level language that cannot access the `LD_SDK_VERSION` symbol. 
+- Added `LDAllFlagsState` API for fetching flag values and details. This API is commonly used to [bootstrap](https://docs.launchdarkly.com/sdk/features/bootstrapping) the client-side Javascript SDK.
+
+### Deprecated:
+- Deprecated `LDAllFlags` in favor of `LDAllFlagsState`. Please invoke `LDAllFlagsState()` followed by `LDAllFlagsStateToValuesMap()` for equivalent behavior. 
+
+### Changed:
+- Changed CircleCI macOS executors to Gen2 resource class.
+- Swapped CircleCI `helgrind` test for `drd` because of false positives within curl dependency.
+
+### Fixed
+- Fixed `LDJSONVariation` to allow for returning a flag of any JSON-representable type (previously would return an error if the expected flag type was not object or array.)
+- Fixed all `LDVariation` variants to return `hasVariation = false` within `LDDetails` when caller requests wrong flag type.
+- Fixed handling of base/stream URIs set by `LDConfigSet[Base/Stream]URI` with an unintentional trailing slash.
+- Fixed double-free bug within `LDStoreInitialized`.
+
 ## [2.4.5] - 2022-01-20
 ### Changed:
 - Updated CI with dedicated valgrind & helgrind jobs
