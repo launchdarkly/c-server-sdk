@@ -24,6 +24,7 @@ var variations_8h =
       [ "LD_FALLTHROUGH", "variations_8h.html#a5bfb76ead561505a82400126669f5212a942ee03cd342272a58d7256ecf550e3f", null ]
     ] ],
     [ "LDAllFlags", "variations_8h.html#a51ba0df725bdcd4a005e6efe7bb4f944", null ],
+    [ "LDAllFlagsState", "variations_8h.html#a8e54f4ef691543ef67e6669662fb7fb4", null ],
     [ "LDBoolVariation", "variations_8h.html#a9bde6b2f91b8b55bbbe277a94868c2e9", null ],
     [ "LDDetailsClear", "variations_8h.html#a84c97c954d7fe5bc0ae82ba02975243d", null ],
     [ "LDDetailsInit", "variations_8h.html#aa4c70c1d7fd7e1f6ecdd9b14ba94f6f2", null ],

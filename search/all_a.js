@@ -1,11 +1,15 @@
 var searchData=
 [
+  ['ld_5fallflags_5fdefault',['LD_ALLFLAGS_DEFAULT',['../flag__state_8h.html#a14d5d87049a4e28119249deda7c24864adff2586ffa8107262c730483103a7829',1,'flag_state.h']]],
   ['ld_5fclient_5fnot_5fready',['LD_CLIENT_NOT_READY',['../variations_8h.html#a8a801b43272f17f44948faf9ae58e42eae929e4c744e8e961ba3dd49f4c931d42',1,'variations.h']]],
   ['ld_5fclient_5fnot_5fspecified',['LD_CLIENT_NOT_SPECIFIED',['../variations_8h.html#a8a801b43272f17f44948faf9ae58e42eaccaaf7233b96e6cdc0ce3d1592f078ea',1,'variations.h']]],
+  ['ld_5fclient_5fside_5fonly',['LD_CLIENT_SIDE_ONLY',['../flag__state_8h.html#a14d5d87049a4e28119249deda7c24864ac3cf39d9e85ef9065ecc56e453f47f7e',1,'flag_state.h']]],
+  ['ld_5fdetails_5fonly_5ffor_5ftracked_5fflags',['LD_DETAILS_ONLY_FOR_TRACKED_FLAGS',['../flag__state_8h.html#a14d5d87049a4e28119249deda7c24864ac0ffbbf8ae943b20e17f5065a6f71e51',1,'flag_state.h']]],
   ['ld_5ferror',['LD_ERROR',['../variations_8h.html#a5bfb76ead561505a82400126669f5212a5e9f31e9e0e8a2bd42f60779f4352fca',1,'variations.h']]],
   ['ld_5fexport',['LD_EXPORT',['../export_8h.html#a419bec5cc15c192bcd1db79c35af6996',1,'export.h']]],
   ['ld_5ffallthrough',['LD_FALLTHROUGH',['../variations_8h.html#a5bfb76ead561505a82400126669f5212a942ee03cd342272a58d7256ecf550e3f',1,'variations.h']]],
   ['ld_5fflag_5fnot_5ffound',['LD_FLAG_NOT_FOUND',['../variations_8h.html#a8a801b43272f17f44948faf9ae58e42eaab937b653a26935d872110ce9de8f98b',1,'variations.h']]],
+  ['ld_5finclude_5freason',['LD_INCLUDE_REASON',['../flag__state_8h.html#a14d5d87049a4e28119249deda7c24864a4e67779f02b1a66fd47a4a109270d79a',1,'flag_state.h']]],
   ['ld_5flog',['LD_LOG',['../logging_8h.html#aa0ac414f3bd6768e4d13d826ab8b66da',1,'logging.h']]],
   ['ld_5fmalformed_5fflag',['LD_MALFORMED_FLAG',['../variations_8h.html#a8a801b43272f17f44948faf9ae58e42ea452d360ac6d34afbb7a7a7a6ef20b526',1,'variations.h']]],
   ['ld_5fnull_5fkey',['LD_NULL_KEY',['../variations_8h.html#a8a801b43272f17f44948faf9ae58e42ea8e29a809b37ed19b75ebbcd9e99d9c73',1,'variations.h']]],
@@ -20,6 +24,14 @@ var searchData=
   ['ld_5fuser_5fnot_5fspecified',['LD_USER_NOT_SPECIFIED',['../variations_8h.html#a8a801b43272f17f44948faf9ae58e42eab6dbc4ad6dbe74d5b75487194a44b1d3',1,'variations.h']]],
   ['ld_5fwrong_5ftype',['LD_WRONG_TYPE',['../variations_8h.html#a8a801b43272f17f44948faf9ae58e42eaa983a0992d13b46aafe74ebf8cfeee16',1,'variations.h']]],
   ['ldallflags',['LDAllFlags',['../variations_8h.html#a51ba0df725bdcd4a005e6efe7bb4f944',1,'variations.h']]],
+  ['ldallflagsstate',['LDAllFlagsState',['../variations_8h.html#a8e54f4ef691543ef67e6669662fb7fb4',1,'variations.h']]],
+  ['ldallflagsstatefree',['LDAllFlagsStateFree',['../flag__state_8h.html#aedcae7381a7c017724d005e055a9d59d',1,'flag_state.h']]],
+  ['ldallflagsstategetdetails',['LDAllFlagsStateGetDetails',['../flag__state_8h.html#aa3b4a9ba078d4a1b14d7d5a209439a6b',1,'flag_state.h']]],
+  ['ldallflagsstategetvalue',['LDAllFlagsStateGetValue',['../flag__state_8h.html#a0ce5c2b84cf1104e08807f51d03d7037',1,'flag_state.h']]],
+  ['ldallflagsstateoption',['LDAllFlagsStateOption',['../flag__state_8h.html#a14d5d87049a4e28119249deda7c24864',1,'flag_state.h']]],
+  ['ldallflagsstateserializejson',['LDAllFlagsStateSerializeJSON',['../flag__state_8h.html#ad2c744c6ec1741f60cfc4714379503f9',1,'flag_state.h']]],
+  ['ldallflagsstatetovaluesmap',['LDAllFlagsStateToValuesMap',['../flag__state_8h.html#a3f4e552958a4ee0a896e7e6d4ea7b074',1,'flag_state.h']]],
+  ['ldallflagsstatevalid',['LDAllFlagsStateValid',['../flag__state_8h.html#a00ae8b39c7fffc6f1aa114a3e17c0aab',1,'flag_state.h']]],
   ['ldalloc',['LDAlloc',['../memory_8h.html#accc994a6017727a7bad24a9fb4c7a0f0',1,'memory.h']]],
   ['ldarray',['LDArray',['../json_8h.html#a35e090b31eb4dd4fc1f6b10c313ce398a91ce236e586cbb415c5e0bdd66ffab3a',1,'json.h']]],
   ['ldarrayappend',['LDArrayAppend',['../json_8h.html#a1c3ff89005964c0bd5c3fb771c361baf',1,'json.h']]],
@@ -139,5 +151,6 @@ var searchData=
   ['ldusersetname',['LDUserSetName',['../user_8h.html#a29ba1a93944c6861c93aa9b76aa892d9',1,'user.h']]],
   ['ldusersetprivateattributes',['LDUserSetPrivateAttributes',['../user_8h.html#a21e824aac81d8412470b3bd373bd3c41',1,'user.h']]],
   ['ldusersetsecondary',['LDUserSetSecondary',['../user_8h.html#a19538317efdf5d21f69803e2132b3287',1,'user.h']]],
+  ['ldversion',['LDVersion',['../api_8h.html#ad82ec0b3842b09e1d5be5386c57c6ff3',1,'api.h']]],
   ['logging_2eh',['logging.h',['../logging_8h.html',1,'']]]
 ];

@@ -1,6 +1,13 @@
 var searchData=
 [
   ['ldallflags',['LDAllFlags',['../variations_8h.html#a51ba0df725bdcd4a005e6efe7bb4f944',1,'variations.h']]],
+  ['ldallflagsstate',['LDAllFlagsState',['../variations_8h.html#a8e54f4ef691543ef67e6669662fb7fb4',1,'variations.h']]],
+  ['ldallflagsstatefree',['LDAllFlagsStateFree',['../flag__state_8h.html#aedcae7381a7c017724d005e055a9d59d',1,'flag_state.h']]],
+  ['ldallflagsstategetdetails',['LDAllFlagsStateGetDetails',['../flag__state_8h.html#aa3b4a9ba078d4a1b14d7d5a209439a6b',1,'flag_state.h']]],
+  ['ldallflagsstategetvalue',['LDAllFlagsStateGetValue',['../flag__state_8h.html#a0ce5c2b84cf1104e08807f51d03d7037',1,'flag_state.h']]],
+  ['ldallflagsstateserializejson',['LDAllFlagsStateSerializeJSON',['../flag__state_8h.html#ad2c744c6ec1741f60cfc4714379503f9',1,'flag_state.h']]],
+  ['ldallflagsstatetovaluesmap',['LDAllFlagsStateToValuesMap',['../flag__state_8h.html#a3f4e552958a4ee0a896e7e6d4ea7b074',1,'flag_state.h']]],
+  ['ldallflagsstatevalid',['LDAllFlagsStateValid',['../flag__state_8h.html#a00ae8b39c7fffc6f1aa114a3e17c0aab',1,'flag_state.h']]],
   ['ldalloc',['LDAlloc',['../memory_8h.html#accc994a6017727a7bad24a9fb4c7a0f0',1,'memory.h']]],
   ['ldarrayappend',['LDArrayAppend',['../json_8h.html#a1c3ff89005964c0bd5c3fb771c361baf',1,'json.h']]],
   ['ldarraylookup',['LDArrayLookup',['../json_8h.html#a5dd0e8382ff995104f5051efb7b5858a',1,'json.h']]],
@@ -99,5 +106,6 @@ var searchData=
   ['ldusersetlastname',['LDUserSetLastName',['../user_8h.html#ad2e9ac5e02b35852dd84830c5d247a20',1,'user.h']]],
   ['ldusersetname',['LDUserSetName',['../user_8h.html#a29ba1a93944c6861c93aa9b76aa892d9',1,'user.h']]],
   ['ldusersetprivateattributes',['LDUserSetPrivateAttributes',['../user_8h.html#a21e824aac81d8412470b3bd373bd3c41',1,'user.h']]],
-  ['ldusersetsecondary',['LDUserSetSecondary',['../user_8h.html#a19538317efdf5d21f69803e2132b3287',1,'user.h']]]
+  ['ldusersetsecondary',['LDUserSetSecondary',['../user_8h.html#a19538317efdf5d21f69803e2132b3287',1,'user.h']]],
+  ['ldversion',['LDVersion',['../api_8h.html#ad82ec0b3842b09e1d5be5386c57c6ff3',1,'api.h']]]
 ];
