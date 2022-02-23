@@ -10,7 +10,7 @@ add_library(definitions
     src/definitions.cpp
     include/definitions/definitions.hpp
 )
-target_link_libraries(definitions PUBLIC json)
+target_link_libraries(definitions PUBLIC nlohmann_json::nlohmann_json)
 target_include_directories(definitions PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 add_library(service
@@ -25,7 +25,7 @@ target_link_libraries(service
     PRIVATE
         http-helpers
         definitions
-        json
+        nlohmann_json::nlohmann_json
         ldserverapi
 )
 target_include_directories(service PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")

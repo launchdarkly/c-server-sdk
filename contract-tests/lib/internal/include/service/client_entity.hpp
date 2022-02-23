@@ -3,7 +3,7 @@
 #include "definitions/definitions.hpp"
 #include "helpers/http_helpers.hpp"
 
-#include <nlohmann-json/json.hpp>
+#include <nlohmann/json.hpp>
 #include <launchdarkly/api.h>
 
 #include <functional>

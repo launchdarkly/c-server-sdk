@@ -15,8 +15,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} --build .
 add_subdirectory(${CMAKE_BINARY_DIR}/httplib-src
         ${CMAKE_BINARY_DIR}/httplib-build EXCLUDE_FROM_ALL)
 
-# Include any 3rd-party libraries that are directly embedded in the source of this repo.
-add_subdirectory(lib/embedded)
+add_subdirectory(lib/external/json)
 
 # Include internal libraries. Exposes 'service' target.
 add_subdirectory(lib/internal)

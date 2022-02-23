@@ -1,7 +1,6 @@
 #pragma once
 
-#define JSON_USE_IMPLICIT_CONVERSIONS 0
-#include "nlohmann-json/json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <optional>
 #include <unordered_map>
