@@ -231,3 +231,16 @@ streaming/validation/drop and reconnect if stream event has well-formed JSON not
 streaming/validation/drop and reconnect if stream event has well-formed JSON not matching schema/patch event
 streaming/validation/drop and reconnect if stream event has well-formed JSON not matching schema/delete event
 streaming/validation/unrecognized data that can be safely ignored/patch event with unrecognized path kind
+evaluation/parameterized/evaluation failures (any)/off variation too low/evaluate flag without detail
+evaluation/parameterized/evaluation failures (any)/fallthrough variation too low/evaluate flag without detail
+evaluation/parameterized/evaluation failures (any)/target variation too low/evaluate flag without detail
+events/user properties/inlineUsers=false, user-private=[lastName preferredLanguage]/identify event
+events/user properties/inlineUsers=false, user-private=[lastName preferredLanguage]/index event
+events/user properties/inlineUsers=false, globally-private=[firstName], user-private=[lastName preferredLanguage]/identify event
+events/user properties/inlineUsers=false, globally-private=[firstName], user-private=[lastName preferredLanguage]/index event
+events/user properties/inlineUsers=true, user-private=[lastName preferredLanguage]/feature event
+events/user properties/inlineUsers=true, user-private=[lastName preferredLanguage]/identify event
+events/user properties/inlineUsers=true, user-private=[lastName preferredLanguage]/custom event
+events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/feature event
+events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/identify event
+events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/custom event
