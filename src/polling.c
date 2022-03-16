@@ -155,7 +155,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     curl    = NULL;
     context = (struct PollContext *)rawcontext;
 
-    if (context->active || client->config->stream) {
+    if (context->active || client->config->stream || client->config->dataSource) {
         return NULL;
     }
 

@@ -6,6 +6,7 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 file(GLOB tests "${PROJECT_SOURCE_DIR}/tests/*.cpp")
 list(REMOVE_ITEM tests "${PROJECT_SOURCE_DIR}/tests/test-main.cpp")
 list(REMOVE_ITEM tests "${PROJECT_SOURCE_DIR}/tests/commonfixture.cpp")
+file(COPY "${PROJECT_SOURCE_DIR}/tests/datafiles" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable("google_tests"
         ${sources}

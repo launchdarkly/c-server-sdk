@@ -5,6 +5,7 @@
 #include "assertion.h"
 #include "config.h"
 #include "utility.h"
+#include "data_source.h"
 
 char *
 LDi_trimTrailingSlash(const char *const s) {
@@ -95,6 +96,7 @@ LDConfigNew(const char *const key)
     config->storeCacheMilliseconds = 30 * 1000;
     config->wrapperName            = NULL;
     config->wrapperVersion         = NULL;
+    config->dataSource             = NULL;
 
     return config;
 
@@ -114,6 +116,14 @@ LDConfigFree(struct LDConfig *const config)
             }
 
             LDFree(config->storeBackend);
+        }
+
+        if (config->dataSource) {
+            if (config->dataSource->destructor) {
+                config->dataSource->destructor(config->dataSource->context);
+            }
+
+            LDFree(config->dataSource);
         }
 
         LDFree(config->key);
@@ -441,6 +451,23 @@ LDConfigSetFeatureStoreBackend(
 #endif
 
     config->storeBackend = backend;
+}
+
+void
+LDConfigSetDataSource(
+    struct LDConfig *const config, struct LDDataSource *const dataSource)
+{
+    LD_ASSERT_API(config);
+
+#ifdef LAUNCHDARKLY_DEFENSIVE
+    if (config == NULL) {
+        LD_LOG(LD_LOG_WARNING, "LDConfigSetDataSource NULL config");
+
+        return;
+    }
+#endif
+
+    config->dataSource = dataSource;
 }
 
 void

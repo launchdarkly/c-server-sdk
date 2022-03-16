@@ -56,6 +56,10 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
 
     LDi_thread_create(&client->thread, LDi_networkthread, client);
 
+    if(client->config->dataSource) {
+        client->config->dataSource->init(client->config->dataSource->context, client->store);
+    }
+
     LD_LOG(LD_LOG_INFO, "waiting to initialize");
     if (maxwaitmilli) {
         double start, diff, now;
@@ -87,6 +91,10 @@ LDClientClose(struct LDClient *const client)
 
         /* wait until background exits */
         LDi_thread_join(&client->thread);
+
+        if(client->config->dataSource) {
+            client->config->dataSource->close(client->config->dataSource->context);
+        }
 
         /* cleanup resources */
         LDi_rwlock_destroy(&client->lock);
