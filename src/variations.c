@@ -825,12 +825,16 @@ LDAllFlagsState(struct LDClient *const client, const struct LDUser *const user, 
 
         LDJSONFree(eventsUnused);
 
-        LDi_flagModelPopulate(&model, flag);
+        if (flag->value) {
+            LDi_flagModelPopulate(&model, flag);
 
-        if (!LDi_allFlagsBuilderAdd(builder, flag)) {
+            if (!LDi_allFlagsBuilderAdd(builder, flag)) {
+                LDi_freeFlagState(flag);
+
+                goto cleanup;
+            }
+        } else {
             LDi_freeFlagState(flag);
-
-            goto cleanup;
         }
     }
 
