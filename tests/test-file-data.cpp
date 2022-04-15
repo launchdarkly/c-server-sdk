@@ -13,25 +13,7 @@ extern "C" {
 #include "integrations/file_data.h"
 }
 
-class User {
-public:
-    User(std::string userKey) {
-        user = LDUserNew(userKey.c_str());
-    }
-
-    ~User() {
-        if(user) {
-            LDUserFree(user);
-        }
-    }
-
-    struct LDUser * RawPtr() {
-        return user;
-    }
-
-private:
-    struct LDUser *user;
-};
+#include "test-utils/user.h"
 
 // Inherit from the CommonFixture to give a reasonable name for the test output.
 // Any custom setup and teardown would happen in this derived class.
