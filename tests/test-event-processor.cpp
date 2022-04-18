@@ -21,21 +21,21 @@ class EventProcessorFixture : public CommonFixture {
 
 TEST_F(EventProcessorFixture, ConstructAndFree) {
     struct LDConfig *config;
-    struct EventProcessor *processor;
+    struct LDEventProcessor *processor;
 
     ASSERT_TRUE(config = LDConfigNew("abc")
     );
-    ASSERT_TRUE(processor = LDi_newEventProcessor(config)
+    ASSERT_TRUE(processor = LDEventProcessor_Create(config)
     );
 
     LDConfigFree(config);
-    LDi_freeEventProcessor(processor);
+    LDEventProcessor_Destroy(processor);
 }
 
 TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
     struct LDUser *user;
     struct LDConfig *config;
-    struct EventProcessor *processor;
+    struct LDEventProcessor *processor;
     struct LDJSON *flag1, *flag2, *event1, *event2, *event3, *event4, *event5,
             *summary, *features, *summaryEntry, *counterEntry, *value1, *value2,
             *value99, *default1, *default2, *default3;
@@ -44,7 +44,7 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
 
     ASSERT_TRUE(user = LDUserNew("abc"));
     ASSERT_TRUE(config = LDConfigNew("key"));
-    ASSERT_TRUE(processor = LDi_newEventProcessor(config));
+    ASSERT_TRUE(processor = LDEventProcessor_Create(config));
 
     ASSERT_TRUE(
             flag1 = makeMinimalFlag("key1", 11, LDBooleanTrue, LDBooleanFalse));
@@ -59,8 +59,7 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
     ASSERT_TRUE(default3 = LDNewText("default3"));
 
     ASSERT_TRUE(
-            event1 = LDi_newFeatureRequestEvent(
-                    processor,
+            event1 = LDi_newFeatureEvent(
                     "key1",
                     user,
                     &variation1,
@@ -69,10 +68,13 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
                     NULL,
                     flag1,
                     NULL,
-                    0));
+                    0,
+                    config->inlineUsersInEvents,
+                    config->allAttributesPrivate,
+                    config->privateAttributeNames
+            ));
     ASSERT_TRUE(
-            event2 = LDi_newFeatureRequestEvent(
-                    processor,
+            event2 = LDi_newFeatureEvent(
                     "key1",
                     user,
                     &variation2,
@@ -81,10 +83,13 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
                     NULL,
                     flag1,
                     NULL,
-                    0));
+                    0,
+                    config->inlineUsersInEvents,
+                    config->allAttributesPrivate,
+                    config->privateAttributeNames
+            ));
     ASSERT_TRUE(
-            event3 = LDi_newFeatureRequestEvent(
-                    processor,
+            event3 = LDi_newFeatureEvent(
                     "key2",
                     user,
                     &variation1,
@@ -93,10 +98,13 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
                     NULL,
                     flag2,
                     NULL,
-                    0));
+                    0,
+                    config->inlineUsersInEvents,
+                    config->allAttributesPrivate,
+                    config->privateAttributeNames
+            ));
     ASSERT_TRUE(
-            event4 = LDi_newFeatureRequestEvent(
-                    processor,
+            event4 = LDi_newFeatureEvent(
                     "key1",
                     user,
                     &variation1,
@@ -105,10 +113,13 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
                     NULL,
                     flag1,
                     NULL,
-                    0));
+                    0,
+                    config->inlineUsersInEvents,
+                    config->allAttributesPrivate,
+                    config->privateAttributeNames
+            ));
     ASSERT_TRUE(
-            event5 = LDi_newFeatureRequestEvent(
-                    processor,
+            event5 = LDi_newFeatureEvent(
                     "badkey",
                     user,
                     NULL,
@@ -117,7 +128,11 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
                     NULL,
                     NULL,
                     NULL,
-                    0));
+                    0,
+                    config->inlineUsersInEvents,
+                    config->allAttributesPrivate,
+                    config->privateAttributeNames
+            ));
 
     ASSERT_TRUE(LDi_summarizeEvent(processor, event1, LDBooleanFalse));
     ASSERT_TRUE(LDi_summarizeEvent(processor, event2, LDBooleanFalse));
@@ -178,13 +193,13 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
     LDJSONFree(summary);
     LDUserFree(user);
     LDConfigFree(config);
-    LDi_freeEventProcessor(processor);
+    LDEventProcessor_Destroy(processor);
 }
 
 TEST_F(EventProcessorFixture, CounterForNilVariationIsDistinctFromOthers) {
     struct LDUser *user;
     struct LDConfig *config;
-    struct EventProcessor *processor;
+    struct LDEventProcessor *processor;
     struct LDJSON *flag, *event1, *event2, *event3, *value1, *value2, *default1,
             *summary, *features, *summaryEntry, *counterEntry;
     const unsigned int variation1 = 1;
@@ -192,7 +207,7 @@ TEST_F(EventProcessorFixture, CounterForNilVariationIsDistinctFromOthers) {
 
     ASSERT_TRUE(user = LDUserNew("abc"));
     ASSERT_TRUE(config = LDConfigNew("key"));
-    ASSERT_TRUE(processor = LDi_newEventProcessor(config));
+    ASSERT_TRUE(processor = LDEventProcessor_Create(config));
 
     ASSERT_TRUE(
             flag = makeMinimalFlag("key1", 11, LDBooleanTrue, LDBooleanFalse));
@@ -202,8 +217,7 @@ TEST_F(EventProcessorFixture, CounterForNilVariationIsDistinctFromOthers) {
     ASSERT_TRUE(default1 = LDNewText("default1"));
 
     ASSERT_TRUE(
-            event1 = LDi_newFeatureRequestEvent(
-                    processor,
+            event1 = LDi_newFeatureEvent(
                     "key1",
                     user,
                     &variation1,
@@ -212,10 +226,13 @@ TEST_F(EventProcessorFixture, CounterForNilVariationIsDistinctFromOthers) {
                     NULL,
                     flag,
                     NULL,
-                    0));
+                    0,
+                    config->inlineUsersInEvents,
+                    config->allAttributesPrivate,
+                    config->privateAttributeNames
+            ));
     ASSERT_TRUE(
-            event2 = LDi_newFeatureRequestEvent(
-                    processor,
+            event2 = LDi_newFeatureEvent(
                     "key1",
                     user,
                     &variation2,
@@ -224,10 +241,13 @@ TEST_F(EventProcessorFixture, CounterForNilVariationIsDistinctFromOthers) {
                     NULL,
                     flag,
                     NULL,
-                    0));
+                    0,
+                    config->inlineUsersInEvents,
+                    config->allAttributesPrivate,
+                    config->privateAttributeNames
+            ));
     ASSERT_TRUE(
-            event3 = LDi_newFeatureRequestEvent(
-                    processor,
+            event3 = LDi_newFeatureEvent(
                     "key1",
                     user,
                     NULL,
@@ -236,7 +256,11 @@ TEST_F(EventProcessorFixture, CounterForNilVariationIsDistinctFromOthers) {
                     NULL,
                     flag,
                     NULL,
-                    0));
+                    0,
+                    config->inlineUsersInEvents,
+                    config->allAttributesPrivate,
+                    config->privateAttributeNames
+            ));
 
     ASSERT_TRUE(LDi_summarizeEvent(processor, event1, LDBooleanFalse));
     ASSERT_TRUE(LDi_summarizeEvent(processor, event2, LDBooleanFalse));
@@ -275,7 +299,7 @@ TEST_F(EventProcessorFixture, CounterForNilVariationIsDistinctFromOthers) {
     LDJSONFree(summary);
     LDUserFree(user);
     LDConfigFree(config);
-    LDi_freeEventProcessor(processor);
+    LDEventProcessor_Destroy(processor);
 }
 
 TEST_F(EventProcessorFixture, TrackQueued) {
@@ -290,11 +314,11 @@ TEST_F(EventProcessorFixture, TrackQueued) {
 
     ASSERT_TRUE(LDClientTrack(client, key, user, NULL));
 
-    ASSERT_TRUE(client->eventProcessor->events);
-    ASSERT_TRUE(LDJSONGetType(client->eventProcessor->events) == LDArray);
+    ASSERT_TRUE(LDEventProcessor_GetEvents(client->eventProcessor));
+    ASSERT_TRUE(LDJSONGetType(LDEventProcessor_GetEvents(client->eventProcessor)) == LDArray);
     /* event + index */
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 2);
-    ASSERT_TRUE(event = LDGetIter(client->eventProcessor->events));
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 2);
+    ASSERT_TRUE(event = LDGetIter(LDEventProcessor_GetEvents(client->eventProcessor)));
     ASSERT_TRUE(LDJSONGetType(event) == LDObject);
     ASSERT_STREQ(key, LDGetText(LDObjectLookup(event, "key")));
     ASSERT_TRUE(!LDObjectLookup(event, "data"));
@@ -318,11 +342,11 @@ TEST_F(EventProcessorFixture, TrackMetricQueued) {
 
     ASSERT_TRUE(LDClientTrackMetric(client, key, user, NULL, metric));
 
-    ASSERT_TRUE(client->eventProcessor->events);
-    ASSERT_TRUE(LDJSONGetType(client->eventProcessor->events) == LDArray);
+    ASSERT_TRUE(LDEventProcessor_GetEvents(client->eventProcessor));
+    ASSERT_TRUE(LDJSONGetType(LDEventProcessor_GetEvents(client->eventProcessor)) == LDArray);
     /* event + index */
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 2);
-    ASSERT_TRUE(event = LDGetIter(client->eventProcessor->events));
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 2);
+    ASSERT_TRUE(event = LDGetIter(LDEventProcessor_GetEvents(client->eventProcessor)));
     ASSERT_TRUE(LDJSONGetType(event) == LDObject);
     ASSERT_STREQ(key, LDGetText(LDObjectLookup(event, "key")));
     ASSERT_TRUE(!LDObjectLookup(event, "data"));
@@ -343,10 +367,10 @@ TEST_F(EventProcessorFixture, IdentifyQueued) {
 
     ASSERT_TRUE(LDClientIdentify(client, user));
 
-    ASSERT_TRUE(client->eventProcessor->events);
-    ASSERT_TRUE(LDJSONGetType(client->eventProcessor->events) == LDArray);
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 1);
-    ASSERT_TRUE(event = LDGetIter(client->eventProcessor->events));
+    ASSERT_TRUE(LDEventProcessor_GetEvents(client->eventProcessor));
+    ASSERT_TRUE(LDJSONGetType(LDEventProcessor_GetEvents(client->eventProcessor)) == LDArray);
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 1);
+    ASSERT_TRUE(event = LDGetIter(LDEventProcessor_GetEvents(client->eventProcessor)));
     ASSERT_TRUE(LDJSONGetType(event) == LDObject);
     ASSERT_STREQ("identify", LDGetText(LDObjectLookup(event, "kind")));
     ASSERT_STREQ("abc", LDGetText(LDObjectLookup(event, "key")));
@@ -373,14 +397,14 @@ TEST_F(EventProcessorFixture, IndexEventGeneration) {
     ASSERT_TRUE(LDStoreInitEmpty(client->store));
     ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, flag));
 
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 0);
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 0);
 
     /* evaluation with new user generations index */
     ASSERT_TRUE(LDIntVariation(client, user1, "flag", 25, NULL) == 42);
 
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 2);
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 2);
     /* index event */
-    ASSERT_TRUE(event = LDArrayLookup(client->eventProcessor->events, 0));
+    ASSERT_TRUE(event = LDArrayLookup(LDEventProcessor_GetEvents(client->eventProcessor), 0));
     ASSERT_STREQ(LDGetText(LDObjectLookup(event, "kind")), "index");
     ASSERT_TRUE(
             tmp = LDi_userToJSON(
@@ -391,7 +415,7 @@ TEST_F(EventProcessorFixture, IndexEventGeneration) {
     ASSERT_TRUE(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
     LDJSONFree(tmp);
     /* feature event */
-    ASSERT_TRUE(event = LDArrayLookup(client->eventProcessor->events, 1));
+    ASSERT_TRUE(event = LDArrayLookup(LDEventProcessor_GetEvents(client->eventProcessor), 1));
     ASSERT_STREQ(LDGetText(LDObjectLookup(event, "kind")), "feature");
     ASSERT_STREQ(LDGetText(LDObjectLookup(event, "userKey")), "user1");
     ASSERT_TRUE(LDObjectLookup(event, "user") == NULL);
@@ -399,17 +423,17 @@ TEST_F(EventProcessorFixture, IndexEventGeneration) {
     /* second evaluation with same user does not generate another event */
     ASSERT_TRUE(LDIntVariation(client, user1, "flag", 25, NULL) == 42);
 
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 3);
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 3);
     /* feature event */
-    ASSERT_TRUE(event = LDArrayLookup(client->eventProcessor->events, 2));
+    ASSERT_TRUE(event = LDArrayLookup(LDEventProcessor_GetEvents(client->eventProcessor), 2));
     ASSERT_STREQ(LDGetText(LDObjectLookup(event, "kind")), "feature");
     ASSERT_TRUE(LDObjectLookup(event, "user") == NULL);
 
     /* evaluation with another user generates a new event */
     ASSERT_TRUE(LDIntVariation(client, user2, "flag", 25, NULL) == 42);
 
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 5);
-    ASSERT_TRUE(event = LDArrayLookup(client->eventProcessor->events, 3));
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 5);
+    ASSERT_TRUE(event = LDArrayLookup(LDEventProcessor_GetEvents(client->eventProcessor), 3));
     ASSERT_STREQ(LDGetText(LDObjectLookup(event, "kind")), "index");
     ASSERT_TRUE(
             tmp = LDi_userToJSON(
@@ -419,7 +443,7 @@ TEST_F(EventProcessorFixture, IndexEventGeneration) {
                     config->privateAttributeNames));
     ASSERT_TRUE(LDJSONCompare(LDObjectLookup(event, "user"), tmp));
     LDJSONFree(tmp);
-    ASSERT_TRUE(event = LDArrayLookup(client->eventProcessor->events, 4));
+    ASSERT_TRUE(event = LDArrayLookup(LDEventProcessor_GetEvents(client->eventProcessor), 4));
     ASSERT_STREQ(LDGetText(LDObjectLookup(event, "kind")), "feature");
     ASSERT_TRUE(LDObjectLookup(event, "user") == NULL);
 
@@ -445,13 +469,13 @@ TEST_F(EventProcessorFixture, InlineUsersInEvents) {
 
     ASSERT_TRUE(LDStoreInitEmpty(client->store));
     ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, flag));
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 0);
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 0);
 
     /* check that user is embedded in full fidelity event */
     ASSERT_TRUE(LDIntVariation(client, user, "flag", 25, NULL) == 51);
 
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 1);
-    ASSERT_TRUE(event = LDArrayLookup(client->eventProcessor->events, 0));
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 1);
+    ASSERT_TRUE(event = LDArrayLookup(LDEventProcessor_GetEvents(client->eventProcessor), 0));
     ASSERT_STREQ(LDGetText(LDObjectLookup(event, "kind")), "feature");
     ASSERT_TRUE(
             tmp = LDi_userToJSON(
@@ -483,13 +507,13 @@ TEST_F(EventProcessorFixture, DetailsNotIncludedIfNotDetailed) {
 
     ASSERT_TRUE(LDStoreInitEmpty(client->store));
     ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, flag));
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 0);
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 0);
 
     /* check that user is embedded in full fidelity event */
     ASSERT_TRUE(LDIntVariation(client, user, "flag", 25, NULL) == 51);
 
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 1);
-    ASSERT_TRUE(event = LDArrayLookup(client->eventProcessor->events, 0));
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 1);
+    ASSERT_TRUE(event = LDArrayLookup(LDEventProcessor_GetEvents(client->eventProcessor), 0));
     ASSERT_STREQ(LDGetText(LDObjectLookup(event, "kind")), "feature");
     ASSERT_TRUE(LDObjectLookup(event, "reason") == NULL);
 
@@ -516,13 +540,13 @@ TEST_F(EventProcessorFixture, DetailsIncludedIfDetailed) {
 
     ASSERT_TRUE(LDStoreInitEmpty(client->store));
     ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, flag));
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 0);
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 0);
 
     /* check that user is embedded in full fidelity event */
     ASSERT_TRUE(LDIntVariation(client, user, "flag", 25, &details) == 51);
 
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 1);
-    ASSERT_TRUE(event = LDArrayLookup(client->eventProcessor->events, 0));
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 1);
+    ASSERT_TRUE(event = LDArrayLookup(LDEventProcessor_GetEvents(client->eventProcessor), 0));
     ASSERT_STREQ(LDGetText(LDObjectLookup(event, "kind")), "feature");
     ASSERT_TRUE(tmp = LDObjectLookup(event, "reason"));
     ASSERT_TRUE(reason = LDJSONSerialize(tmp));
@@ -554,13 +578,13 @@ TEST_F(EventProcessorFixture, ExperimentationFallthroughNonDetailed) {
 
     ASSERT_TRUE(LDStoreInitEmpty(client->store));
     ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, flag));
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 0);
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 0);
 
     /* check that user is embedded in full fidelity event */
     ASSERT_TRUE(LDIntVariation(client, user, "flag", 25, NULL) == 51);
 
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 1);
-    ASSERT_TRUE(event = LDArrayLookup(client->eventProcessor->events, 0));
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 1);
+    ASSERT_TRUE(event = LDArrayLookup(LDEventProcessor_GetEvents(client->eventProcessor), 0));
     ASSERT_STREQ(LDGetText(LDObjectLookup(event, "kind")), "feature");
     ASSERT_TRUE(tmp = LDObjectLookup(event, "reason"));
     ASSERT_TRUE(reason = LDJSONSerialize(tmp));
@@ -596,13 +620,13 @@ TEST_F(EventProcessorFixture, ExperimentationRuleNonDetailed) {
 
     ASSERT_TRUE(LDStoreInitEmpty(client->store));
     ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, flag));
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 0);
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 0);
 
     /* check that user is embedded in full fidelity event */
     ASSERT_TRUE(result = LDStringVariation(client, user, "feature", "a", NULL));
 
-    ASSERT_TRUE(LDCollectionGetSize(client->eventProcessor->events) == 1);
-    ASSERT_TRUE(event = LDArrayLookup(client->eventProcessor->events, 0));
+    ASSERT_TRUE(LDCollectionGetSize(LDEventProcessor_GetEvents(client->eventProcessor)) == 1);
+    ASSERT_TRUE(event = LDArrayLookup(LDEventProcessor_GetEvents(client->eventProcessor), 0));
     ASSERT_STREQ(LDGetText(LDObjectLookup(event, "kind")), "feature");
     ASSERT_TRUE(tmp = LDObjectLookup(event, "reason"));
     ASSERT_TRUE(reason = LDJSONSerialize(tmp));
@@ -658,7 +682,7 @@ TEST_F(EventProcessorFixture, AliasEventIsQueued) {
 
     LDClientAlias(client, current, previous);
 
-    ASSERT_TRUE(LDi_bundleEventPayload(client->eventProcessor, &payload));
+    ASSERT_TRUE(LDEventProcessor_CreateEventPayloadAndResetState(client->eventProcessor, &payload));
 
     ASSERT_TRUE(LDCollectionGetSize(payload) == 1);
     ASSERT_TRUE(event = LDArrayLookup(payload, 0));

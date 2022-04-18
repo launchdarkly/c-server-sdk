@@ -57,7 +57,7 @@ LD_EXPORT(LDBoolean) LDClientIsInitialized(struct LDClient *const client);
  * @param[in] user The user to generate the event for. Ownership is not
  * transferred. May not be `NULL`.
  * @param[in] data The JSON to attach to the event. Ownership of `data` is
- * transferred. May be `NULL`.
+ * transferred only if True is returned. May be `NULL`.
  * @return True if the event was queued, False on error.
  */
 LD_EXPORT(LDBoolean)

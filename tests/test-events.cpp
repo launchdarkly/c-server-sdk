@@ -38,8 +38,8 @@ TEST_F(EventsFixture, ParseServerTimeHeaderActual) {
     EXPECT_TRUE(client = makeOfflineClient());
 
     ASSERT_EQ(LDi_onHeader(header, total, 1, client), total);
-    ASSERT_GE(client->eventProcessor->lastServerTime, 1553880000000);
-    ASSERT_LE(client->eventProcessor->lastServerTime, 1553911000000);
+    ASSERT_GE(LDEventProcessor_GetLastServerTime(client->eventProcessor), 1553880000000);
+    ASSERT_LE(LDEventProcessor_GetLastServerTime(client->eventProcessor), 1553911000000);
 
     LDClientClose(client);
 }
@@ -52,8 +52,8 @@ TEST_F(EventsFixture, ParseServerTimeHeaderAlt) {
     EXPECT_TRUE(client = makeOfflineClient());
 
     ASSERT_EQ(LDi_onHeader(header, total, 1, client), total);
-    ASSERT_GE(client->eventProcessor->lastServerTime, 1553880000000);
-    ASSERT_LE(client->eventProcessor->lastServerTime, 1553911000000);
+    ASSERT_GE(LDEventProcessor_GetLastServerTime(client->eventProcessor), 1553880000000);
+    ASSERT_LE(LDEventProcessor_GetLastServerTime(client->eventProcessor), 1553911000000);
 
     LDClientClose(client);
 }
@@ -68,10 +68,10 @@ TEST_F(EventsFixture, ParseServerTimeHeaderBad) {
     EXPECT_TRUE(client = makeOfflineClient());
 
     ASSERT_EQ(LDi_onHeader(header1, total1, 1, client), total1);
-    ASSERT_EQ(client->eventProcessor->lastServerTime, 0);
+    ASSERT_EQ(LDEventProcessor_GetLastServerTime(client->eventProcessor), 0);
 
     ASSERT_EQ(LDi_onHeader(header2, total2, 1, client), total2);
-    ASSERT_EQ(client->eventProcessor->lastServerTime, 0);
+    ASSERT_EQ(LDEventProcessor_GetLastServerTime(client->eventProcessor), 0);
 
     LDClientClose(client);
 }

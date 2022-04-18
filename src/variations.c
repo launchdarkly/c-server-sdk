@@ -231,6 +231,7 @@ variation(
     struct LDJSON *      value, *subEvents;
     struct LDDetails     details, *detailsRef;
     struct LDJSONRC *    flagrc;
+    struct EvaluationResult result;
 
     LD_ASSERT_API(client);
     LD_ASSERT_API(user);
@@ -336,17 +337,16 @@ variation(
         }
     }
 
-    if (!LDi_processEvaluation(
-            client->eventProcessor,
-            user,
-            subEvents,
-            key,
-            value,
-            fallback,
-            flag,
-            detailsRef,
-            o_details != NULL))
-    {
+    result.user = user;
+    result.subEvents = subEvents;
+    result.flagKey = key;
+    result.actualValue = value;
+    result.fallbackValue = fallback;
+    result.flag = flag;
+    result.details = detailsRef;
+    result.detailedEvaluation = (LDBoolean) (o_details != NULL);
+
+    if (!LDEventProcessor_ProcessEvaluation(client->eventProcessor, &result)){
         subEvents = NULL;
 
         goto error;

@@ -45,7 +45,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     client->shuttingdown = LDBooleanFalse;
     client->config       = config;
 
-    if (!(client->eventProcessor = LDi_newEventProcessor(config))) {
+    if (!(client->eventProcessor = LDEventProcessor_Create(config))) {
         LDStoreDestroy(client->store);
         LDFree(client);
 
@@ -98,7 +98,7 @@ LDClientClose(struct LDClient *const client)
 
         /* cleanup resources */
         LDi_rwlock_destroy(&client->lock);
-        LDi_freeEventProcessor(client->eventProcessor);
+        LDEventProcessor_Destroy(client->eventProcessor);
 
         LDStoreDestroy(client->store);
 
@@ -159,8 +159,9 @@ LDClientTrack(
     }
 #endif
 
-    return LDi_track(
-        client->eventProcessor, user, key, data, 0, LDBooleanFalse);
+
+
+    return LDEventProcessor_Track(client->eventProcessor, user, key, data);
 }
 
 LDBoolean
@@ -195,8 +196,7 @@ LDClientTrackMetric(
     }
 #endif
 
-    return LDi_track(
-        client->eventProcessor, user, key, data, metric, LDBooleanTrue);
+    return LDEventProcessor_TrackMetric(client->eventProcessor, user, key, data, metric);
 }
 
 LDBoolean
@@ -229,7 +229,7 @@ LDClientAlias(
     }
 #endif
 
-    return LDi_alias(client->eventProcessor, currentUser, previousUser);
+    return LDEventProcessor_Alias(client->eventProcessor, currentUser, previousUser);
 }
 
 LDBoolean
@@ -252,7 +252,7 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
     }
 #endif
 
-    return LDi_identify(client->eventProcessor, user);
+    return LDEventProcessor_Identify(client->eventProcessor, user);
 }
 
 LDBoolean
