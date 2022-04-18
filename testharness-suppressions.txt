@@ -193,3 +193,7 @@ streaming/validation/drop and reconnect if stream event has well-formed JSON not
 streaming/validation/drop and reconnect if stream event has well-formed JSON not matching schema/patch event
 streaming/validation/drop and reconnect if stream event has well-formed JSON not matching schema/delete event
 streaming/validation/unrecognized data that can be safely ignored/patch event with unrecognized path kind
+events/disabling/evaluation
+events/disabling/identify event
+events/disabling/custom event
+events/disabling/alias event

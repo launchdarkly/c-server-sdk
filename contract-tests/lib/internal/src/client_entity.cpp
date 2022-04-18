@@ -317,6 +317,18 @@ struct LDConfig * make_config(const SDKConfigParams &in) {
         return nullptr;
     }
 
+    if (in.serviceEndpoints) {
+        if (in.serviceEndpoints->streaming) {
+            LDConfigSetStreamURI(out, in.serviceEndpoints->streaming->c_str());
+        }
+        if (in.serviceEndpoints->polling) {
+            LDConfigSetBaseURI(out, in.serviceEndpoints->polling->c_str());
+        }
+        if (in.serviceEndpoints->events) {
+            LDConfigSetEventsURI(out, in.serviceEndpoints->events->c_str());
+        }
+    }
+
     if (in.streaming && in.streaming->baseUri) {
         LDConfigSetStreamURI(out, in.streaming->baseUri->c_str());
     }

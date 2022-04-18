@@ -27,7 +27,8 @@ void TestService::get_status(const httplib::Request &req, httplib::Response &res
             "strongly-typed",
             "all-flags-with-reasons",
             "all-flags-client-side-only",
-            "all-flags-details-only-for-tracked-flags"
+            "all-flags-details-only-for-tracked-flags",
+            "service-endpoints"
     };
     res.set_content(rsp.dump(), "application/json");
 }

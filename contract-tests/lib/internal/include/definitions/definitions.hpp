@@ -55,6 +55,13 @@ struct SDKConfigEventParams {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SDKConfigEventParams, baseUri, capacity, enableDiagnostics,
                                                 allAttributesPrivate, globalPrivateAttributes, flushIntervalMs,
                                                 inlineUsers);
+struct SDKConfigServiceEndpointsParams {
+    std::optional<std::string> streaming;
+    std::optional<std::string> polling;
+    std::optional<std::string> events;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SDKConfigServiceEndpointsParams, streaming, polling, events);
+
 
 struct SDKConfigParams {
     std::string credential;
@@ -62,9 +69,10 @@ struct SDKConfigParams {
     std::optional<bool> initCanFail;
     std::optional<SDKConfigStreamingParams> streaming;
     std::optional<SDKConfigEventParams> events;
+    std::optional<SDKConfigServiceEndpointsParams> serviceEndpoints;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SDKConfigParams, credential, startWaitTimeMs, initCanFail,
-                                                streaming, events);
+                                                streaming, events, serviceEndpoints);
 
 struct CreateInstanceParams {
     SDKConfigParams configuration;
