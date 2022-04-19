@@ -88,18 +88,18 @@ LDEventProcessor_ProcessEvaluation(struct LDEventProcessor *processor, struct Ev
 
 struct LDJSON *
 LDi_newFeatureEvent(
-        const char *const key,
-        const struct LDUser *const user,
-        const unsigned int *const variation,
-        const struct LDJSON *const value,
-        const struct LDJSON *const defaultValue,
-        const char *const prereqOf,
-        const struct LDJSON *const flag,
-        const struct LDDetails *const details,
-        const double now,
+        const char *key,
+        const struct LDUser *user,
+        const unsigned int *variation,
+        const struct LDJSON *value,
+        const struct LDJSON *defaultValue,
+        const char *prereqOf,
+        const struct LDJSON *flag,
+        const struct LDDetails *details,
+        double now,
         LDBoolean inlineUsersInEvents,
         LDBoolean allAttributesPrivate,
-        const struct LDJSON *const privateAttributeNames
+        const struct LDJSON *privateAttributeNames
 );
 
 /* The following methods are used by the analytics networking thread. */

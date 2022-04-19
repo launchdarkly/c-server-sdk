@@ -206,29 +206,37 @@ bool ClientEntity::customEvent(const CustomEventParams &params) {
         return false;
     }
 
-    struct LDJSON* json = params.data ?
+    struct LDJSON* data = params.data ?
           LDJSONDeserialize(params.data->dump().c_str()) :
           LDNewNull();
 
-    if (params.metricValue) {
-        return static_cast<bool>(LDClientTrackMetric(
-                m_client,
-                params.eventKey.c_str(),
-                user.get(),
-                json,
-                *params.metricValue
-        ));
-    }
-    if (params.data) {
+
+    if (params.omitNullData.value_or(false) && !params.metricValue && !params.data) {
         return static_cast<bool>(LDClientTrack(
                 m_client,
                 params.eventKey.c_str(),
                 user.get(),
-                json
+                data
         ));
     }
 
-    return false;
+    if (!params.metricValue) {
+        return static_cast<bool>(LDClientTrack(
+                m_client,
+                params.eventKey.c_str(),
+                user.get(),
+                data
+        ));
+    }
+
+
+    return static_cast<bool>(LDClientTrackMetric(
+            m_client,
+            params.eventKey.c_str(),
+            user.get(),
+            data,
+            *params.metricValue
+    ));
 }
 
 bool ClientEntity::aliasEvent(const AliasEventParams &params) {

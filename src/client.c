@@ -159,7 +159,9 @@ LDClientTrack(
     }
 #endif
 
-
+    if (!client->config->sendEvents) {
+        return LDBooleanTrue;
+    }
 
     return LDEventProcessor_Track(client->eventProcessor, user, key, data);
 }
@@ -196,6 +198,10 @@ LDClientTrackMetric(
     }
 #endif
 
+    if (!client->config->sendEvents) {
+        return LDBooleanTrue;
+    }
+
     return LDEventProcessor_TrackMetric(client->eventProcessor, user, key, data, metric);
 }
 
@@ -229,6 +235,10 @@ LDClientAlias(
     }
 #endif
 
+    if (!client->config->sendEvents) {
+        return LDBooleanTrue;
+    }
+
     return LDEventProcessor_Alias(client->eventProcessor, currentUser, previousUser);
 }
 
@@ -251,6 +261,10 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
         return LDBooleanFalse;
     }
 #endif
+
+    if (!client->config->sendEvents) {
+        return LDBooleanTrue;
+    }
 
     return LDEventProcessor_Identify(client->eventProcessor, user);
 }

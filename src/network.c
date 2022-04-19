@@ -212,10 +212,14 @@ LDi_networkthread(void *const clientref)
         }
     }
 
-    if (!(interfaces[interfacecount++] = LDi_constructAnalytics(client))) {
-        LD_LOG(LD_LOG_ERROR, "failed to construct analytics");
+    if (client->config->sendEvents) {
+        if (!(interfaces[interfacecount++] = LDi_constructAnalytics(client))) {
+            LD_LOG(LD_LOG_ERROR, "failed to construct analytics");
 
-        return THREAD_RETURN_DEFAULT;
+            return THREAD_RETURN_DEFAULT;
+        }
+    } else {
+        LD_LOG(LD_LOG_INFO, "analytic events are disabled");
     }
 
     while (LDBooleanTrue) {
