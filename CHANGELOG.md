@@ -2,6 +2,17 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.6.0] - 2022-04-20
+### Added:
+- Added `integrations/test_data.h`. Test Data is a new way to inject feature flag data programmatically into the SDK for testing — either with fixed values for each flag, or with targets and/or rules that can return different values for different users. 
+
+- Added `integrations/file_data.h`. File Data is a new way to inject feature flag data via an external resource.
+
+### Fixed:
+- Fixed bug in `LDAllFlagsState` where invalid flags were included in the output.
+- Fixed `LDConfigSetSendEvents` to properly disable analytic events when set to false. As part of this change, public functions `LDClientTrack`, `LDClientTrackMetric`, `LDClientAlias`, and `LDClientIdentify` now return true when analytic events are disabled.
+- Fixed JSON serialization of time values to remove fractional millisecond component.
+
 ## [2.5.0] - 2022-02-23
 ### Added:
 - Added `LDVersion()`, equivalent to `LD_SDK_VERSION`. Useful when wrapping the SDK with a higher level language that cannot access the `LD_SDK_VERSION` symbol. 
