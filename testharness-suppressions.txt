@@ -103,21 +103,11 @@ events/feature events/full feature event for tracked flag/without reason/anonymo
 events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: double
 events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: string
 events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: any
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/valid flag/type: bool
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/valid flag/type: int
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/valid flag/type: double
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/valid flag/type: string
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/valid flag/type: any
 events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: bool
 events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: int
 events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: double
 events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: string
 events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: any
-events/feature events/full feature event for tracked flag/with reason/anonymous user/valid flag/type: bool
-events/feature events/full feature event for tracked flag/with reason/anonymous user/valid flag/type: int
-events/feature events/full feature event for tracked flag/with reason/anonymous user/valid flag/type: double
-events/feature events/full feature event for tracked flag/with reason/anonymous user/valid flag/type: string
-events/feature events/full feature event for tracked flag/with reason/anonymous user/valid flag/type: any
 events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: bool
 events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: int
 events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: double
@@ -144,23 +134,8 @@ events/debug events/should see debug event/debugEventsUntilDate is after SDK tim
 events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: string
 events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: any
 events/feature prerequisite events/without reasons
-events/feature prerequisite events/with reasons
-events/experimentation/experiment in rule
-events/experimentation/experiment in fallthrough
-events/identify events/basic properties/non-anonymous user
-events/identify events/basic properties/anonymous user
 events/identify events/user with empty key generates no event
 events/identify events/identify event makes index event for same user unnecessary
-events/custom events/data and metricValue parameters/data=null
-events/custom events/data and metricValue parameters/data=null, omitNullData
-events/alias events/from non-anonymous to non-anonymous
-events/alias events/from non-anonymous to anonymous
-events/alias events/from anonymous to non-anonymous
-events/alias events/from anonymous to anonymous
-events/index events/basic properties/non-anonymous user
-events/index events/basic properties/anonymous user
-events/index events/only one index event per user/from feature event
-events/index events/only one index event per user/from custom event
 events/user properties/inlineUsers=false, user-private=[lastName preferredLanguage]/identify event
 events/user properties/inlineUsers=false, user-private=[lastName preferredLanguage]/index event
 events/user properties/inlineUsers=false, globally-private=[firstName], user-private=[lastName preferredLanguage]/identify event
