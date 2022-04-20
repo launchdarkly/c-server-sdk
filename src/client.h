@@ -14,5 +14,5 @@ struct LDClient
     ld_rwlock_t            lock;
     LDBoolean              shouldFlush;
     struct LDStore *       store;
-    struct EventProcessor *eventProcessor;
+    struct LDEventProcessor *eventProcessor;
 };

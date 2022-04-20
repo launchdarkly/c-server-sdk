@@ -45,7 +45,7 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     client->shuttingdown = LDBooleanFalse;
     client->config       = config;
 
-    if (!(client->eventProcessor = LDi_newEventProcessor(config))) {
+    if (!(client->eventProcessor = LDEventProcessor_Create(config))) {
         LDStoreDestroy(client->store);
         LDFree(client);
 
@@ -55,6 +55,10 @@ LDClientInit(struct LDConfig *const config, const unsigned int maxwaitmilli)
     LDi_rwlock_init(&client->lock);
 
     LDi_thread_create(&client->thread, LDi_networkthread, client);
+
+    if(client->config->dataSource) {
+        client->config->dataSource->init(client->config->dataSource->context, client->store);
+    }
 
     LD_LOG(LD_LOG_INFO, "waiting to initialize");
     if (maxwaitmilli) {
@@ -88,9 +92,13 @@ LDClientClose(struct LDClient *const client)
         /* wait until background exits */
         LDi_thread_join(&client->thread);
 
+        if(client->config->dataSource) {
+            client->config->dataSource->close(client->config->dataSource->context);
+        }
+
         /* cleanup resources */
         LDi_rwlock_destroy(&client->lock);
-        LDi_freeEventProcessor(client->eventProcessor);
+        LDEventProcessor_Destroy(client->eventProcessor);
 
         LDStoreDestroy(client->store);
 
@@ -151,8 +159,11 @@ LDClientTrack(
     }
 #endif
 
-    return LDi_track(
-        client->eventProcessor, user, key, data, 0, LDBooleanFalse);
+    if (!client->config->sendEvents) {
+        return LDBooleanTrue;
+    }
+
+    return LDEventProcessor_Track(client->eventProcessor, user, key, data);
 }
 
 LDBoolean
@@ -187,8 +198,11 @@ LDClientTrackMetric(
     }
 #endif
 
-    return LDi_track(
-        client->eventProcessor, user, key, data, metric, LDBooleanTrue);
+    if (!client->config->sendEvents) {
+        return LDBooleanTrue;
+    }
+
+    return LDEventProcessor_TrackMetric(client->eventProcessor, user, key, data, metric);
 }
 
 LDBoolean
@@ -221,7 +235,11 @@ LDClientAlias(
     }
 #endif
 
-    return LDi_alias(client->eventProcessor, currentUser, previousUser);
+    if (!client->config->sendEvents) {
+        return LDBooleanTrue;
+    }
+
+    return LDEventProcessor_Alias(client->eventProcessor, currentUser, previousUser);
 }
 
 LDBoolean
@@ -244,7 +262,11 @@ LDClientIdentify(struct LDClient *const client, const struct LDUser *const user)
     }
 #endif
 
-    return LDi_identify(client->eventProcessor, user);
+    if (!client->config->sendEvents) {
+        return LDBooleanTrue;
+    }
+
+    return LDEventProcessor_Identify(client->eventProcessor, user);
 }
 
 LDBoolean

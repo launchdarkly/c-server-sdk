@@ -2,6 +2,7 @@
 
 #include <launchdarkly/json.h>
 #include <launchdarkly/store.h>
+#include "data_source.h"
 
 struct LDConfig
 {
@@ -26,6 +27,7 @@ struct LDConfig
     unsigned int             storeCacheMilliseconds;
     char *                   wrapperName;
     char *                   wrapperVersion;
+    struct LDDataSource     *dataSource;
 };
 
 /* Trims a single trailing slash, if present, from the end of the given string.

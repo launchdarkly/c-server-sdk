@@ -1,0 +1,25 @@
+{
+  "flags": {
+    "flag": {
+      "key": "flag",
+      "on": true,
+      "fallthrough": {
+        "variation": 0
+      },
+	  "variations": [ "red", "green", "blue" ],
+      "rules": [
+          {
+            "clauses": [
+                {
+                    "op": "segmentMatch",
+                    "values": ["seg1"],
+                    "negate": false
+                }
+            ],
+            "variation": 1,
+            "trackEvents": false
+          }
+      ]
+    }
+  }
+}

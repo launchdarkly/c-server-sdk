@@ -7,77 +7,76 @@
 
 #include "event_processor.h"
 
-struct EventProcessor
-{
-    ld_mutex_t             lock;
-    struct LDJSON *        events;          /* Array of Objects */
-    struct LDJSON *        summaryCounters; /* Object */
-    double                 summaryStart;
-    struct LDLRU *         userKeys;
-    double                 lastUserKeyFlush;
-    double                 lastServerTime;
-    const struct LDConfig *config;
-};
-
 LDBoolean
 LDi_summarizeEvent(
-    struct EventProcessor *const context,
-    const struct LDJSON *const   event,
-    const LDBoolean              unknown);
+    struct LDEventProcessor *context,
+    const struct LDJSON *event,
+    LDBoolean unknown
+);
 
 void
-LDi_addEvent(struct EventProcessor *const context, struct LDJSON *const event);
+LDi_addEvent(struct LDEventProcessor *context, struct LDJSON *event);
 
 struct LDJSON *
-LDi_newBaseEvent(const char *const kind, const double now);
+LDi_newBaseEvent(const char *kind, double now);
 
 LDBoolean
 LDi_addUserInfoToEvent(
-    const struct EventProcessor *const context,
-    struct LDJSON *const               event,
-    const struct LDUser *const         user);
+    struct LDJSON *event,
+    const struct LDUser *user,
+    LDBoolean inlineUsersInEvents,
+    LDBoolean allAttributesPrivate,
+    const struct LDJSON *privateAttributeNames
+);
 
 char *
-LDi_makeSummaryKey(const struct LDJSON *const event);
+LDi_makeSummaryKey(const struct LDJSON *event);
 
 struct LDJSON *
 LDi_newIdentifyEvent(
-    const struct EventProcessor *const context,
-    const struct LDUser *const         user,
-    const double                       now);
+    const struct LDEventProcessor *context,
+    const struct LDUser *user,
+    double now
+);
 
 struct LDJSON *
 LDi_newCustomEvent(
-    const struct EventProcessor *const context,
-    const struct LDUser *const         user,
-    const char *const                  key,
-    struct LDJSON *const               data,
-    const double                       metric,
-    const LDBoolean                    hasMetric,
-    const double                       now);
+        const struct LDUser *user,
+        const char* key,
+        struct LDJSON* data,
+        double metric,
+        LDBoolean hasMetric,
+        LDBoolean inlineUsersInEvents,
+        LDBoolean allAttributesPrivate,
+        const struct LDJSON *privateAttributeNames,
+        const double now
+);
 
 struct LDJSON *
 LDi_newAliasEvent(
-    const struct LDUser *const currentUser,
-    const struct LDUser *const previousUser,
-    const double               now);
+    const struct LDUser *currentUser,
+    const struct LDUser *previousUser,
+    double now
+);
 
 void
 LDi_possiblyQueueEvent(
-    struct EventProcessor *const context,
-    struct LDJSON *              event,
-    const double                 now,
-    const LDBoolean              detailedEvaluation);
+    struct LDEventProcessor *context,
+    struct LDJSON *event,
+    double now,
+    LDBoolean detailedEvaluation
+);
 
 LDBoolean
 LDi_maybeMakeIndexEvent(
-    struct EventProcessor *const context,
-    const struct LDUser *const   user,
-    const double                 now,
-    struct LDJSON **const        result);
+    struct LDEventProcessor *context,
+    const struct LDUser *user,
+    double now,
+    struct LDJSON **result
+);
 
 struct LDJSON *
-LDi_objectToArray(const struct LDJSON *const object);
+LDi_objectToArray(const struct LDJSON *object);
 
 struct LDJSON *
-LDi_prepareSummaryEvent(struct EventProcessor *const context, const double now);
+LDi_prepareSummaryEvent(struct LDEventProcessor *context, double now);

@@ -444,7 +444,7 @@ poll(struct LDClient *const client, void *const rawcontext)
     context = (struct StreamContext *)rawcontext;
     curl    = NULL;
 
-    if (!client->config->stream || context->permanentFailure) {
+    if (client->config->dataSource || !client->config->stream || context->permanentFailure) {
         return NULL;
     }
 

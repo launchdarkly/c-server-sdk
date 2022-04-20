@@ -5,6 +5,7 @@
 #define _CRT_RAND_S
 #endif
 #include <stdlib.h>
+#include <math.h>
 
 #include <launchdarkly/json.h>
 #include <launchdarkly/memory.h>
@@ -107,7 +108,7 @@ LDi_sleepMilliseconds(const unsigned long milliseconds)
 static double
 LDi_timeSpecToMilliseconds(const struct timespec ts)
 {
-    return ((double)ts.tv_sec * 1000.0) + ((double)ts.tv_nsec / 1000000.0);
+    return floor(((double)ts.tv_sec * 1000.0) + ((double)ts.tv_nsec / 1000000.0));
 }
 
 LDBoolean
@@ -168,7 +169,7 @@ LDBoolean
 LDi_getUnixMilliseconds(double *const resultMilliseconds)
 {
 #ifdef _WIN32
-    *resultMilliseconds = (double)time(NULL) * 1000.0;
+    *resultMilliseconds = floor((double)time(NULL) * 1000.0);
 
     return LDBooleanTrue;
 #else

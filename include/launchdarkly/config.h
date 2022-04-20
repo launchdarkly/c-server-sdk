@@ -8,6 +8,7 @@
 #include <launchdarkly/boolean.h>
 #include <launchdarkly/export.h>
 #include <launchdarkly/store.h>
+#include <launchdarkly/data_source.h>
 
 /**
  * @struct LDConfig
@@ -222,6 +223,16 @@ LDConfigAddPrivateAttribute(
 LD_EXPORT(void)
 LDConfigSetFeatureStoreBackend(
     struct LDConfig *const config, struct LDStoreInterface *const backend);
+
+/**
+ * @brief Sets the implementation of the data source
+ * @param[in] config The configuration to modify. May not be `NULL`.
+ * @param[in] dataSource May be `NULL`. Ownership of `dataSource` is transferred.
+ * @return Void.
+ */
+LD_EXPORT(void)
+LDConfigSetDataSource(
+    struct LDConfig *const config, struct LDDataSource *const dataSource);
 
 /**
  * @brief When a feature store backend is provided, configure how long items

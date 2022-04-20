@@ -194,7 +194,7 @@ LDi_onHeader(
         return total;
     }
 
-    LDi_setServerTime(client->eventProcessor, 1000.0 * (double)mktime(&tm));
+    LDEventProcessor_SetLastServerTime(client->eventProcessor, 1000.0 * (double) mktime(&tm));
 
     return total;
 }
@@ -255,7 +255,7 @@ poll(struct LDClient *const client, void *const rawcontext)
             }
         }
 
-        if (!LDi_bundleEventPayload(client->eventProcessor, &events)) {
+        if (!LDEventProcessor_CreateEventPayloadAndResetState(client->eventProcessor, &events)) {
             LD_LOG(LD_LOG_ERROR, "failed bundling events");
 
             return NULL;

@@ -57,8 +57,8 @@ LD_EXPORT(LDBoolean) LDClientIsInitialized(struct LDClient *const client);
  * @param[in] user The user to generate the event for. Ownership is not
  * transferred. May not be `NULL`.
  * @param[in] data The JSON to attach to the event. Ownership of `data` is
- * transferred. May be `NULL`.
- * @return True if the event was queued, False on error.
+ * transferred only if True is returned. May be `NULL`.
+ * @return True if the event was queued successfully, or if analytics events are disabled. False on error.
  */
 LD_EXPORT(LDBoolean)
 LDClientTrack(
@@ -77,7 +77,7 @@ LDClientTrack(
  * @param[in] data The JSON to attach to the event. Ownership of `data` is
  * transferred. May be `NULL`.
  * @param[in] metric A metric to be associated with the event.
- * @return True if the event was queued, False on error.
+ * @return True if the event was queued successfully, or if analytics events are disabled. False on error.
  */
 LD_EXPORT(LDBoolean)
 LDClientTrackMetric(
@@ -94,7 +94,7 @@ LDClientTrackMetric(
  * transferred. May not be `NULL`.
  * @param[in] previousUser The previous version of a user. Ownership is not
  * transferred. May not be `NULL`.
- * @return True if the event was queued, False on error.
+ * @return True if the event was queued successfully, or if analytics events are disabled. False on error.
  */
 LD_EXPORT(LDBoolean)
 LDClientAlias(
@@ -107,7 +107,7 @@ LDClientAlias(
  * @param[in] client The client to use. May not be `NULL`.
  * @param[in] user The user to generate the event for. Ownership is not
  * transferred. May not be `NULL`.
- * @return True if the event was queued, False on error.
+ * @return True if the event was queued successfully, or if analytics events are disabled. False on error.
  */
 LD_EXPORT(LDBoolean)
 LDClientIdentify(

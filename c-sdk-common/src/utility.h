@@ -22,12 +22,16 @@
 
 LDBoolean
 LDi_sleepMilliseconds(const unsigned long milliseconds);
+
 LDBoolean
 LDi_getMonotonicMilliseconds(double *const resultMilliseconds);
+
 LDBoolean
 LDi_getUnixMilliseconds(double *const resultMilliseconds);
+
 LDBoolean
 LDi_randomHex(char *const buffer, const size_t bufferSize);
+
 #define LD_UUID_SIZE 36
 LDBoolean
 LDi_UUIDv4(char *const buffer);

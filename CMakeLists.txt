@@ -59,7 +59,7 @@ if (REDIS_STORE)
     add_subdirectory(stores/redis)
 endif (REDIS_STORE)
 
-file(GLOB SOURCES "src/*" "third-party/src/*" "c-sdk-common/src/*")
+file(GLOB SOURCES "src/*" "src/integrations/*" "third-party/src/*" "c-sdk-common/src/*")
 
 if(NOT DEFINED MSVC)
     list(REMOVE_ITEM SOURCES

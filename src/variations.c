@@ -336,22 +336,25 @@ variation(
         }
     }
 
-    if (!LDi_processEvaluation(
-            client->eventProcessor,
-            user,
-            subEvents,
-            key,
-            value,
-            fallback,
-            flag,
-            detailsRef,
-            o_details != NULL))
-    {
-        subEvents = NULL;
+    if (client->config->sendEvents) {
+        struct EvaluationResult result;
 
-        goto error;
+        result.user = user;
+        result.subEvents = subEvents;
+        result.flagKey = key;
+        result.actualValue = value;
+        result.fallbackValue = fallback;
+        result.flag = flag;
+        result.details = detailsRef;
+        result.detailedEvaluation = (LDBoolean) (o_details != NULL);
+
+        if (!LDEventProcessor_ProcessEvaluation(client->eventProcessor, &result)) {
+            subEvents = NULL;
+
+            goto error;
+        }
+        subEvents = NULL;
     }
-    subEvents = NULL;
 
     if (!LDi_notNull(value)) {
         goto error;
@@ -825,12 +828,16 @@ LDAllFlagsState(struct LDClient *const client, const struct LDUser *const user, 
 
         LDJSONFree(eventsUnused);
 
-        LDi_flagModelPopulate(&model, flag);
+        if (flag->value) {
+            LDi_flagModelPopulate(&model, flag);
 
-        if (!LDi_allFlagsBuilderAdd(builder, flag)) {
+            if (!LDi_allFlagsBuilderAdd(builder, flag)) {
+                LDi_freeFlagState(flag);
+
+                goto cleanup;
+            }
+        } else {
             LDi_freeFlagState(flag);
-
-            goto cleanup;
         }
     }
 

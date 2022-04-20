@@ -1,18 +1,3 @@
-data store/updates from stream/flag patch with higher version is applied
-data store/updates from stream/segment patch with higher version is applied
-data store/updates from stream/flag patch with same version is not applied
-data store/updates from stream/segment patch with same version is not applied
-data store/updates from stream/flag patch with lower version is not applied
-data store/updates from stream/segment patch with lower version is not applied
-data store/updates from stream/flag patch for previously nonexistent flag is applied
-data store/updates from stream/segment patch for previously nonexistent segment is applied
-data store/updates from stream/flag delete with higher version is applied
-data store/updates from stream/segment delete with higher version is applied
-data store/updates from stream/flag delete with same version is not applied
-data store/updates from stream/segment delete with same version is not applied
-data store/updates from stream/flag delete with lower version is not applied
-data store/updates from stream/segment delete with lower version is not applied
-data store/updates from stream/segment delete for previously nonexistent segment is applied
 evaluation/parameterized/evaluation failures (bool)/off variation too low/evaluate flag without detail
 evaluation/parameterized/evaluation failures (bool)/off variation too low/evaluate flag with detail
 evaluation/parameterized/evaluation failures (bool)/off variation too low/evaluate all flags
@@ -61,17 +46,18 @@ evaluation/parameterized/evaluation failures (string)/target variation too low/e
 evaluation/parameterized/evaluation failures (string)/target variation too low/evaluate flag with detail
 evaluation/parameterized/evaluation failures (string)/target variation too low/evaluate all flags
 evaluation/parameterized/evaluation failures (string)/target variation too high/evaluate flag with detail
+evaluation/parameterized/evaluation failures (any)/off variation too low/evaluate flag without detail
 evaluation/parameterized/evaluation failures (any)/off variation too low/evaluate flag with detail
 evaluation/parameterized/evaluation failures (any)/off variation too low/evaluate all flags
 evaluation/parameterized/evaluation failures (any)/off variation too high/evaluate flag with detail
+evaluation/parameterized/evaluation failures (any)/fallthrough variation too low/evaluate flag without detail
 evaluation/parameterized/evaluation failures (any)/fallthrough variation too low/evaluate flag with detail
 evaluation/parameterized/evaluation failures (any)/fallthrough variation too low/evaluate all flags
 evaluation/parameterized/evaluation failures (any)/fallthrough variation too high/evaluate flag with detail
+evaluation/parameterized/evaluation failures (any)/target variation too low/evaluate flag without detail
 evaluation/parameterized/evaluation failures (any)/target variation too low/evaluate flag with detail
 evaluation/parameterized/evaluation failures (any)/target variation too low/evaluate all flags
 evaluation/parameterized/evaluation failures (any)/target variation too high/evaluate flag with detail
-evaluation/parameterized/evaluate flag with targeting off/off-flag-any/evaluate flag without detail
-evaluation/parameterized/evaluate flag with targeting off/off-flag-any/evaluate flag with detail
 evaluation/parameterized/rule match (bool)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag without detail
 evaluation/parameterized/rule match (bool)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag with detail
 evaluation/parameterized/rule match (bool)/negated clause, null user attribute is always non-match regardless of negation/evaluate all flags
@@ -84,41 +70,19 @@ evaluation/parameterized/rule match (double)/negated clause, null user attribute
 evaluation/parameterized/rule match (string)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag without detail
 evaluation/parameterized/rule match (string)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag with detail
 evaluation/parameterized/rule match (string)/negated clause, null user attribute is always non-match regardless of negation/evaluate all flags
-evaluation/parameterized/rule match (any)/all clauses of rule1 match/evaluate flag without detail
-evaluation/parameterized/rule match (any)/all clauses of rule1 match/evaluate flag with detail
-evaluation/parameterized/rule match (any)/rule2 matches, after one clause of rule1 fails/evaluate flag without detail
-evaluation/parameterized/rule match (any)/rule2 matches, after one clause of rule1 fails/evaluate flag with detail
-evaluation/parameterized/rule match (any)/unknown operator is treated as a non-match, can still match another rule/evaluate flag without detail
-evaluation/parameterized/rule match (any)/unknown operator is treated as a non-match, can still match another rule/evaluate flag with detail
-evaluation/parameterized/rule match (any)/no rules match, fallthrough/evaluate flag without detail
-evaluation/parameterized/rule match (any)/no rules match, fallthrough/evaluate flag with detail
-evaluation/parameterized/rule match (any)/rules are ignored when flag is off/evaluate flag without detail
-evaluation/parameterized/rule match (any)/rules are ignored when flag is off/evaluate flag with detail
-evaluation/parameterized/rule match (any)/negated clause, non-match becomes match/evaluate flag without detail
-evaluation/parameterized/rule match (any)/negated clause, non-match becomes match/evaluate flag with detail
-evaluation/parameterized/rule match (any)/negated clause, match becomes non-match/evaluate flag without detail
-evaluation/parameterized/rule match (any)/negated clause, match becomes non-match/evaluate flag with detail
 evaluation/parameterized/rule match (any)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag without detail
 evaluation/parameterized/rule match (any)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag with detail
 evaluation/parameterized/rule match (any)/negated clause, null user attribute is always non-match regardless of negation/evaluate all flags
-evaluation/parameterized/target match (any)/user1 matches/evaluate flag without detail
-evaluation/parameterized/target match (any)/user1 matches/evaluate flag with detail
-evaluation/parameterized/target match (any)/user2 matches/evaluate flag without detail
-evaluation/parameterized/target match (any)/user2 matches/evaluate flag with detail
-evaluation/parameterized/target match (any)/user3 matches/evaluate flag without detail
-evaluation/parameterized/target match (any)/user3 matches/evaluate flag with detail
-evaluation/parameterized/target match (any)/user4 matches/evaluate flag without detail
-evaluation/parameterized/target match (any)/user4 matches/evaluate flag with detail
-evaluation/parameterized/target match (any)/fallthrough for non-match/evaluate flag without detail
-evaluation/parameterized/target match (any)/fallthrough for non-match/evaluate flag with detail
-evaluation/parameterized/target match (any)/targets are ignored when flag is off/evaluate flag without detail
-evaluation/parameterized/target match (any)/targets are ignored when flag is off/evaluate flag with detail
+evaluation/bucketing/bucket by non-key attribute/rollouts/integer value
+evaluation/bucketing/bucket by non-key attribute/rollouts/invalid value type
+evaluation/bucketing/bucket by non-key attribute/experiments/integer value
+evaluation/bucketing/bucket by non-key attribute/experiments/invalid value type
 evaluation/all flags state/default behavior
 evaluation/all flags state/experimentation
 evaluation/all flags state/error in flag/without reasons
 evaluation/all flags state/error in flag/with reasons
 evaluation/all flags state/details only for tracked flags
-events/summary events/flag versions
+events/requests/new payload ID for each post
 events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: bool
 events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: int
 events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: double
@@ -139,21 +103,11 @@ events/feature events/full feature event for tracked flag/without reason/anonymo
 events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: double
 events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: string
 events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: any
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/valid flag/type: bool
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/valid flag/type: int
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/valid flag/type: double
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/valid flag/type: string
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/valid flag/type: any
 events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: bool
 events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: int
 events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: double
 events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: string
 events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: any
-events/feature events/full feature event for tracked flag/with reason/anonymous user/valid flag/type: bool
-events/feature events/full feature event for tracked flag/with reason/anonymous user/valid flag/type: int
-events/feature events/full feature event for tracked flag/with reason/anonymous user/valid flag/type: double
-events/feature events/full feature event for tracked flag/with reason/anonymous user/valid flag/type: string
-events/feature events/full feature event for tracked flag/with reason/anonymous user/valid flag/type: any
 events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: bool
 events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: int
 events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: double
@@ -180,43 +134,26 @@ events/debug events/should see debug event/debugEventsUntilDate is after SDK tim
 events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: string
 events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: any
 events/feature prerequisite events/without reasons
-events/feature prerequisite events/with reasons
-events/experimentation/experiment in rule
-events/experimentation/experiment in fallthrough
-events/identify events/basic properties/non-anonymous user
-events/identify events/basic properties/anonymous user
 events/identify events/user with empty key generates no event
 events/identify events/identify event makes index event for same user unnecessary
-events/custom events/data and metricValue parameters/data=null
-events/custom events/data and metricValue parameters/data=false
-events/custom events/data and metricValue parameters/data=null, omitNullData
-events/alias events/from non-anonymous to non-anonymous
-events/alias events/from non-anonymous to anonymous
-events/alias events/from anonymous to non-anonymous
-events/alias events/from anonymous to anonymous
-events/index events/basic properties/non-anonymous user
-events/index events/basic properties/anonymous user
-events/index events/only one index event per user/from feature event
-events/index events/only one index event per user/from custom event
-events/user properties/inlineUsers=false, user-private=[lastName]/identify event
-events/user properties/inlineUsers=false, user-private=[lastName]/index event
-events/user properties/inlineUsers=false, globally-private=[firstName], user-private=[lastName]/identify event
-events/user properties/inlineUsers=false, globally-private=[firstName], user-private=[lastName]/index event
+events/user properties/inlineUsers=false, user-private=[lastName preferredLanguage]/identify event
+events/user properties/inlineUsers=false, user-private=[lastName preferredLanguage]/index event
+events/user properties/inlineUsers=false, globally-private=[firstName], user-private=[lastName preferredLanguage]/identify event
+events/user properties/inlineUsers=false, globally-private=[firstName], user-private=[lastName preferredLanguage]/index event
 events/user properties/inlineUsers=true/index event
-events/user properties/inlineUsers=true, user-private=[lastName]/feature event
-events/user properties/inlineUsers=true, user-private=[lastName]/identify event
-events/user properties/inlineUsers=true, user-private=[lastName]/custom event
-events/user properties/inlineUsers=true, user-private=[lastName]/index event
+events/user properties/inlineUsers=true, user-private=[lastName preferredLanguage]/feature event
+events/user properties/inlineUsers=true, user-private=[lastName preferredLanguage]/identify event
+events/user properties/inlineUsers=true, user-private=[lastName preferredLanguage]/custom event
+events/user properties/inlineUsers=true, user-private=[lastName preferredLanguage]/index event
 events/user properties/inlineUsers=true, globally-private=[firstName]/index event
-events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName]/feature event
-events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName]/identify event
-events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName]/custom event
-events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName]/index event
+events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/feature event
+events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/identify event
+events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/custom event
+events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/index event
 events/user properties/inlineUsers=true, allAttributesPrivate=true/index event
-events/user properties/inlineUsers=true, allAttributesPrivate=true, user-private=[lastName]/index event
+events/user properties/inlineUsers=true, allAttributesPrivate=true, user-private=[lastName preferredLanguage]/index event
 events/user properties/inlineUsers=true, allAttributesPrivate=true, globally-private=[firstName]/index event
-events/user properties/inlineUsers=true, allAttributesPrivate=true, globally-private=[firstName], user-private=[lastName]/index event
-streaming/retry behavior/retry after stream is closed
+events/user properties/inlineUsers=true, allAttributesPrivate=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/index event
 streaming/retry behavior/initial retry delay is applied
 streaming/retry behavior/retry after IO error on reconnect
 streaming/retry behavior/retry after recoverable HTTP error on reconnect/error 400

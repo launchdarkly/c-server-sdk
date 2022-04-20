@@ -578,17 +578,20 @@ LDi_checkPrerequisites(
             variationNumRef = &details.variationIndex;
         }
 
-        event = LDi_newFeatureRequestEvent(
-            client->eventProcessor,
-            keyText,
-            user,
-            variationNumRef,
-            value,
-            NULL,
-            LDGetText(LDObjectLookup(flag, "key")),
-            preflag,
-            &details,
-            now);
+        event = LDi_newFeatureEvent(
+                keyText,
+                user,
+                variationNumRef,
+                value,
+                NULL,
+                LDGetText(LDObjectLookup(flag, "key")),
+                preflag,
+                &details,
+                now,
+                client->config->inlineUsersInEvents,
+                client->config->allAttributesPrivate,
+                client->config->privateAttributeNames
+        );
 
         if (!event) {
             LDJSONRCDecrement(preflagrc);

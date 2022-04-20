@@ -36,8 +36,10 @@ LDi_prepareShared(
 
 struct NetworkInterface *
 LDi_constructPolling(struct LDClient *const client);
+
 struct NetworkInterface *
 LDi_constructStreaming(struct LDClient *const client, CURLM *const multi);
+
 struct NetworkInterface *
 LDi_constructAnalytics(struct LDClient *const client);
 
