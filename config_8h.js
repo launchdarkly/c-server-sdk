@@ -6,6 +6,7 @@ var config_8h =
     [ "LDConfigNew", "config_8h.html#aee262ce0c776801a724add1c3be03706", null ],
     [ "LDConfigSetAllAttributesPrivate", "config_8h.html#ad23ba0612bc4891136767c5bfdbbd594", null ],
     [ "LDConfigSetBaseURI", "config_8h.html#a6745c22a1683dca7a245c68af66c2fc6", null ],
+    [ "LDConfigSetDataSource", "config_8h.html#afcc6ba6cd9abb32a954700c2c9781d23", null ],
     [ "LDConfigSetEventsCapacity", "config_8h.html#a086a8d1a0e749e138a7a4d643fc23240", null ],
     [ "LDConfigSetEventsURI", "config_8h.html#a99df0fe37388a1590b8a133d670cae8c", null ],
     [ "LDConfigSetFeatureStoreBackend", "config_8h.html#a6c68a8fba5b4ec2908cc6fe637d5d582", null ],

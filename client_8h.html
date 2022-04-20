@@ -194,7 +194,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the event was queued, False on error. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the event was queued successfully, or if analytics events are disabled. False on error. </dd></dl>
 
 </div>
 </div>
@@ -286,7 +286,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the event was queued, False on error. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the event was queued successfully, or if analytics events are disabled. False on error. </dd></dl>
 
 </div>
 </div>
@@ -426,11 +426,11 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. May not be <code>NULL</code>. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The name of the event. May not be <code>NULL</code>. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">user</td><td>The user to generate the event for. Ownership is not transferred. May not be <code>NULL</code>. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>The JSON to attach to the event. Ownership of <code>data</code> is transferred. May be <code>NULL</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>The JSON to attach to the event. Ownership of <code>data</code> is transferred only if True is returned. May be <code>NULL</code>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the event was queued, False on error. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the event was queued successfully, or if analytics events are disabled. False on error. </dd></dl>
 
 </div>
 </div>
@@ -489,7 +489,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the event was queued, False on error. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the event was queued successfully, or if analytics events are disabled. False on error. </dd></dl>
 
 </div>
 </div>
