@@ -134,7 +134,6 @@ events/debug events/should see debug event/debugEventsUntilDate is after SDK tim
 events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: string
 events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: any
 events/feature prerequisite events/without reasons
-events/identify events/user with empty key generates no event
 events/identify events/identify event makes index event for same user unnecessary
 events/user properties/inlineUsers=false, user-private=[lastName preferredLanguage]/identify event
 events/user properties/inlineUsers=false, user-private=[lastName preferredLanguage]/index event

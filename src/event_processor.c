@@ -1,4 +1,5 @@
 #include <launchdarkly/memory.h>
+#include <string.h>
 
 #include "assertion.h"
 #include "event_processor.h"
@@ -1068,6 +1069,12 @@ LDEventProcessor_Identify(
 
     LD_ASSERT(processor);
     LD_ASSERT(user);
+
+    /* Users with empty keys do not generate identify events. */
+    if (strlen(user->key) == 0) {
+
+        return LDBooleanTrue;
+    }
 
     LDi_getUnixMilliseconds(&now);
 

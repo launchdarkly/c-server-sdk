@@ -103,7 +103,7 @@ LDClientAlias(
     const struct LDUser *const previousUser);
 
 /**
- * @brief Generates an identify event for a user.
+ * @brief Generates an identify event for a user, if the user's key is non-empty.
  * @param[in] client The client to use. May not be `NULL`.
  * @param[in] user The user to generate the event for. Ownership is not
  * transferred. May not be `NULL`.
