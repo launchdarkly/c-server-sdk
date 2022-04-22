@@ -146,7 +146,7 @@ LD_EXPORT(void)
 LDConfigSetOffline(struct LDConfig *const config, const LDBoolean offline);
 
 /**
- * @brief Sets whether this client should use the LaunchDarkly relay
+ * @brief Sets whether this client should use the LaunchDarkly Relay Proxy
  * in daemon mode. In this mode, the client does not subscribe to the streaming
  * or polling API, but reads data only from the feature store.
  * @param[in] config The configuration to modify. May not be `NULL`.
