@@ -1,11 +1,11 @@
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 #ifdef _WIN32
 #define _CRT_RAND_S
 #endif
 #include <stdlib.h>
-#include <math.h>
 
 #include <launchdarkly/json.h>
 #include <launchdarkly/memory.h>

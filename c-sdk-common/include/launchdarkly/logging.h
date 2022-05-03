@@ -1,6 +1,6 @@
 /*!
  * @file logging.h
- * @brief Public API for Logging.
+ * @brief Public API Interface for Logging.
  */
 
 #pragma once
