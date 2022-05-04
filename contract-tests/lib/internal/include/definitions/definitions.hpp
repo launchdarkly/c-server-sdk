@@ -109,9 +109,10 @@ struct User {
     std::optional<std::string> country;
     std::optional<std::string> secondary;
     std::optional<nlohmann::json> custom;
+    std::optional<std::vector<std::string>> privateAttributeNames;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(User, key, anonymous, ip, firstName, lastName, email, name, avatar,
-                                                country, secondary, custom);
+                                                country, secondary, custom, privateAttributeNames);
 
 struct EvaluateFlagParams {
     std::string flagKey;
