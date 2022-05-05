@@ -18,7 +18,7 @@ void
 LDi_addEvent(struct LDEventProcessor *context, struct LDJSON *event);
 
 struct LDJSON *
-LDi_newBaseEvent(const char *kind, double now);
+LDi_newBaseEvent(const char *kind, struct LDTimestamp timestamp);
 
 LDBoolean
 LDi_addUserInfoToEvent(
@@ -34,9 +34,10 @@ LDi_makeSummaryKey(const struct LDJSON *event);
 
 struct LDJSON *
 LDi_newIdentifyEvent(
-    const struct LDEventProcessor *context,
     const struct LDUser *user,
-    double now
+    struct LDTimestamp timestamp,
+    LDBoolean allAttributesPrivate,
+    const struct LDJSON *privateAttributeNames
 );
 
 struct LDJSON *
@@ -49,21 +50,21 @@ LDi_newCustomEvent(
         LDBoolean inlineUsersInEvents,
         LDBoolean allAttributesPrivate,
         const struct LDJSON *privateAttributeNames,
-        const double now
+        struct LDTimestamp timestamp
 );
 
 struct LDJSON *
 LDi_newAliasEvent(
     const struct LDUser *currentUser,
     const struct LDUser *previousUser,
-    double now
+    struct LDTimestamp  timestamp
 );
 
 void
 LDi_possiblyQueueEvent(
     struct LDEventProcessor *context,
     struct LDJSON *event,
-    double now,
+    struct LDTimestamp until,
     LDBoolean detailedEvaluation
 );
 
@@ -71,7 +72,7 @@ LDBoolean
 LDi_maybeMakeIndexEvent(
     struct LDEventProcessor *context,
     const struct LDUser *user,
-    double now,
+    struct LDTimestamp timestamp,
     struct LDJSON **result
 );
 

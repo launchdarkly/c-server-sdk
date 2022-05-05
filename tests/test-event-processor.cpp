@@ -18,6 +18,12 @@ extern "C" {
 class EventProcessorFixture : public CommonFixture {
 };
 
+LDTimestamp timestampZero() {
+    LDTimestamp ts;
+    LDTimestamp_InitZero(&ts);
+    return ts;
+}
+
 
 TEST_F(EventProcessorFixture, ConstructAndFree) {
     struct LDConfig *config;
@@ -68,7 +74,7 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
                     NULL,
                     flag1,
                     NULL,
-                    0,
+                    timestampZero(),
                     config->inlineUsersInEvents,
                     config->allAttributesPrivate,
                     config->privateAttributeNames
@@ -83,7 +89,7 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
                     NULL,
                     flag1,
                     NULL,
-                    0,
+                    timestampZero(),
                     config->inlineUsersInEvents,
                     config->allAttributesPrivate,
                     config->privateAttributeNames
@@ -98,7 +104,7 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
                     NULL,
                     flag2,
                     NULL,
-                    0,
+                    timestampZero(),
                     config->inlineUsersInEvents,
                     config->allAttributesPrivate,
                     config->privateAttributeNames
@@ -113,7 +119,7 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
                     NULL,
                     flag1,
                     NULL,
-                    0,
+                    timestampZero(),
                     config->inlineUsersInEvents,
                     config->allAttributesPrivate,
                     config->privateAttributeNames
@@ -128,7 +134,7 @@ TEST_F(EventProcessorFixture, MakeSummaryKeyIncrementsCounters) {
                     NULL,
                     NULL,
                     NULL,
-                    0,
+                    timestampZero(),
                     config->inlineUsersInEvents,
                     config->allAttributesPrivate,
                     config->privateAttributeNames
@@ -226,7 +232,7 @@ TEST_F(EventProcessorFixture, CounterForNilVariationIsDistinctFromOthers) {
                     NULL,
                     flag,
                     NULL,
-                    0,
+                    timestampZero(),
                     config->inlineUsersInEvents,
                     config->allAttributesPrivate,
                     config->privateAttributeNames
@@ -241,7 +247,7 @@ TEST_F(EventProcessorFixture, CounterForNilVariationIsDistinctFromOthers) {
                     NULL,
                     flag,
                     NULL,
-                    0,
+                    timestampZero(),
                     config->inlineUsersInEvents,
                     config->allAttributesPrivate,
                     config->privateAttributeNames
@@ -256,7 +262,7 @@ TEST_F(EventProcessorFixture, CounterForNilVariationIsDistinctFromOthers) {
                     NULL,
                     flag,
                     NULL,
-                    0,
+                    timestampZero(),
                     config->inlineUsersInEvents,
                     config->allAttributesPrivate,
                     config->privateAttributeNames
@@ -643,13 +649,15 @@ TEST_F(EventProcessorFixture, ExperimentationRuleNonDetailed) {
 TEST_F(EventProcessorFixture, ConstructAliasEvent) {
     struct LDUser *previous, *current;
     struct LDJSON *result, *expected;
+    struct LDTimestamp timestamp;
 
     ASSERT_TRUE(previous = LDUserNew("a"));
     ASSERT_TRUE(current = LDUserNew("b"));
 
     LDUserSetAnonymous(previous, LDBooleanTrue);
+    LDTimestamp_InitUnixMillis(&timestamp, 52);
 
-    ASSERT_TRUE(result = LDi_newAliasEvent(current, previous, 52));
+    ASSERT_TRUE(result = LDi_newAliasEvent(current, previous, timestamp));
 
     ASSERT_TRUE(expected = LDNewObject());
     ASSERT_TRUE(LDObjectSetKey(expected, "kind", LDNewText("alias")));
