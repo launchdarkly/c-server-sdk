@@ -2,6 +2,16 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.6.1] - 2022-05-06
+### Changed:
+- Updated language in changelog related to Relay Proxy.
+- Updated c-sdk-common dependency.
+
+### Fixed:
+- Users with empty keys should not generate identify events.
+- Removed redundant index event that was generated after an identify event.
+- Fixed handling of per-user private attributes in SDK contract tests.
+
 ## [2.6.0] - 2022-04-20
 ### Added:
 - Added `integrations/test_data.h`. Test Data is a new way to inject feature flag data programmatically into the SDK for testing — either with fixed values for each flag, or with targets and/or rules that can return different values for different users. 
