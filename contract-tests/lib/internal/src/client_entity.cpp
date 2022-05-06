@@ -313,6 +313,12 @@ std::unique_ptr<struct LDUser, std::function<void(struct LDUser*)>> make_user(co
         LDUserSetCustom(user, json); // takes ownership of json
     }
 
+    if (obj.privateAttributeNames) {
+        for (const std::string& attr: *obj.privateAttributeNames) {
+            LDUserAddPrivateAttribute(user, attr.c_str());
+        }
+    }
+
     return {user, [](struct LDUser* user){
         LDUserFree(user);
     }};

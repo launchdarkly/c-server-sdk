@@ -82,7 +82,6 @@ evaluation/all flags state/experimentation
 evaluation/all flags state/error in flag/without reasons
 evaluation/all flags state/error in flag/with reasons
 evaluation/all flags state/details only for tracked flags
-events/requests/new payload ID for each post
 events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: bool
 events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: int
 events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: double
@@ -134,26 +133,14 @@ events/debug events/should see debug event/debugEventsUntilDate is after SDK tim
 events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: string
 events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: any
 events/feature prerequisite events/without reasons
-events/identify events/user with empty key generates no event
-events/identify events/identify event makes index event for same user unnecessary
-events/user properties/inlineUsers=false, user-private=[lastName preferredLanguage]/identify event
-events/user properties/inlineUsers=false, user-private=[lastName preferredLanguage]/index event
-events/user properties/inlineUsers=false, globally-private=[firstName], user-private=[lastName preferredLanguage]/identify event
-events/user properties/inlineUsers=false, globally-private=[firstName], user-private=[lastName preferredLanguage]/index event
-events/user properties/inlineUsers=true/index event
-events/user properties/inlineUsers=true, user-private=[lastName preferredLanguage]/feature event
-events/user properties/inlineUsers=true, user-private=[lastName preferredLanguage]/identify event
-events/user properties/inlineUsers=true, user-private=[lastName preferredLanguage]/custom event
-events/user properties/inlineUsers=true, user-private=[lastName preferredLanguage]/index event
-events/user properties/inlineUsers=true, globally-private=[firstName]/index event
-events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/feature event
-events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/identify event
-events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/custom event
-events/user properties/inlineUsers=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/index event
-events/user properties/inlineUsers=true, allAttributesPrivate=true/index event
-events/user properties/inlineUsers=true, allAttributesPrivate=true, user-private=[lastName preferredLanguage]/index event
-events/user properties/inlineUsers=true, allAttributesPrivate=true, globally-private=[firstName]/index event
-events/user properties/inlineUsers=true, allAttributesPrivate=true, globally-private=[firstName], user-private=[lastName preferredLanguage]/index event
+events/user properties/inlineUsers=true/user-private=none/index event
+events/user properties/inlineUsers=true/user-private=[lastName preferredLanguage]/index event
+events/user properties/inlineUsers=true, globally-private=[firstName]/user-private=none/index event
+events/user properties/inlineUsers=true, globally-private=[firstName]/user-private=[lastName preferredLanguage]/index event
+events/user properties/inlineUsers=true, allAttributesPrivate=true/user-private=none/index event
+events/user properties/inlineUsers=true, allAttributesPrivate=true/user-private=[lastName preferredLanguage]/index event
+events/user properties/inlineUsers=true, allAttributesPrivate=true, globally-private=[firstName]/user-private=none/index event
+events/user properties/inlineUsers=true, allAttributesPrivate=true, globally-private=[firstName]/user-private=[lastName preferredLanguage]/index event
 streaming/retry behavior/initial retry delay is applied
 streaming/retry behavior/retry after IO error on reconnect
 streaming/retry behavior/retry after recoverable HTTP error on reconnect/error 400

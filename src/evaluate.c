@@ -14,6 +14,7 @@
 #include "store.h"
 #include "user.h"
 #include "utility.h"
+#include "time_utils.h"
 
 static const struct LDJSON *
 lookupRequiredValueOfType(
@@ -500,7 +501,7 @@ LDi_checkPrerequisites(
         const char *         keyText;
         struct LDDetails     details;
         struct LDJSONRC *    preflagrc;
-        double               now;
+        struct LDTimestamp  timestamp;
 
         value           = NULL;
         preflag         = NULL;
@@ -513,7 +514,7 @@ LDi_checkPrerequisites(
         preflagrc       = NULL;
 
         LDDetailsInit(&details);
-        LDi_getUnixMilliseconds(&now);
+        LDTimestamp_InitNow(&timestamp);
 
         if (LDJSONGetType(iter) != LDObject) {
             LD_LOG(LD_LOG_ERROR, "prerequisite expected object");
@@ -587,7 +588,7 @@ LDi_checkPrerequisites(
                 LDGetText(LDObjectLookup(flag, "key")),
                 preflag,
                 &details,
-                now,
+                timestamp,
                 client->config->inlineUsersInEvents,
                 client->config->allAttributesPrivate,
                 client->config->privateAttributeNames

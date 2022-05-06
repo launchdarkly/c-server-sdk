@@ -1,10 +1,12 @@
 #include <launchdarkly/memory.h>
+#include <string.h>
 
 #include "assertion.h"
 #include "event_processor.h"
 #include "event_processor_internal.h"
 #include "logging.h"
 #include "utility.h"
+#include "time_utils.h"
 
 struct LDEventProcessor
 {
@@ -13,8 +15,8 @@ struct LDEventProcessor
     struct LDJSON *        summaryCounters; /* Object */
     double                 summaryStart;
     struct LDLRU *         userKeys;
-    double                 lastUserKeyFlush;
-    double                 lastServerTime;
+    struct LDTimer         lastUserKeyFlush;
+    struct LDTimestamp     lastServerTime;
     const struct LDConfig *config;
 };
 
@@ -30,11 +32,11 @@ LDEventProcessor_Create(const struct LDConfig *config)
     }
 
     processor->summaryStart     = 0;
-    processor->lastUserKeyFlush = 0;
-    processor->lastServerTime   = 0;
     processor->config           = config;
 
-    LDi_getMonotonicMilliseconds(&processor->lastUserKeyFlush);
+    LDTimestamp_InitZero(&processor->lastServerTime);
+    LDTimer_Reset(&processor->lastUserKeyFlush);
+
     LDi_mutex_init(&processor->lock);
 
     if (!(processor->events = LDNewArray())) {
@@ -75,7 +77,7 @@ LDEventProcessor_ProcessEvaluation(struct LDEventProcessor *processor, struct Ev
     struct LDJSON *indexEvent, *featureEvent;
     const struct LDJSON *evaluationValue;
     const unsigned int *variationIndexRef;
-    double now;
+    struct LDTimestamp now;
 
     indexEvent        = NULL;
     featureEvent      = NULL;
@@ -85,7 +87,12 @@ LDEventProcessor_ProcessEvaluation(struct LDEventProcessor *processor, struct Ev
     LD_ASSERT(processor);
     LD_ASSERT(result->details);
 
-    LDi_getUnixMilliseconds(&now);
+    if (!LDTimestamp_InitNow(&now)) {
+        LD_LOG(LD_LOG_CRITICAL, "failed to obtain current time");
+
+        LDJSONFree(result->subEvents);
+        return LDBooleanFalse;
+    }
 
     if (LDi_notNull(result->actualValue)) {
         evaluationValue = result->actualValue;
@@ -450,7 +457,7 @@ void
 LDi_possiblyQueueEvent(
     struct LDEventProcessor *const processor,
     struct LDJSON *              event,
-    const double                 now,
+    const struct LDTimestamp     now,
     const LDBoolean              detailedEvaluation)
 {
     LDBoolean      shouldTrack;
@@ -486,12 +493,20 @@ LDi_possiblyQueueEvent(
     }
 
     if (LDi_notNull(tmp = LDObjectLookup(event, "debugEventsUntilDate"))) {
-        /* validated as Number by LDi_newFeatureRequestEvent */
-        const double until = LDGetNumber(tmp);
+        /* debugEventsUntilDate was validated as a Number by LDi_newFeatureRequestEvent.
+         * Extract it as a timestamp. */
+
+        struct LDTimestamp debugUntil;
+        LDTimestamp_InitUnixMillis(&debugUntil, LDGetNumber(tmp));
+
         /* ensure we don't send debugEventsUntilDate to LD */
         LDJSONFree(LDCollectionDetachIter(event, tmp));
 
-        if (now < until && processor->lastServerTime < until) {
+        /* Check that the current system time is still before debugUntil, but also check the server time.
+         * This is because the system time may be inaccurate. If there is no server time, the second conditional
+         * will evaluate true because the server time is initialized to 0 when the EventProcessor is constructed. */
+
+        if (LDTimestamp_Before(&now, &debugUntil) && LDTimestamp_Before(&processor->lastServerTime, &debugUntil)) {
             struct LDJSON *debugEvent = NULL;
 
             if (shouldTrack) {
@@ -542,11 +557,12 @@ LDBoolean
 LDi_maybeMakeIndexEvent(
     struct LDEventProcessor *const processor,
     const struct LDUser *const   user,
-    const double                 now,
+    const struct LDTimestamp     timestamp,
     struct LDJSON **const        result)
 {
     struct LDJSON *  event, *tmp;
     enum LDLRUStatus status;
+    double elapsedMs;
 
     LD_ASSERT(processor);
     LD_ASSERT(user);
@@ -558,11 +574,16 @@ LDi_maybeMakeIndexEvent(
         return LDBooleanTrue;
     }
 
-    if (now >
-        processor->lastUserKeyFlush + processor->config->userKeysFlushInterval) {
+    if (!LDTimer_Elapsed(&processor->lastUserKeyFlush, &elapsedMs)) {
+        LD_LOG(LD_LOG_ERROR, "couldn't measure elapsed time since last user key flush");
+
+        return LDBooleanFalse;
+    }
+
+    if (elapsedMs > processor->config->userKeysFlushInterval) {
         LDLRUClear(processor->userKeys);
 
-        processor->lastUserKeyFlush = now;
+        LDTimer_Reset(&processor->lastUserKeyFlush);
     }
 
     status = LDLRUInsert(processor->userKeys, user->key);
@@ -575,7 +596,7 @@ LDi_maybeMakeIndexEvent(
         return LDBooleanTrue;
     }
 
-    if (!(event = LDi_newBaseEvent("index", now))) {
+    if (!(event = LDi_newBaseEvent("index", timestamp))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         return LDBooleanFalse;
@@ -618,7 +639,7 @@ LDi_newFeatureEvent(
     const char *const                  prereqOf,
     const struct LDJSON *const         flag,
     const struct LDDetails *const      details,
-    const double                       now,
+    const struct LDTimestamp           timestamp,
     LDBoolean                          inlineUsersInEvents,
     LDBoolean                          allAttributesPrivate,
     const struct LDJSON *const         privateAttributeNames)
@@ -634,7 +655,7 @@ LDi_newFeatureEvent(
     shouldTrack        = LDBooleanFalse;
     shouldAlwaysDetail = LDBooleanFalse;
 
-    if (!(event = LDi_newBaseEvent("feature", now))) {
+    if (!(event = LDi_newBaseEvent("feature", timestamp))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         goto error;
@@ -884,7 +905,7 @@ error:
 }
 
 struct LDJSON *
-LDi_newBaseEvent(const char *const kind, const double now)
+LDi_newBaseEvent(const char *const kind, struct LDTimestamp now)
 {
     struct LDJSON *tmp, *event;
 
@@ -897,7 +918,7 @@ LDi_newBaseEvent(const char *const kind, const double now)
         goto error;
     }
 
-    if (!(tmp = LDNewNumber(now))) {
+    if (!(tmp = LDTimestamp_MarshalUnixMillis(&now))) {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
         goto error;
@@ -1064,20 +1085,37 @@ LDEventProcessor_Identify(
         struct LDEventProcessor *processor, const struct LDUser *user)
 {
     struct LDJSON *event;
-    double         now;
+    struct LDTimestamp timestamp;
 
     LD_ASSERT(processor);
     LD_ASSERT(user);
 
-    LDi_getUnixMilliseconds(&now);
+    /* Users with empty keys do not generate identify events. */
+    if (strlen(user->key) == 0) {
 
-    if (!(event = LDi_newIdentifyEvent(processor, user, now))) {
+        return LDBooleanTrue;
+    }
+
+    if (!LDTimestamp_InitNow(&timestamp)) {
+        LD_LOG(LD_LOG_CRITICAL, "failed to obtain current time");
+
+        return LDBooleanFalse;
+    }
+
+    if (!(event = LDi_newIdentifyEvent(
+            user,
+            timestamp,
+            processor->config->allAttributesPrivate,
+            processor->config->privateAttributeNames))) {
+
         LD_LOG(LD_LOG_ERROR, "failed to construct identify event");
 
         return LDBooleanFalse;
     }
 
     LDi_mutex_lock(&processor->lock);
+
+    LDLRUInsert(processor->userKeys, user->key);
 
     LDi_addEvent(processor, event);
 
@@ -1088,19 +1126,19 @@ LDEventProcessor_Identify(
 
 struct LDJSON *
 LDi_newIdentifyEvent(
-    const struct LDEventProcessor *const processor,
-    const struct LDUser *const         user,
-    const double                       now)
-{
+    const struct LDUser *const user,
+    struct LDTimestamp timestamp,
+    LDBoolean allAttributesPrivate,
+    const struct LDJSON *privateAttributeNames
+) {
     struct LDJSON *event, *tmp;
 
-    LD_ASSERT(processor);
     LD_ASSERT(user);
 
     event = NULL;
     tmp   = NULL;
 
-    if (!(event = LDi_newBaseEvent("identify", now))) {
+    if (!(event = LDi_newBaseEvent("identify", timestamp))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct base event");
 
         return NULL;
@@ -1126,8 +1164,8 @@ LDi_newIdentifyEvent(
     if (!(tmp = LDi_userToJSON(
               user,
               LDBooleanTrue,
-              processor->config->allAttributesPrivate,
-              processor->config->privateAttributeNames)))
+              allAttributesPrivate,
+              privateAttributeNames)))
     {
         LD_LOG(LD_LOG_ERROR, "alloc error");
 
@@ -1158,7 +1196,7 @@ LDi_newCustomEvent(
     LDBoolean inlineUsersInEvents,
     LDBoolean allAttributesPrivate,
     const struct LDJSON *const privateAttributeNames,
-    const double now)
+    struct LDTimestamp timestamp)
 {
     struct LDJSON *tmp, *event;
 
@@ -1168,7 +1206,7 @@ LDi_newCustomEvent(
     tmp   = NULL;
     event = NULL;
 
-    if (!(event = LDi_newBaseEvent("custom", now))) {
+    if (!(event = LDi_newBaseEvent("custom", timestamp))) {
         LD_LOG(LD_LOG_ERROR, "memory error");
 
         goto error;
@@ -1394,17 +1432,21 @@ LDi_track(
         LDBoolean hasMetric
 ){
     struct LDJSON *event, *indexEvent;
-    double         now;
+    struct LDTimestamp timestamp;
 
     LD_ASSERT(processor);
     LD_ASSERT(user);
     LD_ASSERT(eventKey);
 
-    LDi_getUnixMilliseconds(&now);
+    if (!LDTimestamp_InitNow(&timestamp)) {
+        LD_LOG(LD_LOG_CRITICAL, "failed to obtain current time");
+
+        return LDBooleanFalse;
+    }
 
     LDi_mutex_lock(&processor->lock);
 
-    if (!LDi_maybeMakeIndexEvent(processor, user, now, &indexEvent)) {
+    if (!LDi_maybeMakeIndexEvent(processor, user, timestamp, &indexEvent)) {
         LD_LOG(LD_LOG_ERROR, "failed to construct index event");
 
         LDi_mutex_unlock(&processor->lock);
@@ -1421,7 +1463,7 @@ LDi_track(
             processor->config->inlineUsersInEvents,
             processor->config->allAttributesPrivate,
             processor->config->privateAttributeNames,
-            now
+            timestamp
     )))
     {
         LD_LOG(LD_LOG_ERROR, "failed to construct custom event");
@@ -1479,7 +1521,7 @@ struct LDJSON *
 LDi_newAliasEvent(
     const struct LDUser *const currentUser,
     const struct LDUser *const previousUser,
-    const double               now)
+    struct LDTimestamp         timestamp)
 {
     struct LDJSON *tmp, *event;
 
@@ -1489,7 +1531,7 @@ LDi_newAliasEvent(
     tmp   = NULL;
     event = NULL;
 
-    if (!(event = LDi_newBaseEvent("alias", now))) {
+    if (!(event = LDi_newBaseEvent("alias", timestamp))) {
         goto error;
     }
 
@@ -1541,15 +1583,19 @@ LDEventProcessor_Alias(
         const struct LDUser *previousUser)
 {
     struct LDJSON *event;
-    double         now;
+    struct LDTimestamp timestamp;
 
     LD_ASSERT(processor);
     LD_ASSERT(currentUser);
     LD_ASSERT(previousUser);
 
-    LDi_getUnixMilliseconds(&now);
+    if (!LDTimestamp_InitNow(&timestamp)) {
+        LD_LOG(LD_LOG_CRITICAL, "failed to obtain current time");
 
-    if (!(event = LDi_newAliasEvent(currentUser, previousUser, now))) {
+        return LDBooleanFalse;
+    }
+
+    if (!(event = LDi_newAliasEvent(currentUser, previousUser, timestamp))) {
         LD_LOG(LD_LOG_ERROR, "failed to construct alias event");
 
         return LDBooleanFalse;
@@ -1637,11 +1683,11 @@ LDEventProcessor_CreateEventPayloadAndResetState(
 }
 
 void
-LDEventProcessor_SetLastServerTime(struct LDEventProcessor *processor, double serverTime)
+LDEventProcessor_SetLastServerTime(struct LDEventProcessor *processor, time_t serverTime)
 {
     LD_ASSERT(processor);
     LDi_mutex_lock(&processor->lock);
-    processor->lastServerTime = serverTime;
+    LDTimestamp_InitUnixSeconds(&processor->lastServerTime, serverTime);
     LDi_mutex_unlock(&processor->lock);
 }
 
@@ -1653,5 +1699,5 @@ LDEventProcessor_GetEvents(struct LDEventProcessor *processor) {
 
 double
 LDEventProcessor_GetLastServerTime(struct LDEventProcessor *processor) {
-    return processor->lastServerTime;
+    return LDTimestamp_AsUnixMillis(&processor->lastServerTime);
 }

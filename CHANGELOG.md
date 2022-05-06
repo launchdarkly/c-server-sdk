@@ -192,7 +192,7 @@ Version `2.0.0` brings many changes, however they are primarily focused on edge 
 ### Added:
 - Added support for utilizing external feature stores. See the new `launchdarkly/store.h` file for details on implementing a store. You can configure usage of a specific store with `LDConfigSetFeatureStoreBackend`.
 - Added support for Redis as an external feature store. To build add `-D REDIS_STORE=ON` to your cmake build. This will require the hiredis library to be installed on your system.
-- Added LaunchDarkly daemon mode configurable with `LDConfigSetUseLDD`.
+- Added LaunchDarkly daemon mode configurable with `LDConfigSetUseLDD` for use with the Relay Proxy. To learn more, read [Using daemon mode](https://docs.launchdarkly.com/home/relay-proxy/using#using-daemon-mode).
 - Added a code coverage reporting system. To build with code coverage add `-D COVERAGE=ON` to your cmake build. Run the tests, then build the `coverage` target. This will generate an HTML report.
 ### Fixed:
 - The SDK now specifies a uniquely identifiable request header when sending events to LaunchDarkly to ensure that events are only processed once, even if the SDK sends them two times due to a failed initial attempt.

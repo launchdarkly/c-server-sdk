@@ -148,6 +148,7 @@ LDi_onHeader(
     struct tm         tm;
     char              datebuffer[128];
     const char *      headerend;
+    time_t serverTime;
 
     LD_ASSERT(context);
 
@@ -194,7 +195,13 @@ LDi_onHeader(
         return total;
     }
 
-    LDEventProcessor_SetLastServerTime(client->eventProcessor, 1000.0 * (double) mktime(&tm));
+    if ((serverTime = mktime(&tm)) == -1) {
+        LD_LOG(LD_LOG_ERROR, "failed to convert server timestamp to local time");
+
+        return total;
+    }
+
+    LDEventProcessor_SetLastServerTime(client->eventProcessor, serverTime);
 
     return total;
 }
