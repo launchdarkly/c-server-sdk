@@ -158,7 +158,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ae718007133c7c53d0e5426b5621d9d7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets whether this client is offline. An offline client will not make any network connections to LaunchDarkly, and will return default values for all feature flags.  <a href="#ae718007133c7c53d0e5426b5621d9d7f">More...</a><br /></td></tr>
 <tr class="separator:ae718007133c7c53d0e5426b5621d9d7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1adabf587a063f4a2c97bb5927458963"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8h.html#a1adabf587a063f4a2c97bb5927458963">LDConfigSetUseLDD</a> (struct <a class="el" href="structLDConfig.html">LDConfig</a> *const config, const LDBoolean useLDD)</td></tr>
-<tr class="memdesc:a1adabf587a063f4a2c97bb5927458963"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets whether this client should use the LaunchDarkly relay in daemon mode. In this mode, the client does not subscribe to the streaming or polling API, but reads data only from the feature store.  <a href="#a1adabf587a063f4a2c97bb5927458963">More...</a><br /></td></tr>
+<tr class="memdesc:a1adabf587a063f4a2c97bb5927458963"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets whether this client should use the LaunchDarkly Relay Proxy in daemon mode. In this mode, the client does not subscribe to the streaming or polling API, but reads data only from the feature store.  <a href="#a1adabf587a063f4a2c97bb5927458963">More...</a><br /></td></tr>
 <tr class="separator:a1adabf587a063f4a2c97bb5927458963"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad23ba0612bc4891136767c5bfdbbd594"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8h.html#ad23ba0612bc4891136767c5bfdbbd594">LDConfigSetAllAttributesPrivate</a> (struct <a class="el" href="structLDConfig.html">LDConfig</a> *const config, const LDBoolean allAttributesPrivate)</td></tr>
 <tr class="memdesc:ad23ba0612bc4891136767c5bfdbbd594"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets whether or not all user attributes (other than the key) should be hidden from LaunchDarkly. If this is true, all user attribute values will be private, not just the attributes specified in PrivateAttributeNames.  <a href="#ad23ba0612bc4891136767c5bfdbbd594">More...</a><br /></td></tr>
@@ -879,7 +879,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Sets whether this client should use the LaunchDarkly relay in daemon mode. In this mode, the client does not subscribe to the streaming or polling API, but reads data only from the feature store. </p>
+<p>Sets whether this client should use the LaunchDarkly Relay Proxy in daemon mode. In this mode, the client does not subscribe to the streaming or polling API, but reads data only from the feature store. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">config</td><td>The configuration to modify. May not be <code>NULL</code>. </td></tr>

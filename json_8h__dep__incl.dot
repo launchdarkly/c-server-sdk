@@ -11,7 +11,7 @@ digraph "c-sdk-common/include/launchdarkly/json.h"
   Node6 [label="include/launchdarkly\l/variations.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$variations_8h.html",tooltip="Public API for evaluation variations. "];
   Node6 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node3 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node7 [label="c-sdk-common/include\l/launchdarkly/user.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$user_8h.html",tooltip="Public API for User construction. "];
+  Node7 [label="c-sdk-common/include\l/launchdarkly/user.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$user_8h.html",tooltip="Public API Interface for User construction. "];
   Node7 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node7 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node7 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];

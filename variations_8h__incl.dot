@@ -22,11 +22,11 @@ digraph "include/launchdarkly/variations.h"
   Node7 [label="launchdarkly/data_source.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$data__source_8h.html",tooltip="Public API for data source implementation. "];
   Node2 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node2 -> Node8 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node8 [label="launchdarkly/json.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$json_8h.html",tooltip="Public API for JSON usage. "];
+  Node8 [label="launchdarkly/json.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$json_8h.html",tooltip="Public API Interface for JSON usage. "];
   Node8 -> Node1 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node8 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node2 -> Node9 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node9 [label="launchdarkly/user.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$user_8h.html",tooltip="Public API for User construction. "];
+  Node9 [label="launchdarkly/user.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$user_8h.html",tooltip="Public API Interface for User construction. "];
   Node9 -> Node1 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node9 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node9 -> Node8 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];

@@ -141,7 +141,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a84c050587535ce32ded2ed86f609d7ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Record a alias event.  <a href="#a84c050587535ce32ded2ed86f609d7ed">More...</a><br /></td></tr>
 <tr class="separator:a84c050587535ce32ded2ed86f609d7ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a696a5bebe952dc076488e9fb2562b091"><td class="memItemLeft" align="right" valign="top">LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="client_8h.html#a696a5bebe952dc076488e9fb2562b091">LDClientIdentify</a> (struct <a class="el" href="structLDClient.html">LDClient</a> *const client, const struct <a class="el" href="structLDUser.html">LDUser</a> *const user)</td></tr>
-<tr class="memdesc:a696a5bebe952dc076488e9fb2562b091"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates an identify event for a user.  <a href="#a696a5bebe952dc076488e9fb2562b091">More...</a><br /></td></tr>
+<tr class="memdesc:a696a5bebe952dc076488e9fb2562b091"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates an identify event for a user, if the user's key is non-empty.  <a href="#a696a5bebe952dc076488e9fb2562b091">More...</a><br /></td></tr>
 <tr class="separator:a696a5bebe952dc076488e9fb2562b091"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee6568396a3bbebd3a69f534c6fa079e"><td class="memItemLeft" align="right" valign="top">LDBoolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="client_8h.html#aee6568396a3bbebd3a69f534c6fa079e">LDClientIsOffline</a> (struct <a class="el" href="structLDClient.html">LDClient</a> *const client)</td></tr>
 <tr class="memdesc:aee6568396a3bbebd3a69f534c6fa079e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the LaunchDarkly client is in offline mode.  <a href="#aee6568396a3bbebd3a69f534c6fa079e">More...</a><br /></td></tr>
@@ -278,7 +278,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Generates an identify event for a user. </p>
+<p>Generates an identify event for a user, if the user's key is non-empty. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">client</td><td>The client to use. May not be <code>NULL</code>. </td></tr>
