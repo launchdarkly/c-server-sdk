@@ -135,7 +135,7 @@ LDi_initFlagModel(struct LDFlagModel *const model, const struct LDJSON *const js
         } else if (strcmp(prop, "debugEventsUntilDate") == 0) {
             /* optional */
             if (LDJSONGetType(iter) == LDNumber) {
-                model->debugEventsUntilDate = (unsigned int) LDGetNumber(iter);
+                model->debugEventsUntilDate = LDGetNumber(iter);
             }
         } else if (strcmp(prop, "clientSideAvailability") == 0) {
             parserReadExplicit(&parser, iter);

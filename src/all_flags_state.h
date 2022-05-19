@@ -38,7 +38,7 @@ struct LDFlagState
 
     LDBoolean trackEvents;
 
-    unsigned int debugEventsUntilDate;
+    double debugEventsUntilDate;
 };
 
 /** @brief Returns a pointer to an `LDAllFlagsState` with specified validity.

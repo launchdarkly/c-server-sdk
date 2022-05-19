@@ -62,7 +62,6 @@ evaluation/bucketing/bucket by non-key attribute/rollouts/integer value
 evaluation/bucketing/bucket by non-key attribute/rollouts/invalid value type
 evaluation/bucketing/bucket by non-key attribute/experiments/integer value
 evaluation/bucketing/bucket by non-key attribute/experiments/invalid value type
-evaluation/all flags state/default behavior
 evaluation/all flags state/experimentation
 evaluation/all flags state/error in flag/without reasons
 evaluation/all flags state/error in flag/with reasons
