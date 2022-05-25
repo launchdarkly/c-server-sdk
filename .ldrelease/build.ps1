@@ -39,7 +39,7 @@ If(Test-Path "pcre-8.43") {
     # NOTE: Recompute this SHA256 hash whenever the file is updated. This way we can detect
     # if the file has changed.
     $PcreSHA256 = "ae236dc25d7e0e738a94e103218e0085eb02ff9bd98f637b6e061a48decdb433"
-    $PcreURL = "https://iweb.dl.sourceforge.net/project/pcre/pcre/8.43/pcre-8.43.zip"
+    $PcreURL = "https://sourceforge.net/projects/pcre/files/pcre/8.43/pcre-8.43.zip/download"
 
     DownloadAndUnzip -url $PcreURL -filename "pcre.zip" -sha256 $PcreSHA256
 

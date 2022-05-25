@@ -29,7 +29,7 @@ function DownloadAndUnzip {
         [Parameter(Mandatory)][string]$sha256
     )
     Write-Host Downloading and expanding $url
-    ExecuteOrFail { iwr -outf $filename $url }
+    ExecuteOrFail { iwr -UserAgent "NativeHost" -outf $filename $url }
     $Hash = Get-FileHash $filename -Algorithm SHA256
     if ($Hash.Hash -eq $sha256) {
         Write-Host "SHA256($filename) = ($($Hash.Hash)) OK"
