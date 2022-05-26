@@ -58,26 +58,10 @@ evaluation/parameterized/evaluation failures (any)/target variation too low/eval
 evaluation/parameterized/evaluation failures (any)/target variation too low/evaluate flag with detail
 evaluation/parameterized/evaluation failures (any)/target variation too low/evaluate all flags
 evaluation/parameterized/evaluation failures (any)/target variation too high/evaluate flag with detail
-evaluation/parameterized/rule match (bool)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag without detail
-evaluation/parameterized/rule match (bool)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag with detail
-evaluation/parameterized/rule match (bool)/negated clause, null user attribute is always non-match regardless of negation/evaluate all flags
-evaluation/parameterized/rule match (int)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag without detail
-evaluation/parameterized/rule match (int)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag with detail
-evaluation/parameterized/rule match (int)/negated clause, null user attribute is always non-match regardless of negation/evaluate all flags
-evaluation/parameterized/rule match (double)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag without detail
-evaluation/parameterized/rule match (double)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag with detail
-evaluation/parameterized/rule match (double)/negated clause, null user attribute is always non-match regardless of negation/evaluate all flags
-evaluation/parameterized/rule match (string)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag without detail
-evaluation/parameterized/rule match (string)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag with detail
-evaluation/parameterized/rule match (string)/negated clause, null user attribute is always non-match regardless of negation/evaluate all flags
-evaluation/parameterized/rule match (any)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag without detail
-evaluation/parameterized/rule match (any)/negated clause, null user attribute is always non-match regardless of negation/evaluate flag with detail
-evaluation/parameterized/rule match (any)/negated clause, null user attribute is always non-match regardless of negation/evaluate all flags
 evaluation/bucketing/bucket by non-key attribute/rollouts/integer value
 evaluation/bucketing/bucket by non-key attribute/rollouts/invalid value type
 evaluation/bucketing/bucket by non-key attribute/experiments/integer value
 evaluation/bucketing/bucket by non-key attribute/experiments/invalid value type
-evaluation/all flags state/default behavior
 evaluation/all flags state/experimentation
 evaluation/all flags state/error in flag/without reasons
 evaluation/all flags state/error in flag/with reasons

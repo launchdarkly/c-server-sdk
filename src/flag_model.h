@@ -34,7 +34,7 @@ struct LDFlagModel {
     unsigned int version;
     struct LDClientSideAvailability clientSideAvailability;
     LDBoolean trackEvents;
-    unsigned int debugEventsUntilDate;
+    double debugEventsUntilDate;
 };
 
 /** @brief Initializes the given model from a JSON representation.

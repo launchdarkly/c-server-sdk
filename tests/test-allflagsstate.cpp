@@ -408,7 +408,7 @@ TEST_F(AllFlagsStateFixture, BuilderAddFlagsWithReasonsOnlyIfTracked) {
     ASSERT_TRUE(flag3 = LDi_newFlagState("flag3"));
     ASSERT_TRUE(flag3->value = LDNewText("value3"));
     flag3->version = 3000;
-    flag3->debugEventsUntilDate = (unsigned int) now3;
+    flag3->debugEventsUntilDate = now3;
     flag3->details.hasVariation = LDBooleanTrue;
     flag3->details.reason = LD_FALLTHROUGH;
     flag3->details.variationIndex = 3;
@@ -422,7 +422,7 @@ TEST_F(AllFlagsStateFixture, BuilderAddFlagsWithReasonsOnlyIfTracked) {
     ASSERT_TRUE(flag4 = LDi_newFlagState("flag4"));
     ASSERT_TRUE(flag4->value = LDNewText("value1"));
     flag4->version = 4000;
-    flag4->debugEventsUntilDate = (unsigned int) now4;
+    flag4->debugEventsUntilDate = now4;
     flag4->details.hasVariation = LDBooleanTrue;
     flag4->details.reason = LD_FALLTHROUGH;
     flag4->details.variationIndex = 4;

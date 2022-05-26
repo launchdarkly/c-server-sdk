@@ -1034,6 +1034,12 @@ LDi_clauseMatchesUserNoSegments(
 
     attributeType = LDJSONGetType(attributeValue);
 
+    if (attributeType == LDNull) {
+        /* Null attributes are always non-matches. */
+
+        return EVAL_MISS;
+    }
+
     if (attributeType == LDArray) {
         const struct LDJSON *iter;
 
