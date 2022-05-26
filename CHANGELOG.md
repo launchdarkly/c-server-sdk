@@ -2,6 +2,11 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.6.2] - 2022-05-26
+### Fixed:
+- Null user attributes should never result in a rule match.
+- `debugEventsUntilDate` property of flags obtained via `LDAllFlagsState` API no longer overflows due to millisecond-precision timestamping.
+
 ## [2.6.1] - 2022-05-06
 ### Changed:
 - Updated language in changelog related to Relay Proxy.
