@@ -3,7 +3,7 @@
 #include <launchdarkly/memory.h>
 
 #include "cJSON.h"
-#include "utlist.h"
+#include <utlist.h>
 #include "assertion.h"
 #include "integrations/test_data.h"
 #include "json_internal_helpers.h"

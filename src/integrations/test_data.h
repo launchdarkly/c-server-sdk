@@ -5,7 +5,7 @@
 #include <launchdarkly/store.h>
 #include <launchdarkly/integrations/test_data.h>
 
-#include "uthash.h"
+#include <uthash.h>
 #include "concurrency.h"
 
 struct LDTestData {

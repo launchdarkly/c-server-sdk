@@ -5,8 +5,7 @@
 #pragma once
 
 #include <launchdarkly/variations.h>
-#include "uthash.h"
-#include "uthash.h"
+#include <uthash.h>
 
 /* undefine the uthash defaults */
 #undef uthash_malloc

@@ -1,26 +1,46 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 
 project(ContractTests)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+include(FetchContent)
 
-# Include httplib, which is fetched from a remote git repository.
-configure_file(lib/external/httplib/CMakeLists.txt.in
-        ${CMAKE_BINARY_DIR}/httplib-download/CMakeLists.txt)
-execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/httplib-download )
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/httplib-download )
-add_subdirectory(${CMAKE_BINARY_DIR}/httplib-src
-        ${CMAKE_BINARY_DIR}/httplib-build EXCLUDE_FROM_ALL)
+include(../CMakeFiles/httplib.cmake)
+include(../CMakeFiles/json.cmake)
 
-add_subdirectory(lib/external/json)
+add_library(http-helpers
+    src/http_helpers.cpp
+    include/helpers/http_helpers.hpp
+)
 
-# Include internal libraries. Exposes 'service' target.
-add_subdirectory(lib/internal)
+target_link_libraries(http-helpers PUBLIC httplib::httplib)
+target_include_directories(http-helpers PUBLIC include)
 
+add_library(definitions
+    src/definitions.cpp
+    include/definitions/definitions.hpp
+)
+target_compile_features(definitions PUBLIC cxx_std_17)
+target_link_libraries(definitions PUBLIC nlohmann_json::nlohmann_json)
+target_include_directories(definitions PUBLIC include)
+
+add_library(service
+    src/service.cpp
+    src/client_entity.cpp
+    include/service/service.hpp
+    include/service/client_entity.hpp
+)
+
+target_link_libraries(service
+    PUBLIC
+        httplib
+    PRIVATE
+        http-helpers
+        definitions
+        nlohmann_json::nlohmann_json
+        ldserverapi
+)
+target_include_directories(service PUBLIC include)
 add_executable(testservice main.cpp)
+target_compile_features(testservice PRIVATE cxx_std_17)
 
 target_link_libraries(testservice PRIVATE service ldserverapi)
-

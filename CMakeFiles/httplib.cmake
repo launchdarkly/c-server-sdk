@@ -1,18 +1,11 @@
-cmake_minimum_required(VERSION 3.10)
-
-project(httplib-download NONE)
-
 set(HTTPLIB_USE_OPENSSL_IF_AVAILABLE OFF)
 set(HTTPLIB_COMPILE ON)
 
-include(ExternalProject)
-ExternalProject_Add(httplib
+FetchContent_Declare(httplib
         GIT_REPOSITORY    https://github.com/yhirose/cpp-httplib.git
         GIT_TAG           v0.10.2
         SOURCE_DIR        "${CMAKE_BINARY_DIR}/httplib-src"
         BINARY_DIR        "${CMAKE_BINARY_DIR}/httplib-build"
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND     ""
-        INSTALL_COMMAND   ""
-        TEST_COMMAND      ""
-        )
+)
+
+FetchContent_MakeAvailable(httplib)

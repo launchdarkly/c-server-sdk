@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "uthash.h"
+#include <uthash.h>
 
 #include <launchdarkly/api.h>
 

@@ -1,0 +1,20 @@
+diff --git a/timestamp.h b/timestamp.h
+index b52277a..361dab8 100644
+--- a/timestamp.h
++++ b/timestamp.h
+@@ -28,7 +28,6 @@
+ #include <stddef.h>
+ #include <time.h>
+ #include <stdint.h>
+-#include <stdbool.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -44,7 +43,6 @@ int         timestamp_parse            (const char *str, size_t len, timestamp_t
+ size_t      timestamp_format           (char *dst, size_t len, const timestamp_t *tsp);
+ size_t      timestamp_format_precision (char *dst, size_t len, const timestamp_t *tsp, int precision);
+ int         timestamp_compare          (const timestamp_t *tsp1, const timestamp_t *tsp2);
+-bool        timestamp_valid            (const timestamp_t *tsp);
+ struct tm * timestamp_to_tm_utc        (const timestamp_t *tsp, struct tm *tmp);
+ struct tm * timestamp_to_tm_local      (const timestamp_t *tsp, struct tm *tmp);
+ 

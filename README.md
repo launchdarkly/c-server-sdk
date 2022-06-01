@@ -20,6 +20,41 @@ This version of the LaunchDarkly SDK is compatible with POSIX environments (Linu
 
 Download a release archive from the [GitHub Releases](https://github.com/launchdarkly/c-server-sdk/releases) for use in your project. Refer to the [SDK documentation](https://docs.launchdarkly.com/sdk/server-side/c-c--#getting-started) for complete instructions on getting started with using the SDK.
 
+## CMake Compatability
+
+Currently, the minimum required version of CMake necessary to build the SDK is 3.11. 
+
+At configuration time, CMake will download various 3rd party dependencies of the SDK from remote locations.
+
+Other dependencies must be present on the build host:
+- `CURL` (`FindPackage(CURL)`)
+- `PCRE` (`FindPackage(PCRE)`)
+
+The project uses C++ for unit testing. 
+To exclude the unit tests from the build, disable via CMake option:
+```
+-DBUILD_TESTING=OFF
+```
+To enable the Redis store integration, enable via CMake option:
+```
+-DREDIS_STORE=ON
+```
+
+The SDK may be included in another project via `add_subdirectory`. 
+For example, 
+```
+add_subdirectory(c-server-sdk)
+add_executable(main main.c)
+target_link_libraries(main ldserverapi)
+```
+
+It is also possible to install the SDK to a desired location, for example:
+```
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/desired/install/location
+cmake --build . --target install
+```
+
 ## Learn more
 
 Read our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for this SDK](https://docs.launchdarkly.com/docs/c-server-sdk-reference).
