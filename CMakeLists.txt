@@ -1,8 +1,20 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 
 project(ldserverapi)
 
+
+include(FetchContent)
+
+include(CMakeFiles/uthash.cmake)
+include(CMakeFiles/hexify.cmake)
+include(CMakeFiles/semver.cmake)
+include(CMakeFiles/sha1.cmake)
+include(CMakeFiles/timestamp.cmake)
+
+
 include(CTest)
+
+
 
 if(BUILD_TESTING)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -35,6 +47,7 @@ if (COVERAGE)
     setup_target_for_coverage_gcovr_html(NAME coverage)
 endif (COVERAGE)
 
+
 find_package(CURL REQUIRED)
 find_package(PCRE REQUIRED)
 
@@ -44,7 +57,6 @@ endif()
 
 set(LD_INCLUDE_PATHS
     "src"
-    "third-party/include"
     "c-sdk-common/include"
     "c-sdk-common/src"
     ${CURL_INCLUDE_DIR}
@@ -73,7 +85,16 @@ set(LD_LIBRARIES ${LD_LIBRARIES} ${CURL_LIBRARIES} ${PCRE_LIBRARIES})
 
 add_library(ldserverapi ${SOURCES})
 
-target_link_libraries(ldserverapi PRIVATE ${LD_LIBRARIES})
+
+target_link_libraries(ldserverapi
+    PRIVATE
+        uthash
+        hexify
+        semver
+        sha1
+        timestamp
+        ${LD_LIBRARIES}
+)
 
 target_include_directories(ldserverapi
     PUBLIC  "include"
@@ -141,12 +162,17 @@ if(BUILD_TESTING)
 
     add_library(test-utils STATIC ${TEST_UTILS_SRC})
 
-    target_link_libraries(test-utils ldserverapi)
+    target_link_libraries(test-utils PRIVATE ldserverapi )
 
     target_include_directories(test-utils
-        PUBLIC ${LD_INCLUDE_PATHS}
+        PUBLIC
                "test-utils/include"
                "c-sdk-common/test-utils/include"
+                $<TARGET_PROPERTY:ldserverapi,INCLUDE_DIRECTORIES> # Some of the internal headers of ldserverapi
+                # include 3rd party dependencies, which are not part of the public interface of the SDK. Therefore
+                # any test code that imports these internal headers, for testing purposes, will need access to those
+                # 3rd party includes. The INCLUDE_DIRECTORIES property of target ldserverapi includes both the public
+                # and private headers, so propagate them here.
     )
 
     target_compile_definitions(test-utils

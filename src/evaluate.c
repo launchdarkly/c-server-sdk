@@ -1,8 +1,8 @@
 #include <string.h>
 
-#include "hexify.h"
 #include "sha1.h"
 
+#include <hexify.h>
 #include <launchdarkly/api.h>
 
 #include "assertion.h"

@@ -17,8 +17,10 @@ add_library(ldserverapi-redis
 )
 
 target_link_libraries(ldserverapi-redis
-  PRIVATE ldserverapi
-          ${HIREDIS_LIBRARIES}
+    PRIVATE
+        ldserverapi
+        uthash
+        ${HIREDIS_LIBRARIES}
 )
 
 target_include_directories(ldserverapi-redis
@@ -26,7 +28,6 @@ target_include_directories(ldserverapi-redis
     PRIVATE "../../include"
             "../../src"
             "../../tests"
-            "../../third-party/include"
             "../../c-sdk-common/include"
             "../../c-sdk-common/src"
             ${HIREDIS_INCLUDE_DIRS}
@@ -70,7 +71,6 @@ if(BUILD_TESTING)
                     "../../include"
                     "../../src"
                     "../../tests"
-                    "../../third-party/include"
                     "../../c-sdk-common/include"
                     "../../tests"
         )

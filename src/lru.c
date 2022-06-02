@@ -3,8 +3,8 @@
 #include "assertion.h"
 #include "lru.h"
 
-#include "uthash.h"
-#include "utlist.h"
+#include <uthash.h>
+#include <utlist.h>
 
 struct LDLRUNode
 {
