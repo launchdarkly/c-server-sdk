@@ -2,6 +2,18 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.7.0] - 2022-06-02
+### Added:
+- Added section to README.md with basic CMake integration instructions.
+
+### Changed:
+- The SDK previously vendored & patched a set of 3rd-party dependencies. These dependencies are now obtained via CMake's `FetchContent` API, similar to `googletest`. This required a CMake version bump from `3.10` to `3.11`.
+
+
+### Removed:
+- Removed most 3rd-party dependencies in `third-party` subdirectory.
+- Removed unused `base64` dependency.
+
 ## [2.6.2] - 2022-05-26
 ### Fixed:
 - Null user attributes should never result in a rule match.
