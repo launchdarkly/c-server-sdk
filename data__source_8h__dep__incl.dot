@@ -1,20 +1,21 @@
 digraph "include/launchdarkly/data_source.h"
 {
+ // LATEX_PDF_SIZE
   edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
   node [fontname="Helvetica",fontsize="10",shape=record];
-  Node1 [label="include/launchdarkly\l/data_source.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node1 [label="include/launchdarkly\l/data_source.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="Public API for data source implementation."];
   Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node2 [label="include/launchdarkly\l/config.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$config_8h.html",tooltip="Public API for Configuration. "];
+  Node2 [label="include/launchdarkly\l/config.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$config_8h.html",tooltip="Public API for Configuration."];
   Node2 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node3 [label="include/launchdarkly\l/client.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$client_8h.html",tooltip="Public API for Client operations. "];
+  Node3 [label="include/launchdarkly\l/client.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$client_8h.html",tooltip="Public API for Client operations."];
   Node3 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node4 [label="include/launchdarkly\l/api.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$api_8h.html",tooltip="Public API. Include this for every public operation. "];
+  Node4 [label="include/launchdarkly\l/api.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$api_8h.html",tooltip="Public API. Include this for every public operation."];
   Node3 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node5 [label="include/launchdarkly\l/variations.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$variations_8h.html",tooltip="Public API for evaluation variations. "];
+  Node5 [label="include/launchdarkly\l/variations.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$variations_8h.html",tooltip="Public API for evaluation variations."];
   Node5 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node2 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node1 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node6 [label="include/launchdarkly\l/integrations/file_data.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$file__data_8h.html",tooltip="Public API for file data source. "];
+  Node6 [label="include/launchdarkly\l/integrations/file_data.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$file__data_8h.html",tooltip="Public API for file data source."];
   Node1 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node7 [label="include/launchdarkly\l/integrations/test_data.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$test__data_8h.html",tooltip="Public API for LDTestData. "];
+  Node7 [label="include/launchdarkly\l/integrations/test_data.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$test__data_8h.html",tooltip="Public API for LDTestData."];
 }

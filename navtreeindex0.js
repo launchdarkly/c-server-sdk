@@ -82,8 +82,10 @@ var NAVTREEINDEX0 =
 "globals_enum.html":[3,1,2],
 "globals_eval.html":[3,1,3],
 "globals_func.html":[3,1,1],
-"index.html":[],
 "index.html":[0],
+"index.html":[],
+"index.html#autotoc_md1":[0,0],
+"index.html#autotoc_md2":[0,1],
 "json_8h.html":[3,0,0,0,0,2],
 "json_8h.html#a06ee3b31ab0a5dd32104a36d624e87f9":[3,0,0,0,0,2,12],
 "json_8h.html#a0f6aa910832ea98c39e1b08d496ba110":[3,0,0,0,0,2,11],
@@ -157,10 +159,10 @@ var NAVTREEINDEX0 =
 "structLDConfig.html":[2,0,1],
 "structLDDataSource.html":[2,0,2],
 "structLDDetails.html":[2,0,3],
+"structLDDetails.html#a4e005b6a98c07947345742a4f64d3ac0":[2,0,3,1],
 "structLDDetails.html#a5a728361c981a2c21bc6da76b788d4db":[2,0,3,0],
 "structLDDetails.html#a5ad75e7a0e37b9be5ebb6087de4a3fc1":[2,0,3,3],
 "structLDDetails.html#a732285c5b8c698a8e203fb15fb0c4115":[2,0,3,2],
-"structLDDetails.html#a81064b2eab9d0933d12041f36d73e9ab":[2,0,3,1],
 "structLDDetails.html#aa1172f2a4e636bf26af281f760270cf8":[2,0,3,5],
 "structLDDetails.html#abfa3b27944b564d13ad60218d643eb67":[2,0,3,4],
 "structLDDetails.html#add0572356ea48c4b2db8709fd58e6afb":[2,0,3,6],
@@ -247,7 +249,5 @@ var NAVTREEINDEX0 =
 "variations_8h.html#a5bfb76ead561505a82400126669f5212a5e9f31e9e0e8a2bd42f60779f4352fca":[3,0,1,0,7,4,1],
 "variations_8h.html#a5bfb76ead561505a82400126669f5212a932689aa0fb47915e41721ca56c1a0ba":[3,0,1,0,7,4,5],
 "variations_8h.html#a5bfb76ead561505a82400126669f5212a942ee03cd342272a58d7256ecf550e3f":[3,0,1,0,7,4,6],
-"variations_8h.html#a5bfb76ead561505a82400126669f5212a9e21d7dd81c7bcb00c7d30805ad0c0df":[3,0,1,0,7,4,3],
-"variations_8h.html#a5bfb76ead561505a82400126669f5212ac038f4431f7ee9169b857ef6ce9edb2f":[3,0,1,0,7,4,4],
-"variations_8h.html#a7067509e0744fc46fee768154ff80a9a":[3,0,1,0,7,16]
+"variations_8h.html#a5bfb76ead561505a82400126669f5212a9e21d7dd81c7bcb00c7d30805ad0c0df":[3,0,1,0,7,4,3]
 };

@@ -1,7 +1,7 @@
 var structLDDetails =
 [
     [ "errorKind", "structLDDetails.html#a5a728361c981a2c21bc6da76b788d4db", null ],
-    [ "extra", "structLDDetails.html#a81064b2eab9d0933d12041f36d73e9ab", null ],
+    [ "extra", "structLDDetails.html#a4e005b6a98c07947345742a4f64d3ac0", null ],
     [ "fallthrough", "structLDDetails.html#a732285c5b8c698a8e203fb15fb0c4115", null ],
     [ "hasVariation", "structLDDetails.html#a5ad75e7a0e37b9be5ebb6087de4a3fc1", null ],
     [ "prerequisiteKey", "structLDDetails.html#abfa3b27944b564d13ad60218d643eb67", null ],

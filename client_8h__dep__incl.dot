@@ -1,11 +1,12 @@
 digraph "include/launchdarkly/client.h"
 {
+ // LATEX_PDF_SIZE
   edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
   node [fontname="Helvetica",fontsize="10",shape=record];
-  Node9 [label="include/launchdarkly\l/client.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
-  Node9 -> Node10 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node10 [label="include/launchdarkly\l/api.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$api_8h.html",tooltip="Public API. Include this for every public operation. "];
-  Node9 -> Node11 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node11 [label="include/launchdarkly\l/variations.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$variations_8h.html",tooltip="Public API for evaluation variations. "];
-  Node11 -> Node10 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="include/launchdarkly\l/client.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="Public API for Client operations."];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="include/launchdarkly\l/api.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$api_8h.html",tooltip="Public API. Include this for every public operation."];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="include/launchdarkly\l/variations.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$variations_8h.html",tooltip="Public API for evaluation variations."];
+  Node3 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
 }
