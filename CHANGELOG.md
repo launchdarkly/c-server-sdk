@@ -2,6 +2,10 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.7.1] - 2022-06-24
+### Fixed:
+- Fixed generation of ldserverapi static library release artifacts, which would cause undefined symbol errors during linking.
+
 ## [2.7.0] - 2022-06-02
 ### Added:
 - Added section to README.md with basic CMake integration instructions.
