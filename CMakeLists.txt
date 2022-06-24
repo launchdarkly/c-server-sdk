@@ -83,8 +83,13 @@ set(LD_LIBRARIES ${LD_LIBRARIES} ${CURL_LIBRARIES} ${PCRE_LIBRARIES})
 
 # ldserverapi target -----------------------------------------------------------
 
-add_library(ldserverapi ${SOURCES})
-
+add_library(ldserverapi
+    $<TARGET_OBJECTS:hexify>
+    $<TARGET_OBJECTS:semver>
+    $<TARGET_OBJECTS:sha1>
+    $<TARGET_OBJECTS:timestamp>
+    ${SOURCES}
+)
 
 target_link_libraries(ldserverapi
     PRIVATE

@@ -11,7 +11,7 @@ if(NOT hexify_POPULATED)
     FetchContent_Populate(hexify)
 endif()
 
-add_library(hexify STATIC ${hexify_SOURCE_DIR}/hexify.c)
+add_library(hexify OBJECT ${hexify_SOURCE_DIR}/hexify.c)
 target_include_directories(hexify PUBLIC ${hexify_SOURCE_DIR})
 
 
