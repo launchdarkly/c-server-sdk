@@ -11,7 +11,7 @@ if(NOT semver_POPULATED)
     FetchContent_Populate(semver)
 endif()
 
-add_library(semver STATIC ${semver_SOURCE_DIR}/semver.c)
+add_library(semver OBJECT ${semver_SOURCE_DIR}/semver.c)
 target_include_directories(semver PUBLIC ${semver_SOURCE_DIR})
 
 

@@ -9,5 +9,5 @@ if(NOT sha1_POPULATED)
     FetchContent_Populate(sha1)
 endif()
 
-add_library(sha1 STATIC ${sha1_SOURCE_DIR}/sha1.c)
+add_library(sha1 OBJECT ${sha1_SOURCE_DIR}/sha1.c)
 target_include_directories(sha1 PUBLIC ${sha1_SOURCE_DIR})

@@ -48,7 +48,7 @@ Most of the libraries used by the SDK do not support cmake, so the `XXX.cmake` f
 in this repo need to setup the targets manually. If the upstream repos provided such targets, it would be 
 possible to remove that boilerplate in favor of `FetchContent_MakeAvailable`.
 
-Therefore, cmake 3.11 is sufficient for the time being. 
+Therefore, cmake 3.11 is sufficient for the time being.
 
 For reference:
 - Ubuntu 18.04 ships with cmake 3.10
@@ -92,5 +92,22 @@ There are various bugs/race-conditions in the interaction of `FetchContent` and 
 which may cause spurious failures in CI. It remains to be seen how much of a problem this will be, and it may be solved
 by upgrading the cmake version on all hosts.
 
+## Release artifacts
+
+The SDK is released with shared and static libraries for all supported platforms.
+For example, on macOS:
+- `libldserverapi.a` (static library)
+- `libldserverapi.dylib` (shared library)
+
+Care should be taken to minimize the number of artifacts that are needed to include the 
+SDK in an application, for ease of use.
+
+In CMake, that might mean:
+- Using `target_link_libraries` to "link" static library dependencies into the shared library release artifact.
+  - This way, only a single shared library is needed to use the SDK.
+  - Alternatively, if the dependency is popular or has variants that a user may want to customize, then
+  it might be beneficial to use dynamic linkage so it can be swapped out.
+- Using `$<TARGET_OBJECT:targetname>` to propagate a static library dependencies into the static library release artifact.
+  - Without this, it would be necessary for users to include all static library artifacts for the build to succeed.
 
 

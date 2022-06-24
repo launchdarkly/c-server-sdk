@@ -15,15 +15,24 @@ popd() { builtin popd > /dev/null; }
 # Hash the output of 'find' on a given directory, allowing for instant comparison with previous builds.
 print_directory_hash() {
   pushd "$1"
-  files=$(find .)
-  hash=$(shasum -a 256 <<< "$files")
-  echo "CHECK[$1] = ${hash:0:4}"
+  file_names=$(find . | sort)
+  hash=$(shasum -a 256 <<< "$file_names")
+  echo "FILE_NAMES_HASH[$1] = #${hash:0:4}"
+  # shellcheck disable=SC2016
+  find . \( -name '*.so' -o -name '*.dll' -o -name '*.dylib' -o -name '*.a' -o -name '*.lib' \) -exec "$SHELL" -c '
+        for file in "$@" ; do
+            sum=$(shasum -a 256 < $file)
+            echo "     ARTIFACT_HASH[$file] = #${sum:0:4}"
+            size=$(wc -c < $file | tr -s " ")
+            echo "     ARTIFACT_SIZE[$file] = $size"
+        done' find-sh {} +
+  echo ""
   popd
 }
 
 print_directory_contents() {
   pushd "$1"
-  find .
+  find . | sort
   popd
 }
 
@@ -37,7 +46,7 @@ print_file_manifest() {
       print_directory_contents "$dir/release"
       echo ""
   done
-  echo "========== CHECKSUMS =============="
+  echo "========== INTEGRITY =============="
   for dir in "$@"
   do
       print_directory_hash "$dir/release"

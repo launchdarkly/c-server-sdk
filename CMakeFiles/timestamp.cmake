@@ -11,7 +11,7 @@ if(NOT timestamp_POPULATED)
     FetchContent_Populate(timestamp)
 endif()
 
-add_library(timestamp STATIC
+add_library(timestamp OBJECT
     ${timestamp_SOURCE_DIR}/timestamp_compare.c
     ${timestamp_SOURCE_DIR}/timestamp_parse.c
 )
