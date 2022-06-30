@@ -48,7 +48,7 @@ TEST_F(StreamingFixture, ParsePathFlags) {
     enum FeatureKind kind;
     const char *key;
 
-    ASSERT_TRUE(LDi_parsePath("/flags/abcd", &kind, &key));
+    ASSERT_EQ(LDi_parsePath("/flags/abcd", &kind, &key), PARSE_PATH_SUCCESS);
 
     ASSERT_EQ(kind, LD_FLAG);
     ASSERT_STREQ(key, "abcd");
@@ -58,7 +58,7 @@ TEST_F(StreamingFixture, ParsePathSegments) {
     enum FeatureKind kind;
     const char *key;
 
-    ASSERT_TRUE(LDi_parsePath("/segments/xyz", &kind, &key));
+    ASSERT_EQ(LDi_parsePath("/segments/xyz", &kind, &key), PARSE_PATH_SUCCESS);
 
     ASSERT_EQ(kind, LD_SEGMENT);
     ASSERT_STREQ(key, "xyz");
@@ -68,7 +68,7 @@ TEST_F(StreamingFixture, ParsePathUnknownKind) {
     enum FeatureKind kind;
     const char *key;
 
-    ASSERT_FALSE(LDi_parsePath("/unknown/123", &kind, &key));
+    ASSERT_EQ(LDi_parsePath("/unknown/123", &kind, &key), PARSE_PATH_IGNORE);
 
     ASSERT_FALSE(key);
 }
@@ -198,7 +198,7 @@ TEST_F(StreamingFixtureWithContext, DeletePathUnrecognized) {
             "event: delete\n"
             "data: {\"path\": \"hello\", \"version\": 8}\n\n";
 
-    ASSERT_FALSE(LDi_streamWriteCallback(event, strlen(event), 1, context));
+    ASSERT_TRUE(LDi_streamWriteCallback(event, strlen(event), 1, context));
 }
 
 TEST_F(StreamingFixtureWithContext, DeleteMissingVersion) {

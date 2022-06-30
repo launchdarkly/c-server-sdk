@@ -13,68 +13,62 @@
 #include "user.h"
 #include "utility.h"
 
-LDBoolean
+enum ParsePathStatus
 LDi_parsePath(
-    const char *path, enum FeatureKind *const kind, const char **const key)
+    const char *path, enum FeatureKind *const o_kind, const char **const o_key)
 {
     size_t      segmentlen, flagslen;
     const char *segments, *flags;
 
     LD_ASSERT(path);
-    LD_ASSERT(kind);
-    LD_ASSERT(key);
+    LD_ASSERT(o_kind);
+    LD_ASSERT(o_key);
 
-    *key       = NULL;
+    *o_key       = NULL;
     segments   = "/segments/";
     flags      = "/flags/";
     segmentlen = strlen(segments);
     flagslen   = strlen(flags);
 
     if (strncmp(path, segments, segmentlen) == 0) {
-        *key  = path + segmentlen;
-        *kind = LD_SEGMENT;
+        *o_key  = path + segmentlen;
+        *o_kind = LD_SEGMENT;
     } else if (strncmp(path, flags, flagslen) == 0) {
-        *key  = path + flagslen;
-        *kind = LD_FLAG;
+        *o_key  = path + flagslen;
+        *o_kind = LD_FLAG;
     } else {
-        return LDBooleanFalse;
+        return PARSE_PATH_IGNORE;
     }
 
-    return LDBooleanTrue;
+    return PARSE_PATH_SUCCESS;
 }
 
-static LDBoolean
+static enum ParsePathStatus
 getEventPath(
     const struct LDJSON *const event,
-    enum FeatureKind *const    kind,
-    const char **const         key)
+    enum FeatureKind *const    o_kind,
+    const char **const         o_key)
 {
     struct LDJSON *tmp;
 
     LD_ASSERT(event);
     LD_ASSERT(LDJSONGetType(event) == LDObject);
-    LD_ASSERT(kind);
-    LD_ASSERT(key);
+    LD_ASSERT(o_kind);
+    LD_ASSERT(o_key);
 
     if (!(tmp = LDObjectLookup(event, "path"))) {
         LD_LOG(LD_LOG_ERROR, "event does not have a path");
 
-        return LDBooleanFalse;
+        return PARSE_PATH_FAILURE;
     }
 
     if (LDJSONGetType(tmp) != LDText) {
         LD_LOG(LD_LOG_ERROR, "event path is not a string");
 
-        return LDBooleanFalse;
+        return PARSE_PATH_FAILURE;
     }
 
-    if (!LDi_parsePath(LDGetText(tmp), kind, key)) {
-        LD_LOG(LD_LOG_ERROR, "event path is not recognized");
-
-        return LDBooleanFalse;
-    }
-
-    return LDBooleanTrue;
+    return LDi_parsePath(LDGetText(tmp), o_kind, o_key);
 }
 
 LDBoolean
@@ -189,66 +183,77 @@ cleanup:
 static LDBoolean
 onPatch(struct LDClient *const client, const char *const eventBuffer)
 {
-    struct LDJSON *  tmp, *data;
-    const char *     key;
-    LDBoolean        success;
+    struct LDJSON *tmp, *data;
+    const char *keyUnused;
+    enum ParsePathStatus parseStatus;
     enum FeatureKind kind;
 
     LD_ASSERT(client);
     LD_ASSERT(eventBuffer);
 
-    tmp     = NULL;
-    key     = NULL;
-    success = LDBooleanFalse;
-    data    = NULL;
+    tmp       = NULL;
+    keyUnused = NULL;
+    data      = NULL;
 
     if (!(data = LDJSONDeserialize(eventBuffer))) {
         LD_LOG(LD_LOG_ERROR, "sse patch failed to decode event body");
+        LDJSONFree(data);
 
-        goto cleanup;
+        return LDBooleanFalse;
     }
 
     if (LDJSONGetType(data) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "sse patch body should be object, discarding");
+        LDJSONFree(data);
 
-        goto cleanup;
+        return LDBooleanFalse;
     }
 
-    if (!getEventPath(data, &kind, &key)) {
-        LD_LOG(LD_LOG_ERROR, "patch failed to get path");
+    parseStatus = getEventPath(data, &kind, &keyUnused);
 
-        goto cleanup;
+    switch (parseStatus) {
+        case PARSE_PATH_FAILURE:
+            LD_LOG(LD_LOG_ERROR, "failed to parse patch path");
+            LDJSONFree(data);
+
+            return LDBooleanFalse;
+        case PARSE_PATH_IGNORE:
+            LD_LOG(LD_LOG_INFO, "unrecognized patch path; ignoring");
+            LDJSONFree(data);
+
+            return LDBooleanTrue;
+        case PARSE_PATH_SUCCESS:
+            /* nothing to do; 'kind' should be now be available. */
+
+            break;
     }
 
     if (!(tmp = LDObjectDetachKey(data, "data"))) {
         LD_LOG(LD_LOG_ERROR, "patch.data does not exist");
+        LDJSONFree(data);
 
-        goto cleanup;
+        return LDBooleanFalse;
     }
 
     if (!LDStoreUpsert(client->store, kind, tmp)) {
         LD_LOG(LD_LOG_ERROR, "store error");
-
         /* tmp is consumed even on failure */
+        LDJSONFree(data);
 
-        goto cleanup;
+        return LDBooleanFalse;
     }
 
-    success = LDBooleanTrue;
-
-cleanup:
     LDJSONFree(data);
-
-    return success;
+    return LDBooleanTrue;
 }
 
 /* consumes input even on failure */
 static LDBoolean
 onDelete(struct LDClient *const client, const char *const eventBuffer)
 {
-    struct LDJSON *  tmp, *data;
-    const char *     key;
-    LDBoolean        success;
+    struct LDJSON *tmp, *data;
+    const char *key;
+    enum ParsePathStatus parseStatus;
     enum FeatureKind kind;
 
     LD_ASSERT(client);
@@ -256,51 +261,63 @@ onDelete(struct LDClient *const client, const char *const eventBuffer)
 
     tmp     = NULL;
     key     = NULL;
-    success = LDBooleanFalse;
     data    = NULL;
 
     if (!(data = LDJSONDeserialize(eventBuffer))) {
         LD_LOG(LD_LOG_ERROR, "sse delete failed to decode event body");
+        LDJSONFree(data);
 
-        goto cleanup;
+        return LDBooleanFalse;
     }
 
     if (LDJSONGetType(data) != LDObject) {
         LD_LOG(LD_LOG_ERROR, "sse delete body should be object, discarding");
+        LDJSONFree(data);
 
-        goto cleanup;
+        return LDBooleanFalse;
     }
 
-    if (!getEventPath(data, &kind, &key)) {
-        LD_LOG(LD_LOG_ERROR, "patch failed to get path");
+    parseStatus = getEventPath(data, &kind, &key);
+    switch (parseStatus) {
+        case PARSE_PATH_FAILURE:
+            LD_LOG(LD_LOG_ERROR, "failed to parse patch path");
+            LDJSONFree(data);
 
-        goto cleanup;
+            return LDBooleanFalse;
+        case PARSE_PATH_IGNORE:
+            LD_LOG(LD_LOG_INFO, "unrecognized patch path; ignoring");
+            LDJSONFree(data);
+
+            return LDBooleanTrue;
+        case PARSE_PATH_SUCCESS:
+            /* nothing to do; 'kind' and 'key' should be now be available. */
+
+            break;
     }
 
     if (!(tmp = LDObjectLookup(data, "version"))) {
         LD_LOG(LD_LOG_ERROR, "schema error");
+        LDJSONFree(data);
 
-        goto cleanup;
+        return LDBooleanFalse;
     }
 
     if (LDJSONGetType(tmp) != LDNumber) {
         LD_LOG(LD_LOG_ERROR, "schema error");
+        LDJSONFree(data);
 
-        goto cleanup;
+        return LDBooleanFalse;
     }
 
     if (!LDStoreRemove(client->store, kind, key, LDGetNumber(tmp))) {
         LD_LOG(LD_LOG_ERROR, "store error");
+        LDJSONFree(data);
 
-        goto cleanup;
+        return LDBooleanFalse;
     }
 
-    success = LDBooleanTrue;
-
-cleanup:
     LDJSONFree(data);
-
-    return success;
+    return LDBooleanTrue;
 }
 
 static LDBoolean
