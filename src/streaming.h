@@ -32,9 +32,26 @@ struct StreamContext
     double lastReadTimeMilliseconds;
 };
 
-LDBoolean
+/* Used as a return value for LDi_parsePath.  */
+enum ParsePathStatus {
+    /* The path was parsed successfully for a key and resource type. */
+    PARSE_PATH_SUCCESS,
+    /* The path was malformed. */
+    PARSE_PATH_FAILURE,
+    /* The path was parsed successfully, but should be ignored.  */
+    PARSE_PATH_IGNORE
+};
+
+/**
+ * Parses a patch path, extracting out the type and key of the resource being patched.
+ * @param path Input path
+ * @param kind Out parameter containing the kind, if recognized.
+ * @param key Out parameter containing the key, if recognized.
+ * @return Parse status.
+ */
+enum ParsePathStatus
 LDi_parsePath(
-    const char *path, enum FeatureKind *const kind, const char **const key);
+    const char *path, enum FeatureKind *o_kind, const char **o_key);
 
 size_t
 LDi_streamWriteCallback(

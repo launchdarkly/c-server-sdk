@@ -138,4 +138,3 @@ streaming/validation/drop and reconnect if stream event has malformed JSON/delet
 streaming/validation/drop and reconnect if stream event has well-formed JSON not matching schema/put event
 streaming/validation/drop and reconnect if stream event has well-formed JSON not matching schema/patch event
 streaming/validation/drop and reconnect if stream event has well-formed JSON not matching schema/delete event
-streaming/validation/unrecognized data that can be safely ignored/patch event with unrecognized path kind

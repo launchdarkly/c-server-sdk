@@ -1,7 +1,21 @@
 cmake_minimum_required(VERSION 3.11)
 
-project(ldserverapi)
+# The launchdarkly/api.h header contains the SDK's version.
+# See .ldrelease/update-version.sh for how it is updated during the release process.
+# It is used here in order to set the project's package version.
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/include/launchdarkly/api.h" FILE_API_H)
+string(REGEX MATCH "LD_SDK_VERSION \"(.*)\"\n\n" _ ${FILE_API_H})
 
+if(NOT DEFINED CMAKE_MATCH_1)
+    message(FATAL_ERROR "LaunchDarkly - Unable to determine SDK version from <launchdarkly/api.h>")
+endif()
+
+project(ldserverapi
+        VERSION ${CMAKE_MATCH_1}
+        DESCRIPTION "LaunchDarkly C Server SDK"
+)
+
+message(STATUS "LaunchDarkly C Server SDK ${PROJECT_VERSION}")
 
 include(FetchContent)
 
