@@ -17,8 +17,18 @@ target_link_libraries(google_tests ldserverapi test-utils)
 target_include_directories(google_tests PRIVATE ${LD_INCLUDE_PATHS})
 target_link_libraries("google_tests" gtest_main)
 
+
 gtest_discover_tests(google_tests)
+
+
 target_compile_definitions(google_tests
-        PRIVATE -D LAUNCHDARKLY_USE_ASSERT
+        PRIVATE
+        -D LAUNCHDARKLY_USE_ASSERT
         -D LAUNCHDARKLY_CONCURRENCY_ABORT
-        )
+)
+
+# These tests check that the SDK can be used in other cmake projects,
+# via add_subdirectory or find_package.
+if (ENABLE_CMAKE_PROJECT_TESTS)
+    add_subdirectory(cmake_projects)
+endif()

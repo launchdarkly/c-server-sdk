@@ -1,0 +1,4 @@
+add_subdirectory(add_subdirectory)
+add_subdirectory(find_package)
+add_subdirectory(find_package_compatible_version)
+add_subdirectory(find_package_incompatible_version)

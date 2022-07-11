@@ -12,6 +12,11 @@ if(NOT semver_POPULATED)
 endif()
 
 add_library(semver OBJECT ${semver_SOURCE_DIR}/semver.c)
-target_include_directories(semver PUBLIC ${semver_SOURCE_DIR})
-
-
+target_include_directories(semver PUBLIC
+        $<BUILD_INTERFACE:${semver_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include/semver>
+)
+install(
+        TARGETS semver
+        EXPORT ${PROJECT_NAME}-targets
+)

@@ -10,4 +10,11 @@ if(NOT sha1_POPULATED)
 endif()
 
 add_library(sha1 OBJECT ${sha1_SOURCE_DIR}/sha1.c)
-target_include_directories(sha1 PUBLIC ${sha1_SOURCE_DIR})
+target_include_directories(sha1 PUBLIC
+        $<BUILD_INTERFACE:${sha1_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include/sha1>
+)
+install(
+        TARGETS sha1
+        EXPORT ${PROJECT_NAME}-targets
+)

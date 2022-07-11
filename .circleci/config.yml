@@ -80,13 +80,14 @@ jobs:
           name: Build
           command: |
             mkdir build && cd build
-            cmake -D CMAKE_BUILD_TYPE=Release -D REDIS_STORE=ON ..
-            cmake --build .
+            cmake -D CMAKE_BUILD_TYPE=Release -D REDIS_STORE=ON -D ENABLE_CMAKE_PROJECT_TESTS=ON -D CMAKE_INSTALL_PREFIX=./INSTALL ..
+            cmake --build . --target install
       - run:
           name: Unit test
           command: |
             cd build
             GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
+
       - store_test_results:
           path: reports
 
@@ -116,8 +117,8 @@ jobs:
             export CC=/usr/bin/clang-11
             export CXX=/usr/bin/clang++-11
             mkdir build && cd build
-            cmake -D CMAKE_BUILD_TYPE=Release -D REDIS_STORE=ON ..
-            cmake --build .
+            cmake -D CMAKE_BUILD_TYPE=Release -D REDIS_STORE=ON -D ENABLE_CMAKE_PROJECT_TESTS=ON -D CMAKE_INSTALL_PREFIX=./INSTALL ..
+            cmake --build . --target install
       - run:
           name: Unit test
           command: |
@@ -170,8 +171,8 @@ jobs:
           name: Build
           command: |
             mkdir build && cd build
-            cmake -D REDIS_STORE=ON ..
-            cmake --build .
+            cmake -D REDIS_STORE=ON -D ENABLE_CMAKE_PROJECT_TESTS=ON CMAKE_INSTALL_PREFIX=./INSTALL ..
+            cmake --build . --target install
       - run:
           name: Test
           command: |
@@ -202,8 +203,8 @@ jobs:
           name: Build
           command: |
             mkdir build && cd build
-            cmake -D REDIS_STORE=ON ..
-            cmake --build .
+            cmake -D REDIS_STORE=ON -D ENABLE_CMAKE_PROJECT_TESTS=ON -D CMAKE_INSTALL_PREFIX=./INSTALL ..
+            cmake --build . --target install
       - run:
           name: Test
           command: |

@@ -9,5 +9,5 @@ SetupVSToolsEnv -architecture amd64
 
 cd build-static
 $env:GTEST_OUTPUT="xml:${PSScriptRoot}/../reports/"
-ExecuteOrFail { cmake --build . --target RUN_TESTS }
+ExecuteOrFail { cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS }
 cd ..

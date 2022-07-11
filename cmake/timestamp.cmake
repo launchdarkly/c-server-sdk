@@ -15,6 +15,12 @@ add_library(timestamp OBJECT
     ${timestamp_SOURCE_DIR}/timestamp_compare.c
     ${timestamp_SOURCE_DIR}/timestamp_parse.c
 )
-target_include_directories(timestamp PUBLIC ${timestamp_SOURCE_DIR})
-
+target_include_directories(timestamp PUBLIC
+        $<BUILD_INTERFACE:${timestamp_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include/timestamp>
+)
+install(
+        TARGETS timestamp
+        EXPORT ${PROJECT_NAME}-targets
+)
 

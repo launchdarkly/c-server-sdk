@@ -74,6 +74,7 @@ function Build-Sdk {
     Write-Host
     ExecuteOrFail {
         cmake -G "Visual Studio 16 2019" -A x64 `
+            -D ENABLE_CMAKE_PROJECT_TESTS=ON `
             -D BUILD_TESTING=${BUILD_TESTING} `
             -D BUILD_SHARED_LIBS=${BUILD_SHARED} `
             -D SKIP_DATABASE_TESTS=ON `

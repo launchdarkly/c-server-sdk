@@ -20,40 +20,92 @@ This version of the LaunchDarkly SDK is compatible with POSIX environments (Linu
 
 Download a release archive from the [GitHub Releases](https://github.com/launchdarkly/c-server-sdk/releases) for use in your project. Refer to the [SDK documentation](https://docs.launchdarkly.com/sdk/server-side/c-c--#getting-started) for complete instructions on getting started with using the SDK.
 
-## CMake Compatability
+## CMake Compatibility
 
-Currently, the minimum required version of CMake necessary to build the SDK is 3.11. 
+| Component      | Minimum CMake version required |
+|----------------|--------------------------------|
+| SDK            | 3.11                           |
+| Contract Tests | 3.14                           |
 
-At configuration time, CMake will download various 3rd party dependencies of the SDK from remote locations.
 
-Other dependencies must be present on the build host:
-- `CURL` (`FindPackage(CURL)`)
-- `PCRE` (`FindPackage(PCRE)`)
+## CMake Usage
 
-The project uses C++ for unit testing. 
-To exclude the unit tests from the build, disable via CMake option:
-```
--DBUILD_TESTING=OFF
-```
-To enable the Redis store integration, enable via CMake option:
-```
--DREDIS_STORE=ON
+CMake is a highly flexible build-system generator. The SDK strives to support
+two common use-cases for integrating a CMake-based project into a main application.
+
+### Adding the SDK as a sub-project with add_subdirectory()
+
+First, obtain the SDK's source code and place the directory somewhere within your project.
+For example:
+```bash
+cd your-project
+git clone https://github.com/launchdarkly/c-server-sdk.git
 ```
 
-The SDK may be included in another project via `add_subdirectory`. 
-For example, 
-```
+Add the source directory within your project's `CMakeLists.txt`:
+```bash
 add_subdirectory(c-server-sdk)
-add_executable(main main.c)
-target_link_libraries(main ldserverapi)
+```
+The SDK's `ldserverapi::ldserverapi` target should be available for linking.
+For example:
+```cmake
+target_link_libraries(yourproject ldserverapi::ldserverapi)
 ```
 
-It is also possible to install the SDK to a desired location, for example:
-```
-mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/desired/install/location
+### Installing & finding the SDK with find_package() 
+Instead of including the SDK's project directly in another project, the SDK can instead be
+installed to a location on the build machine.
+
+The installed files can be referenced by another CMake project.
+For example:
+```bash
+git clone https://github.com/launchdarkly/c-server-sdk.git
+cd c-server-sdk
+
+# If no install prefix is provided, standard GNU install directories are used.
+cmake .. -DCMAKE_INSTALL_PREFIX=/path/where/sdk/should/be/installed
 cmake --build . --target install
 ```
+In your project's `CMakeLists.txt`:
+```cmake
+# Replace with latest version
+find_package(ldserverapi 2.7.1 REQUIRED)
+
+target_link_libraries(yourproject ldserverapi::ldserverapi)
+```
+## Dependencies 
+| Component      | Package Name        | Location   | Method       | Minimum Version | Patched                      |
+|----------------|---------------------|------------|--------------|-----------------|------------------------------|
+| SDK            | PCRE                | Build host | FindPCRE     |                 | N                            |
+| SDK            | CURL                | Build host | FindCURL     |                 | N                            |
+| SDK            | pepaslabs/hexify    | Github     | FetchContent | Pegged @ f823b  | [Y](patches/hexify.patch)    |
+| SDK            | h2non/semver        | Github     | FetchContent | Pegged @ bd1db  | [Y](patches/semver.patch)    |
+| SDK            | clibs/sha1          | Github     | FetchContent | Pegged @ fa1d9  | N                            |
+| SDK            | chansen/timestamp   | Github     | FetchContent | Pegged @ b205c  | [Y](patches/timestamp.patch) |
+| SDK            | troydhanson/uthash  | Github     | FetchContent | v2.3.0          | N                            |
+| SDK            | NetBSD strptime.c   | Vendored   | N/A          | N/A             | Unknown                      |
+| SDK with Redis | hiredis             | Build host | FindHiredis  |                 | N                            |
+| Contract Tests | yhirose/cpp-httplib | Github     | FetchContent | v0.10.2         | N                            |
+| Contract Tests | nlohmann/json       | Github     | FetchContent | v3.10.5         | N                            |
+
+
+## Unit tests
+
+The project **uses C++** for unit testing. 
+To exclude the unit tests from the SDK build, disable via CMake option:
+```
+cmake .. -DBUILD_TESTING=OFF <other options...>
+```
+
+## Redis store integration
+To enable the Redis store integration, the `hiredis` package must be present on the build host.
+Enable support via cmake option:
+```
+cmake .. -DREDIS_STORE=ON <other options...>
+```
+The SDK library artifacts will now contain Redis support, and an additional
+[header](stores/redis/include/launchdarkly/store/redis.h) will be made available
+in the build/install trees.
 
 ## Learn more
 
