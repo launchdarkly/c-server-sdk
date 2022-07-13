@@ -2,6 +2,17 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.8.0] - 2022-07-12
+### Added:
+- Added CMake minimum version table to README.
+- Added 3rd-party dependency table to README.
+
+### Changed:
+- Updated CMake project configuration to support find_package. 
+- After installation, it should now be possible to call `find_package(ldserverapi [version] REQUIRED)` followed by `target_link_libraries(app ldserverapi::ldserverapi)`.
+- Note: find_package support does not extend to the Redis integration at this time. 
+- Please see the README for updated instructions.
+
 ## [2.7.2] - 2022-07-07
 ### Added:
 - Added cmake PROJECT_VERSION variable which reflects the SDK's version.
