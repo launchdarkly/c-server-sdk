@@ -4,8 +4,8 @@ project(ContractTests)
 
 include(FetchContent)
 
-include(../CMakeFiles/httplib.cmake)
-include(../CMakeFiles/json.cmake)
+include(${CMAKE_FILES}/httplib.cmake)
+include(${CMAKE_FILES}/json.cmake)
 
 add_library(http-helpers
     src/http_helpers.cpp

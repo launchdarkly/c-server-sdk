@@ -72,7 +72,7 @@ cd ..
 
 mkdir -p build-redis-static && cd build-redis-static
 mkdir -p release
-cmake -D SKIP_BASE_INSTALL=ON  -D REDIS_STORE=ON -D BUILD_TESTING=OFF -D CMAKE_INSTALL_PREFIX=./release ..
+cmake -D SKIP_BASE_INSTALL=ON -D REDIS_STORE=ON -D BUILD_TESTING=OFF -D CMAKE_INSTALL_PREFIX=./release ..
 cmake --build .
 cmake --build . --target install
 cd ..

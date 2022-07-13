@@ -10,6 +10,13 @@ if(NOT uthash_POPULATED)
 endif()
 
 add_library(uthash INTERFACE)
-target_include_directories(uthash INTERFACE ${uthash_SOURCE_DIR}/src)
+target_include_directories(uthash INTERFACE
+        $<BUILD_INTERFACE:${uthash_SOURCE_DIR}/src>
+        $<INSTALL_INTERFACE:include/uthash>
+)
 
+install(
+        TARGETS uthash
+        EXPORT ${PROJECT_NAME}-targets
+)
 

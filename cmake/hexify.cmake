@@ -12,6 +12,11 @@ if(NOT hexify_POPULATED)
 endif()
 
 add_library(hexify OBJECT ${hexify_SOURCE_DIR}/hexify.c)
-target_include_directories(hexify PUBLIC ${hexify_SOURCE_DIR})
-
-
+target_include_directories(hexify PUBLIC
+        $<BUILD_INTERFACE:${hexify_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include/hexify>
+)
+install(
+        TARGETS hexify
+        EXPORT ${PROJECT_NAME}-targets
+)
