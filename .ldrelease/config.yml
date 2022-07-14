@@ -16,6 +16,7 @@ jobs:
     env:
       LD_LIBRARY_FILE_PREFIX: osx-clang-64bit
   - circleCI:
+      timeoutMinutes: 20 # Windows takes longer than usual to build & test.
       windows: {}  # the {} means "we want to specify windows here, but no special parameters within it"
     env:
       LD_LIBRARY_FILE_PREFIX: windows-vs-64bit
