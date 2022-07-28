@@ -53,7 +53,7 @@ readFile(const char * filename) {
     }
 
     while(1) {
-        char c;
+        int c;
 
         if(bytesRead >= allocatedBytes) {
             char *tmpBuffer;
@@ -76,7 +76,7 @@ readFile(const char * filename) {
             break;
         }
 
-        buffer[bytesRead] = c;
+        buffer[bytesRead] = (char) c;
         bytesRead++;
     }
 
