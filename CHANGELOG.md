@@ -2,6 +2,10 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.8.1] - 2022-07-28
+### Fixed:
+- Fixed build error on platforms where char is unsigned by default.
+
 ## [2.8.0] - 2022-07-12
 ### Added:
 - Added CMake minimum version table to README.
