@@ -10,6 +10,11 @@ if(NOT sha1_POPULATED)
 endif()
 
 add_library(sha1 OBJECT ${sha1_SOURCE_DIR}/sha1.c)
+
+if(BUILD_SHARED_LIBS)
+    set_property(TARGET sha1 PROPERTY POSITION_INDEPENDENT_CODE 1)
+endif()
+
 target_include_directories(sha1 PUBLIC
         $<BUILD_INTERFACE:${sha1_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include/sha1>

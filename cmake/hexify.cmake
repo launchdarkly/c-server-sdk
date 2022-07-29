@@ -12,6 +12,11 @@ if(NOT hexify_POPULATED)
 endif()
 
 add_library(hexify OBJECT ${hexify_SOURCE_DIR}/hexify.c)
+
+if(BUILD_SHARED_LIBS)
+    set_property(TARGET hexify PROPERTY POSITION_INDEPENDENT_CODE 1)
+endif()
+
 target_include_directories(hexify PUBLIC
         $<BUILD_INTERFACE:${hexify_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include/hexify>
