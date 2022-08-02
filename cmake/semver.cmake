@@ -12,6 +12,11 @@ if(NOT semver_POPULATED)
 endif()
 
 add_library(semver OBJECT ${semver_SOURCE_DIR}/semver.c)
+
+if(BUILD_SHARED_LIBS)
+    set_property(TARGET semver PROPERTY POSITION_INDEPENDENT_CODE 1)
+endif()
+
 target_include_directories(semver PUBLIC
         $<BUILD_INTERFACE:${semver_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include/semver>
