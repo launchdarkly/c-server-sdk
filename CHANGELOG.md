@@ -2,6 +2,10 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.8.2] - 2022-08-04
+### Fixed:
+- Fixed bug in cmake configuration causing build failures on some platforms due to omission of position-independent code flag.
+
 ## [2.8.1] - 2022-07-28
 ### Fixed:
 - Fixed build error on platforms where char is unsigned by default.
