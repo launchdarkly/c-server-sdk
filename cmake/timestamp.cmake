@@ -15,6 +15,11 @@ add_library(timestamp OBJECT
     ${timestamp_SOURCE_DIR}/timestamp_compare.c
     ${timestamp_SOURCE_DIR}/timestamp_parse.c
 )
+
+if(BUILD_SHARED_LIBS)
+    set_property(TARGET timestamp PROPERTY POSITION_INDEPENDENT_CODE 1)
+endif()
+
 target_include_directories(timestamp PUBLIC
         $<BUILD_INTERFACE:${timestamp_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include/timestamp>
