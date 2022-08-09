@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
 #include "commonfixture.h"
+#include <vector>
+#include <mutex>
 
 extern "C" {
 #include <float.h>
@@ -15,9 +17,30 @@ extern "C" {
 #include "utility.h"
 }
 
+static std::vector<std::string> logMessages;
+static std::mutex logMessagesMutex;
+
 // Inherit from the CommonFixture to give a reasonable name for the test output.
 // Any custom setup and teardown would happen in this derived class.
 class EvalFixture : public CommonFixture {
+    void SetUp() override {
+        CommonFixture::SetUp();
+        LDConfigureGlobalLogger(LD_LOG_TRACE, [](const LDLogLevel level, const char *const message){
+            std::lock_guard<std::mutex> guard(logMessagesMutex);
+            logMessages.push_back(std::string(message));
+        });
+    }
+
+public:
+    void ResetLogs() {
+        std::lock_guard<std::mutex> guard(logMessagesMutex);
+        logMessages.clear();
+    }
+
+    size_t LogCount() {
+        std::lock_guard<std::mutex> guard(logMessagesMutex);
+        return logMessages.size();
+    }
 };
 
 static struct LDStore *
@@ -127,6 +150,50 @@ TEST_F(EvalFixture, ReturnsOffVariationIfFlagIsOff) {
     LDDetailsClear(&details);
 }
 
+TEST_F(EvalFixture, ReturnsCorrectReasonWhenOffAndOffVariationNull) {
+    struct LDUser *user;
+    struct LDJSON *flag, *result, *events;
+    struct LDDetails details;
+
+    events = NULL;
+    result = NULL;
+    LDDetailsInit(&details);
+
+    ASSERT_TRUE(user = LDUserNew("userKeyA"));
+
+    /* flag */
+    ASSERT_TRUE(flag = LDNewObject());
+    ASSERT_TRUE(LDObjectSetKey(flag, "key", LDNewText("feature0")));
+    ASSERT_TRUE(LDObjectSetKey(flag, "offVariation", LDNewNull()));
+    ASSERT_TRUE(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanFalse)));
+    ASSERT_TRUE(LDObjectSetKey(flag, "salt", LDNewText("abc")));
+    addVariations1(flag);
+    setFallthrough(flag, 0);
+
+    ResetLogs();
+    /* run */
+    ASSERT_EQ(
+            LDi_evaluate(
+                    NULL,
+                    flag,
+                    user,
+                    (struct LDStore *) 1,
+                    &details,
+                    &events,
+                    &result,
+                    LDBooleanFalse), EVAL_MISS);
+
+    /* validation */
+    ASSERT_EQ(LogCount(), 0); // No messages should have been logged.
+    ASSERT_EQ(details.reason, LD_OFF);
+    ASSERT_FALSE(events);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDUserFree(user);
+    LDDetailsClear(&details);
+}
+
 TEST_F(EvalFixture, FlagReturnsNilIfFlagIsOffAndOffVariantIsUnspecified) {
     struct LDUser *user;
     struct LDJSON *flag, *result, *events;
@@ -146,6 +213,7 @@ TEST_F(EvalFixture, FlagReturnsNilIfFlagIsOffAndOffVariantIsUnspecified) {
     setFallthrough(flag, 0);
     addVariations1(flag);
 
+    ResetLogs();
     /* run */
     ASSERT_EQ(
             LDi_evaluate(
@@ -163,6 +231,7 @@ TEST_F(EvalFixture, FlagReturnsNilIfFlagIsOffAndOffVariantIsUnspecified) {
     ASSERT_FALSE(details.hasVariation);
     ASSERT_EQ(details.reason, LD_OFF);
     ASSERT_FALSE(events);
+    ASSERT_EQ(LogCount(), 0); // Unspecified is valid, there should be no logs.
 
     LDJSONFree(flag);
     LDJSONFree(result);
@@ -247,6 +316,7 @@ TEST_F(EvalFixture, FlagReturnsErrorForFallthroughWithNoVariationAndNoRollout) {
     ASSERT_TRUE(fallthrough = LDNewObject());
     ASSERT_TRUE(LDObjectSetKey(flag, "fallthrough", fallthrough));
 
+    ResetLogs();
     /* run */
     ASSERT_EQ(
             LDi_evaluate(
@@ -263,7 +333,7 @@ TEST_F(EvalFixture, FlagReturnsErrorForFallthroughWithNoVariationAndNoRollout) {
     ASSERT_EQ(details.reason, LD_FALLTHROUGH);
     ASSERT_FALSE(events);
     ASSERT_FALSE(result);
-
+    ASSERT_GE(LogCount(), 1);
     LDJSONFree(flag);
     LDUserFree(user);
     LDDetailsClear(&details);
