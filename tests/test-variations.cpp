@@ -314,3 +314,74 @@ TEST_F(VariationsFixture, FallthroughWithNoVariationOrRollout) {
     LDClientClose(client);
     LDDetailsClear(&details);
 }
+
+TEST_F(VariationsFixture, OffWithNullOffVariation) {
+    struct LDJSON *flag, *fallthrough, *variation, *rollout, *variations;
+    struct LDClient *client;
+    struct LDUser *user;
+    char *actual;
+    struct LDDetails details;
+
+    struct LDJSON *events;
+
+    /* setup */
+    ASSERT_TRUE(client = makeTestClient());
+    ASSERT_TRUE(user = LDUserNew("userkey"));
+    /* flag */
+    ASSERT_TRUE(flag = LDNewObject());
+    ASSERT_TRUE(LDObjectSetKey(flag, "key", LDNewText("feature0")));
+    ASSERT_TRUE(LDObjectSetKey(flag, "offVariation", LDNewNull()));
+    ASSERT_TRUE(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanFalse)));
+    ASSERT_TRUE(LDObjectSetKey(flag, "salt", LDNewText("123123")));
+    ASSERT_TRUE(LDObjectSetKey(flag, "version", LDNewNumber(3)));
+
+    ASSERT_TRUE(LDStoreInitEmpty(client->store));
+    LDStoreUpsert(client->store, LD_FLAG, flag);
+    /* run */
+    actual = LDStringVariation(client, user, "feature0", "test", &details);
+    /* It is valid to have a null off variation, and we should return the default value. */
+    /* validate */
+    ASSERT_STREQ("test", actual);
+    LDFree(actual);
+    ASSERT_EQ(details.reason, LD_OFF);
+
+    /* cleanup */
+    LDUserFree(user);
+    LDClientClose(client);
+    LDDetailsClear(&details);
+}
+
+TEST_F(VariationsFixture, OffWithUndefinedOffVariation) {
+    struct LDJSON *flag, *fallthrough, *variation, *rollout, *variations;
+    struct LDClient *client;
+    struct LDUser *user;
+    char *actual;
+    struct LDDetails details;
+
+    struct LDJSON *events;
+
+    /* setup */
+    ASSERT_TRUE(client = makeTestClient());
+    ASSERT_TRUE(user = LDUserNew("userkey"));
+    /* flag */
+    ASSERT_TRUE(flag = LDNewObject());
+    ASSERT_TRUE(LDObjectSetKey(flag, "key", LDNewText("feature0")));
+    ASSERT_TRUE(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanFalse)));
+    ASSERT_TRUE(LDObjectSetKey(flag, "salt", LDNewText("123123")));
+    ASSERT_TRUE(LDObjectSetKey(flag, "version", LDNewNumber(3)));
+
+    ASSERT_TRUE(LDStoreInitEmpty(client->store));
+    LDStoreUpsert(client->store, LD_FLAG, flag);
+    /* run */
+    actual = LDStringVariation(client, user, "feature0", "test", &details);
+    /* It is valid to have an undefined off variation, and we should return the default value. */
+    /* validate */
+    ASSERT_STREQ("test", actual);
+    LDFree(actual);
+    ASSERT_EQ(details.reason, LD_OFF);
+
+    /* cleanup */
+    LDUserFree(user);
+    LDClientClose(client);
+    LDDetailsClear(&details);
+}

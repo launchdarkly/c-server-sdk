@@ -243,7 +243,6 @@ variation(
     flagrc    = NULL;
     value     = NULL;
     store     = NULL;
-    value     = NULL;
     subEvents = NULL;
 
     LDDetailsInit(&details);

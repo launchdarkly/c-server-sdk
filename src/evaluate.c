@@ -231,6 +231,7 @@ LDi_evaluate(
     /* on */
     {
         const struct LDJSON *on;
+        struct LDJSON* offVariationValue = NULL;
 
         if (!lookupOptionalValueOfType(flag, "flag", "on", LDBool, &on)) {
             return EVAL_SCHEMA;
@@ -239,11 +240,16 @@ LDi_evaluate(
         if (on == NULL || !LDGetBool(on)) {
             details->reason = LD_OFF;
 
-            if (!(addValue(
+            offVariationValue = LDObjectLookup(flag, "offVariation");
+            /* It is valid for the offVariation to either be unspecified or to be null. */
+            if(offVariationValue == NULL || LDJSONGetType(offVariationValue) == LDNull) {
+                *o_value = NULL;
+            }
+            else if (!(addValue(
                     flag,
                     o_value,
                     details,
-                    LDObjectLookup(flag, "offVariation")))) {
+                    offVariationValue))) {
                 LD_LOG(LD_LOG_ERROR, "failed to add value");
 
                 return EVAL_MEM;
