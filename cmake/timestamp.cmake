@@ -17,7 +17,10 @@ add_library(timestamp OBJECT
 )
 
 if(BUILD_SHARED_LIBS)
-    set_property(TARGET timestamp PROPERTY POSITION_INDEPENDENT_CODE 1)
+    set_target_properties(timestamp PROPERTIES
+        POSITION_INDEPENDENT_CODE 1
+        C_VISIBILITY_PRESET hidden
+    )
 endif()
 
 target_include_directories(timestamp PUBLIC

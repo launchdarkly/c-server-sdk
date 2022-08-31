@@ -14,7 +14,10 @@ endif()
 add_library(hexify OBJECT ${hexify_SOURCE_DIR}/hexify.c)
 
 if(BUILD_SHARED_LIBS)
-    set_property(TARGET hexify PROPERTY POSITION_INDEPENDENT_CODE 1)
+    set_target_properties(hexify PROPERTIES
+        POSITION_INDEPENDENT_CODE 1
+        C_VISIBILITY_PRESET hidden
+    )
 endif()
 
 target_include_directories(hexify PUBLIC

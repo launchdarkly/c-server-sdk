@@ -14,7 +14,10 @@ endif()
 add_library(semver OBJECT ${semver_SOURCE_DIR}/semver.c)
 
 if(BUILD_SHARED_LIBS)
-    set_property(TARGET semver PROPERTY POSITION_INDEPENDENT_CODE 1)
+    set_target_properties(semver PROPERTIES
+        POSITION_INDEPENDENT_CODE 1
+        C_VISIBILITY_PRESET hidden
+    )
 endif()
 
 target_include_directories(semver PUBLIC
