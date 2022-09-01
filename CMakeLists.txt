@@ -238,6 +238,8 @@ if(NOT SKIP_BASE_INSTALL)
     install(
         TARGETS ${PROJECT_NAME}
         EXPORT ${LDSERVERSDK_EXPORT_NAME}
+        # This line is only required for cmake < 3.14 support.
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 
     # Take the export and generate a new CMake file containing the targets contained within.
