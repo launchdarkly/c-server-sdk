@@ -2,6 +2,10 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.8.5] - 2022-09-01
+### Fixed:
+- Fixed support for CMake versions 3.11 through 3.13, which require an explicit LIBRARY DESTINATION path when installing the SDK's target.
+
 ## [2.8.4] - 2022-09-01
 ### Fixed:
 - Fixed ldserverapi shared library symbol visibility: undocumented symbols previously exposed by 3rd party dependencies are now hidden.
