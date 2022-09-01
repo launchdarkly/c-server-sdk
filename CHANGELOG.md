@@ -2,6 +2,10 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.8.4] - 2022-09-01
+### Fixed:
+- Fixed ldserverapi shared library symbol visibility: undocumented symbols previously exposed by 3rd party dependencies are now hidden.
+
 ## [2.8.3] - 2022-08-09
 ### Fixed:
 - Fixed an issue where the SDK was erroneously logging errors when evaluating flags which have an `offVariation` of `null` or when the `offVariation` was not specified.
