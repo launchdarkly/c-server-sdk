@@ -121,64 +121,94 @@ maybeNegate(const struct LDJSON *const clause, const EvalStatus status)
 }
 
 static LDBoolean
-addValue(
+getValue(
     const struct LDJSON *const flag,
     struct LDJSON **           result,
-    struct LDDetails *const    details,
-    const struct LDJSON *const index)
+    const struct LDJSON *const index,
+    EvalStatus *o_error,
+    unsigned int *validatedVariationIndex)
 {
     struct LDJSON *      variationCopy;
     const struct LDJSON *variations, *variation;
 
-    LD_ASSERT(flag);
-    LD_ASSERT(result);
-    LD_ASSERT(details);
+    double unvalidatedVariationIndex;
+
+    LD_ASSERT(validatedVariationIndex);
 
     if (index == NULL) {
         LD_LOG(LD_LOG_ERROR, "null variation index");
 
-        goto err;
+        *o_error = EVAL_SCHEMA;
+        return LDBooleanFalse;
     }
-
-    details->hasVariation = LDBooleanTrue;
 
     if (LDJSONGetType(index) != LDNumber) {
         LD_LOG(LD_LOG_ERROR, "variation index expected number");
 
-        goto err;
+        *o_error = EVAL_SCHEMA;
+        return LDBooleanFalse;
     }
 
-    details->variationIndex = LDGetNumber(index);
+    unvalidatedVariationIndex = LDGetNumber(index);
+    if (unvalidatedVariationIndex < 0) {
+        LD_LOG(LD_LOG_ERROR, "variation index negative");
+
+        *o_error = EVAL_SCHEMA;
+        return LDBooleanFalse;
+    }
+
+    *validatedVariationIndex = (unsigned int) unvalidatedVariationIndex;
 
     if (!(variations =
               lookupRequiredValueOfType(flag, "flag", "variations", LDArray)))
     {
-        goto err;
+        *o_error = EVAL_SCHEMA;
+        return LDBooleanFalse;
     }
 
-    if (!(variation = LDArrayLookup(variations, LDGetNumber(index)))) {
+    if (!(variation = LDArrayLookup(variations, *validatedVariationIndex))) {
         LD_LOG(LD_LOG_ERROR, "variation index outside of bounds");
 
-        goto err;
+        *o_error = EVAL_SCHEMA;
+        return LDBooleanFalse;
     }
 
     if (!(variationCopy = LDJSONDuplicate(variation))) {
         LD_LOG(LD_LOG_ERROR, "failed to allocate variation");
 
-        *result               = NULL;
-        details->hasVariation = LDBooleanFalse;
-
+        *o_error = EVAL_MEM;
         return LDBooleanFalse;
     }
 
     *result = variationCopy;
 
     return LDBooleanTrue;
+}
 
-err:
-    *result               = NULL;
-    details->hasVariation = LDBooleanFalse;
+static LDBoolean  addValue(
+        const struct LDJSON *const flag,
+        struct LDJSON **           result,
+        struct LDDetails *const    details,
+        const struct LDJSON *const index,
+        EvalStatus *o_error)
+{
+    unsigned int validatedVariationIndex = 0;
 
+    LD_ASSERT(flag);
+    LD_ASSERT(result);
+    LD_ASSERT(details);
+    LD_ASSERT(o_error);
+
+    if(!getValue(flag, result, index, o_error, &validatedVariationIndex)) {
+        *result               = NULL;
+        details->hasVariation = LDBooleanFalse;
+        details->reason = LD_ERROR;
+
+        return LDBooleanFalse;
+    }
+
+    details->hasVariation = LDBooleanTrue;
+    details->variationIndex = validatedVariationIndex;
     return LDBooleanTrue;
 }
 
@@ -232,6 +262,7 @@ LDi_evaluate(
     {
         const struct LDJSON *on;
         struct LDJSON* offVariationValue = NULL;
+        EvalStatus status;
 
         if (!lookupOptionalValueOfType(flag, "flag", "on", LDBool, &on)) {
             return EVAL_SCHEMA;
@@ -241,18 +272,18 @@ LDi_evaluate(
             details->reason = LD_OFF;
 
             offVariationValue = LDObjectLookup(flag, "offVariation");
+
             /* It is valid for the offVariation to either be unspecified or to be null. */
-            if(offVariationValue == NULL || LDJSONGetType(offVariationValue) == LDNull) {
+            if (offVariationValue == NULL || LDJSONGetType(offVariationValue) == LDNull) {
                 *o_value = NULL;
-            }
-            else if (!(addValue(
+            } else if (!(addValue(
                     flag,
                     o_value,
                     details,
-                    offVariationValue))) {
+                    offVariationValue, &status))) {
                 LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-                return EVAL_MEM;
+               return status;
             }
 
             return EVAL_MISS;
@@ -261,7 +292,7 @@ LDi_evaluate(
 
     /* prerequisites */
     {
-        EvalStatus  substatus;
+        EvalStatus  substatus, status;
         const char *failedKey;
 
         failedKey = NULL;
@@ -297,10 +328,11 @@ LDi_evaluate(
                     flag,
                     o_value,
                     details,
-                    LDObjectLookup(flag, "offVariation")))) {
+                    LDObjectLookup(flag, "offVariation"),
+                    &status))) {
                 LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-                return EVAL_MEM;
+                return status;
             }
 
             return EVAL_MISS;
@@ -310,6 +342,7 @@ LDi_evaluate(
     /* targets */
     {
         const struct LDJSON *targets;
+        EvalStatus status;
 
         if (!lookupOptionalValueOfType(
                 flag, "flag", "targets", LDArray, &targets)) {
@@ -345,10 +378,10 @@ LDi_evaluate(
 
                     details->reason = LD_TARGET_MATCH;
 
-                    if (!(addValue(flag, o_value, details, variation))) {
+                    if (!(addValue(flag, o_value, details, variation, &status))) {
                         LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-                        return EVAL_MEM;
+                        return status;
                     }
 
                     return EVAL_MATCH;
@@ -390,6 +423,7 @@ LDi_evaluate(
 
                 if (substatus == EVAL_MATCH) {
                     const struct LDJSON *ruleId, *variation;
+                    EvalStatus status;
 
                     variation = NULL;
 
@@ -407,10 +441,10 @@ LDi_evaluate(
 
                     details->extra.rule.inExperiment = inExperiment;
 
-                    if (!(addValue(flag, o_value, details, variation))) {
+                    if (!(addValue(flag, o_value, details, variation, &status))) {
                         LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-                        return EVAL_MEM;
+                        return status;
                     }
 
                     if (!lookupOptionalValueOfType(
@@ -441,6 +475,7 @@ LDi_evaluate(
     /* fallthrough */
     {
         const struct LDJSON *index;
+        EvalStatus status;
 
         index = NULL;
 
@@ -460,10 +495,10 @@ LDi_evaluate(
 
         details->extra.fallthrough.inExperiment = inExperiment;
 
-        if (!(addValue(flag, o_value, details, index))) {
+        if (!(addValue(flag, o_value, details, index, &status))) {
             LD_LOG(LD_LOG_ERROR, "failed to add value");
 
-            return EVAL_MEM;
+            return status;
         }
 
         return EVAL_MATCH;
