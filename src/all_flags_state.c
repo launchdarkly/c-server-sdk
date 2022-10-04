@@ -61,6 +61,7 @@ LDi_newFlagState(const char* key) {
     state->debugEventsUntilDate = 0;
     state->trackEvents = LDBooleanFalse;
     state->version = 0;
+    state->omitDetails = LDBooleanFalse;
 
     return state;
 }
@@ -261,13 +262,15 @@ static LDBoolean buildFlagState(const struct LDAllFlagsState *const flags, struc
         }
 
 
-        if (!LDObjectSetNumber(flagObj, "version", flag->version)) {
-            LD_LOG(LD_LOG_ERROR, "set key");
+        if (!flag->omitDetails) {
+            if (!LDObjectSetNumber(flagObj, "version", flag->version)) {
+                LD_LOG(LD_LOG_ERROR, "set key");
 
-            return LDBooleanFalse;
+                return LDBooleanFalse;
+            }
         }
 
-        if (flag->details.reason != LD_UNKNOWN) {
+        if (flag->details.reason != LD_UNKNOWN && !flag->omitDetails) {
             struct LDJSON* reason = NULL;
 
             if (!(reason = LDReasonToJSON(&flag->details))) {
@@ -370,22 +373,19 @@ LDi_freeAllFlagsBuilder(struct LDAllFlagsBuilder *const builder) {
 LDBoolean
 LDi_allFlagsBuilderAdd(struct LDAllFlagsBuilder *const b, struct LDFlagState *const flag)
 {
-    LDBoolean wantReason;
 
     LD_ASSERT(b);
 
-    wantReason = b->includeReasons;
-
-    if (wantReason && b->detailsOnlyForTrackedFlags) {
+    if (b->detailsOnlyForTrackedFlags) {
         double now;
 
         LDi_getMonotonicMilliseconds(&now);
         if (!flag->trackEvents && !(flag->debugEventsUntilDate != 0 && flag->debugEventsUntilDate > now)) {
-            wantReason = LDBooleanFalse;
+            flag->omitDetails = LDBooleanTrue;
         }
     }
 
-    if (!wantReason) {
+    if (!b->includeReasons) {
         if (flag->details.reason == LD_RULE_MATCH) {
             LDFree(flag->details.extra.rule.id);
         } else if (flag->details.reason == LD_PREREQUISITE_FAILED) {

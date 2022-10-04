@@ -3,9 +3,6 @@ evaluation/bucketing/bucket by non-key attribute/rollouts/invalid value type
 evaluation/bucketing/bucket by non-key attribute/experiments/integer value
 evaluation/bucketing/bucket by non-key attribute/experiments/invalid value type
 evaluation/all flags state/experimentation
-evaluation/all flags state/error in flag/without reasons
-evaluation/all flags state/error in flag/with reasons
-evaluation/all flags state/details only for tracked flags
 events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: bool
 events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: int
 events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: double

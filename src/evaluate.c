@@ -203,6 +203,7 @@ static LDBoolean  addValue(
         *result               = NULL;
         details->hasVariation = LDBooleanFalse;
         details->reason = LD_ERROR;
+        details->extra.errorKind = LD_MALFORMED_FLAG;
 
         return LDBooleanFalse;
     }

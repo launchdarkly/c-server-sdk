@@ -36,533 +36,437 @@ protected:
     }
 };
 
-
-TEST_F(AllFlagsStateFixture, ValidState) {
+// If the store is uninitialized, LDAllFlagsState returns a value that implements something similar to the
+// Null Object Pattern, rather than NULL. The LDAllFlagState's methods are well-defined, and the user can
+// detect that the state is valid/invalid via LDAllFlagsStateValid.
+TEST_F(AllFlagsStateFixture, InvalidStateIfStoreIsUninitialized) {
     struct LDAllFlagsState *state;
-    char *str;
-
-    ASSERT_TRUE(state = LDi_newAllFlagsState(LDBooleanTrue));
-    ASSERT_TRUE(LDi_allFlagsStateValid(state));
-
-    ASSERT_TRUE(str = LDi_allFlagsStateJSON(state));
-    ASSERT_STREQ(str, "{\"$valid\":true,\"$flagsState\":{}}");
-
-    LDi_freeAllFlagsState(state);
-    LDFree(str);
-}
-
-TEST_F(AllFlagsStateFixture, InvalidState) {
-    struct LDAllFlagsState *state;
-    char *str;
-
-    ASSERT_TRUE(state = LDi_newAllFlagsState(LDBooleanFalse));
-    ASSERT_FALSE(LDi_allFlagsStateValid(state));
-
-    ASSERT_TRUE(str = LDi_allFlagsStateJSON(state));
-    ASSERT_STREQ(str, "{\"$valid\":false,\"$flagsState\":{}}");
-
-    LDi_freeAllFlagsState(state);
-    LDFree(str);
-}
-
-TEST_F(AllFlagsStateFixture, GetFlag) {
-    struct LDAllFlagsState *state;
-    struct LDFlagState *flag;
-    struct LDDetails *details;
-
-    ASSERT_TRUE(state = LDi_newAllFlagsState(LDBooleanTrue));
-    ASSERT_TRUE(flag = LDi_newFlagState("known-flag"));
-
-    ASSERT_TRUE(LDi_allFlagsStateAdd(state, flag));;
-
-    ASSERT_TRUE(details = LDi_allFlagsStateDetails(state, "known-flag"));
-    ASSERT_EQ(details->reason, LD_UNKNOWN);
-    ASSERT_EQ(details->hasVariation, LDBooleanFalse);
-    ASSERT_EQ(details->variationIndex, 0);
-
-    LDi_freeAllFlagsState(state);
-}
-
-TEST_F(AllFlagsStateFixture, GetValueFlagDoesNotExist) {
-    struct LDAllFlagsState *state;
-
-    ASSERT_TRUE(state = LDi_newAllFlagsState(LDBooleanTrue));
-
-    ASSERT_FALSE(LDi_allFlagsStateValue(state, "unknown-flag"));
-
-    LDi_freeAllFlagsState(state);
-}
-
-TEST_F(AllFlagsStateFixture, GetValueFlagExistsAndIsNull) {
-    struct LDAllFlagsState *state;
-    struct LDFlagState *flag;
-
-    ASSERT_TRUE(state = LDi_newAllFlagsState(LDBooleanTrue));
-    ASSERT_TRUE(flag = LDi_newFlagState("known-flag"));
-
-    ASSERT_TRUE(LDi_allFlagsStateAdd(state, flag));;
-
-    ASSERT_FALSE(LDi_allFlagsStateValue(state, "known-flag"));
-
-    LDi_freeAllFlagsState(state);
-}
-
-TEST_F(AllFlagsStateFixture, GetValueFlagExistAndIsNotNull) {
-    struct LDAllFlagsState *state;
-    struct LDFlagState *flag;
-
-    ASSERT_TRUE(flag = LDi_newFlagState("known-flag"));
-    ASSERT_TRUE(flag->value = LDNewObject());
-
-    ASSERT_TRUE(state = LDi_newAllFlagsState(LDBooleanTrue));
-    ASSERT_TRUE(LDi_allFlagsStateAdd(state, flag));;
-
-    ASSERT_EQ(flag->value, LDi_allFlagsStateValue(state, "known-flag"));
-
-    LDi_freeAllFlagsState(state);
-}
-
-TEST_F(AllFlagsStateFixture, ToValuesMapEmpty) {
-    struct LDAllFlagsState *state;
-    struct LDJSON *map;
-    char *str;
-
-    ASSERT_TRUE(state = LDi_newAllFlagsState(LDBooleanTrue));
-    ASSERT_TRUE(map = LDi_allFlagsStateValuesMap(state));
-
-    ASSERT_EQ(0, LDCollectionGetSize(map));
-
-    ASSERT_TRUE(str = LDJSONSerialize(map));
-    ASSERT_STREQ("{}", str);
-
-    LDFree(str);
-    LDi_freeAllFlagsState(state);
-}
-
-TEST_F(AllFlagsStateFixture, ToValuesMap) {
-    struct LDAllFlagsState* state;
-    struct LDJSON *map;
-    struct LDFlagState *flag;
-    struct LDJSON *iter;
-    char* str;
-
-    ASSERT_TRUE(state = LDi_newAllFlagsState(LDBooleanTrue));
-
-    ASSERT_TRUE(flag = LDi_newFlagState("flag1"));
-    ASSERT_TRUE(flag->value = LDNewText("value1"));
-
-    ASSERT_TRUE(LDi_allFlagsStateAdd(state, flag));;
-
-    ASSERT_TRUE(map = LDi_allFlagsStateValuesMap(state));
-    ASSERT_EQ(1, LDCollectionGetSize(map));
-
-    for (iter = LDGetIter(map); iter; iter = LDIterNext(iter)) {
-        ASSERT_STREQ("flag1", LDIterKey(iter));
-        ASSERT_STREQ("value1", LDGetText(iter));
-    }
-
-    ASSERT_TRUE(str = LDJSONSerialize(map));
-    ASSERT_STREQ("{\"flag1\":\"value1\"}", str);
-
-    LDFree(str);
-    LDi_freeAllFlagsState(state);
-}
-
-TEST_F(AllFlagsStateFixture, ToValuesMapNullEvaluation) {
-    struct LDAllFlagsState *state;
-    struct LDJSON *map;
-    struct LDFlagState *flag;
-    struct LDJSON *iter;
-    char *str;
-
-    ASSERT_TRUE(state = LDi_newAllFlagsState(LDBooleanTrue));
-
-    ASSERT_TRUE(flag = LDi_newFlagState("flag1"));
-    ASSERT_EQ(flag->value, nullptr);
-
-    ASSERT_TRUE(LDi_allFlagsStateAdd(state, flag));;
-
-    ASSERT_TRUE(map = LDi_allFlagsStateValuesMap(state));
-    ASSERT_EQ(1, LDCollectionGetSize(map));
-
-    for (iter = LDGetIter(map); iter; iter = LDIterNext(iter)) {
-        ASSERT_STREQ("flag1", LDIterKey(iter));
-        ASSERT_EQ(LDNull, LDJSONGetType(iter));
-    }
-
-    ASSERT_TRUE(str = LDJSONSerialize(map));
-    ASSERT_STREQ("{\"flag1\":null}", str);
-
-    LDFree(str);
-    LDi_freeAllFlagsState(state);
-}
-
-
-
-TEST_F(AllFlagsStateFixture, MinimalFlagJSON) {
-    struct LDAllFlagsState *state;
-    struct LDFlagState *flag;
-    char *str;
-
-    ASSERT_TRUE(state = LDi_newAllFlagsState(LDBooleanTrue));
-
-    ASSERT_TRUE(flag = LDi_newFlagState("flag1"));
-    ASSERT_TRUE(flag->value = LDNewText("value1"));
-    flag->version = 1000;
-
-    ASSERT_TRUE(LDi_allFlagsStateAdd(state, flag));;
-
-    ASSERT_TRUE(str = LDi_allFlagsStateJSON(state));
-
-    ASSERT_STREQ(str, "{\"$valid\":true,\"flag1\":\"value1\",\"$flagsState\":{\"flag1\":{\"version\":1000}}}");
-
-    LDFree(str);
-    LDi_freeAllFlagsState(state);
-}
-
-TEST_F(AllFlagsStateFixture, FlagWithAllPropertiesJSON) {
-    struct LDAllFlagsState *state;
-    struct LDFlagState *flag;
-    char *str;
-
-    ASSERT_TRUE(state = LDi_newAllFlagsState(LDBooleanTrue));
-
-    ASSERT_TRUE(flag = LDi_newFlagState("flag1"));
-    ASSERT_TRUE(flag->value = LDNewText("value1"));
-    flag->version = 1000;
-    flag->trackEvents = LDBooleanTrue;
-    flag->debugEventsUntilDate = 100000;
-    flag->details.hasVariation = LDBooleanTrue;
-    flag->details.reason = LD_FALLTHROUGH;
-    flag->details.variationIndex = 1;
-    flag->details.extra.fallthrough.inExperiment = LDBooleanFalse;
-
-    ASSERT_TRUE(LDi_allFlagsStateAdd(state, flag));;
-
-    ASSERT_TRUE(str = LDi_allFlagsStateJSON(state));
-
-    ASSERT_STREQ(str, "{\"$valid\":true,\"flag1\":\"value1\",\"$flagsState\":{\"flag1\":{\"variation\":1,\"version\":1000,\"reason\":{\"kind\":\"FALLTHROUGH\"},\"trackEvents\":true,\"debugEventsUntilDate\":100000}}}");
-
-    LDFree(str);
-    LDi_freeAllFlagsState(state);
-}
-
-TEST_F(AllFlagsStateFixture, BuilderIsAlwaysValid) {
-    struct LDAllFlagsBuilder *builder;
-    struct LDAllFlagsState *state;
-
-    ASSERT_TRUE(builder = LDi_newAllFlagsBuilder(LD_ALLFLAGS_DEFAULT));
-    ASSERT_TRUE(state = LDi_allFlagsBuilderBuild(builder));
-    ASSERT_TRUE(LDi_allFlagsStateValid(state));
-
-    LDi_freeAllFlagsState(state);
-    LDi_freeAllFlagsBuilder(builder);
-}
-
-TEST_F(AllFlagsStateFixture, BuilderAddFlagsWithoutReasons) {
-    struct LDAllFlagsBuilder *builder;
-    struct LDAllFlagsState *state;
-    struct LDFlagState *flag1, *flag2;
-    char *str;
-
-    ASSERT_TRUE(builder = LDi_newAllFlagsBuilder(LD_ALLFLAGS_DEFAULT));
-
-    /* flag1 */
-    ASSERT_TRUE(flag1 = LDi_newFlagState("flag1"));
-    ASSERT_TRUE(flag1->value = LDNewText("value1"));
-    flag1->version = 1000;
-    flag1->details.hasVariation = LDBooleanTrue;
-    flag1->details.reason = LD_FALLTHROUGH;
-    flag1->details.variationIndex = 1;
-    flag1->details.extra.fallthrough.inExperiment = LDBooleanFalse;
-    ASSERT_TRUE(LDi_allFlagsBuilderAdd(builder, flag1));
-
-    /* flag2 */
-    ASSERT_TRUE(flag2 = LDi_newFlagState("flag2"));
-    ASSERT_TRUE(flag2->value = LDNewText("value2"));
-    flag2->version = 2000;
-    flag2->trackEvents = LDBooleanTrue;
-    flag2->debugEventsUntilDate = 100000;
-    flag2->details.hasVariation = LDBooleanFalse;
-    flag2->details.reason = LD_ERROR;
-    flag2->details.variationIndex = 0;
-    flag2->details.extra.errorKind = LD_STORE_ERROR;
-    ASSERT_TRUE(LDi_allFlagsBuilderAdd(builder, flag2));
-
-    ASSERT_TRUE(state = LDi_allFlagsBuilderBuild(builder));
-    ASSERT_TRUE(str = LDi_allFlagsStateJSON(state));
-
-
-    /* Ensure that reason information does not end up in the JSON,
-     * since 'LD_INCLUDE_REASON' was not passed into the builder. */
-    ASSERT_STREQ(str, "{\"$valid\":true,\"flag1\":\"value1\",\"flag2\":\"value2\",\"$flagsState\":{\"flag1\":{\"variation\":1,\"version\":1000},\"flag2\":{\"version\":2000,\"trackEvents\":true,\"debugEventsUntilDate\":100000}}}");
-
-    LDFree(str);
-    LDi_freeAllFlagsState(state);
-    LDi_freeAllFlagsBuilder(builder);
-}
-
-// This test is intended to trigger valgrind errors if the flag detail prerequisiteKey is not freed properly
-// by the builder.
-TEST_F(AllFlagsStateFixture, BuilderAddFlagsWithoutReasonsMemoryLeak) {
-    struct LDAllFlagsBuilder *builder;
-    struct LDAllFlagsState *state;
-    struct LDFlagState *flag1;
-    char *str;
-
-    ASSERT_TRUE(builder = LDi_newAllFlagsBuilder(LD_ALLFLAGS_DEFAULT));
-
-    ASSERT_TRUE(flag1 = LDi_newFlagState("flag1"));
-    flag1->version = 1000;
-    flag1->details.reason = LD_PREREQUISITE_FAILED;
-    ASSERT_TRUE(flag1->details.extra.prerequisiteKey = LDStrDup("prereq"));
-    ASSERT_TRUE(LDi_allFlagsBuilderAdd(builder, flag1));
-
-    ASSERT_TRUE(state = LDi_allFlagsBuilderBuild(builder));
-    ASSERT_TRUE(str = LDi_allFlagsStateJSON(state));
-
-    ASSERT_STREQ(str, "{\"$valid\":true,\"flag1\":null,\"$flagsState\":{\"flag1\":{\"version\":1000}}}");
-
-    LDFree(str);
-    LDi_freeAllFlagsState(state);
-    LDi_freeAllFlagsBuilder(builder);
-}
-
-TEST_F(AllFlagsStateFixture, BuilderAddFlagsWithReasons) {
-    struct LDAllFlagsBuilder *builder;
-    struct LDAllFlagsState *state;
-    struct LDFlagState *flag1, *flag2;
-    char *str;
-
-    ASSERT_TRUE(builder = LDi_newAllFlagsBuilder(LD_INCLUDE_REASON));
-
-    /* flag1 */
-    ASSERT_TRUE(flag1 = LDi_newFlagState("flag1"));
-    ASSERT_TRUE(flag1->value = LDNewText("value1"));
-    flag1->version = 1000;
-    flag1->details.hasVariation = LDBooleanTrue;
-    flag1->details.reason = LD_FALLTHROUGH;
-    flag1->details.variationIndex = 1;
-    flag1->details.extra.fallthrough.inExperiment = LDBooleanFalse;
-    ASSERT_TRUE(LDi_allFlagsBuilderAdd(builder, flag1));
-
-    /* flag2 */
-    ASSERT_TRUE(flag2 = LDi_newFlagState("flag2"));
-    ASSERT_TRUE(flag2->value = LDNewText("value2"));
-    flag2->version = 2000;
-    flag2->trackEvents = LDBooleanTrue;
-    flag2->debugEventsUntilDate = 100000;
-    flag2->details.hasVariation = LDBooleanFalse;
-    flag2->details.reason = LD_ERROR;
-    flag2->details.variationIndex = 0;
-    flag2->details.extra.errorKind = LD_STORE_ERROR;
-    ASSERT_TRUE(LDi_allFlagsBuilderAdd(builder, flag2));
-
-    ASSERT_TRUE(state = LDi_allFlagsBuilderBuild(builder));
-    ASSERT_TRUE(str = LDi_allFlagsStateJSON(state));
-
-    /* Ensure that reason information does not end up in the JSON,
-     * since 'LD_INCLUDE_REASON' was not passed into the builder. */
-    ASSERT_STREQ(str, "{\"$valid\":true,\"flag1\":\"value1\",\"flag2\":\"value2\",\"$flagsState\":{\"flag1\":{\"variation\":1,\"version\":1000,\"reason\":{\"kind\":\"FALLTHROUGH\"}},\"flag2\":{\"version\":2000,\"reason\":{\"kind\":\"ERROR\",\"errorKind\":\"STORE_ERROR\"},\"trackEvents\":true,\"debugEventsUntilDate\":100000}}}");
-
-    LDFree(str);
-    LDi_freeAllFlagsState(state);
-    LDi_freeAllFlagsBuilder(builder);
-}
-
-
-TEST_F(AllFlagsStateFixture, BuilderAddFlagsWithReasonsOnlyIfTracked) {
-    struct LDAllFlagsBuilder *builder;
-    struct LDAllFlagsState *state;
-    struct LDFlagState *flag1, *flag2, *flag3, *flag4;
-    double now3, now4;
-
-    ASSERT_TRUE(builder = LDi_newAllFlagsBuilder(LD_INCLUDE_REASON | LD_DETAILS_ONLY_FOR_TRACKED_FLAGS));
-
-    /* flag1 */
-    ASSERT_TRUE(flag1 = LDi_newFlagState("flag1"));
-    ASSERT_TRUE(flag1->value = LDNewText("value1"));
-    flag1->version = 1000;
-    flag1->details.hasVariation = LDBooleanTrue;
-    flag1->details.reason = LD_FALLTHROUGH;
-    flag1->details.variationIndex = 1;
-    flag1->details.extra.fallthrough.inExperiment = LDBooleanFalse;
-    ASSERT_TRUE(LDi_allFlagsBuilderAdd(builder, flag1));
-
-    /* flag2 */
-    ASSERT_TRUE(flag2 = LDi_newFlagState("flag2"));
-    ASSERT_TRUE(flag2->value = LDNewText("value2"));
-    flag2->version = 2000;
-    flag2->trackEvents = LDBooleanTrue;
-    flag2->debugEventsUntilDate = 100000;
-    flag2->details.hasVariation = LDBooleanFalse;
-    flag2->details.reason = LD_ERROR;
-    flag2->details.variationIndex = 0;
-    flag2->details.extra.errorKind = LD_STORE_ERROR;
-    ASSERT_TRUE(LDi_allFlagsBuilderAdd(builder, flag2));
-
-    /* flag3 */
-    LDi_getMonotonicMilliseconds(&now3);
-    now3 -= 1;
-
-    ASSERT_TRUE(flag3 = LDi_newFlagState("flag3"));
-    ASSERT_TRUE(flag3->value = LDNewText("value3"));
-    flag3->version = 3000;
-    flag3->debugEventsUntilDate = now3;
-    flag3->details.hasVariation = LDBooleanTrue;
-    flag3->details.reason = LD_FALLTHROUGH;
-    flag3->details.variationIndex = 3;
-    flag3->details.extra.fallthrough.inExperiment = LDBooleanFalse;
-    ASSERT_TRUE(LDi_allFlagsBuilderAdd(builder, flag3));
-
-    /* flag4 */
-    LDi_getMonotonicMilliseconds(&now4);
-    now4 += 10000;
-
-    ASSERT_TRUE(flag4 = LDi_newFlagState("flag4"));
-    ASSERT_TRUE(flag4->value = LDNewText("value1"));
-    flag4->version = 4000;
-    flag4->debugEventsUntilDate = now4;
-    flag4->details.hasVariation = LDBooleanTrue;
-    flag4->details.reason = LD_FALLTHROUGH;
-    flag4->details.variationIndex = 4;
-    flag4->details.extra.fallthrough.inExperiment = LDBooleanFalse;
-    ASSERT_TRUE(LDi_allFlagsBuilderAdd(builder, flag4));
-
-    ASSERT_TRUE(state = LDi_allFlagsBuilderBuild(builder));
-
-    ASSERT_EQ(LDi_allFlagsStateDetails(state, "flag1")->reason, LD_UNKNOWN);
-    ASSERT_EQ(LDi_allFlagsStateDetails(state, "flag2")->reason, LD_ERROR);
-    ASSERT_EQ(LDi_allFlagsStateDetails(state, "flag3")->reason, LD_UNKNOWN);
-    ASSERT_EQ(LDi_allFlagsStateDetails(state, "flag4")->reason, LD_FALLTHROUGH);
-
-    LDi_freeAllFlagsState(state);
-    LDi_freeAllFlagsBuilder(builder);
-}
-
-
-/* Top-level API tests */
-
-TEST_F(AllFlagsStateFixture, AllFlagsState_GetDetails) {
-    struct LDAllFlagsState *state;
-    struct LDJSON *inFlag;
-    struct LDDetails *outDetails;
     struct LDUser *user;
 
-    ASSERT_TRUE(inFlag = makeMinimalFlag("flag1", 1, LDBooleanTrue, LDBooleanTrue));
+    user = LDUserNew("foo");
 
-    setFallthrough(inFlag, 1);
-    addVariation(inFlag, LDNewText("a"));
-    addVariation(inFlag, LDNewText("b"));
+    ASSERT_TRUE(state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT));
+    ASSERT_FALSE(LDAllFlagsStateValid(state));
 
-    ASSERT_TRUE(LDStoreInitEmpty(client->store));
-    ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, inFlag));
-
-    ASSERT_TRUE(user = LDUserNew("user1"));
-    ASSERT_TRUE(state = LDAllFlagsState(client, user, LD_INCLUDE_REASON));
-    ASSERT_TRUE(LDAllFlagsStateValid(state));
-
-    ASSERT_TRUE(outDetails = LDAllFlagsStateGetDetails(state, "flag1"));
-    ASSERT_EQ(LDBooleanTrue, outDetails->hasVariation);
-    ASSERT_EQ(1, outDetails->variationIndex);
-    ASSERT_EQ(LD_FALLTHROUGH, outDetails->reason);
-
-
+    LDAllFlagsStateFree(state);
     LDUserFree(user);
-    LDAllFlagsStateFree(state);
 }
 
-TEST_F(AllFlagsStateFixture, AllFlagsState_NullClientReturnsInvalidState) {
+// Verifies that the invalid AllFlagsState can be serialized into a well-defined JSON object.
+// The '$valid' key can be checked by downstream code (such as a web-frontend) to determine if error handling
+// needs to take place.
+TEST_F(AllFlagsStateFixture, InvalidStateSerializesToWellDefinedJSON) {
+    struct LDAllFlagsState *state;
     struct LDUser *user;
-    struct LDAllFlagsState* state;
+    char *json;
 
-    ASSERT_TRUE(user = LDUserNew("user1"));
-    ASSERT_TRUE(state = LDAllFlagsState(nullptr, user, LD_ALLFLAGS_DEFAULT));
-    ASSERT_FALSE(LDAllFlagsStateValid(state));
+    user = LDUserNew("foo");
 
+    state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT);
+    ASSERT_TRUE(json = LDAllFlagsStateSerializeJSON(state));
+    ASSERT_STREQ(json, "{\"$valid\":false,\"$flagsState\":{}}");
+
+    LDFree(json);
+    LDAllFlagsStateFree(state);
     LDUserFree(user);
-    LDAllFlagsStateFree(state);
 }
 
-TEST_F(AllFlagsStateFixture, AllFlagsState_NullUserReturnsInvalidState) {
-    struct LDAllFlagsState *state;
-    ASSERT_TRUE(state = LDAllFlagsState(client, nullptr, LD_ALLFLAGS_DEFAULT));
-    ASSERT_FALSE(LDAllFlagsStateValid(state));
-
-    LDAllFlagsStateFree(state);
-}
-
-/* This test is intended to trigger valgrind errors if forgetting to call LDAllFlagsStateFree would
- * leak memory when an invalid state is returned.
- * The test should not fail, since invalid AllFlagsState objects refer to a global object. */
-TEST_F(AllFlagsStateFixture, AllFlagsState_CallerForgetsToFreeState) {
-    struct LDAllFlagsState *state;
-    ASSERT_TRUE(state = LDAllFlagsState(nullptr, nullptr, LD_ALLFLAGS_DEFAULT));
-    ASSERT_FALSE(LDAllFlagsStateValid(state));
-
-    /* forgotten: LDAllFlagsStateFree(state); */
-}
-
-
-TEST_F(AllFlagsStateFixture, AllFlagsState_InitializedStoreCreatesValidState) {
+// Verifies that LDAllFlagsStateGetValue returns a well-defined NULL (instead of crashing)
+// in the case of invalid state.
+TEST_F(AllFlagsStateFixture, InvalidStateGetValueReturnsNULL) {
     struct LDAllFlagsState *state;
     struct LDUser *user;
 
-    ASSERT_TRUE(user = LDUserNew("user1"));
+    user = LDUserNew("foo");
+
+    state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT);
+    ASSERT_FALSE(LDAllFlagsStateGetValue(state, "key"));
+
+    LDAllFlagsStateFree(state);
+    LDUserFree(user);
+}
+
+// Verifies that LDAllFlagsStateGetDetails returns a well-defined NULL (instead of crashing)
+// in the case of invalid state.
+TEST_F(AllFlagsStateFixture, InvalidStateGetDetailsReturnsNULL) {
+    struct LDAllFlagsState *state;
+    struct LDUser *user;
+
+    user = LDUserNew("foo");
+
+    state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT);
+    ASSERT_FALSE(LDAllFlagsStateGetDetails(state, "key"));
+
+    LDAllFlagsStateFree(state);
+    LDUserFree(user);
+}
+
+// Verifies that LDAllFlagsState returns a valid object if the store is initialized.
+TEST_F(AllFlagsStateFixture, ValidStateIfStoreInitializedAsEmpty) {
+    struct LDAllFlagsState *state;
+    struct LDUser *user;
+
+    user = LDUserNew("foo");
+
     ASSERT_TRUE(LDStoreInitEmpty(client->store));
     ASSERT_TRUE(state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT));
     ASSERT_TRUE(LDAllFlagsStateValid(state));
 
-    LDUserFree(user);
     LDAllFlagsStateFree(state);
+    LDUserFree(user);
 }
 
-TEST_F(AllFlagsStateFixture, AllFlagsState_InitializedStoreCreatesValidJSON) {
+// Verifies that if the store is initialized as empty, LDAllFlagsState returns a valid object
+// with a well-defined JSON representation.
+TEST_F(AllFlagsStateFixture, ValidEmptyStateSerializesToWellDefinedJSON) {
     struct LDAllFlagsState *state;
     struct LDUser *user;
     char *str;
 
-    ASSERT_TRUE(user = LDUserNew("user1"));
-    ASSERT_TRUE(LDStoreInitEmpty(client->store));
-    ASSERT_TRUE(state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT));
+    user = LDUserNew("foo");
+
+    LDStoreInitEmpty(client->store);
+    state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT);
+
     ASSERT_TRUE(str = LDAllFlagsStateSerializeJSON(state));
     ASSERT_STREQ(str, "{\"$valid\":true,\"$flagsState\":{}}");
 
+    LDAllFlagsStateFree(state);
+    LDFree(str);
+    LDUserFree(user);
+}
+
+static LDJSON*
+boolFlagOn(const char *key)
+{
+    struct LDJSON *flag;
+    flag = LDNewObject();
+    LDObjectSetKey(flag, "key", LDNewText(key));
+    LDObjectSetKey(flag, "version", LDNewNumber(1));
+    LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue));
+    LDObjectSetKey(flag, "salt", LDNewText("abc"));
+    LDObjectSetKey(flag, "offVariation", LDNewNumber(1));
+    addVariation(flag, LDNewBool(LDBooleanTrue));
+    addVariation(flag, LDNewBool(LDBooleanFalse));
+    setFallthrough(flag, 0);
+    return flag;
+}
+
+static LDJSON*
+boolFlagOff(const char *key)
+{
+    struct LDJSON *flag;
+    flag = LDNewObject();
+    LDObjectSetKey(flag, "key", LDNewText(key));
+    LDObjectSetKey(flag, "version", LDNewNumber(1));
+    LDObjectSetKey(flag, "on", LDNewBool(LDBooleanFalse));
+    LDObjectSetKey(flag, "offVariation", LDNewNumber(1));
+    LDObjectSetKey(flag, "salt", LDNewText("def"));
+    addVariation(flag, LDNewBool(LDBooleanTrue));
+    addVariation(flag, LDNewBool(LDBooleanFalse));
+    setFallthrough(flag, 1);
+    return flag;
+}
+
+
+static LDJSON*
+flagWithPrerequisite(const char *key, const char *prereqKey)
+{
+    struct LDJSON *flag = LDNewObject();
+    LDObjectSetKey(flag, "key", LDNewText(key));
+    LDObjectSetKey(flag, "version", LDNewNumber(1));
+    LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue));
+    LDObjectSetKey(flag, "offVariation", LDNewNumber(1));
+    LDObjectSetKey(flag, "salt", LDNewText("abc"));
+
+    struct LDJSON *prereqs = LDNewArray();
+    struct LDJSON *prereq = LDNewObject();
+    LDObjectSetKey(prereq, "key", LDNewText(prereqKey));
+    LDObjectSetKey(prereq, "variation", LDNewNumber(1));
+
+    LDArrayPush(prereqs, prereq);
+
+    LDObjectSetKey(flag, "prerequisites", prereqs);
+
+    addVariation(flag, LDNewBool(LDBooleanTrue));
+    addVariation(flag, LDNewBool(LDBooleanFalse));
+    setFallthrough(flag, 0);
+    return flag;
+}
+
+// This scenario checks that the default serialization of a flag contains both the 'variation' and 'version' keys,
+// within $flagState, as well as the flag's key and value.
+TEST_F(AllFlagsStateFixture, ValidFlagSerializesToWellDefinedJSON_Default) {
+    struct LDAllFlagsState* state;
+    struct LDUser *user;
+    char* str;
+
+    user = LDUserNew("foo");
+
+    LDStoreInitEmpty(client->store);
+    LDStoreUpsert(client->store, LD_FLAG, boolFlagOn("flag1"));
+
+    state = LDAllFlagsState(client, user,  LD_ALLFLAGS_DEFAULT);
+    ASSERT_TRUE(str = LDAllFlagsStateSerializeJSON(state));
+    ASSERT_STREQ(str, "{\"$valid\":true,\"flag1\":true,\"$flagsState\":{\"flag1\":{\"variation\":0,\"version\":1}}}");
+    LDFree(str);
+
+    LDAllFlagsStateFree(state);
+    LDUserFree(user);
+}
+
+// This scenario checks that if LD_INCLUDE_REASON is specified, the serialized flag state should contain the flag's
+// evaluation reason.
+TEST_F(AllFlagsStateFixture, ValidFlagSerializesToWellDefinedJSON_IncludeReason) {
+    struct LDAllFlagsState* state;
+    struct LDUser *user;
+    char* str;
+
+    user = LDUserNew("foo");
+
+    LDStoreInitEmpty(client->store);
+    LDStoreUpsert(client->store, LD_FLAG, boolFlagOn("flag1"));
+
+    state = LDAllFlagsState(client, user,  LD_INCLUDE_REASON);
+    ASSERT_TRUE(str = LDAllFlagsStateSerializeJSON(state));
+    ASSERT_STREQ(str, "{\"$valid\":true,\"flag1\":true,\"$flagsState\":{\"flag1\":{\"variation\":0,\"version\":1,\"reason\":{\"kind\":\"FALLTHROUGH\"}}}}");
+    LDFree(str);
+
+    LDAllFlagsStateFree(state);
+    LDUserFree(user);
+}
+
+// This scenario checks that if DETAILS_ONLY_FOR_TRACKED_FLAGS is specified, the 'version' key is omitted.
+TEST_F(AllFlagsStateFixture, ValidFlagSerializesToWellDefinedJSON_DetailsOnlyForTrackedFlags) {
+    struct LDAllFlagsState* state;
+    struct LDUser *user;
+    char* str;
+
+    user = LDUserNew("foo");
+
+    LDStoreInitEmpty(client->store);
+    LDStoreUpsert(client->store, LD_FLAG, boolFlagOn("flag1"));
+
+    state = LDAllFlagsState(client, user,  LD_DETAILS_ONLY_FOR_TRACKED_FLAGS);
+    ASSERT_TRUE(str = LDAllFlagsStateSerializeJSON(state));
+    ASSERT_STREQ(str, "{\"$valid\":true,\"flag1\":true,\"$flagsState\":{\"flag1\":{\"variation\":0}}}");
+    LDFree(str);
+
+    LDAllFlagsStateFree(state);
+    LDUserFree(user);
+}
+
+
+// This scenario checks that if both LD_INCLUDE_REASON and DETAILS_ONLY_FOR_TRACKED_FLAGS are specified,
+// the reason will be omitted since the flag is not tracked.
+TEST_F(AllFlagsStateFixture, ValidFlagSerializesToWellDefinedJSON_IncludeReasonAndDetailsOnlyForTrackedFlags) {
+    struct LDAllFlagsState* state;
+    struct LDUser *user;
+    char* str;
+
+    user = LDUserNew("foo");
+
+    LDStoreInitEmpty(client->store);
+    LDStoreUpsert(client->store, LD_FLAG, boolFlagOn("flag1"));
+
+    state = LDAllFlagsState(client, user,  LD_INCLUDE_REASON | LD_DETAILS_ONLY_FOR_TRACKED_FLAGS);
+    ASSERT_TRUE(str = LDAllFlagsStateSerializeJSON(state));
+    ASSERT_STREQ(str, "{\"$valid\":true,\"flag1\":true,\"$flagsState\":{\"flag1\":{\"variation\":0}}}");
+    LDFree(str);
+
+    LDAllFlagsStateFree(state);
+    LDUserFree(user);
+}
+
+
+// Verifies that the values map (flag key -> flag value) representing an empty, but valid LDAllFlagsState, serializes
+// to a well-defined JSON string (which is simply an empty object.)
+TEST_F(AllFlagsStateFixture, ValidEmptyStateSerializesValueMapToWellDefinedJSON) {
+    struct LDAllFlagsState *state;
+    struct LDUser *user;
+    char *str;
+    struct LDJSON *json;
+
+    user = LDUserNew("foo");
+
+    LDStoreInitEmpty(client->store);
+    state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT);
+
+    ASSERT_TRUE(json = LDAllFlagsStateToValuesMap(state));
+    ASSERT_TRUE(str = LDJSONSerialize(json));
+    ASSERT_STREQ(str, "{}");
+
     LDFree(str);
     LDUserFree(user);
     LDAllFlagsStateFree(state);
 }
 
-TEST_F(AllFlagsStateFixture, AllFlagsState_GetValue) {
+
+
+static LDJSON*
+malformedFlag(const char *key, unsigned int variation)
+{
+    struct LDJSON *flag;
+    flag = LDNewObject();
+    LDObjectSetKey(flag, "key", LDNewText(key));
+    LDObjectSetKey(flag, "version", LDNewNumber(1));
+    LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue));
+    LDObjectSetKey(flag, "salt", LDNewText("abc"));
+    setFallthrough(flag, variation);
+    return flag;
+}
+
+
+// Verifies that if a flag is present in the store, then it is accessible via GetDetails/GetValue.
+// Neither the details nor the value need to be explicitly freed, since they are references into the
+// LDAllFlagsState object.
+TEST_F(AllFlagsStateFixture, GetFlagDetailsAndValue) {
     struct LDAllFlagsState *state;
-    struct LDJSON *inFlag;
-    struct LDJSON *outFlag;
     struct LDUser *user;
-    char *str;
 
+    LDStoreInitEmpty(client->store);
+    LDStoreUpsert(client->store, LD_FLAG, boolFlagOn("flag1"));
 
-    ASSERT_TRUE(inFlag = makeMinimalFlag("flag1", 1, LDBooleanTrue, LDBooleanFalse));
+    user = LDUserNew("foo");
+    state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT);
 
-    setFallthrough(inFlag, 1);
-    addVariation(inFlag, LDNewText("a"));
-    addVariation(inFlag, LDNewText("b"));
+    ASSERT_TRUE(LDAllFlagsStateGetDetails(state, "flag1"));
+    ASSERT_TRUE(LDAllFlagsStateGetValue(state, "flag1"));
 
-    ASSERT_TRUE(LDStoreInitEmpty(client->store));
-    ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, inFlag));
-
-    ASSERT_TRUE(user = LDUserNew("user1"));
-    ASSERT_TRUE(state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT));
-    ASSERT_TRUE(LDAllFlagsStateValid(state));
-
-    ASSERT_TRUE(outFlag = LDAllFlagsStateGetValue(state, "flag1"));
-
-    ASSERT_TRUE(str = LDJSONSerialize(outFlag));
-
-    ASSERT_STREQ(str, "\"b\"");
-
-    LDFree(str);
-    LDUserFree(user);
     LDAllFlagsStateFree(state);
+    LDUserFree(user);
+}
+
+// Verifies that if a flag doesn't exist in the store, then it won't be accessible via GetDetails/GetValue.
+TEST_F(AllFlagsStateFixture, GetNonexistentFlagFails) {
+    struct LDAllFlagsState *state;
+    struct LDUser *user;
+
+    LDStoreInitEmpty(client->store);
+
+    user = LDUserNew("foo");
+    state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT);
+
+    ASSERT_FALSE(LDAllFlagsStateGetDetails(state, "flag_true"));
+    ASSERT_FALSE(LDAllFlagsStateGetValue(state, "flag_true"));
+
+    LDAllFlagsStateFree(state);
+    LDUserFree(user);
+}
+
+
+// Verifies that if a flag is malformed such that it has a NULL value, it will still be present in the
+// AllFlagsState object, but GetValue will return NULL.
+TEST_F(AllFlagsStateFixture, GetFlagWithNullValue) {
+    struct LDAllFlagsState *state;
+    struct LDUser *user;
+
+    LDStoreInitEmpty(client->store);
+    LDStoreUpsert(client->store, LD_FLAG, malformedFlag("flag_true", 1));
+
+    user = LDUserNew("foo");
+    state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT);
+
+    ASSERT_TRUE(LDAllFlagsStateGetDetails(state, "flag_true"));
+    ASSERT_FALSE(LDAllFlagsStateGetValue(state, "flag_true"));
+
+    LDAllFlagsStateFree(state);
+    LDUserFree(user);
+}
+
+// Verifies a simple scenario of values map serialization with two flags, both having non-null boolean values.
+TEST_F(AllFlagsStateFixture, ValuesMapSerializationWithoutNull) {
+    struct LDAllFlagsState* state;
+    struct LDJSON *map;
+    struct LDUser *user;
+    char* str;
+
+    user = LDUserNew("foo");
+
+    LDStoreInitEmpty(client->store);
+    LDStoreUpsert(client->store, LD_FLAG, boolFlagOn("flag1"));
+    LDStoreUpsert(client->store, LD_FLAG, boolFlagOff("flag2"));
+
+    state = LDAllFlagsState(client, user,  LD_ALLFLAGS_DEFAULT);
+
+    map = LDAllFlagsStateToValuesMap(state);
+
+    ASSERT_TRUE(str = LDJSONSerialize(map));
+    ASSERT_STREQ(str, "{\"flag1\":true,\"flag2\":false}");
+    LDFree(str);
+
+    LDAllFlagsStateFree(state);
+    LDUserFree(user);
+}
+
+// Verifies a scenario in which a flag has a NULL value. The NULL should be rendered in the JSON serialization
+// of the values map.
+TEST_F(AllFlagsStateFixture, ValuesMapSerializationWithNull) {
+    struct LDAllFlagsState* state;
+    struct LDJSON *map;
+    struct LDUser *user;
+    char* str;
+
+    user = LDUserNew("foo");
+
+    LDStoreInitEmpty(client->store);
+    LDStoreUpsert(client->store, LD_FLAG, malformedFlag("flag1", 1));
+
+    state = LDAllFlagsState(client, user,  LD_ALLFLAGS_DEFAULT);
+
+    map = LDAllFlagsStateToValuesMap(state);
+
+    ASSERT_TRUE(str = LDJSONSerialize(map));
+    ASSERT_STREQ(str, "{\"flag1\":null}");
+    LDFree(str);
+
+    LDAllFlagsStateFree(state);
+    LDUserFree(user);
+}
+
+
+
+// This test was created because of a bug in the handling of the LDDetails structure.
+
+// If a flag fails evaluation due to a prerequisite, that prereq's key is cloned and then stored in the details object.
+// When specifying LD_ALLFLAGS_DEFAULT, this reason object is wiped out internally - and it must take care to clean
+// out any allocated values.
+//
+// This test only has value if the test harness is running under Valgrind's memory checker, because there's
+// no assertion that will trigger failure otherwise.
+TEST_F(AllFlagsStateFixture, BuilderAddFlagsWithoutReasonsMemoryLeak) {
+    struct LDAllFlagsState* state;
+    struct LDUser *user;
+    struct LDJSON *flag, *req;
+
+    req = boolFlagOff("req1");
+    flag = boolFlagOn("flag1");
+    addPrerequisite(flag, req, 0);
+
+    user = LDUserNew("foo");
+
+    LDStoreInitEmpty(client->store);
+    LDStoreUpsert(client->store, LD_FLAG, req);
+    LDStoreUpsert(client->store, LD_FLAG, flag);
+
+    state = LDAllFlagsState(client, user,  LD_INCLUDE_REASON);
+
+    // This is a meta-check to be sure that this test's flags were setup correctly. In other words,
+    // it could be commented out if we could guarantee that the flag configuration was correct in some other way.
+    struct LDDetails *details = LDAllFlagsStateGetDetails(state, "flag1");
+    ASSERT_EQ(details->reason, LD_PREREQUISITE_FAILED);
+    ASSERT_STREQ(details->extra.prerequisiteKey, "req1");
+    LDAllFlagsStateFree(state);
+    // End meta-check.
+
+
+    state = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT);  /* Allocates.. */
+    LDAllFlagsStateFree(state); /* Frees.. */
+
+    // At this point all memory associated with 'state' should be freed. If valgrind detects that this isn't the case,
+    // it will fail the test.
+
+    LDUserFree(user);
 }
 
 TEST_F(AllFlagsStateFixture, AllFlagsState_GivesSameResultAsAllFlags) {
@@ -628,134 +532,4 @@ TEST_F(AllFlagsStateFixture, AllFlagsState_GivesSameResultAsAllFlags) {
 
     LDUserFree(user);
     LDAllFlagsStateFree(allFlagsState);
-}
-
-TEST_F(AllFlagsStateFixture, AllFlagsState_ReturnsAllValidFlags) {
-    struct LDJSON *flag1, *flag2, *allFlags;
-    struct LDClient *client;
-    struct LDUser *user;
-    struct LDAllFlagsState *allFlagsState;
-
-
-    ASSERT_TRUE(client = makeTestClient());
-    ASSERT_TRUE(user = LDUserNew("userkey"));
-
-    /* flag1 */
-    ASSERT_TRUE(flag1 = LDNewObject());
-    ASSERT_TRUE(LDObjectSetKey(flag1, "key", LDNewText("flag1")));
-    ASSERT_TRUE(LDObjectSetKey(flag1, "version", LDNewNumber(1)));
-    ASSERT_TRUE(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
-    ASSERT_TRUE(LDObjectSetKey(flag1, "salt", LDNewText("abc")));
-    setFallthrough(flag1, 1);
-    addVariation(flag1, LDNewText("a"));
-    addVariation(flag1, LDNewText("b"));
-
-    /* flag2 */
-    ASSERT_TRUE(flag2 = LDNewObject());
-    ASSERT_TRUE(LDObjectSetKey(flag2, "key", LDNewText("flag2")));
-    ASSERT_TRUE(LDObjectSetKey(flag2, "version", LDNewNumber(1)));
-    ASSERT_TRUE(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanTrue)));
-    ASSERT_TRUE(LDObjectSetKey(flag2, "salt", LDNewText("abc")));
-    setFallthrough(flag2, 1);
-    addVariation(flag2, LDNewText("c"));
-    addVariation(flag2, LDNewText("d"));
-
-    /* store */
-    ASSERT_TRUE(LDStoreInitEmpty(client->store));
-    ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, flag1));
-    ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, flag2));
-
-    /* test */
-    ASSERT_TRUE(allFlagsState = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT));
-    ASSERT_TRUE(allFlags = LDAllFlagsStateToValuesMap(allFlagsState));
-
-    /* validation */
-    ASSERT_EQ(LDCollectionGetSize(allFlags), 2);
-    ASSERT_STREQ(LDGetText(LDObjectLookup(allFlags, "flag1")), "b");
-    ASSERT_STREQ(LDGetText(LDObjectLookup(allFlags, "flag2")), "d");
-
-    /* cleanup */
-    LDAllFlagsStateFree(allFlagsState);
-    LDUserFree(user);
-    LDClientClose(client);
-}
-
-/* If there is a problem with a single flag, then that should not prevent returning other flags.
- * In this test one of the flags will have an invalid fallthrough that contains neither a variation
- * nor rollout.
- */
-TEST_F(AllFlagsStateFixture, AllFlagsState_InvalidFlagDoesNotPreventValidFlagFromBeingReturned) {
-    struct LDJSON *flag1, *flag2, *allFlags;
-    struct LDClient *client;
-    struct LDUser *user;
-    struct LDAllFlagsState *allFlagsState;
-
-
-    ASSERT_TRUE(client = makeTestClient());
-    ASSERT_TRUE(user = LDUserNew("userkey"));
-
-    /* flag1 */
-    ASSERT_TRUE(flag1 = LDNewObject());
-    ASSERT_TRUE(LDObjectSetKey(flag1, "key", LDNewText("flag1")));
-    ASSERT_TRUE(LDObjectSetKey(flag1, "version", LDNewNumber(1)));
-    ASSERT_TRUE(LDObjectSetKey(flag1, "on", LDNewBool(LDBooleanTrue)));
-    ASSERT_TRUE(LDObjectSetKey(flag1, "salt", LDNewText("abc")));
-    setFallthrough(flag1, 1);
-    addVariation(flag1, LDNewText("a"));
-    addVariation(flag1, LDNewText("b"));
-
-    /* flag2 */
-    ASSERT_TRUE(flag2 = LDNewObject());
-    ASSERT_TRUE(LDObjectSetKey(flag2, "key", LDNewText("flag2")));
-    ASSERT_TRUE(LDObjectSetKey(flag2, "version", LDNewNumber(1)));
-    ASSERT_TRUE(LDObjectSetKey(flag2, "on", LDNewBool(LDBooleanTrue)));
-    ASSERT_TRUE(LDObjectSetKey(flag2, "salt", LDNewText("abc")));
-
-    /* Set a fallthrough which has no variation or rollout. */
-    struct LDJSON *fallthrough;
-    ASSERT_TRUE(fallthrough = LDNewObject());
-    ASSERT_TRUE(LDObjectSetKey(flag2, "fallthrough", fallthrough));
-
-    /* store */
-    ASSERT_TRUE(LDStoreInitEmpty(client->store));
-    ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, flag1));
-    ASSERT_TRUE(LDStoreUpsert(client->store, LD_FLAG, flag2));
-
-    /* test */
-    ASSERT_TRUE(allFlagsState = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT));
-    ASSERT_TRUE(allFlags = LDAllFlagsStateToValuesMap(allFlagsState));
-
-    /* validation */
-    ASSERT_EQ(LDCollectionGetSize(allFlags), 1);
-    ASSERT_STREQ(LDGetText(LDObjectLookup(allFlags, "flag1")), "b");
-
-    /* cleanup */
-    LDAllFlagsStateFree(allFlagsState);
-    LDUserFree(user);
-    LDClientClose(client);
-}
-
-TEST_F(AllFlagsStateFixture, AllFlagsState_NoFlagsInStore) {
-    struct LDJSON *allFlags;
-    struct LDClient *client;
-    struct LDUser *user;
-    struct LDAllFlagsState *allFlagsState;
-
-    ASSERT_TRUE(client = makeTestClient());
-    ASSERT_TRUE(user = LDUserNew("userkey"));
-
-    /* store */
-    ASSERT_TRUE(LDStoreInitEmpty(client->store));
-
-    /* test */
-    ASSERT_TRUE(allFlagsState = LDAllFlagsState(client, user, LD_ALLFLAGS_DEFAULT));
-    ASSERT_TRUE(allFlags = LDAllFlagsStateToValuesMap(allFlagsState));
-
-    /* validation */
-    ASSERT_EQ(LDCollectionGetSize(allFlags), 0);
-
-    /* cleanup */
-    LDAllFlagsStateFree(allFlagsState);
-    LDUserFree(user);
-    LDClientClose(client);
 }
