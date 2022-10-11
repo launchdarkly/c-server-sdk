@@ -200,6 +200,9 @@ static LDBoolean  addValue(
     LD_ASSERT(o_error);
 
     if(!getValue(flag, result, index, o_error, &validatedVariationIndex)) {
+
+        LDDetailsClear(details);
+
         *result               = NULL;
         details->hasVariation = LDBooleanFalse;
         details->reason = LD_ERROR;
