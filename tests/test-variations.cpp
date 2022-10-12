@@ -385,3 +385,88 @@ TEST_F(VariationsFixture, OffWithUndefinedOffVariation) {
     LDClientClose(client);
     LDDetailsClear(&details);
 }
+
+
+TEST_F(VariationsFixture, TestNullOffVariationInPrerequisiteDoesNotCauseUseAfterFree) {
+    struct LDJSON *flag;
+    struct LDDetails details;
+    struct LDClient *client;
+    struct LDUser *user = LDUserNew("foo");
+
+    ASSERT_TRUE(client = makeTestClient());
+
+    LDDetailsInit(&details);
+
+    ASSERT_TRUE(flag = LDNewObject());
+    ASSERT_TRUE(LDObjectSetKey(flag, "clientSide", LDNewBool(LDBooleanFalse)));
+    ASSERT_TRUE(LDObjectSetKey(flag, "debugEventsUntilDate", LDNewNull()));
+    ASSERT_TRUE(LDObjectSetKey(flag, "deleted", LDNewBool(LDBooleanFalse)));
+    ASSERT_TRUE(LDObjectSetKey(flag, "key", LDNewText("streaming.03.featureKey")));
+    ASSERT_TRUE(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    ASSERT_TRUE(LDObjectSetKey(flag, "salt", LDNewText("")));
+    ASSERT_TRUE(LDObjectSetKey(flag, "offVariation", LDNewNull()));
+    ASSERT_TRUE(LDObjectSetKey(flag, "trackEvents", LDNewBool(LDBooleanTrue)));
+    ASSERT_TRUE(LDObjectSetKey(flag, "trackEventsFallthrough", LDNewBool(LDBooleanFalse)));
+    ASSERT_TRUE(LDObjectSetKey(flag, "targets", LDNewArray()));
+    ASSERT_TRUE(LDObjectSetKey(flag, "rules", LDNewArray()));
+    ASSERT_TRUE(LDObjectSetKey(flag, "version", LDNewNumber(0)));
+
+
+    struct LDJSON *variations = LDNewArray();
+    ASSERT_TRUE(LDArrayPush(variations, LDNewText("A")));
+    ASSERT_TRUE(LDArrayPush(variations, LDNewText("B")));
+
+    ASSERT_TRUE(LDObjectSetKey(flag, "variations", variations));
+
+    struct LDJSON *fallthrough;
+    ASSERT_TRUE(fallthrough = LDNewObject());
+    ASSERT_TRUE(LDObjectSetKey(fallthrough, "variation", LDNewNumber(0)));
+    ASSERT_TRUE(LDObjectSetKey(flag, "fallthrough", fallthrough));
+
+    struct LDJSON *prerequisites = LDNewArray();
+    struct LDJSON *prereq = LDNewObject();
+    ASSERT_TRUE(LDObjectSetKey(prereq, "key", LDNewText("streaming.03.prereqFeatureKey")));
+    ASSERT_TRUE(LDObjectSetKey(prereq, "variation", LDNewNumber(0)));
+    ASSERT_TRUE(LDArrayPush(prerequisites, prereq));
+
+    ASSERT_TRUE(LDObjectSetKey(flag, "prerequisites", prerequisites));
+
+    struct LDJSON *prerequisite = LDNewObject();
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "clientSide", LDNewBool(LDBooleanFalse)));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "debugEventsUntilDate", LDNewNull()));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "deleted", LDNewBool(LDBooleanFalse)));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "key", LDNewText("streaming.03.prereqFeatureKey")));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "offVariation", LDNewNull()));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "on", LDNewBool(LDBooleanFalse)));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "prerequisites", LDNewArray()));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "rules", LDNewArray()));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "salt", LDNewText("")));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "trackEvents", LDNewBool(LDBooleanTrue)));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "trackEventsFallthrough", LDNewBool(LDBooleanFalse)));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "targets", LDNewArray()));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "version", LDNewNumber(0)));
+
+    struct LDJSON *pfallthrough;
+    ASSERT_TRUE(pfallthrough = LDNewObject());
+    ASSERT_TRUE(LDObjectSetKey(pfallthrough, "variation", LDNewNumber(0)));
+    ASSERT_TRUE(LDObjectSetKey(prerequisite, "fallthrough", pfallthrough));
+
+    struct LDJSON *pvariations = LDNewArray();
+    LDArrayPush(pvariations, LDNewText("first"));
+    LDArrayPush(pvariations, LDNewText("second"));
+
+    LDObjectSetKey(prerequisite, "variations", pvariations);
+
+    ASSERT_TRUE(LDStoreInitEmpty(client->store));
+
+    LDStoreUpsert(client->store, LD_FLAG, prerequisite);
+    LDStoreUpsert(client->store, LD_FLAG, flag);
+
+    char *result = LDStringVariation(client, user, "streaming.03.featureKey", "default", &details);
+
+    LDUserFree(user);
+    LDDetailsClear(&details);
+    LDFree(result);
+    LDClientClose(client);
+
+}

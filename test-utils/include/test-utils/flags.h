@@ -16,6 +16,9 @@ void
 addVariation(struct LDJSON *const flag, struct LDJSON *const variation);
 
 void
+addPrerequisite(struct LDJSON *const flag, struct LDJSON *const prereq, unsigned int expectedPrereqVariation);
+
+void
 addVariations1(struct LDJSON *const flag);
 
 void

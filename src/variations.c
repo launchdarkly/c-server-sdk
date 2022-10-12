@@ -329,6 +329,7 @@ variation(
             detailsRef->extra.errorKind = LD_MALFORMED_FLAG;
 
             LDJSONFree(subEvents);
+            subEvents = NULL;
 
             /* In this case the value will be null, so after LDi_processEvaluation the value will be checked,
              * and then it will move on to the error condition. */
@@ -827,17 +828,14 @@ LDAllFlagsState(struct LDClient *const client, const struct LDUser *const user, 
 
         LDJSONFree(eventsUnused);
 
-        if (flag->value) {
-            LDi_flagModelPopulate(&model, flag);
+        LDi_flagModelPopulate(&model, flag);
 
-            if (!LDi_allFlagsBuilderAdd(builder, flag)) {
-                LDi_freeFlagState(flag);
-
-                goto cleanup;
-            }
-        } else {
+        if (!LDi_allFlagsBuilderAdd(builder, flag)) {
             LDi_freeFlagState(flag);
+
+            goto cleanup;
         }
+
     }
 
     success = LDBooleanTrue;

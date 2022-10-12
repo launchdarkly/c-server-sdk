@@ -45,6 +45,23 @@ addVariation(struct LDJSON *const flag, struct LDJSON *const variation)
 }
 
 void
+addPrerequisite(struct LDJSON *const flag, struct LDJSON *const prereq, unsigned int expectedVariation)
+{
+    struct LDJSON *req;
+    struct LDJSON *reqs;
+
+    if (!(reqs = LDObjectLookup(flag, "prerequisites"))) {
+        reqs = LDNewArray();
+        LDObjectSetKey(flag, "prerequisites", reqs);
+    }
+
+    req = LDNewObject();
+    LDObjectSetKey(req, "key", LDNewText(LDGetText(LDObjectLookup(prereq, "key"))));
+    LDObjectSetKey(req, "variation", LDNewNumber(expectedVariation));
+    LDArrayPush(reqs, req);
+}
+
+void
 addVariations1(struct LDJSON *const flag)
 {
     addVariation(flag, LDNewText("fall"));

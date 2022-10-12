@@ -1455,3 +1455,87 @@ TEST_F(EvalFixture, RolloutCustomSeed) {
     LDUserFree(user);
     LDDetailsClear(&details);
 }
+
+TEST_F(EvalFixture, MalformedOffVariationIndexReturnsError) {
+    struct LDUser *user;
+    struct LDJSON *flag, *result, *events;
+    struct LDDetails details;
+
+    events = NULL;
+    result = NULL;
+    LDDetailsInit(&details);
+
+    ASSERT_TRUE(user = LDUserNew("userKeyA"));
+
+    /* flag */
+    ASSERT_TRUE(flag = LDNewObject());
+    ASSERT_TRUE(LDObjectSetKey(flag, "key", LDNewText("feature0")));
+    ASSERT_TRUE(LDObjectSetKey(flag, "offVariation", LDNewNumber(-20)));
+    ASSERT_TRUE(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanFalse)));
+
+    /* run */
+    ASSERT_EQ(
+            LDi_evaluate(
+                    NULL,
+                    flag,
+                    user,
+                    (struct LDStore *) 1,
+                    &details,
+                    &events,
+                    &result,
+                    LDBooleanFalse), EVAL_SCHEMA);
+
+    /* validation */
+    ASSERT_EQ(details.reason, LD_ERROR);
+    ASSERT_FALSE(events);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDUserFree(user);
+    LDDetailsClear(&details);
+}
+
+TEST_F(EvalFixture, MalformedOnVariationIndexReturnsError) {
+    struct LDUser *user;
+    struct LDJSON *flag, *result, *events;
+    struct LDDetails details;
+
+    events = NULL;
+    result = NULL;
+    LDDetailsInit(&details);
+
+    ASSERT_TRUE(user = LDUserNew("userKeyA"));
+
+    /* flag */
+    ASSERT_TRUE(flag = LDNewObject());
+    ASSERT_TRUE(LDObjectSetKey(flag, "key", LDNewText("feature0")));
+    ASSERT_TRUE(LDObjectSetKey(flag, "on", LDNewBool(LDBooleanTrue)));
+    ASSERT_TRUE(LDObjectSetKey(flag, "salt", LDNewText("123123")));
+
+
+    struct LDJSON *fallthrough;
+    LD_ASSERT(fallthrough = LDNewObject());
+    LD_ASSERT(LDObjectSetKey(fallthrough, "variation", LDNewNumber(-20)));
+    LD_ASSERT(LDObjectSetKey(flag, "fallthrough", fallthrough));
+
+    /* run */
+    ASSERT_EQ(
+            LDi_evaluate(
+                    NULL,
+                    flag,
+                    user,
+                    (struct LDStore *) 1,
+                    &details,
+                    &events,
+                    &result,
+                    LDBooleanFalse), EVAL_SCHEMA);
+
+    /* validation */
+    ASSERT_EQ(details.reason, LD_ERROR);
+    ASSERT_FALSE(events);
+
+    LDJSONFree(flag);
+    LDJSONFree(result);
+    LDUserFree(user);
+    LDDetailsClear(&details);
+}

@@ -38,6 +38,10 @@ struct LDFlagState
     LDBoolean trackEvents;
 
     double debugEventsUntilDate;
+
+    /* omitDetails is true if, based on the options passed to AllFlagsState and the flag state, some of the
+     * metadata can be left out of the JSON representation. */
+    LDBoolean omitDetails;
 };
 
 /** @brief Returns a pointer to an `LDAllFlagsState` with specified validity.
