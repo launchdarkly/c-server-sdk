@@ -2,6 +2,12 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.8.6] - 2022-10-12
+### Fixed:
+- Fixed flag evaluation to report error when flag data is malformed (variation out of bounds).
+- Fixed use-after-free in situation where a prerequisite flag has a NULL off-variation.
+- Fixed `LDAllFlagsState` handling of malformed flags, and fixed JSON serialization to omit details properly.
+
 ## [2.8.5] - 2022-09-01
 ### Fixed:
 - Fixed support for CMake versions 3.11 through 3.13, which require an explicit LIBRARY DESTINATION path when installing the SDK's target.
