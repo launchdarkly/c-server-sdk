@@ -28,16 +28,19 @@ This could obscure linker errors if the release artifacts are generated incorrec
 ## CMake test setup
 
 The toplevel `CMakeLists.txt` in each subdirectory is responsible for setting up
-the actual CTest tests that configure and build the projects. 
+the actual CTest tests that configure and build the projects.
 
-This is generally done in two phases:
+Note, the logic described below is encapsulated in two macros defined in `DeclareProjectTest.cmake`, so that
+that new tests don't need to copy boilerplate. 
+
+Test creation is generally done in two phases:
 1) Make a test that configures the project (simulating `cmake .. [options]`)
 2) Make a test that builds the project (simulating `cmake --build .`)
 
 The tests are ordered via `set_tests_properties` to ensure the configure test
 runs before the build test, as would be expected. 
 
-The toplevel `CMakeLists.txt` harbors additional complexity because these tests are executed
+The test creation logic harbors additional complexity because these tests are executed
 in CI on multiple types of executors (Windows/Mac/Linux) in various configurations.
 
 In particular, some environment variables must be forwarded to each test project CMake configuration.
@@ -52,7 +55,7 @@ Additionally, certain variables must be forwarded to each test project CMake con
 | `PCRE_LIBRARY`/`PCRE_INCLUDE_DIR` | Windows build uses PCRE downloaded at runtime, not system PCRE.                                                          |
 | `CMAKE_GENERATOR_PLATFORM`        | Windows build explicitly specifies x64 build, whereas the default project build would be x86. Linker errors would ensue. |
 
-Each toplevel `CMakeLists.txt` uses a series of CMake generator expressions (`$<...>`) to forward the variables 
+The creation logic uses a series of CMake generator expressions (`$<...>`) to forward the variables 
 in the table above from the main SDK project (which `add_subdirectory`'d each test) to the test projects. 
 
 Simply specifying the variables directly using `-DVARIABLE=${VARIABLE}` as is normally done on the command line
