@@ -1,5 +1,6 @@
 include(DeclareProjectTest.cmake)
 add_subdirectory(test_add_subdirectory)
 add_subdirectory(test_find_package)
+add_subdirectory(test_find_package_cpp)
 add_subdirectory(test_find_package_compatible_version)
 add_subdirectory(test_find_package_incompatible_version)

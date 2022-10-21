@@ -1,10 +1,13 @@
 #include "gtest/gtest.h"
 #include "commonfixture.h"
 
+#include <launchdarkly/experimental/cpp/value.hpp>
+
 extern "C" {
-#include "ldvalue.h"
 #include <launchdarkly/memory.h>
 }
+
+using namespace launchdarkly;
 
 // Inherit from the CommonFixture to give a reasonable name for the test output.
 // Any custom setup and teardown would happen in this derived class.
@@ -13,39 +16,33 @@ class LDValueFixture : public CommonFixture {
 
 // Requires valgrind leak checker
 TEST_F(LDValueFixture, ObjectIsFreed) {
-    struct LDObject *obj = LDObject_New();
-    LDObject_Free(obj);
+    Object obj;
 }
 
 // Requires valgrind leak checker
 TEST_F(LDValueFixture, ArrayIsFreed) {
-    struct LDArray *array = LDArray_New();
-    LDArray_Free(array);
+    Array array;
 }
 
 // Requires valgrind leak checker
 TEST_F(LDValueFixture, ObjectToValueIsFreed) {
-    LDValue_Free(LDValue_Object(LDObject_New()));
+    Object obj;
+    Value v = obj;
 }
 
 // Requires valgrind leak checker
 TEST_F(LDValueFixture, ArrayToValueIsFreed) {
-    LDValue_Free(LDValue_Array(LDArray_New()));
+    Array array;
+    Value v = array;
 }
 
 // Requires valgrind leak checker
 TEST_F(LDValueFixture, PrimitivesAreFreed) {
-    struct LDValue *boolVal = LDValue_True();
-    struct LDValue *constantStringVal = LDValue_ConstantString("hello");
-    struct LDValue *ownedStringVal = LDValue_OwnedString("goodbye");
-    struct LDValue *numVal = LDValue_Number(12);
-    struct LDValue *nullVal = LDValue_Null();
-
-    LDValue_Free(boolVal);
-    LDValue_Free(constantStringVal);
-    LDValue_Free(ownedStringVal);
-    LDValue_Free(numVal);
-    LDValue_Free(nullVal);
+     Value boolVal{true};
+     Value constantStringVal{"hello"};
+     Value ownedString{std::string{"hello"}};
+     Value numVal(12.0);
+     Value nullVal;
 }
 
 // Requires valgrind leak checker
@@ -64,540 +61,339 @@ TEST_F(LDValueFixture, NullPointerHasInvalidType) {
 }
 
 TEST_F(LDValueFixture, PrimitivesHaveCorrectType) {
-    struct LDValue *boolVal = LDValue_True();
-    struct LDValue *constantStringVal = LDValue_ConstantString("hello");
-    struct LDValue *ownedStringVal = LDValue_OwnedString("goodbye");
-    struct LDValue *numVal = LDValue_Number(12);
-    struct LDValue *nullVal = LDValue_Null();
+    Value boolVal{true};
+    Value constantStringVal{"hello"};
+    Value ownedString{std::string{"hello"}};
+    Value numVal{12.0};
+    Value nullVal;
 
-    ASSERT_EQ(LDValue_Type(boolVal), LDValueType_Bool);
-    ASSERT_EQ(LDValue_Type(constantStringVal), LDValueType_String);
-    ASSERT_EQ(LDValue_Type(ownedStringVal), LDValueType_String);
-    ASSERT_EQ(LDValue_Type(numVal), LDValueType_Number);
-    ASSERT_EQ(LDValue_Type(nullVal), LDValueType_Null);
-
-    LDValue_Free(boolVal);
-    LDValue_Free(constantStringVal);
-    LDValue_Free(ownedStringVal);
-    LDValue_Free(numVal);
-    LDValue_Free(nullVal);
+    ASSERT_EQ(boolVal.type(), Value::Type::Bool);
+    ASSERT_EQ(constantStringVal.type(), Value::Type::String);
+    ASSERT_EQ(ownedString.type(), Value::Type::String);
+    ASSERT_EQ(numVal.type(), Value::Type::Number);
+    ASSERT_EQ(nullVal.type(), Value::Type::Null);
 }
 
 TEST_F(LDValueFixture, CloneHasCorrectValue) {
-    struct LDValue *boolVal = LDValue_True();
-    struct LDValue *constantStringVal = LDValue_ConstantString("hello");
-    struct LDValue *ownedStringVal = LDValue_OwnedString("goodbye");
-    struct LDValue *numVal = LDValue_Number(12);
-    struct LDValue *nullVal = LDValue_Null();
+    Value boolVal{true};
+    Value constantStringVal{"hello"};
+    Value ownedStringVal{std::string{"hello"}};
+    Value numVal{12.0};
+    Value nullVal;
 
-    struct LDValue *boolClone = LDValue_Clone(boolVal);
-    struct LDValue *constantStringClone = LDValue_Clone(constantStringVal);
-    struct LDValue *ownedStringClone = LDValue_Clone(ownedStringVal);
-    struct LDValue *numClone = LDValue_Clone(numVal);
-    struct LDValue *nullClone = LDValue_Clone(nullVal);
+    Value boolClone = boolVal;
+    Value constantStringClone = constantStringVal;
+    Value ownedStringClone = ownedStringVal;
+    Value numClone = numVal;
+    Value nullClone = nullVal;
 
-    ASSERT_TRUE(LDValue_Equal(boolVal, boolClone));
-    ASSERT_TRUE(LDValue_Equal(constantStringVal, constantStringClone));
-    ASSERT_TRUE(LDValue_Equal(ownedStringVal, ownedStringClone));
-    ASSERT_TRUE(LDValue_Equal(numVal, numClone));
-    ASSERT_TRUE(LDValue_Equal(nullVal, nullClone));
-
-    LDValue_Free(boolVal);
-    LDValue_Free(boolClone);
-    LDValue_Free(constantStringVal);
-    LDValue_Free(constantStringClone);
-    LDValue_Free(ownedStringVal);
-    LDValue_Free(ownedStringClone);
-    LDValue_Free(numVal);
-    LDValue_Free(numClone);
-    LDValue_Free(nullVal);
-    LDValue_Free(nullClone);
+    ASSERT_EQ(boolVal, boolClone);
+    ASSERT_EQ(constantStringVal, constantStringClone);
+    ASSERT_EQ(ownedStringVal, ownedStringClone);
+    ASSERT_EQ(numVal, numClone);
+    ASSERT_EQ(nullVal, nullClone);
 }
 
 TEST_F(LDValueFixture, ArrayHasCorrectType) {
-    struct LDValue *value = LDValue_Array(LDArray_New());
-    ASSERT_EQ(LDValue_Type(value), LDValueType_Array);
-    ASSERT_NE(LDValue_Type(value), LDValueType_Object);
+    Value value{Array{}};
+    ASSERT_EQ(value.type(), Value::Type::Array);
 
-    struct LDValue *valueClone = LDValue_Clone(value);
-    ASSERT_TRUE(LDValue_Equal(value, valueClone));
-
-    LDValue_Free(value);
-    LDValue_Free(valueClone);
+    Value clone = value;
+    ASSERT_EQ(clone.type(), Value::Type::Array);
+    ASSERT_EQ(value, clone);
 }
 
 TEST_F(LDValueFixture, ObjectHasCorrectType) {
-    struct LDValue *value = LDValue_Object(LDObject_New());
-    ASSERT_EQ(LDValue_Type(value), LDValueType_Object);
-    ASSERT_NE(LDValue_Type(value), LDValueType_Array);
+    Value value {Object{}};
+    ASSERT_EQ(value.type(), Value::Type::Object);
 
-    struct LDValue *valueClone = LDValue_Clone(value);
-    ASSERT_TRUE(LDValue_Equal(value, valueClone));
-
-    LDValue_Free(value);
-    LDValue_Free(valueClone);
+    Value clone = value;
+    ASSERT_EQ(clone.type(), Value::Type::Object);
+    ASSERT_EQ(clone, value);
 }
 
-TEST_F(LDValueFixture, StringEquality) {
-    struct LDValue *a = LDValue_ConstantString("value");
-    struct LDValue *b = LDValue_OwnedString("value");
+TEST_F(LDValueFixture, StringEqualityBetweenConstantAndOwned) {
+    Value a{"a"};
+    Value b{std::string{"a"}};
 
-    ASSERT_STREQ(LDValue_GetString(a), LDValue_GetString(b));
-
-    LDValue_Free(a);
-    LDValue_Free(b);
+    ASSERT_EQ(a, b);
 }
 
 TEST_F(LDValueFixture, CountOfPrimitivesIsZero) {
+    Value boolVal{true};
+    Value constantStringVal{"hello"};
+    Value ownedStringVal{std::string{"hello"}};
+    Value numVal{12.0};
+    Value nullVal;
 
-    struct LDValue *boolVal = LDValue_True();
-    struct LDValue *numVal = LDValue_Number(3);
-    struct LDValue *constStrVal = LDValue_ConstantString("hello");
-    struct LDValue *ownedStrVal = LDValue_OwnedString("hello");
-    struct LDValue *nullVal = LDValue_Null();
-
-    ASSERT_EQ(LDValue_Count(boolVal), 0);
-    ASSERT_EQ(LDValue_Count(numVal), 0);
-    ASSERT_EQ(LDValue_Count(constStrVal), 0);
-    ASSERT_EQ(LDValue_Count(ownedStrVal), 0);
-    ASSERT_EQ(LDValue_Count(nullVal), 0);
-
-    LDValue_Free(boolVal);
-    LDValue_Free(numVal);
-    LDValue_Free(constStrVal);
-    LDValue_Free(ownedStrVal);
-    LDValue_Free(nullVal);
+    ASSERT_EQ(boolVal.count(), 0);
+    ASSERT_EQ(numVal.count(), 0);
+    ASSERT_EQ(constantStringVal.count(), 0);
+    ASSERT_EQ(ownedStringVal.count(), 0);
+    ASSERT_EQ(nullVal.count(), 0);
 }
 
 
 TEST_F(LDValueFixture, ObjectIsDisplayed) {
 
-    struct LDObject *obj = LDObject_New();
-    LDObject_AddConstantKey(obj, "bool", LDValue_True());
-    LDObject_AddConstantKey(obj, "string", LDValue_ConstantString("hello"));
+    Object obj = {
+        {"bool", Value{true}},
+        {"string", Value{"hello"}},
+        {"array", Array{ Value{"foo"}, Value{"bar"}}}
+    };
 
-    struct LDArray *array = LDArray_New();
-    LDArray_Add(array, LDValue_ConstantString("foo"));
-    LDArray_Add(array, LDValue_ConstantString("bar"));
+    std::string json = obj.build().serialize_json();
 
-    LDObject_AddConstantKey(obj, "array", LDValue_Array(array));
+    ASSERT_EQ(json, "{\"bool\":true,\"string\":\"hello\",\"array\":[\"foo\",\"bar\"]}");
 
-    struct LDValue *value = LDValue_Object(obj);
-
-    char *json = LDValue_SerializeJSON(value);
-
-    ASSERT_STREQ("{\"bool\":true,\"string\":\"hello\",\"array\":[\"foo\",\"bar\"]}", json);
-
-    LDFree(json);
-
-    LDValue_Free(value);
 }
 
 TEST_F(LDValueFixture, ObjectIsBuiltManyTimes) {
-    struct LDObject *obj = LDObject_New();
-    LDObject_AddConstantKey(obj, "key", LDValue_ConstantString("value"));
+    Object obj;
+    obj.set("key", "value");
 
     for (size_t i = 0; i < 10; i++) {
-        LDValue *value = LDObject_Build(obj);
-        char *json = LDValue_SerializeJSON(value);
-
-        ASSERT_STREQ("{\"key\":\"value\"}", json);
-
-        LDFree(json);
-        LDValue_Free(value);
+        std::string json = obj.build().serialize_json();
+        ASSERT_EQ(json, "{\"key\":\"value\"}");
     }
-
-    LDObject_Free(obj);
 }
 
 TEST_F(LDValueFixture, ObjectCanAddValueAfterBuild) {
-    struct LDObject *obj = LDObject_New();
-    LDObject_AddConstantKey(obj, "key1", LDValue_ConstantString("value1"));
+    Object obj;
 
-    struct LDValue *obj1 = LDObject_Build(obj);
-    ASSERT_EQ(LDValue_Count(obj1), 1);
-    LDValue_Free(obj1);
+    obj.set("key1", "value1");
+    ASSERT_EQ(obj.build().count(), 1);
 
-    LDObject_AddConstantKey(obj, "key2", LDValue_ConstantString("value2"));
-    struct LDValue *obj2 = LDObject_Build(obj);
-    ASSERT_EQ(LDValue_Count(obj2), 2);
-    LDValue_Free(obj2);
-
-    LDObject_Free(obj);
+    obj.set("key2", "value2");
+    ASSERT_EQ(obj.build().count(), 2);
 }
 
 TEST_F(LDValueFixture, ArrayIsBuiltManyTimes) {
-    struct LDArray *array = LDArray_New();
-    LDArray_Add(array, LDValue_ConstantString("value"));
+    Array array{Value("value")};
 
     for (size_t i = 0; i < 10; i++) {
-        LDValue *value = LDArray_Build(array);
-        char *json = LDValue_SerializeJSON(value);
-
-        ASSERT_STREQ("[\"value\"]", json);
-
-        LDFree(json);
-        LDValue_Free(value);
+        std::string json = array.build().serialize_json();
+        ASSERT_EQ(json, "[\"value\"]");
     }
-
-    LDArray_Free(array);
 }
 
 
 TEST_F(LDValueFixture, ArrayCanAddValueAfterBuild) {
-    struct LDArray *array = LDArray_New();
-    LDArray_Add(array, LDValue_ConstantString("value1"));
+    Array array{Value("value1")};
+    ASSERT_EQ(array.build().count(), 1);
 
-    struct LDValue *array1 = LDArray_Build(array);
-    ASSERT_EQ(LDValue_Count(array1), 1);
-    LDValue_Free(array1);
-
-    LDArray_Add(array, LDValue_ConstantString("value2"));
-    struct LDValue *array2 = LDArray_Build(array);
-    ASSERT_EQ(LDValue_Count(array2), 2);
-    LDValue_Free(array2);
-
-    LDArray_Free(array);
+    array.add(Value("value2"));
+    ASSERT_EQ(array.build().count(), 2);
 }
 
 TEST_F(LDValueFixture, DisplayUser) {
-    struct LDObject *attrs = LDObject_New();
-    LDObject_AddConstantKey(attrs, "key", LDValue_ConstantString("foo"));
-    LDObject_AddConstantKey(attrs, "name", LDValue_ConstantString("bar"));
 
-    struct LDObject *custom = LDObject_New();
+    Object attrs {
+       {"key", Value{"foo"}},
+       {"name", Value{"bar"}},
+       {"custom", Object{
+           {"things", Array{Value{"a"}, Value{"b"}, Value{true}}}
+        }}
+    };
 
-    struct LDArray *list = LDArray_New();
-    LDArray_Add(list, LDValue_ConstantString("a"));
-    LDArray_Add(list, LDValue_ConstantString("b"));
-    LDArray_Add(list, LDValue_True());
+    std::string json = attrs.build().serialize_formatted_json();
 
-    LDObject_AddConstantKey(custom, "things", LDValue_Array(list));
-
-    LDObject_AddConstantKey(attrs, "custom", LDValue_Object(custom));
-
-    struct LDValue *user = LDValue_Object(attrs);
-
-    char *json = LDValue_SerializeFormattedJSON(user);
-
-    ASSERT_STREQ("{\n\t\"key\":\t\"foo\",\n\t\"name\":\t\"bar\",\n\t\"custom\":\t{\n\t\t\"things\":\t[\"a\", \"b\", true]\n\t}\n}", json);
-    LDFree(json);
-    LDValue_Free(user);
-
+    ASSERT_EQ(json, "{\n\t\"key\":\t\"foo\",\n\t\"name\":\t\"bar\",\n\t\"custom\":\t{\n\t\t\"things\":\t[\"a\", \"b\", true]\n\t}\n}");
 }
 
-
-TEST_F(LDValueFixture, IterateObject) {
-    struct LDObject *obj = LDObject_New();
-
-    LDObject_AddConstantKey(obj, "key1", LDValue_ConstantString("value1"));
-    LDObject_AddConstantKey(obj, "key2", LDValue_ConstantString("value2"));
-
-    struct LDValue *value = LDValue_Object(obj);
-    ASSERT_EQ(2, LDValue_Count(value));
-
-    struct LDIter *iter;
-
-    ASSERT_TRUE(iter = LDValue_GetIter(value));
-    ASSERT_STREQ(LDIter_Key(iter), "key1");
-    ASSERT_STREQ(LDValue_GetString(LDIter_Val(iter)), "value1");
-
-    ASSERT_TRUE(iter = LDIter_Next(iter));
-    ASSERT_STREQ(LDIter_Key(iter), "key2");
-    ASSERT_STREQ(LDValue_GetString(LDIter_Val(iter)), "value2");
-
-    ASSERT_FALSE(LDIter_Next(iter));
-
-    LDValue_Free(value);
-}
-
-TEST_F(LDValueFixture, IterateArray) {
-    struct LDArray *array = LDArray_New();
-
-    LDArray_Add(array, LDValue_ConstantString("value1"));
-    LDArray_Add(array,  LDValue_ConstantString("value2"));
-
-    struct LDValue *value = LDValue_Array(array);
-    ASSERT_EQ(2, LDValue_Count(value));
-
-    struct LDIter *iter;
-
-    ASSERT_TRUE(iter = LDValue_GetIter(value));
-    ASSERT_STREQ(LDValue_GetString(LDIter_Val(iter)), "value1");
-
-    ASSERT_TRUE(iter = LDIter_Next(iter));
-    ASSERT_STREQ(LDValue_GetString(LDIter_Val(iter)), "value2");
-
-    ASSERT_FALSE(LDIter_Next(iter));
-
-    LDValue_Free(value);
-}
 
 TEST_F(LDValueFixture, IteratePrimitive) {
-    struct LDValue *boolVal = LDValue_True();
+    Value v{false};
 
-    ASSERT_FALSE(LDValue_GetIter(boolVal));
+    ASSERT_TRUE(v.into_vector().empty());
+    ASSERT_TRUE(v.into_unordered_map().empty());
 }
 
 TEST_F(LDValueFixture, GetBool) {
-    struct LDValue *trueVal = LDValue_True();
-    ASSERT_TRUE(LDValue_GetBool(trueVal));
+    Value trueVal{true};
+    ASSERT_TRUE(trueVal.get_bool());
 
-    struct LDValue *falseVal = LDValue_False();
-    ASSERT_FALSE(LDValue_GetBool(falseVal));
-
-    LDValue_Free(trueVal);
-    LDValue_Free(falseVal);
+    Value falseVal{false};
+    ASSERT_FALSE(falseVal.get_bool());
 }
 
 TEST_F(LDValueFixture, GetNumber) {
-    struct LDValue *value = LDValue_Number(12);
-    ASSERT_EQ(12, LDValue_GetNumber(value));
-    LDValue_Free(value);
+    Value value{12.0};
+    ASSERT_EQ(12.0, value.get_number());
 }
 
 TEST_F(LDValueFixture, GetString) {
-    struct LDValue *value = LDValue_OwnedString("hello");
-    ASSERT_STREQ("hello", LDValue_GetString(value));
-    LDValue_Free(value);
+    Value value {std::string("hello")};
+    ASSERT_EQ(value.get_string(), "hello");
 }
 
 TEST_F(LDValueFixture, IsNull) {
-    struct LDValue *value = LDValue_Null();
-    ASSERT_EQ(LDValue_Type(value), LDValueType_Null);
-    LDValue_Free(value);
+    Value value;
+    ASSERT_EQ(value.type(), Value::Type::Null);
+    ASSERT_TRUE(value.is_null());
 }
 
 TEST_F(LDValueFixture, ParseBool) {
-    struct LDValue *falseVal = LDValue_ParseJSON("false");
-    ASSERT_FALSE(LDValue_GetBool(falseVal));
+    Value falseVal = Value::parse_json("false");
+    ASSERT_EQ(falseVal.type(), Value::Type::Bool);
+    ASSERT_FALSE(falseVal.get_bool());
 
-    struct LDValue *trueVal = LDValue_ParseJSON("true");
-    ASSERT_TRUE(LDValue_GetBool(trueVal));
-
-    LDValue_Free(falseVal);
-    LDValue_Free(trueVal);
+    Value trueVal = Value::parse_json("true");
+    ASSERT_EQ(trueVal.type(), Value::Type::Bool);
+    ASSERT_TRUE(trueVal.get_bool());
 }
 
 TEST_F(LDValueFixture, ParseNumber) {
-    struct LDValue *numVal = LDValue_ParseJSON("12.34567");
-    ASSERT_EQ(12.34567, LDValue_GetNumber(numVal));
-    LDValue_Free(numVal);
+    Value numVal = Value::parse_json("12.34567");
+    ASSERT_EQ(12.34567, numVal.get_number());
 }
 
 TEST_F(LDValueFixture, ParseNull) {
-    struct LDValue *nullVal = LDValue_ParseJSON("null");
-    ASSERT_EQ(LDValue_Type(nullVal), LDValueType_Null);
-    LDValue_Free(nullVal);
+    Value nullVal = Value::parse_json("null");
+    ASSERT_TRUE(nullVal.is_null());
 }
 
 TEST_F(LDValueFixture, ParseString) {
-    struct LDValue *stringVal = LDValue_ParseJSON("\"hello world\"");
-    ASSERT_STREQ("hello world", LDValue_GetString(stringVal));
-    LDValue_Free(stringVal);
+    Value stringVal = Value::parse_json("\"hello world\"");
+    ASSERT_EQ(stringVal.get_string(), "hello world");
 }
 
 TEST_F(LDValueFixture, ParseArray) {
-    struct LDArray *array = LDArray_New();
-    LDArray_Add(array, LDValue_True());
-    LDArray_Add(array, LDValue_ConstantString("hello"));
-    LDArray_Add(array, LDValue_Number(3));
-    struct LDValue *a = LDValue_Array(array);
+    Array array{Value{true}, Value{"hello"}, Value{3.0}};
 
-    struct LDValue *b = LDValue_ParseJSON("[true, \"hello\", 3]");
+    Value b = Value::parse_json("[true, \"hello\", 3]");
 
-    ASSERT_TRUE(LDValue_Equal(a, b));
-
-    LDValue_Free(a);
-    LDValue_Free(b);
+    ASSERT_EQ(b, array);
 }
 
-
-
-TEST_F(LDValueFixture, IterateParsedArray) {
-    struct LDValue *b = LDValue_ParseJSON("[true, \"hello\", 3]");
-
-    struct LDIter *iter = LDValue_GetIter(b);
-
-    ASSERT_EQ(LDValue_GetBool(LDIter_Val(iter)), LDBooleanTrue);
-
-    iter = LDIter_Next(iter);
-    ASSERT_STREQ(LDValue_GetString(LDIter_Val(iter)), "hello");
-
-    iter = LDIter_Next(iter);
-    ASSERT_EQ(LDValue_GetNumber(LDIter_Val(iter)), 3);
-
-    ASSERT_FALSE(LDIter_Next(iter));
-
-    LDValue_Free(b);
-}
 
 TEST_F(LDValueFixture, ParseObject) {
-    struct LDObject *obj = LDObject_New();
-    LDObject_AddConstantKey(obj, "bool", LDValue_True());
-    LDObject_AddConstantKey(obj, "number", LDValue_Number(12.34));
-    LDObject_AddConstantKey(obj, "string", LDValue_ConstantString("hello"));
-    struct LDValue *a = LDValue_Object(obj);
 
-    struct LDValue *b = LDValue_ParseJSON(
-        R"({"bool": true, "number": 12.34, "string": "hello"})");
+    Object obj;
+    obj.set("bool", true);
+    obj.set("number", 12.34);
+    obj.set("string", "hello");
 
-    ASSERT_TRUE(LDValue_Equal(a, b));
+    Value a = obj.build();
 
-    LDValue_Free(a);
-    LDValue_Free(b);
+    Value b = Value::parse_json(R"({"bool": true, "number": 12.34, "string": "hello"})");
+
+    ASSERT_EQ(a, b);
 }
 
 TEST_F(LDValueFixture, ParseObjectDuplicateKeysHasCorrectCount) {
-    struct LDValue *a = LDValue_ParseJSON(
+    Value a = Value::parse_json(
         R"({"a": true, "a": 12.34})");
 
-    ASSERT_EQ(LDValue_Count(a), 2);
-
-    for (auto iter = LDValue_GetIter(a); iter; iter = LDIter_Next(iter)) {
-        ASSERT_STREQ(LDIter_Key(iter), "a");
-    }
-
-    LDValue_Free(a);
+    ASSERT_EQ(a.count(), 2);
 }
 
 TEST_F(LDValueFixture, ParseObjectDuplicateKeysNotEqual) {
-    struct LDValue *a = LDValue_ParseJSON(
-        R"({"a": true, "a": 12.34})");
+    Value a = Value::parse_json(R"({"a": true, "a": 12.34})");
+    Value b = Value::parse_json(R"({"a": true, "a": 12.34})");
 
-    struct LDValue *b = LDValue_ParseJSON(
-        R"({"a": true, "a": 12.34})");
-
-    ASSERT_EQ(LDValue_Count(a), LDValue_Count(b));
-    ASSERT_FALSE(LDValue_Equal(a, b));
-    LDValue_Free(a);
-    LDValue_Free(b);
+    ASSERT_EQ(a.count(), b.count());
+    ASSERT_NE(a, b);
 }
+
+
+TEST_F(LDValueFixture, IterateHomogeneousArray) {
+    Value array = Value::parse_json("[true, true, true, true]");
+    for (const auto& item : array.into_vector()) {
+        ASSERT_EQ(item.type(), Value::Type::Bool);
+        ASSERT_TRUE(item.get_bool());
+    }
+}
+
+TEST_F(LDValueFixture, IterateHeterogeneousArray) {
+    Value b = Value::parse_json("[true, \"hello\", 3]");
+
+    auto array = b.into_vector();
+    ASSERT_EQ(array.size(), 3);
+    ASSERT_EQ(array[0].type(), Value::Type::Bool);
+    ASSERT_TRUE(array[0].get_bool());
+
+    ASSERT_EQ(array[1].type(), Value::Type::String);
+    ASSERT_EQ(array[1].get_string(), "hello");
+
+    ASSERT_EQ(array[2].type(), Value::Type::Number);
+    ASSERT_EQ(array[2].get_number(), 3);
+}
+
 
 TEST_F(LDValueFixture, IterateParsedObject) {
-    struct LDValue *b = LDValue_ParseJSON(
-        R"({"bool": true, "number": 12.34, "string": "hello"})");
+    Value obj = Value::parse_json(R"({"a": true, "b": false})");
+    auto map = obj.into_unordered_map();
 
-    struct LDIter *iter = LDValue_GetIter(b);
+    ASSERT_EQ(map.at("a").type(), Value::Type::Bool);
+    ASSERT_TRUE(map.at("a").get_bool());
 
-    ASSERT_STREQ(LDIter_Key(iter), "bool");
-    ASSERT_EQ(LDValue_GetBool(LDIter_Val(iter)), LDBooleanTrue);
-
-    iter = LDIter_Next(iter);
-    ASSERT_STREQ(LDIter_Key(iter), "number");
-    ASSERT_EQ(LDValue_GetNumber(LDIter_Val(iter)), 12.34);
-
-    iter = LDIter_Next(iter);
-    ASSERT_STREQ(LDIter_Key(iter), "string");
-    ASSERT_STREQ(LDValue_GetString(LDIter_Val(iter)), "hello");
-
-    ASSERT_FALSE(LDIter_Next(iter));
-
-    LDValue_Free(b);
-}
-
-TEST_F(LDValueFixture, IterateParsedArrayWithForLoop) {
-    struct LDValue *array = LDValue_ParseJSON("[true, true, true, true]");
-    for (auto i = LDValue_GetIter(array); i; i = LDIter_Next(i)) {
-        ASSERT_EQ(LDValue_Type(LDIter_Val(i)), LDValueType_Bool);
-        ASSERT_TRUE(LDValue_GetBool(LDIter_Val(i)));
-    }
-    LDValue_Free(array);
-}
-
-
-TEST_F(LDValueFixture, IterateParsedObjectWithForLoop) {
-    struct LDValue *obj =
-        LDValue_ParseJSON(R"({"a": true, "b": true, "c": true})");
-    for (auto i = LDValue_GetIter(obj); i; i = LDIter_Next(i)) {
-        ASSERT_EQ(LDValue_Type(LDIter_Val(i)), LDValueType_Bool);
-        ASSERT_TRUE(LDIter_Key(i));
-    }
-    LDValue_Free(obj);
+    ASSERT_EQ(map.at("b").type(), Value::Type::Bool);
+    ASSERT_FALSE(map.at("b").get_bool());
 }
 
 TEST_F(LDValueFixture, EqualArraysWithElements) {
-    struct LDValue *a = LDValue_ParseJSON(R"(["a", "b", "c"])");
-    struct LDValue *b = LDValue_ParseJSON(R"(["a", "b", "c"])");
-    ASSERT_TRUE(LDValue_Equal(a, b));
-    LDValue_Free(a);
-    LDValue_Free(b);
+    Value a = Value::parse_json(R"(["a", "b", "c"])");
+    Value b = Value::parse_json(R"(["a", "b", "c"])");
+    ASSERT_EQ(a, b);
 }
 
 TEST_F(LDValueFixture, EqualArraysWithoutElements) {
-    struct LDValue *a = LDValue_ParseJSON("[]");
-    struct LDValue *b = LDValue_ParseJSON("[]");
-    ASSERT_TRUE(LDValue_Equal(a, b));
-    LDValue_Free(a);
-    LDValue_Free(b);
+    Value a = Value::parse_json("[]");
+    Value b = Value::parse_json("[]");
+    ASSERT_EQ(a, b);
 }
 
 
 TEST_F(LDValueFixture, UnequalArrayElement) {
-    struct LDValue *a = LDValue_ParseJSON(R"(["a"])");
-    struct LDValue *b = LDValue_ParseJSON(R"(["b"])");
-    ASSERT_FALSE(LDValue_Equal(a, b));
-    LDValue_Free(a);
-    LDValue_Free(b);
+    Value a = Value::parse_json(R"(["a"])");
+    Value b = Value::parse_json(R"(["b"])");
+    ASSERT_NE(a, b);
 }
 
 TEST_F(LDValueFixture, UnequalArrayOrder) {
-    struct LDValue *a = LDValue_ParseJSON(R"(["a", "b"])");
-    struct LDValue *b = LDValue_ParseJSON(R"(["b", "a])");
-    ASSERT_FALSE(LDValue_Equal(a, b));
-    LDValue_Free(a);
-    LDValue_Free(b);
+    Value a = Value::parse_json(R"(["a", "b"])");
+    Value b = Value::parse_json(R"(["b", "a"])");
+    ASSERT_NE(a, b);
 }
 
 TEST_F(LDValueFixture, EqualObjectWithElements) {
-    struct LDValue *a = LDValue_ParseJSON(R"({"a" : true, "b" : false})");
-    struct LDValue *b = LDValue_ParseJSON(R"({"a" : true, "b" : false})");
-    ASSERT_TRUE(LDValue_Equal(a, b));
-    LDValue_Free(a);
-    LDValue_Free(b);
+    Value a = Value::parse_json(R"({"a" : true, "b" : false})");
+    Value b = Value::parse_json(R"({"a" : true, "b" : false})");
+    ASSERT_EQ(a, b);
 }
 
 TEST_F(LDValueFixture, EqualObjectWithElementsOutOfOrder) {
-    struct LDValue *a = LDValue_ParseJSON(R"({"a" : true, "b" : false})");
-    struct LDValue *b = LDValue_ParseJSON(R"({"b" : false, "a" : true})");
-    ASSERT_TRUE(LDValue_Equal(a, b));
-    LDValue_Free(a);
-    LDValue_Free(b);
+    Value a = Value::parse_json(R"({"a" : true, "b" : false})");
+    Value b = Value::parse_json(R"({"b" : false, "a" : true})");
+    ASSERT_EQ(a, b);
 }
 
 TEST_F(LDValueFixture, EqualObjectWithoutElements) {
-    struct LDValue *a = LDValue_ParseJSON(R"({})");
-    struct LDValue *b = LDValue_ParseJSON(R"({})");
-    ASSERT_TRUE(LDValue_Equal(a, b));
-    LDValue_Free(a);
-    LDValue_Free(b);
+    Value a = Value::parse_json(R"({})");
+    Value b = Value::parse_json(R"({})");
+    ASSERT_EQ(a, b);
 }
 
 
 TEST_F(LDValueFixture, UnequalObjectKeys) {
-    struct LDValue *a = LDValue_ParseJSON(R"({"a" : true})");
-    struct LDValue *b = LDValue_ParseJSON(R"({"b" : true})");
-    ASSERT_FALSE(LDValue_Equal(a, b));
-    LDValue_Free(a);
-    LDValue_Free(b);
+    Value a = Value::parse_json(R"({"a" : true})");
+    Value b = Value::parse_json(R"({"b" : true})");
+    ASSERT_NE(a, b);
 }
 
 
 TEST_F(LDValueFixture, UnequalObjectValues) {
-    struct LDValue *a = LDValue_ParseJSON(R"({"a" : true})");
-    struct LDValue *b = LDValue_ParseJSON(R"({"a" : false})");
-    ASSERT_FALSE(LDValue_Equal(a, b));
-    LDValue_Free(a);
-    LDValue_Free(b);
+    Value a = Value::parse_json(R"({"a" : true})");
+    Value b = Value::parse_json(R"({"a" : false})");
+    ASSERT_NE(a, b);
 }
 
 
 TEST_F(LDValueFixture, UnequalObjectSize) {
-    struct LDValue *a = LDValue_ParseJSON(R"({"a" : true})");
-    struct LDValue *b = LDValue_ParseJSON(R"({"a" : true, "b" : true})");
-    ASSERT_FALSE(LDValue_Equal(a, b));
-    LDValue_Free(a);
-    LDValue_Free(b);
+    Value a = Value::parse_json(R"({"a" : true})");
+    Value b = Value::parse_json(R"({"a" : true, "b" : true})");
+    ASSERT_NE(a, b);
 }
 
 
