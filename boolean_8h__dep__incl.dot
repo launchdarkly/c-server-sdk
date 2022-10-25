@@ -40,4 +40,8 @@ digraph "c-sdk-common/include/launchdarkly/boolean.h"
   Node1 -> Node11 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node11 [label="include/launchdarkly\l/integrations/file_data.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$file__data_8h.html",tooltip="Public API for file data source."];
   Node1 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 -> Node12 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node12 [label="c-sdk-common/include\l/launchdarkly/experimental\l/ldvalue.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$ldvalue_8h.html",tooltip="LDValues represent immutable JSON values."];
+  Node12 -> Node13 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node13 [label="c-sdk-common/include\l/launchdarkly/experimental\l/cpp/value.hpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$value_8hpp_source.html",tooltip=" "];
 }

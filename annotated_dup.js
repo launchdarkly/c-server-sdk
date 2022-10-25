@@ -1,5 +1,10 @@
 var annotated_dup =
 [
+    [ "launchdarkly", null, [
+      [ "Array", "classlaunchdarkly_1_1Array.html", "classlaunchdarkly_1_1Array" ],
+      [ "Object", "classlaunchdarkly_1_1Object.html", "classlaunchdarkly_1_1Object" ],
+      [ "Value", "classlaunchdarkly_1_1Value.html", "classlaunchdarkly_1_1Value" ]
+    ] ],
     [ "LDClient", "structLDClient.html", null ],
     [ "LDConfig", "structLDConfig.html", null ],
     [ "LDDataSource", "structLDDataSource.html", null ],

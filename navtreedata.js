@@ -24,22 +24,25 @@ var NAVTREE =
 [
   [ "C Server-Side SDK", "index.html", [
     [ "SDK Layout and Overview", "index.html", [
-      [ "Basic Functionality", "index.html#autotoc_md1", null ],
-      [ "Extra Features", "index.html#autotoc_md2", null ]
+      [ "Basic Functionality", "index.html#autotoc_md2", null ],
+      [ "Extra Features", "index.html#autotoc_md3", null ]
     ] ],
+    [ "Experimental", "md_c-sdk-common_include_launchdarkly_experimental_README.html", null ],
     [ "Deprecated List", "deprecated.html", null ],
     [ "Data Structures", "annotated.html", [
       [ "Data Structures", "annotated.html", "annotated_dup" ],
       [ "Data Structure Index", "classes.html", null ],
       [ "Data Fields", "functions.html", [
         [ "All", "functions.html", null ],
-        [ "Variables", "functions_vars.html", null ]
+        [ "Functions", "functions_func.html", null ],
+        [ "Variables", "functions_vars.html", null ],
+        [ "Enumerations", "functions_enum.html", null ]
       ] ]
     ] ],
     [ "Files", "files.html", [
       [ "File List", "files.html", "files_dup" ],
       [ "Globals", "globals.html", [
-        [ "All", "globals.html", null ],
+        [ "All", "globals.html", "globals_dup" ],
         [ "Functions", "globals_func.html", null ],
         [ "Enumerations", "globals_enum.html", null ],
         [ "Enumerator", "globals_eval.html", null ],
@@ -51,8 +54,8 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"annotated.html",
-"variations_8h.html#a5bfb76ead561505a82400126669f5212ac038f4431f7ee9169b857ef6ce9edb2f"
+".html",
+"logging_8h.html#a350a93aa37f635cf7e778121189bb49caf40c91335e72221d40433d7978abd9c4"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

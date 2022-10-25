@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['reason_207',['reason',['../structLDDetails.html#aa1172f2a4e636bf26af281f760270cf8',1,'LDDetails']]],
-  ['rule_208',['rule',['../structLDDetails.html#add0572356ea48c4b2db8709fd58e6afb',1,'LDDetails']]],
-  ['ruleindex_209',['ruleIndex',['../structLDDetailsRule.html#aee92d30f267753f6d076aadd020bbd4b',1,'LDDetailsRule']]]
+  ['object_260',['Object',['../classlaunchdarkly_1_1Object.html',1,'launchdarkly::Object'],['../classlaunchdarkly_1_1Value.html#a7bcebba7a86809d774e3dc8247a86080a497031794414a552435f90151ac3b54b',1,'launchdarkly::Value::Object()']]],
+  ['operator_3d_261',['operator=',['../classlaunchdarkly_1_1Value.html#af29bfac8162ad57f1c6e4268768cc167',1,'launchdarkly::Value::operator=(const Value &amp;other)'],['../classlaunchdarkly_1_1Value.html#ae148a284f92ee79db5bc2429e3f26084',1,'launchdarkly::Value::operator=(Value &amp;&amp;other) noexcept']]]
 ];
