@@ -5,6 +5,7 @@
 #pragma once
 
 #include <launchdarkly/boolean.h>
+#include <launchdarkly/export.h>
 
 /**
  * Describes the type of an LDValue.
@@ -112,19 +113,22 @@ struct LDIter;
  * @param boolean LDBooleanTrue or LDBooleanFalse.
  * @return New LDValue.
  */
-struct LDValue* LDValue_Bool(LDBoolean boolean);
+LD_EXPORT(struct LDValue *)
+LDValue_Bool(LDBoolean boolean);
 
 /**
  * Equivalent to LDValue_Bool(LDBooleanTrue).
  * @return New LDValue.
  */
-struct LDValue *LDValue_True(void);
+LD_EXPORT(struct LDValue *)
+LDValue_True(void);
 
 /**
  * Equivalent to LDValue_Bool(LDBooleanFalse).
  * @return New LDValue.
  */
-struct LDValue *LDValue_False(void);
+LD_EXPORT(struct LDValue *)
+LDValue_False(void);
 
 /**
  * Allocates a new null-type LDValue.
@@ -132,14 +136,16 @@ struct LDValue *LDValue_False(void);
  * use this constructor.
  * @return New LDValue.
  */
-struct LDValue *LDValue_Null(void);
+LD_EXPORT(struct LDValue *)
+LDValue_Null(void);
 
 /**
  * Allocates a new number-type LDValue.
  * @param number Double value.
  * @return New LDValue.
  */
-struct LDValue *LDValue_Number(double number);
+LD_EXPORT(struct LDValue *)
+LDValue_Number(double number);
 
 /**
  * Allocates a new non-owning string-type LDValue.
@@ -152,7 +158,8 @@ struct LDValue *LDValue_Number(double number);
  * @param string Constant reference to a string. Cannot be NULL.
  * @return New LDValue.
  */
-struct LDValue *LDValue_ConstantString(const char *string);
+LD_EXPORT(struct LDValue *)
+LDValue_ConstantString(const char *string);
 
 /**
  * Allocates a new owning string-type LDValue.
@@ -162,7 +169,8 @@ struct LDValue *LDValue_ConstantString(const char *string);
  * @param string Constant reference to a string. The string is copied. Cannot be NULL.
  * @return New LDValue.
  */
-struct LDValue *LDValue_OwnedString(const char *string);
+LD_EXPORT(struct LDValue *)
+LDValue_OwnedString(const char *string);
 
 /**
  * Creates an array-type LDValue from an LDArray.
@@ -174,7 +182,8 @@ struct LDValue *LDValue_OwnedString(const char *string);
  * @param array LDArray to consume. Cannot be NULL.
  * @return New LDValue.
  */
-struct LDValue *LDValue_Array(struct LDArray *array);
+LD_EXPORT(struct LDValue *)
+LDValue_Array(struct LDArray *array);
 
 /**
  * Creates an object-type LDValue from an LDObject.
@@ -186,21 +195,24 @@ struct LDValue *LDValue_Array(struct LDArray *array);
  * @param obj LDObject to consume. Cannot be NULL.
  * @return New LDValue.
  */
-struct LDValue *LDValue_Object(struct LDObject *obj);
+LD_EXPORT(struct LDValue *)
+LDValue_Object(struct LDObject *obj);
 
 /**
  * Allocates a deep clone of an existing LDValue.
  * @param source Source LDValue. Must not be `NULL`.
  * @return New LDValue.
  */
-struct LDValue *LDValue_Clone(struct LDValue *source);
+LD_EXPORT(struct LDValue *)
+LDValue_Clone(struct LDValue *source);
 
 /**
  * Returns the type of an LDValue.
  * @param value LDValue to inspect. Cannot be NULL.
  * @return Type of the LDValue, or LDValueType_Unrecognized if the type is unrecognized.
  */
-enum LDValueType LDValue_Type(struct LDValue *value);
+LD_EXPORT(enum LDValueType)
+LDValue_Type(struct LDValue *value);
 
 /**
  * Performs a deep equality comparison between 'a' and 'b'.
@@ -212,7 +224,8 @@ enum LDValueType LDValue_Type(struct LDValue *value);
  * @param b Second LDValue to compare. Cannot be NULL.
  * @return True if the LDValues are equal.
  */
-LDBoolean LDValue_Equal(struct LDValue *a, struct LDValue *b);
+LD_EXPORT(LDBoolean)
+LDValue_Equal(struct LDValue *a, struct LDValue *b);
 
 /**
  * Frees an LDValue.
@@ -222,7 +235,8 @@ LDBoolean LDValue_Equal(struct LDValue *a, struct LDValue *b);
  *
  * @param value LDValue to free. No-op if NULL.
  */
-void LDValue_Free(struct LDValue *value);
+LD_EXPORT(void)
+LDValue_Free(struct LDValue *value);
 
 /**
  * Parses a JSON string into a new LDValue.
@@ -232,7 +246,7 @@ void LDValue_Free(struct LDValue *value);
  * @param json Input JSON string. Cannot be NULL.
  * @return New LDValue if parsing succeeds, otherwise NULL.
  */
-struct LDValue*
+LD_EXPORT(struct LDValue *)
 LDValue_ParseJSON(const char *json);
 
 /**
@@ -240,7 +254,7 @@ LDValue_ParseJSON(const char *json);
  * @param value LDValue to serialize. Cannot be NULL.
  * @return Pointer to formatted JSON string. Free with LDFree.
  */
-char *
+LD_EXPORT(char *)
 LDValue_SerializeFormattedJSON(struct LDValue *value);
 
 /**
@@ -248,7 +262,7 @@ LDValue_SerializeFormattedJSON(struct LDValue *value);
  * @param value LDValue to serialize. Cannot be NULL.
  * @return Pointer to JSON string. Free with LDFree.
  */
-char *
+LD_EXPORT(char *)
 LDValue_SerializeJSON(struct LDValue *value);
 
 /**
@@ -256,7 +270,7 @@ LDValue_SerializeJSON(struct LDValue *value);
  * @param value Target LDValue. Cannot be NULL.
  * @return Number value, or 0 if not number-type.
  */
-double
+LD_EXPORT(double)
 LDValue_GetNumber(struct LDValue *value);
 
 /**
@@ -265,7 +279,7 @@ LDValue_GetNumber(struct LDValue *value);
  * @param value Target LDValue. Cannot be NULL.
  * @return Boolean value, or LDBooleanFalse if not boolean-type.
  */
-LDBoolean
+LD_EXPORT(LDBoolean)
 LDValue_GetBool(struct LDValue *value);
 /**
  * Obtain value of a string-type LDValue, otherwise returns pointer
@@ -274,7 +288,7 @@ LDValue_GetBool(struct LDValue *value);
  * @param value Target LDValue. Cannot be NULL.
  * @return String value, or empty string if not string-type.
  */
-const char*
+LD_EXPORT(const char *)
 LDValue_GetString(struct LDValue *value);
 
 /**
@@ -286,7 +300,7 @@ LDValue_GetString(struct LDValue *value);
  * @return Iterator, or NULL if not object-type or array-type. The iterator does not need
  * to be freed. Its lifetime is that of the LDValue.
  */
-struct LDIter *
+LD_EXPORT(struct LDIter *)
 LDValue_GetIter(struct LDValue *value);
 /**
  * Obtain number of LDValue elements stored in an array-type LDValue, or number
@@ -297,7 +311,8 @@ LDValue_GetIter(struct LDValue *value);
  * @param value Target LDValue. Cannot be NULL.
  * @return Count of LDValue elements, or 0 if not array-type/object-type.
  */
-unsigned int LDValue_Count(struct LDValue *value);
+LD_EXPORT(unsigned int)
+LDValue_Count(struct LDValue *value);
 
 /**
  * Creates a new LDObject, which is a mutable builder for a key-value object.
@@ -308,13 +323,15 @@ unsigned int LDValue_Count(struct LDValue *value);
  * @return New LDObject. Free with LDObject_Free, or transform into an LDValue
  * with LDValue_Object.
  */
-struct LDObject* LDObject_New(void);
+LD_EXPORT(struct LDObject *)
+LDObject_New(void);
 
 /**
  * Recursively frees an LDObject and any children added with LDObject_Add(Constant|Owned)Key.
  * @param obj LDObject to free.
  */
-void LDObject_Free(struct LDObject *obj);
+LD_EXPORT(void)
+LDObject_Free(struct LDObject *obj);
 
 /**
  * Transfers ownership of an LDValue into an LDObject, named by the given key.
@@ -330,7 +347,8 @@ void LDObject_Free(struct LDObject *obj);
  * @param value LDValue to move; cannot be NULL. Since ownership is transferred, the caller
  * must not interact with the LDValue in any way after this call.
  */
-void LDObject_AddConstantKey(struct LDObject *obj, const char *key, struct LDValue *value);
+LD_EXPORT(void)
+LDObject_AddConstantKey(struct LDObject *obj, const char *key, struct LDValue *value);
 
 /**
  * Transfers ownership of an LDValue into an LDObject, named by the given key.
@@ -346,7 +364,8 @@ void LDObject_AddConstantKey(struct LDObject *obj, const char *key, struct LDVal
  * @param value LDValue to move; cannot be NULL. Since ownership is transferred, the caller
  * must not interact with the LDValue in any way after this call.
  */
-void LDObject_AddOwnedKey(struct LDObject *obj, const char *key, struct LDValue *value);
+LD_EXPORT(void)
+LDObject_AddOwnedKey(struct LDObject *obj, const char *key, struct LDValue *value);
 
 /**
  * Creates a new LDValue from an LDObject. The type of the LDValue is LDValueType_Object.
@@ -354,7 +373,8 @@ void LDObject_AddOwnedKey(struct LDObject *obj, const char *key, struct LDValue 
  * @param obj Source LDObject. Cannot be NULL.
  * @return New LDValue. Free with LDValue_Free.
  */
-struct LDValue *LDObject_Build(struct LDObject *obj);
+LD_EXPORT(struct LDValue *)
+LDObject_Build(struct LDObject *obj);
 
 /**
  * Creates a new LDArray, which is a mutable builder for an array.
@@ -365,13 +385,15 @@ struct LDValue *LDObject_Build(struct LDObject *obj);
  * @return New LDArray. Free with LDArray_Free, or transform into LDValue with
  * LDValue_Array.
  */
-struct LDArray* LDArray_New(void);
+LD_EXPORT(struct LDArray *)
+LDArray_New(void);
 
 /**
  * Recursively frees an LDArray and any elements added with LDArray_Add.
  * @param array LDArray to free.
  */
-void LDArray_Free(struct LDArray *array);
+LD_EXPORT(void)
+LDArray_Free(struct LDArray *array);
 
 /**
  * Creates a new LDValue from an LDArray. The type of the LDValue is LDValueType_Array.
@@ -379,7 +401,8 @@ void LDArray_Free(struct LDArray *array);
  * @param array Source LDArray. Cannot be NULL.
  * @return New LDValue. Free with LDValue_Free.
  */
-struct LDValue *LDArray_Build(struct LDArray *array);
+LD_EXPORT(struct LDValue *)
+LDArray_Build(struct LDArray *array);
 
 /**
  * Transfers ownership of an LDValue into an LDArray.
@@ -387,14 +410,17 @@ struct LDValue *LDArray_Build(struct LDArray *array);
  * @param value LDValue to move; cannot be NULL. Treat the value as freed; it is unsafe to pass it to any
  * other function.
  */
-void LDArray_Add(struct LDArray *array, struct LDValue *value);
+LD_EXPORT(void)
+LDArray_Add(struct LDArray *array, struct LDValue *value);
 
 /**
  * Advance iterator to the next element, if present.
  * @param iterator Target LDIter. Cannot be NULL.
  * @return Iterator for next element.
  */
-struct LDIter* LDIter_Next(struct LDIter *iterator);
+LD_EXPORT(struct LDIter *)
+LDIter_Next(struct LDIter *iterator);
+
 /**
  * Obtain key of current element, if source LDValue was object-type.
  *
@@ -402,12 +428,15 @@ struct LDIter* LDIter_Next(struct LDIter *iterator);
  * from object-type LDValue.
  * @return Key or NULL if not object-type.
  */
-const char *LDIter_Key(struct LDIter *iterator);
+LD_EXPORT(const char *)
+LDIter_Key(struct LDIter *iterator);
+
 /**
  * Obtain non-owned reference to LDValue of current iterator element.
  * @param iterator Target LDIter. Cannot be NULL.
  * @return Non-owning reference to LDValue. The LDValue lives only as long as the source
  * LDValue from which the LDIter was originally created. It should not be freed.
  */
-struct LDValue *LDIter_Val(struct LDIter *iterator);
+LD_EXPORT(struct LDValue *)
+LDIter_Val(struct LDIter *iterator);
 

@@ -8,7 +8,7 @@
  *
  */
 
-#include "ldvalue.h"
+#include <launchdarkly/experimental/ldvalue.h>
 #include "assertion.h"
 #include "cJSON.h"
 

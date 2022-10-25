@@ -1,0 +1,3 @@
+# This test assumes that the SDK has been installed at CMAKE_INSTALL_PREFIX.
+declare_find_package_test(find_package_incompatible_version)
+require_configure_failure(find_package_incompatible_version)
