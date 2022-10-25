@@ -2,6 +2,11 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.8.7] - 2022-10-25
+### Changed:
+- Testing: refactored cmake project tests to remove unnecessary boilerplate.
+- Bumped c-sdk-common dependency, introducing experimental APIs. Such APIs are subject to change or removal, and carry no guarantees.
+
 ## [2.8.6] - 2022-10-12
 ### Fixed:
 - Fixed flag evaluation to report error when flag data is malformed (variation out of bounds).
