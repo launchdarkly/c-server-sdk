@@ -23,16 +23,6 @@ events/feature events/full feature event for tracked flag/without reason/anonymo
 events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: double
 events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: string
 events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: any
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: bool
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: int
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: double
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: string
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: any
-events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: bool
-events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: int
-events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: double
-events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: string
-events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: any
 events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/without reasons/type: bool
 events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/without reasons/type: int
 events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/without reasons/type: double
