@@ -7,17 +7,26 @@ repo:
 jobs:
   - circleCI:
       linux:
-        image: ldcircleci/ld-c-sdk-ubuntu:3  # defined in sdks-ci-docker project
+        image: ldcircleci/ld-c-sdk-ubuntu:5  # defined in sdks-ci-docker project
+      # Needed to allow AWS authentication to succeed using circleCI job (an empty context will suffice; this one
+      # exists specifically for that purpose.)
+      context: circleci-oidc-auth
     env:
       LD_LIBRARY_FILE_PREFIX: linux-gcc-64bit
   - circleCI:
       mac:
         xcode: "12.5.1"
+      # Needed to allow AWS authentication to succeed using circleCI job (an empty context will suffice; this one
+      # exists specifically for that purpose.)
+      context: circleci-oidc-auth
     env:
       LD_LIBRARY_FILE_PREFIX: osx-clang-64bit
   - circleCI:
       timeoutMinutes: 20 # Windows takes longer than usual to build & test.
       windows: {}  # the {} means "we want to specify windows here, but no special parameters within it"
+      # Needed to allow AWS authentication to succeed using circleCI job (an empty context will suffice; this one
+      # exists specifically for that purpose.)
+      context: circleci-oidc-auth
     env:
       LD_LIBRARY_FILE_PREFIX: windows-vs-64bit
 
