@@ -65,7 +65,7 @@ LDi_possiblyQueueEvent(
     struct LDEventProcessor *context,
     struct LDJSON *event,
     struct LDTimestamp until,
-    LDBoolean detailedEvaluation
+    const struct EvaluationResult *result
 );
 
 LDBoolean

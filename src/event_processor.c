@@ -154,7 +154,7 @@ LDEventProcessor_ProcessEvaluation(struct LDEventProcessor *processor, struct Ev
     }
 
     if (result->flag) {
-        LDi_possiblyQueueEvent(processor, featureEvent, now, result->detailedEvaluation);
+        LDi_possiblyQueueEvent(processor, featureEvent, now, result);
 
         featureEvent = NULL;
     }
@@ -186,7 +186,7 @@ LDEventProcessor_ProcessEvaluation(struct LDEventProcessor *processor, struct Ev
                 processor,
                 LDCollectionDetachIter(result->subEvents, iter),
                 now,
-                result->detailedEvaluation);
+                result);
 
             iter = next;
         }
@@ -429,28 +429,39 @@ cleanup:
 }
 
 static LDBoolean
-convertToDebug(struct LDJSON *const event)
+convertToDebug(struct LDEventProcessor *processor, struct LDJSON *const event, const struct LDUser *user)
 {
-    struct LDJSON *kind;
+    struct LDJSON *kind, *inlineUser;
 
     LD_ASSERT(event);
 
     LDObjectDeleteKey(event, "kind");
+    LDObjectDeleteKey(event, "userKey");
 
-    if (!(kind = LDNewText("debug"))) {
-        goto error;
-    }
+    kind = LDNewText("debug");
 
     if (!LDObjectSetKey(event, "kind", kind)) {
         LDJSONFree(kind);
 
-        goto error;
+        return LDBooleanFalse;
+    }
+
+    if (!(inlineUser = LDi_userToJSON(
+            user,
+            LDBooleanTrue,
+            processor->config->allAttributesPrivate,
+            processor->config->privateAttributeNames)))
+    {
+        return LDBooleanFalse;
+    }
+
+    if (!(LDObjectSetKey(event, "user", inlineUser))) {
+        LDJSONFree(inlineUser);
+
+        return LDBooleanFalse;
     }
 
     return LDBooleanTrue;
-
-error:
-    return LDBooleanFalse;
 }
 
 void
@@ -458,7 +469,7 @@ LDi_possiblyQueueEvent(
     struct LDEventProcessor *const processor,
     struct LDJSON *              event,
     const struct LDTimestamp     now,
-    const LDBoolean              detailedEvaluation)
+    const struct EvaluationResult *result)
 {
     LDBoolean      shouldTrack;
     struct LDJSON *tmp;
@@ -479,7 +490,7 @@ LDi_possiblyQueueEvent(
         }
 
         LDJSONFree(LDCollectionDetachIter(event, tmp));
-    } else if (!detailedEvaluation) {
+    } else if (!result->detailedEvaluation) {
         LDObjectDeleteKey(event, "reason");
     }
 
@@ -507,6 +518,7 @@ LDi_possiblyQueueEvent(
          * will evaluate true because the server time is initialized to 0 when the EventProcessor is constructed. */
 
         if (LDTimestamp_Before(&now, &debugUntil) && LDTimestamp_Before(&processor->lastServerTime, &debugUntil)) {
+
             struct LDJSON *debugEvent = NULL;
 
             if (shouldTrack) {
@@ -516,12 +528,12 @@ LDi_possiblyQueueEvent(
                 event      = NULL;
             }
 
-            if (!debugEvent || !convertToDebug(debugEvent)) {
-                LDi_addEvent(processor, debugEvent);
-            } else {
+            if (!convertToDebug(processor, debugEvent, result->user)) {
                 LDJSONFree(debugEvent);
 
-                LD_LOG(LD_LOG_WARNING, "failed to allocate debug event");
+                LD_LOG(LD_LOG_WARNING, "failed to convert feature event to debug event");
+            } else {
+                LDi_addEvent(processor, debugEvent);
             }
         }
     }
