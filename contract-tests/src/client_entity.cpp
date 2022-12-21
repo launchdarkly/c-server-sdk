@@ -67,6 +67,11 @@ JsonOrError ClientEntity::evaluate(const EvaluateFlagParams &params) {
     struct LDDetails details{};
     LDDetailsInit(&details);
 
+    struct LDDetails *detailsPtr = nullptr;
+    if (params.detail) {
+        detailsPtr = &details;
+    }
+
     const char* key = params.flagKey.c_str();
 
     auto defaultVal = params.defaultValue;
@@ -80,7 +85,7 @@ JsonOrError ClientEntity::evaluate(const EvaluateFlagParams &params) {
                     user.get(),
                     key,
                     defaultVal.get<LDBoolean>(),
-                    &details
+                    detailsPtr
             ) != 0;
             break;
         case ValueType::Int:
@@ -89,7 +94,7 @@ JsonOrError ClientEntity::evaluate(const EvaluateFlagParams &params) {
                     user.get(),
                     key,
                     defaultVal.get<int>(),
-                    &details
+                    detailsPtr
             );
             break;
         case ValueType::Double:
@@ -98,7 +103,7 @@ JsonOrError ClientEntity::evaluate(const EvaluateFlagParams &params) {
                     user.get(),
                     key,
                     defaultVal.get<double>(),
-                    &details
+                    detailsPtr
             );
             break;
         case ValueType::String: {
@@ -107,7 +112,7 @@ JsonOrError ClientEntity::evaluate(const EvaluateFlagParams &params) {
                     user.get(),
                     key,
                     defaultVal.get<std::string>().c_str(),
-                    &details
+                    detailsPtr
             );
             result.value = std::string{evaluation};
             LDFree(evaluation);
@@ -124,7 +129,7 @@ JsonOrError ClientEntity::evaluate(const EvaluateFlagParams &params) {
                     user.get(),
                     key,
                     fallback,
-                    &details
+                    detailsPtr
             );
             LDJSONFree(fallback);
 
