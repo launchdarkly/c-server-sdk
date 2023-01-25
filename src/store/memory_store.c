@@ -51,7 +51,8 @@ static void clearItems(struct LDMemoryItem *items) {
 }
 
 static void
-removeAndDeleteItem(struct MemoryStoreContext* msCtx, enum FeatureKind kind, struct LDMemoryItem* item) {
+removeAndDeleteItem(struct MemoryStoreContext* msCtx, enum Feature
+                    kind, struct LDMemoryItem* item) {
     LD_ASSERT(msCtx);
     LD_ASSERT(item);
 
@@ -193,8 +194,6 @@ storeInit(
 
         /* Need to get the next iter before detaching. */
         dataKindsNext = LDIterNext(dataKindsIter);
-
-        stringToFeatureKind(kind, &featureKind);
 
         /* Don't do anything with unrecognized namespaces. */
         /* Converts to an enum kind, returns false if it could not be converted. */
