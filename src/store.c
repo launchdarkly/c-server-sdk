@@ -680,7 +680,7 @@ memoryCacheFlush(struct MemoryContext *const context)
 static LDBoolean
 memoryInit(struct LDStore *const store, struct LDJSON *const sets)
 {
-    struct LDJSON *iter, *next;
+    struct LDJSON *dataKindsIter, *dataKindsNext;
 
     LD_ASSERT(store);
     LD_ASSERT(store->cache);
@@ -691,23 +691,52 @@ memoryInit(struct LDStore *const store, struct LDJSON *const sets)
 
     memoryCacheFlush(store->cache);
 
-    for (iter = LDGetIter(sets); iter; iter = next) {
-        next = LDIterNext(iter);
+    /* For each data kind (Features/Segments/??). */
+    for(dataKindsIter = LDGetIter(sets); dataKindsIter; dataKindsIter = dataKindsNext) {
+        struct CacheItem *newAllCacheForKind;
+        struct LDJSON *itemsIter, *itemsNext, *items;
+        const char* kind = LDIterKey(dataKindsIter);
 
-        if (!filterAndCacheItems(
-                store,
-                LDIterKey(iter),
-                LDCollectionDetachIter(sets, iter),
-                NULL))
-        {
-            memoryCacheFlush(store->cache);
+        /* The cache key is owned memory. */
+        char* allCacheKeyForKind = featureStoreAllCacheKey(kind);
 
-            LDi_rwlock_wrunlock(&store->cache->lock);
+        /* Need to get the next iter before detaching. */
+        dataKindsNext = LDIterNext(dataKindsIter);
 
-            LDJSONFree(sets);
+        /* Detaching means we now own it. */
+        items = LDCollectionDetachIter(sets, dataKindsIter);
 
-            return LDBooleanFalse;
+        /* We need a duplicate of all the items, to go to the "all" cache for that kind. */
+        newAllCacheForKind = makeCacheItem(allCacheKeyForKind, LDJSONDuplicate(items));
+        HASH_ADD_KEYPTR(
+                hh,
+                store->cache->items,
+                newAllCacheForKind->key,
+                strlen(newAllCacheForKind->key),
+                newAllCacheForKind);
+
+
+        /* For each item of the kind. */
+        for (itemsIter = LDGetIter(items); itemsIter; itemsIter = itemsNext) {
+            struct CacheItem *newItem;
+            char* cacheKey = featureStoreCacheKey(kind, LDi_getFeatureKeyTrusted(itemsIter));
+            /* Get the next item before detaching from the collection. */
+            itemsNext = LDIterNext(itemsIter);
+
+            newItem = makeCacheItem(cacheKey, LDCollectionDetachIter(items, itemsIter));
+
+            HASH_ADD_KEYPTR(
+                    hh,
+                    store->cache->items,
+                    newItem->key,
+                    strlen(newItem->key),
+                    newItem);
+
+            LDFree(cacheKey);
         }
+
+        LDFree(allCacheKeyForKind);
+        LDJSONFree(items);
     }
 
     if (!store->backend) {
