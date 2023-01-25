@@ -51,8 +51,7 @@ static void clearItems(struct LDMemoryItem *items) {
 }
 
 static void
-removeAndDeleteItem(struct MemoryStoreContext* msCtx, enum Feature
-                    kind, struct LDMemoryItem* item) {
+removeAndDeleteItem(struct MemoryStoreContext* msCtx, enum FeatureKind kind, struct LDMemoryItem* item) {
     LD_ASSERT(msCtx);
     LD_ASSERT(item);
 
