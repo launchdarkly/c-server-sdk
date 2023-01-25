@@ -370,7 +370,7 @@ variation(
 
     LDJSONFree(fallback);
     LDDetailsClear(&details);
-    LDJSONRCDecrement(flagrc);
+    LDJSONRCRelease(flagrc);
     LDJSONFree(subEvents);
 
     return value;
@@ -378,7 +378,7 @@ variation(
 error:
     LDJSONFree(value);
     LDDetailsClear(&details);
-    LDJSONRCDecrement(flagrc);
+    LDJSONRCRelease(flagrc);
     LDJSONFree(subEvents);
 
     return fallback;
@@ -699,12 +699,12 @@ LDAllFlags(struct LDClient *const client, const struct LDUser *const user)
         LDDetailsClear(&details);
     }
 
-    LDJSONRCDecrement(rawFlagsRC);
+    LDJSONRCRelease(rawFlagsRC);
 
     return evaluatedFlags;
 
 error:
-    LDJSONRCDecrement(rawFlagsRC);
+    LDJSONRCRelease(rawFlagsRC);
     LDJSONFree(evaluatedFlags);
 
     return NULL;
@@ -842,7 +842,7 @@ LDAllFlagsState(struct LDClient *const client, const struct LDUser *const user, 
 
     cleanup:
 
-    LDJSONRCDecrement(rawFlagsRC);
+    LDJSONRCRelease(rawFlagsRC);
 
     if (success) {
         LD_ASSERT(state = LDi_allFlagsBuilderBuild(builder));

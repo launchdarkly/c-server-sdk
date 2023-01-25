@@ -8,6 +8,7 @@
 #include "store.h"
 #include "utility.h"
 #include "utlist.h"
+#include "store/store_utilities.h"
 
 static const char *const defaultHost   = "127.0.0.1";
 static const char *const defaultPrefix = "launchdarkly";
@@ -458,7 +459,7 @@ storeGet(
 
     if (result->buffer) {
         result->bufferSize = strlen(reply->str);
-        result->version    = LDi_getFeatureVersion(feature);
+        result->version    = LDi_getDataVersion(feature);
     } else {
         result->bufferSize = 0;
         result->version    = 0;
@@ -563,7 +564,7 @@ storeAll(
         }
 
         collectionIter->bufferSize = strlen(raw);
-        collectionIter->version    = LDi_getFeatureVersion(feature);
+        collectionIter->version    = LDi_getDataVersion(feature);
 
         LDJSONFree(feature);
         feature = NULL;
@@ -650,7 +651,7 @@ storeUpsertInternal(
         } else if (!redisCheckReply(reply, REDIS_REPLY_STRING)) {
             goto cleanup;
         } else if ((existing = LDJSONDeserialize(reply->str))) {
-            if (LDi_isFeatureDeleted(existing)) {
+            if (LDi_isDataDeleted(existing)) {
                 LDJSONFree(existing);
 
                 existing = NULL;
@@ -661,7 +662,7 @@ storeUpsertInternal(
 
         resetReply(&reply);
 
-        if (existing && LDi_getFeatureVersion(existing) >= feature->version) {
+        if (existing && LDi_getDataVersion(existing) >= feature->version) {
             success = LDBooleanTrue;
 
             goto cleanup;
@@ -675,7 +676,7 @@ storeUpsertInternal(
         } else {
             struct LDJSON *placeholder;
 
-            if (!(placeholder = LDi_makeDeleted(featureKey, feature->version)))
+            if (!(placeholder = LDi_makeDeletedData(featureKey, feature->version)))
             {
                 goto cleanup;
             }

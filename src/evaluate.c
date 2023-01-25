@@ -608,7 +608,7 @@ LDi_checkPrerequisites(
                     &value,
                     recordReason)))
         {
-            LDJSONRCDecrement(preflagrc);
+            LDJSONRCRelease(preflagrc);
             LDJSONFree(value);
             LDDetailsClear(&details);
             LDJSONFree(subevents);
@@ -640,7 +640,7 @@ LDi_checkPrerequisites(
         );
 
         if (!event) {
-            LDJSONRCDecrement(preflagrc);
+            LDJSONRCRelease(preflagrc);
             LDJSONFree(value);
             LDDetailsClear(&details);
             LDJSONFree(subevents);
@@ -652,7 +652,7 @@ LDi_checkPrerequisites(
 
         if (!(*events)) {
             if (!(*events = LDNewArray())) {
-                LDJSONRCDecrement(preflagrc);
+                LDJSONRCRelease(preflagrc);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
                 LDJSONFree(subevents);
@@ -665,7 +665,7 @@ LDi_checkPrerequisites(
 
         if (subevents) {
             if (!LDArrayAppend(*events, subevents)) {
-                LDJSONRCDecrement(preflagrc);
+                LDJSONRCRelease(preflagrc);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
                 LDJSONFree(subevents);
@@ -679,7 +679,7 @@ LDi_checkPrerequisites(
         }
 
         if (!LDArrayPush(*events, event)) {
-            LDJSONRCDecrement(preflagrc);
+            LDJSONRCRelease(preflagrc);
             LDJSONFree(value);
             LDDetailsClear(&details);
 
@@ -689,7 +689,7 @@ LDi_checkPrerequisites(
         }
 
         if (status == EVAL_MISS) {
-            LDJSONRCDecrement(preflagrc);
+            LDJSONRCRelease(preflagrc);
             LDJSONFree(value);
             LDDetailsClear(&details);
 
@@ -704,7 +704,7 @@ LDi_checkPrerequisites(
 
             if (!lookupOptionalValueOfType(preflag, "flag", "on", LDBool, &on))
             {
-                LDJSONRCDecrement(preflagrc);
+                LDJSONRCRelease(preflagrc);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
 
@@ -717,7 +717,7 @@ LDi_checkPrerequisites(
             }
 
             if (on == NULL || !LDGetBool(on) || !variationMatch) {
-                LDJSONRCDecrement(preflagrc);
+                LDJSONRCRelease(preflagrc);
                 LDJSONFree(value);
                 LDDetailsClear(&details);
 
@@ -725,7 +725,7 @@ LDi_checkPrerequisites(
             }
         }
 
-        LDJSONRCDecrement(preflagrc);
+        LDJSONRCRelease(preflagrc);
         LDJSONFree(value);
         LDDetailsClear(&details);
     }
@@ -839,12 +839,12 @@ LDi_clauseMatchesUser(
                         evalStatus = LDi_segmentMatchesUser(segment, user))) {
                     LD_LOG(LD_LOG_ERROR, "segmentMatchesUser error");
 
-                    LDJSONRCDecrement(segmentrc);
+                    LDJSONRCRelease(segmentrc);
 
                     return evalStatus;
                 }
 
-                LDJSONRCDecrement(segmentrc);
+                LDJSONRCRelease(segmentrc);
 
                 if (evalStatus == EVAL_MATCH) {
                     return maybeNegate(clause, EVAL_MATCH);

@@ -340,7 +340,7 @@ TEST_F(StoreBackendFixture, FailAllInvalidFlag) {
     ASSERT_TRUE(LDJSONCompare(expected, LDJSONRCGet(items)));
 
     LDJSONFree(expected);
-    LDJSONRCDecrement(items);
+    LDJSONRCRelease(items);
     LDStoreDestroy(store);
 }
 
@@ -457,8 +457,8 @@ TEST_F(StoreBackendFixture, GetCache) {
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(item1), LDJSONRCGet(item2)));
 
     LDJSONFree(staticGetValue);
-    LDJSONRCDecrement(item1);
-    LDJSONRCDecrement(item2);
+    LDJSONRCRelease(item1);
+    LDJSONRCRelease(item2);
     LDStoreDestroy(store);
 }
 
@@ -502,7 +502,7 @@ TEST_F(StoreBackendFixture, UpsertCache) {
 
     ASSERT_TRUE(LDStoreGet(store, LD_FLAG, "abc", &item));
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(item), staticUpsertValue));
-    LDJSONRCDecrement(item);
+    LDJSONRCRelease(item);
 
     ASSERT_TRUE(LDStoreRemove(store, LD_FLAG, "abc", 52));
     ASSERT_EQ(staticUpsertCount, 2);
@@ -579,12 +579,12 @@ TEST_F(StoreBackendFixture, AllCache) {
     ASSERT_TRUE(LDStoreAll(store, LD_FLAG, &values));
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(values), empty));
     ASSERT_EQ(staticAllCount, 1);
-    LDJSONRCDecrement(values);
+    LDJSONRCRelease(values);
 
     ASSERT_TRUE(LDStoreAll(store, LD_FLAG, &values));
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(values), empty));
     ASSERT_EQ(staticAllCount, 1);
-    LDJSONRCDecrement(values);
+    LDJSONRCRelease(values);
 
     LDi_expireAll(store);
 
@@ -607,14 +607,14 @@ TEST_F(StoreBackendFixture, AllCache) {
     ASSERT_TRUE(LDStoreAll(store, LD_FLAG, &values));
     ASSERT_EQ(staticAllCount, 2);
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(values), full));
-    LDJSONRCDecrement(values);
+    LDJSONRCRelease(values);
 
     LDi_expireAll(store);
 
     ASSERT_TRUE(LDStoreAll(store, LD_FLAG, &values));
     ASSERT_EQ(staticAllCount, 3);
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(values), full));
-    LDJSONRCDecrement(values);
+    LDJSONRCRelease(values);
 
     LDJSONFree(full);
     LDJSONFree(empty);
@@ -623,7 +623,7 @@ TEST_F(StoreBackendFixture, AllCache) {
 }
 
 // It was previously possible to encounter a double-free when calling LDStoreInitialized,
-// triggered by deleteAndRemoveCacheItem.
+// triggered by LDi_deleteAndRemoveCacheItem.
 // LDStoreInitialized did not hold a write-lock while removing the INIT_CHECKED_KEY item, which could end up
 // corrupting the hash table, or aborting, presumably depending on the platform.
 // This test can reliably trigger a SIGABRT/SIGSEGV on various hosts by creating many competing threads
