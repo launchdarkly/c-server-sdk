@@ -149,7 +149,7 @@ TEST_P(CommonStoreFixture, GetALl) {
     ASSERT_TRUE(LDStoreInit(store, all));
 
     ASSERT_TRUE(LDStoreAll(store, LD_FLAG, &rawFlags));
-    LDJSONRCDecrement(rawFlags);
+    LDJSONRCRelease(rawFlags);
 
     ASSERT_TRUE(LDStoreInitialized(store));
 }
@@ -167,7 +167,7 @@ TEST_P(CommonStoreFixture, UpsertUpdatesAll) {
 
     ASSERT_TRUE(LDStoreAll(store, LD_FLAG, &result));
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(result), all));
-    LDJSONRCDecrement(result);
+    LDJSONRCRelease(result);
 
     ASSERT_TRUE(flag2 = makeVersioned("b", 30));
     ASSERT_TRUE(flag2Dupe = LDJSONDuplicate(flag2));
@@ -176,14 +176,14 @@ TEST_P(CommonStoreFixture, UpsertUpdatesAll) {
 
     ASSERT_TRUE(LDStoreAll(store, LD_FLAG, &result));
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(result), all));
-    LDJSONRCDecrement(result);
+    LDJSONRCRelease(result);
 
     LDObjectDeleteKey(all, "a");
 
     LDStoreRemove(store, LD_FLAG, "a", 60);
     ASSERT_TRUE(LDStoreAll(store, LD_FLAG, &result));
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(result), all));
-    LDJSONRCDecrement(result);
+    LDJSONRCRelease(result);
 
     LDJSONFree(all);
 }
@@ -216,7 +216,7 @@ TEST_P(CommonStoreFixture, BasicExists) {
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(lookup), featureCopy));
 
     LDJSONFree(featureCopy);
-    LDJSONRCDecrement(lookup);
+    LDJSONRCRelease(lookup);
 }
 
 TEST_P(CommonStoreFixture, BasicDoesNotExist) {
@@ -246,7 +246,7 @@ TEST_P(CommonStoreFixture, UpsertNewer) {
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(lookup), featureCopy));
 
     LDJSONFree(featureCopy);
-    LDJSONRCDecrement(lookup);
+    LDJSONRCRelease(lookup);
 }
 
 TEST_P(CommonStoreFixture, UpsertOlder) {
@@ -267,7 +267,7 @@ TEST_P(CommonStoreFixture, UpsertOlder) {
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(lookup), feature1Copy));
 
     LDJSONFree(feature1Copy);
-    LDJSONRCDecrement(lookup);
+    LDJSONRCRelease(lookup);
 }
 
 TEST_P(CommonStoreFixture, UpsertDelete) {
@@ -302,12 +302,12 @@ TEST_P(CommonStoreFixture, ConflictDifferentNamespace) {
     ASSERT_TRUE(LDStoreGet(store, LD_SEGMENT, "my-heap-key", &lookup));
     ASSERT_TRUE(lookup);
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(lookup), feature1Copy));
-    LDJSONRCDecrement(lookup);
+    LDJSONRCRelease(lookup);
 
     ASSERT_TRUE(LDStoreGet(store, LD_FLAG, "my-heap-key", &lookup));
     ASSERT_TRUE(lookup);
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(lookup), feature2Copy));
-    LDJSONRCDecrement(lookup);
+    LDJSONRCRelease(lookup);
 
     LDJSONFree(feature1Copy);
     LDJSONFree(feature2Copy);
@@ -461,7 +461,7 @@ TEST_P(CommonStoreFixture, WriteConflict) {
     ASSERT_TRUE(LDJSONCompare(LDJSONRCGet(lookup), concurrentFlagCopy));
 
     LDJSONFree(concurrentFlagCopy);
-    LDJSONRCDecrement(lookup);
+    LDJSONRCRelease(lookup);
 
     LDStoreDestroy(concurrentStore);
     LDConfigFree(config);

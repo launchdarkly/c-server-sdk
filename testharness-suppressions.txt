@@ -3,57 +3,9 @@ evaluation/bucketing/bucket by non-key attribute/rollouts/invalid value type
 evaluation/bucketing/bucket by non-key attribute/experiments/integer value
 evaluation/bucketing/bucket by non-key attribute/experiments/invalid value type
 evaluation/all flags state/experimentation
-events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: bool
-events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: int
-events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: double
-events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: string
-events/feature events/full feature event for tracked flag/without reason/non-anonymous user/valid flag/type: any
-events/feature events/full feature event for tracked flag/without reason/non-anonymous user/malformed flag/type: bool
-events/feature events/full feature event for tracked flag/without reason/non-anonymous user/malformed flag/type: int
-events/feature events/full feature event for tracked flag/without reason/non-anonymous user/malformed flag/type: double
-events/feature events/full feature event for tracked flag/without reason/non-anonymous user/malformed flag/type: string
-events/feature events/full feature event for tracked flag/without reason/non-anonymous user/malformed flag/type: any
-events/feature events/full feature event for tracked flag/without reason/anonymous user/valid flag/type: bool
-events/feature events/full feature event for tracked flag/without reason/anonymous user/valid flag/type: int
-events/feature events/full feature event for tracked flag/without reason/anonymous user/valid flag/type: double
-events/feature events/full feature event for tracked flag/without reason/anonymous user/valid flag/type: string
-events/feature events/full feature event for tracked flag/without reason/anonymous user/valid flag/type: any
-events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: bool
-events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: int
-events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: double
-events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: string
-events/feature events/full feature event for tracked flag/without reason/anonymous user/malformed flag/type: any
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: bool
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: int
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: double
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: string
-events/feature events/full feature event for tracked flag/with reason/non-anonymous user/malformed flag/type: any
-events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: bool
-events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: int
-events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: double
-events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: string
-events/feature events/full feature event for tracked flag/with reason/anonymous user/malformed flag/type: any
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/without reasons/type: bool
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/without reasons/type: int
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/without reasons/type: double
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/without reasons/type: string
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/without reasons/type: any
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/with reasons/type: bool
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/with reasons/type: int
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/with reasons/type: double
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/with reasons/type: string
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK does not know LD time/with reasons/type: any
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/without reasons/type: bool
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/without reasons/type: int
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/without reasons/type: double
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/without reasons/type: string
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/without reasons/type: any
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: bool
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: int
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: double
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: string
-events/debug events/should see debug event/debugEventsUntilDate is after SDK time/SDK knows LD time is before debugEventsUntilDate/with reasons/type: any
-events/feature prerequisite events/without reasons
+# events/experimentation: expected (sc181317)
+events/experimentation/experiment in rule
+events/experimentation/experiment in fallthrough
 events/user properties/inlineUsers=true/user-private=none/index event
 events/user properties/inlineUsers=true/user-private=[lastName preferredLanguage]/index event
 events/user properties/inlineUsers=true, globally-private=[firstName]/user-private=none/index event

@@ -97,13 +97,14 @@ endif()
 
 set(LD_INCLUDE_PATHS
     "src"
+    "src/store"
     "c-sdk-common/include"
     "c-sdk-common/src"
     ${CURL_INCLUDE_DIR}
     ${PCRE_INCLUDE_DIR}
 )
 
-file(GLOB SOURCES "src/*" "src/integrations/*" "third-party/src/*" "c-sdk-common/src/*")
+file(GLOB SOURCES "src/*" "src/store/*" "src/integrations/*" "third-party/src/*" "c-sdk-common/src/*")
 
 if(NOT DEFINED MSVC)
     list(REMOVE_ITEM SOURCES
@@ -119,8 +120,7 @@ add_library(ldserverapi
     $<TARGET_OBJECTS:semver>
     $<TARGET_OBJECTS:sha1>
     $<TARGET_OBJECTS:timestamp>
-    ${SOURCES}
-)
+    ${SOURCES})
 
 if(REDIS_STORE)
     add_subdirectory(stores/redis)

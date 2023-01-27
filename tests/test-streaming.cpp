@@ -94,8 +94,8 @@ TEST_F(StreamingFixtureWithContext, InitialPut) {
     ASSERT_EQ(
             LDGetNumber(LDObjectLookup(LDJSONRCGet(segment), "version")), 5);
 
-    LDJSONRCDecrement(flag);
-    LDJSONRCDecrement(segment);
+    LDJSONRCRelease(flag);
+    LDJSONRCRelease(segment);
 }
 
 TEST_F(StreamingFixtureWithContext, PatchFlag) {
@@ -112,7 +112,7 @@ TEST_F(StreamingFixtureWithContext, PatchFlag) {
     ASSERT_TRUE(flag);
     ASSERT_EQ(LDGetNumber(LDObjectLookup(LDJSONRCGet(flag), "version")), 3);
 
-    LDJSONRCDecrement(flag);
+    LDJSONRCRelease(flag);
 }
 
 TEST_F(StreamingFixtureWithContext, DeleteFlag) {
@@ -144,7 +144,7 @@ TEST_F(StreamingFixtureWithContext, PatchSegment) {
     ASSERT_EQ(
             LDGetNumber(LDObjectLookup(LDJSONRCGet(segment), "version")), 7);
 
-    LDJSONRCDecrement(segment);
+    LDJSONRCRelease(segment);
 }
 
 TEST_F(StreamingFixtureWithContext, DeleteSegment) {

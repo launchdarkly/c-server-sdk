@@ -3,28 +3,7 @@
 #include <launchdarkly/api.h>
 
 #include "config.h"
-
-/*******************************************************************************
- * @name Reference counted wrapper for JSON
- * Used as an optimization to reduce allocations.
- * @{
- *******************************************************************************/
-
-struct LDJSONRC;
-
-struct LDJSONRC *
-LDJSONRCNew(struct LDJSON *const json);
-
-void
-LDJSONRCIncrement(struct LDJSONRC *const rc);
-
-void
-LDJSONRCDecrement(struct LDJSONRC *const rc);
-
-struct LDJSON *
-LDJSONRCGet(struct LDJSONRC *const rc);
-
-/*@}*/
+#include "store/ldjsonrc.h"
 
 /* **** Internal Store Types *** */
 
@@ -32,29 +11,6 @@ struct LDStore;
 
 struct LDStore *
 LDStoreNew(const struct LDConfig *const config);
-
-/* **** Flag Utilities **** */
-
-LDBoolean
-LDi_validateFeature(const struct LDJSON *const feature);
-
-struct LDJSON *
-LDi_makeDeleted(const char *const key, const unsigned int version);
-
-LDBoolean
-LDi_isFeatureDeleted(const struct LDJSON *const feature);
-
-/** @brief Get version of a non validated feature value */
-unsigned int
-LDi_getFeatureVersion(const struct LDJSON *const feature);
-
-/** @brief Get version of a validated feature value */
-unsigned int
-LDi_getFeatureVersionTrusted(const struct LDJSON *const feature);
-
-/** @brief Used for testing */
-void
-LDi_expireAll(struct LDStore *const store);
 
 /*******************************************************************************
  * @name Store convenience functions
@@ -119,5 +75,8 @@ LDStoreDestroy(struct LDStore *const store);
 /** @brief Calls LDStoreInit with empty sets. */
 LDBoolean
 LDStoreInitEmpty(struct LDStore *const store);
+
+void
+LDi_expireAll(struct LDStore *const store);
 
 /*@}*/
