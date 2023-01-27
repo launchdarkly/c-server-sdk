@@ -2,6 +2,13 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.9.0] - 2023-01-27
+### Changed:
+- Changed the internal abstractions used for feature stores and updated the implementations to improve performance and reduce memory usage.
+
+### Fixed:
+- Fixed an issue preventing the proper generation of debug events.
+
 ## [2.8.7] - 2022-10-25
 ### Changed:
 - Testing: refactored cmake project tests to remove unnecessary boilerplate.
