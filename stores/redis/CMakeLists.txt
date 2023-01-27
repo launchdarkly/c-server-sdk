@@ -13,7 +13,7 @@ add_library(ldserverapi-redis
     "src/redis.c"
     "../../c-sdk-common/src/concurrency.c"
     "../../c-sdk-common/src/utility.c"
-    "../../src/store.c"
+    "../../src/store/store_utilities.c"
 )
 
 target_link_libraries(ldserverapi-redis
@@ -27,6 +27,7 @@ target_include_directories(ldserverapi-redis
     PUBLIC  "include"
     PRIVATE "../../include"
             "../../src"
+            "../../src/store"
             "../../tests"
             "../../c-sdk-common/include"
             "../../c-sdk-common/src"
@@ -70,6 +71,7 @@ if(BUILD_TESTING)
             PRIVATE "include"
                     "../../include"
                     "../../src"
+                    "../../src/store"
                     "../../tests"
                     "../../c-sdk-common/include"
                     "../../tests"
