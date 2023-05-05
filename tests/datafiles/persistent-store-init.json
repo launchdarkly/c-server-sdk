@@ -1,0 +1,53 @@
+{
+  "flags": {
+    "flag1": {
+      "key": "flag1",
+      "version": 1,
+      "on": true,
+      "fallthrough": {
+        "variation": 2
+      },
+      "variations": [
+        "fall",
+        "off",
+        "on"
+      ]
+    },
+    "flag2": {
+      "key": "flag2",
+      "version": 2,
+      "on": true,
+      "fallthrough": {
+        "variation": 0
+      },
+      "variations": [
+        "fall",
+        "off",
+        "on"
+      ]
+    }
+  },
+  "segments": {
+    "seg1": {
+      "key": "seg1",
+      "version": 3,
+      "included": [
+        "user1"
+      ]
+    },
+    "seg2": {
+      "key": "seg2",
+      "version": 4,
+      "included": [
+        "user2"
+      ]
+    },
+    "seg3": {
+      "key": "seg3",
+      "version": 5,
+      "included": [
+        "user3"
+      ]
+    }
+  }
+}

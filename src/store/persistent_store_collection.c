@@ -9,13 +9,14 @@ LDi_makeKindCollection(const char* kind, struct LDJSON *const items, struct LDSt
     struct LDJSON *setItem = NULL;
     struct LDStoreCollectionStateItem *itemIter = NULL;
     unsigned int allocationSize;
+    unsigned int addedItems = 0;
 
     LD_ASSERT(kind);
     LD_ASSERT(items);
     LD_ASSERT(collection);
 
     allocationSize = sizeof(struct LDStoreCollectionStateItem) *
-                LDCollectionGetSize(items);
+            LDCollectionGetSize(items);
 
     collection->items = (struct LDStoreCollectionStateItem *)LDAlloc(
             allocationSize);
@@ -32,8 +33,6 @@ LDi_makeKindCollection(const char* kind, struct LDJSON *const items, struct LDSt
             LD_LOG(
                     LD_LOG_ERROR,
                     "LDStoreInit failed to validate feature");
-
-            itemIter++;
             continue;
         }
 
@@ -44,9 +43,12 @@ LDi_makeKindCollection(const char* kind, struct LDJSON *const items, struct LDSt
         itemIter->item.buffer     = (void *)serialized;
         itemIter->item.bufferSize = strlen(serialized);
         itemIter->item.version    = LDi_getDataVersion(setItem);
+        addedItems++;
+        itemIter++;
     }
 
     collection->kind = kind;
+    collection->itemCount = addedItems;
 }
 
 void
