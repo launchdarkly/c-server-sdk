@@ -2,6 +2,10 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.9.1] - 2023-05-05
+### Fixed:
+- Fixed an issue which was preventing the redis persistent store from initializing correctly.
+
 ## [2.9.0] - 2023-01-27
 ### Changed:
 - Changed the internal abstractions used for feature stores and updated the implementations to improve performance and reduce memory usage.
