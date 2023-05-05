@@ -16,7 +16,8 @@ workflows:
           requires:
             - build-test-linux-optimized
       - build-test-linux-32bit
-      - build-test-osx
+      - build-test-osx-intel
+      - build-test-osx-m1
       - build-test-windows
 
 jobs:
@@ -181,10 +182,42 @@ jobs:
       - store_test_results:
           path: reports
 
-  build-test-osx:
+  build-test-osx-intel:
     macos:
       xcode: "12.5.1"
     resource_class: macos.x86.medium.gen2
+    environment:
+      CTEST_OUTPUT_ON_FAILURE: 1
+    steps:
+      - checkout
+      - run:
+          name: Install redis
+          command: HOMEBREW_NO_AUTO_UPDATE=1 brew install redis
+      - run:
+          name: Start Redis
+          command: redis-server
+          background: true
+      - run:
+          name: Install prerequisites
+          command: ./.ldrelease/mac-prepare.sh
+      - run:
+          name: Build
+          command: |
+            mkdir build && cd build
+            cmake -D REDIS_STORE=ON -D ENABLE_CMAKE_PROJECT_TESTS=ON -D CMAKE_INSTALL_PREFIX=./INSTALL ..
+            cmake --build . --target install
+      - run:
+          name: Test
+          command: |
+            cd build
+            GTEST_OUTPUT="xml:$(pwd)/../reports/" make test
+      - store_test_results:
+          path: reports
+          
+  build-test-osx-m1:
+    macos:
+      xcode: "14.2.0"
+    resource_class: macos.m1.large.gen1
     environment:
       CTEST_OUTPUT_ON_FAILURE: 1
     steps:
