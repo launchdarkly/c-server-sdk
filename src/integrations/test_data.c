@@ -587,6 +587,7 @@ LDi_buildTargetJSON(struct LDFlagBuilderTarget *target) {
 
     if(!(users = LDi_buildUsersJSON(target->users))) {
         LDJSONFree(res);
+        return NULL;
     }
 
     if(!LDObjectSetKey(res, "values", users)) {
@@ -1068,4 +1069,3 @@ LDFlagRuleBuilderThenReturnBoolean(struct LDFlagRuleBuilder *ruleBuilder, LDBool
     LDFlagRuleBuilderThenReturn(ruleBuilder, variationForBoolean(value));
     return LDBooleanTrue;
 }
-

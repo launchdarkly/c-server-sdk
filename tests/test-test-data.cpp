@@ -383,3 +383,11 @@ TEST_F(TestDataFixture, TestVariationForAllUsers) {
         ASSERT_EQ(LDBooleanTrue, result);
     }
 }
+
+TEST_F(TestDataFixture, TestFlagNULLUserKey) {
+    struct LDFlagBuilder *flag = LDTestDataFlag(td, "flag1");
+    LDFlagBuilderVariationForUser(flag, NULL, 1);
+    ASSERT_EQ(LDTestDataUpdate(td, flag), LDBooleanFalse);
+
+    LDFlagBuilderFree(flag);
+}
