@@ -1,3 +1,8 @@
+# ⚠️ Important note
+
+This repository has been superseded by [C++ Server SDK with C bindings](https://github.com/launchdarkly/cpp-sdks/tree/main/libs/server-sdk).
+All future releases will be made from the [new repository](https://github.com/launchdarkly/cpp-sdks/tree/main/libs/server-sdk). Please consider upgrading and filing potential requests in that repository's [issue tracker](https://github.com/launchdarkly/cpp-sdks/issues?q=is%3Aissue+is%3Aopen+label%3A%22package%3A+sdk%2Fserver%22+sort%3Aupdated-desc).
+
 # LaunchDarkly Server-Side SDK for C/C++
 
 [![CircleCI](https://circleci.com/gh/launchdarkly/c-server-sdk.svg?style=svg)](https://circleci.com/gh/launchdarkly/c-server-sdk)
