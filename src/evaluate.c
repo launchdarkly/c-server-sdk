@@ -1246,7 +1246,7 @@ LDi_bucketUser(
             char        digest[21], encoded[17];
             const float longScale = 1152921504606846975.0;
 
-            SHA1(digest, raw, strlen(raw));
+            clibs_SHA1(digest, raw, strlen(raw));
 
             /* encodes to hex, and shortens, 16 characters in hex 8 bytes */
             status = hexify(
