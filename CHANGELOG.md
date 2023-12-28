@@ -2,6 +2,10 @@
 
 All notable changes to the LaunchDarkly C server-side SDK will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.9.3] - 2023-12-28
+### Fixed:
+- Patched clibs/sha1 dependency to rename SHA1 symbol, avoiding naming conflict with commonly used libcrypto SHA1 symbol.
+
 ## [2.9.2] - 2023-08-29
 ### Fixed:
 - Fixed cause of potential crash when using test data feature. Thanks, @cochicde!
