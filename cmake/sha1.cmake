@@ -2,6 +2,8 @@ FetchContent_Declare(sha1
     GIT_REPOSITORY https://github.com/clibs/sha1
     GIT_TAG "fa1d96ec293d2968791603548125e3274bd6b472"
     CONFIGURE_COMMAND ""
+    UPDATE_COMMAND "" # patching will fail if applied more than once; disable updates.
+    PATCH_COMMAND git apply "${PROJECT_SOURCE_DIR}/patches/sha1.patch"
 )
 
 FetchContent_GetProperties(sha1)

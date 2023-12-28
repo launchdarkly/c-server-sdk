@@ -80,7 +80,7 @@ target_link_libraries(yourproject ldserverapi::ldserverapi)
 | SDK            | CURL                | Build host | FindCURL     |                 | N                            |
 | SDK            | pepaslabs/hexify    | Github     | FetchContent | Pegged @ f823b  | [Y](patches/hexify.patch)    |
 | SDK            | h2non/semver        | Github     | FetchContent | Pegged @ bd1db  | [Y](patches/semver.patch)    |
-| SDK            | clibs/sha1          | Github     | FetchContent | Pegged @ fa1d9  | N                            |
+| SDK            | clibs/sha1          | Github     | FetchContent | Pegged @ fa1d9  | [Y](patches/sha1.patch)      |
 | SDK            | chansen/timestamp   | Github     | FetchContent | Pegged @ b205c  | [Y](patches/timestamp.patch) |
 | SDK            | troydhanson/uthash  | Github     | FetchContent | v2.3.0          | N                            |
 | SDK            | NetBSD strptime.c   | Vendored   | N/A          | N/A             | Unknown                      |
