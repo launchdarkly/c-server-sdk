@@ -96,7 +96,7 @@ LDBoolean LDi_isBooleanFlag(struct LDFlagBuilder *flagBuilder) {
 }
 
 struct LDTestData *
-LDTestDataInit() {
+LDTestDataInit(void) {
     struct LDTestData *res;
     struct LDJSON *currentFlags;
     if(!ALLOCATE(struct LDTestData, res)) {
