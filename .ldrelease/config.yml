@@ -1,9 +1,5 @@
 version: 2
 
-repo:
-  public: c-server-sdk
-  private: c-server-sdk-private
-
 jobs:
   - circleCI:
       linux:
