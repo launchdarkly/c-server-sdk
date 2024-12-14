@@ -166,7 +166,7 @@ unsigned int LDValue_Count(struct LDValue *value) {
     return cJSON_GetArraySize(AS_CJSON(value));
 }
 
-struct LDObject *LDObject_New() {
+struct LDObject *LDObject_New(void) {
     return AS_LDOBJECT(cJSON_CreateObject());
 }
 
